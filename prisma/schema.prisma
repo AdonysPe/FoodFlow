@@ -1,14 +1,16 @@
-// FoodFlow data model.
-// Dev uses SQLite (zero-config). To move to Postgres for production,
-// change `provider` to "postgresql" and point DATABASE_URL at your instance —
-// the models below don't use any SQLite-only features.
+// FoodFlow data model. Postgres (e.g. Neon) — required in production since
+// Vercel's serverless functions have a read-only filesystem, so a local
+// SQLite file can't be written to. Point DATABASE_URL at your instance.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Neon's pooled connection (PgBouncer) doesn't support the advisory locks
+  // `prisma migrate` needs, so migrations run over the direct connection.
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 enum UserRole {
