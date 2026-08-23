@@ -38,11 +38,24 @@ export async function sendOTP(email: string, code: string): Promise<void> {
   }
 
   const transport = getTransport();
-  await transport.sendMail({
-    from: process.env.SMTP_FROM || "FoodFlow <no-reply@foodflow.app>",
-    to: email,
-    subject: `${code} is your FoodFlow login code`,
-    text: `Your FoodFlow login code is ${code}. It expires in 5 minutes.`,
-    html: otpEmailHtml(code),
-  });
+  // SMTP_FROM must be on a domain verified in Resend (Domains → Verify).
+  // Until then, Resend's sandbox mode silently limits delivery to the email
+  // address the Resend account itself was signed up with — every other
+  // recipient (i.e. every real client) fails here. See README/.env.example.
+  try {
+    await transport.sendMail({
+      from: process.env.SMTP_FROM || "FoodFlow <no-reply@foodflow.app>",
+      to: email,
+      subject: `${code} is your FoodFlow login code`,
+      text: `Your FoodFlow login code is ${code}. It expires in 5 minutes.`,
+      html: otpEmailHtml(code),
+    });
+  } catch (err) {
+    const response = (err as { response?: string })?.response;
+    console.error(
+      `[mailer] Resend SMTP rejected the send to ${email}${response ? ` — ${response}` : ""}. ` +
+        "Most likely cause: SMTP_FROM isn't on a domain verified in Resend yet."
+    );
+    throw err;
+  }
 }

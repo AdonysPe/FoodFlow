@@ -44,3 +44,61 @@ export async function createRestaurant(input: {
 
   return { ok: true, data: undefined };
 }
+
+export async function updateRestaurant(
+  id: string,
+  input: { name: string; ownerEmail: string }
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = createRestaurantSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+  }
+  const { name, ownerEmail } = parsed.data;
+
+  const restaurant = await prisma.restaurant.findUnique({ where: { id } });
+  if (!restaurant) return { ok: false, error: "Restaurant not found." };
+
+  const owner = await prisma.user.upsert({
+    where: { email: ownerEmail },
+    update: {},
+    create: { email: ownerEmail, role: "client" },
+  });
+
+  await prisma.restaurant.update({ where: { id }, data: { name, ownerId: owner.id } });
+
+  revalidatePath("/dashboard/admin/overview");
+  revalidatePath("/dashboard/admin/restaurants");
+
+  return { ok: true, data: undefined };
+}
+
+// Removes the restaurant and everything scoped to it (orders, menu, customers).
+// The owner account itself is only deleted if they don't own any other
+// restaurant — otherwise it'd still be needed for that other restaurant.
+export async function deleteRestaurant(id: string): Promise<ActionResult> {
+  await requireAdmin();
+
+  const restaurant = await prisma.restaurant.findUnique({ where: { id } });
+  if (!restaurant) return { ok: false, error: "Restaurant not found." };
+
+  await prisma.$transaction([
+    prisma.order.deleteMany({ where: { restaurantId: id } }),
+    prisma.menuItem.deleteMany({ where: { restaurantId: id } }),
+    prisma.customer.deleteMany({ where: { restaurantId: id } }),
+    prisma.restaurant.delete({ where: { id } }),
+  ]);
+
+  const ownerHasOtherRestaurants = await prisma.restaurant.count({
+    where: { ownerId: restaurant.ownerId },
+  });
+  if (ownerHasOtherRestaurants === 0) {
+    await prisma.user.delete({ where: { id: restaurant.ownerId } }).catch(() => {});
+  }
+
+  revalidatePath("/dashboard/admin/overview");
+  revalidatePath("/dashboard/admin/restaurants");
+
+  return { ok: true, data: undefined };
+}
