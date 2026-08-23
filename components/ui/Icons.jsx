@@ -125,6 +125,15 @@ export function IconShield({ className = "h-4 w-4" }) {
   );
 }
 
+export function IconMail({ className = "h-4 w-4" }) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="5.5" width="18" height="13" rx="2.2" />
+      <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+    </svg>
+  );
+}
+
 export function IconMenuBook({ className = "h-5 w-5" }) {
   return (
     <svg {...base} className={className}>
