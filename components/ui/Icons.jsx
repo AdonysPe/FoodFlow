@@ -161,3 +161,50 @@ export function IconChat({ className = "h-5 w-5" }) {
     </svg>
   );
 }
+
+export function IconUsers({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3.5 19c0-2.9 2.5-5 5.5-5s5.5 2.1 5.5 5" />
+      <path d="M16 8.2a2.6 2.6 0 0 1 0 4.9" />
+      <path d="M17.5 14.3c1.9.5 3 1.9 3 4.2" />
+    </svg>
+  );
+}
+
+export function IconStore({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 9.5 5.2 4h13.6l1.2 5.5" />
+      <path d="M4 9.5a2.3 2.3 0 0 0 4.5.7 2.3 2.3 0 0 0 4.5 0 2.3 2.3 0 0 0 4.5 0 2.3 2.3 0 0 0 4.5-.7" />
+      <path d="M5.5 10v9.5h13V10" />
+      <path d="M10 19.5V15h4v4.5" />
+    </svg>
+  );
+}
+
+export function IconLogout({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9 4.5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 19.5h3" />
+      <path d="M20 12H10.5M20 12l-3.5-3.5M20 12l-3.5 3.5" />
+    </svg>
+  );
+}
+
+export function IconMenu({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 6.5h16M4 12h16M4 17.5h16" />
+    </svg>
+  );
+}
+
+export function IconX({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className} strokeWidth={1.8}>
+      <path d="m5 5 14 14M19 5 5 19" />
+    </svg>
+  );
+}

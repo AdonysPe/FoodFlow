@@ -65,7 +65,7 @@ export default function Navbar() {
 
             <div className="hidden items-center gap-2.5 md:flex">
               <LanguageToggle />
-              <Button href="#cta" variant="ghost" size="md">
+              <Button href="/login" variant="ghost" size="md">
                 {t.nav.signIn}
               </Button>
               <Button href="#cta" variant="primary" size="md">
@@ -128,7 +128,7 @@ export default function Navbar() {
           </div>
           <div className="mt-4 flex flex-col gap-2.5">
             <Button
-              href="#cta"
+              href="/login"
               variant="secondary"
               size="lg"
               onClick={() => setOpen(false)}

@@ -1,0 +1,67 @@
+// FoodFlow data model.
+// Dev uses SQLite (zero-config). To move to Postgres for production,
+// change `provider` to "postgresql" and point DATABASE_URL at your instance —
+// the models below don't use any SQLite-only features.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  client
+}
+
+enum LeadStatus {
+  new
+  contacted
+  converted
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  role        UserRole     @default(client)
+  createdAt   DateTime     @default(now())
+  restaurants Restaurant[]
+}
+
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}
+
+model ClientLead {
+  id        String     @id @default(cuid())
+  email     String
+  source    String     @default("landing")
+  status    LeadStatus @default(new)
+  createdAt DateTime   @default(now())
+
+  @@index([email])
+  @@index([status])
+}
+
+// One row per requested OTP. The `code` column stores a salted hash, never
+// the plaintext digits. `attempts` guards against brute-forcing a 6-digit
+// code within the 5-minute expiry window.
+model OTPCode {
+  id         String    @id @default(cuid())
+  email      String
+  code       String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -9,13 +9,15 @@ import ThreeBackground from "@/components/ThreeBackground";
 import { IconArrowRight, IconCheck, IconShield } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE } from "@/lib/motion";
+import { submitLead } from "@/lib/actions/leads";
 
 export default function CTA() {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  // Demo-only handler — wire this to your signup endpoint.
   // Reads the value off the form rather than component state so browser
   // autofill (which can set the DOM value without a React change event)
   // still submits correctly.
@@ -24,7 +26,15 @@ export default function CTA() {
     const value = String(new FormData(e.currentTarget).get("email") ?? "").trim();
     if (!value.includes("@")) return;
     setEmail(value);
-    setSent(true);
+    setError("");
+    startTransition(async () => {
+      const result = await submitLead(value);
+      if (result.ok) {
+        setSent(true);
+      } else {
+        setError(result.error);
+      }
+    });
   };
 
   return (
@@ -100,15 +110,19 @@ export default function CTA() {
                         type="submit"
                         size="lg"
                         className="shrink-0"
+                        disabled={isPending}
                         icon={
                           <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                         }
                       >
-                        {t.cta.button}
+                        {isPending ? "Sending…" : t.cta.button}
                       </Button>
                     </motion.form>
                   )}
                 </AnimatePresence>
+                {error && (
+                  <p className="mt-3 text-center text-[13px] text-accent-400">{error}</p>
+                )}
               </div>
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[12.5px] text-white/35">
@@ -119,6 +133,13 @@ export default function CTA() {
                   </span>
                 ))}
               </div>
+
+              <p className="mt-6 text-[13px] text-white/30">
+                Already have an account?{" "}
+                <a href="/login" className="font-medium text-white/60 underline-offset-4 hover:text-white hover:underline">
+                  Log in
+                </a>
+              </p>
             </div>
           </div>
         </Reveal>
