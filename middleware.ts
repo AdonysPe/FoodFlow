@@ -20,6 +20,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  if (pathname.startsWith("/dashboard/app") && session.role !== "client") {
+    return NextResponse.redirect(new URL("/dashboard/admin/overview", request.url));
+  }
+
   return NextResponse.next();
 }
 

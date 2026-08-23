@@ -184,6 +184,16 @@ export function IconStore({ className = "h-5 w-5" }) {
   );
 }
 
+export function IconKitchen({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4.5 11.5h15l-1.1 8a1.5 1.5 0 0 1-1.5 1.3H7.1a1.5 1.5 0 0 1-1.5-1.3l-1.1-8Z" />
+      <path d="M3.5 11.5a8.5 8.5 0 0 1 17 0" />
+      <path d="M9 6.2c-.9-1-.9-2 0-3M12.5 6.2c-.9-1-.9-2 0-3" />
+    </svg>
+  );
+}
+
 export function IconLogout({ className = "h-5 w-5" }) {
   return (
     <svg {...base} className={className}>

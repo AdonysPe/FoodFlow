@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import type { ComponentType } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   IconDashboard,
+  IconOrders,
+  IconKitchen,
+  IconMenuBook,
   IconUsers,
   IconStore,
   IconAnalytics,
@@ -15,17 +19,43 @@ import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { logout } from "@/lib/actions/auth";
 import { EASE } from "@/lib/motion";
 
-const NAV_ITEMS = [
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+};
+
+// Icon components can't cross the server→client boundary as props (RSC
+// can't serialize function references), so each variant's nav items —
+// icons included — are defined here, inside the client module.
+const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/admin/overview", label: "Overview", icon: IconDashboard },
   { href: "/dashboard/admin/leads", label: "Leads", icon: IconUsers },
   { href: "/dashboard/admin/restaurants", label: "Restaurants", icon: IconStore },
   { href: "/dashboard/admin/analytics", label: "Analytics", icon: IconAnalytics },
 ];
 
-function NavList({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+const CLIENT_NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard/app/overview", label: "Resumen", icon: IconDashboard },
+  { href: "/dashboard/app/orders", label: "Pedidos", icon: IconOrders },
+  { href: "/dashboard/app/kitchen", label: "Cocina", icon: IconKitchen },
+  { href: "/dashboard/app/menu", label: "Menú", icon: IconMenuBook },
+  { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers },
+  { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics },
+];
+
+function NavList({
+  pathname,
+  navItems,
+  onNavigate,
+}: {
+  pathname: string;
+  navItems: NavItem[];
+  onNavigate?: () => void;
+}) {
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3">
-      {NAV_ITEMS.map((item) => {
+      {navItems.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (
@@ -52,7 +82,16 @@ function NavList({ pathname, onNavigate }: { pathname: string; onNavigate?: () =
   );
 }
 
-export default function Sidebar({ userEmail }: { userEmail: string }) {
+export default function Sidebar({
+  userEmail,
+  variant = "admin",
+  badgeLabel = "Admin",
+}: {
+  userEmail: string;
+  variant?: "admin" | "client";
+  badgeLabel?: string;
+}) {
+  const navItems = variant === "client" ? CLIENT_NAV_ITEMS : ADMIN_NAV_ITEMS;
   const pathname = usePathname();
   const router = useRouter();
   const sidebarOpen = useDashboardStore((s) => s.sidebarOpen);
@@ -69,8 +108,8 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
       <span className="font-display text-[17px] font-extrabold tracking-[-0.02em] text-gradient-accent">
         FoodFlow
       </span>
-      <span className="rounded-full border border-white/[0.1] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/45">
-        Admin
+      <span className="truncate rounded-full border border-white/[0.1] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/45">
+        {badgeLabel}
       </span>
     </div>
   );
@@ -101,7 +140,7 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/[0.07] bg-ink-950/70 backdrop-blur-xl lg:flex">
         {brand}
-        <NavList pathname={pathname} />
+        <NavList pathname={pathname} navItems={navItems} />
         {footer}
       </aside>
 
@@ -138,7 +177,7 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
                   <IconX className="h-5 w-5" />
                 </button>
               </div>
-              <NavList pathname={pathname} onNavigate={closeSidebar} />
+              <NavList pathname={pathname} navItems={navItems} onNavigate={closeSidebar} />
               {footer}
             </motion.aside>
           </>
