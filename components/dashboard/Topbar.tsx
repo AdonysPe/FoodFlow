@@ -4,18 +4,18 @@ import { usePathname } from "next/navigation";
 import { IconMenu } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 
-const TITLES: Record<string, string> = {
+const DEFAULT_TITLES: Record<string, string> = {
   overview: "Overview",
   leads: "Leads",
   restaurants: "Restaurants",
   analytics: "Analytics",
 };
 
-export default function Topbar() {
+export default function Topbar({ titles = DEFAULT_TITLES }: { titles?: Record<string, string> }) {
   const pathname = usePathname();
   const openSidebar = useDashboardStore((s) => s.openSidebar);
   const segment = pathname.split("/").filter(Boolean).pop() ?? "";
-  const title = TITLES[segment] ?? "Dashboard";
+  const title = titles[segment] ?? "Dashboard";
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/[0.07] bg-ink-950/70 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">

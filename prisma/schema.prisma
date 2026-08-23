@@ -24,6 +24,19 @@ enum LeadStatus {
   converted
 }
 
+enum OrderStatus {
+  pending
+  preparing
+  ready
+  delivered
+}
+
+enum OrderChannel {
+  dine_in
+  delivery
+  pickup
+}
+
 model User {
   id          String       @id @default(cuid())
   email       String       @unique
@@ -39,7 +52,58 @@ model Restaurant {
   owner     User     @relation(fields: [ownerId], references: [id])
   createdAt DateTime @default(now())
 
+  orders    Order[]
+  menuItems MenuItem[]
+  customers Customer[]
+
   @@index([ownerId])
+}
+
+// `items` is a JSON snapshot of the order lines (name/price/quantity) taken
+// at order time, so later menu price edits never rewrite historical orders.
+model Order {
+  id           String       @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
+  customerName String
+  items        Json
+  total        Float
+  channel      OrderChannel @default(dine_in)
+  status       OrderStatus  @default(pending)
+  // Set the moment status flips to "ready" — lets us compute an accurate
+  // average prep time without a separate status-history table.
+  readyAt      DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([restaurantId])
+  @@index([restaurantId, status])
+  @@index([restaurantId, createdAt])
+}
+
+model MenuItem {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  name         String
+  price        Float
+  category     String
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+
+  @@index([restaurantId])
+}
+
+model Customer {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  name         String
+  email        String?
+  phone        String?
+  createdAt    DateTime   @default(now())
+
+  @@index([restaurantId])
 }
 
 model ClientLead {

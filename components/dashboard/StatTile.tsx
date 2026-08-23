@@ -8,12 +8,14 @@ export default function StatTile({
   label,
   value,
   icon,
+  prefix = "",
   suffix = "",
   decimals = 0,
 }: {
   label: string;
   value: number;
   icon: ReactNode;
+  prefix?: string;
   suffix?: string;
   decimals?: number;
 }) {
@@ -26,6 +28,7 @@ export default function StatTile({
         <span className="rounded-lg bg-white/[0.05] p-2 text-accent-400">{icon}</span>
       </div>
       <p ref={ref} className="mt-4 font-display text-[1.9rem] font-extrabold tracking-[-0.02em] text-white">
+        {prefix}
         {display}
         {suffix}
       </p>

@@ -27,7 +27,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 function targetForRole(role: "admin" | "client", next: string | null) {
   if (next && next.startsWith("/dashboard")) return next;
-  return role === "admin" ? "/dashboard/admin/overview" : "/dashboard";
+  return role === "admin" ? "/dashboard/admin/overview" : "/dashboard/app/overview";
 }
 
 export default function LoginFlow() {
