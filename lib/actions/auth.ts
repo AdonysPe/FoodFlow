@@ -47,7 +47,19 @@ export async function requestOtp(rawEmail: string): Promise<ActionResult> {
     data: { email, code: hashOtp(code), expiresAt: otpExpiryDate() },
   });
 
-  await sendOTP(email, code);
+  try {
+    await sendOTP(email, code);
+  } catch (err) {
+    // Most commonly: SMTP env vars aren't set on the deploy target (a local
+    // .env never ships to production — they must be added in the hosting
+    // platform's dashboard). Surface a specific, actionable message instead
+    // of letting this bubble up as a generic client-side "connection issue".
+    console.error("Failed to send OTP email:", err);
+    return {
+      ok: false,
+      error: "We couldn't send the code right now. Email delivery may not be configured.",
+    };
+  }
 
   return { ok: true, data: undefined };
 }
