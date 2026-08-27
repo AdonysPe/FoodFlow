@@ -1,0 +1,46 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Opción 1 · Piloto 48 h (recomendada)", "x": 0, "y": 0, "w": 1440, "h": 2600 },
+    { "file": "Operacion.dc.html", "title": "Opción 2 · Control del servicio", "x": 1600, "y": 0, "w": 1440, "h": 2400 },
+    { "file": "Comision.dc.html", "title": "Opción 3 · Cero comisión", "x": 3200, "y": 0, "w": 1440, "h": 2450 },
+    { "file": "Editorial.dc.html", "title": "Opción 4 · La cuenta clara", "x": 4800, "y": 0, "w": 1440, "h": 2700 }
+  ],
+  "annotations": [
+    {
+      "id": "idea-1",
+      "x": 0,
+      "y": -560,
+      "w": 620,
+      "text": "OPCIÓN 1 · PILOTO 48 H  (la que recomiendo para empezar)\n\nIdea: no vendes software, vendes que se lo montas tú. \"Tu restaurante funcionando en 48 horas, sin que muevas un dedo\" + primer mes gratis y plazas limitadas.\n\nPara quién: el dueño que ya sabe que necesita ordenarse pero cree que cambiar de sistema es un lío.\n\nPor qué funciona sin clientes todavía: la escasez y el trabajo hecho sustituyen a la prueba social que aún no tienes.\n\nEn contra: te compromete a hacer el alta a mano de cada cliente; no escala hasta que tengas los primeros 10."
+    },
+    {
+      "id": "idea-2",
+      "x": 1600,
+      "y": -560,
+      "w": 620,
+      "text": "OPCIÓN 2 · CONTROL DEL SERVICIO\n\nIdea: el dolor concreto de las 8 de la tarde. Veinte comandas a la vez y nadie sabe qué va primero. La pantalla de cocina es la protagonista, no el logo.\n\nPara quién: encargado o jefe de cocina de un local con volumen y varios canales de pedido.\n\nPor qué funciona: enseña el producto trabajando; se entiende en cinco segundos sin leer nada.\n\nEn contra: habla al operativo, no al dueño que firma. Si vendes al propietario, la opción 4 le toca más la cartera."
+    },
+    {
+      "id": "idea-3",
+      "x": 3200,
+      "y": -560,
+      "w": 620,
+      "text": "OPCIÓN 3 · CERO COMISIÓN\n\nIdea: el argumento más fácil de entender de todos. Las apps de reparto se quedan con una comisión de cada pedido; aquí el cliente pide directo a tu web y a tu QR, y cobras entero.\n\nGancho de entrada: la carta QR gratis aunque no contraten nada. Es la excusa perfecta para la primera visita puerta a puerta.\n\nPara quién: locales pequeños y medianos que ya venden por apps de reparto.\n\nEn contra: te posiciona por precio, no por producto, y compites de frente con las apps. El [30]% del ejemplo es un marcador: comprueba las comisiones reales de tu zona antes de publicarlo."
+    },
+    {
+      "id": "idea-4",
+      "x": 4800,
+      "y": -560,
+      "w": 620,
+      "text": "OPCIÓN 4 · LA CUENTA CLARA\n\nIdea: \"Sabes cuánto vendiste. ¿Sabes cuánto ganaste?\". Vende margen por plato y un informe cada lunes, con estética editorial de asesoría, no de app.\n\nGancho de entrada: diagnóstico de margen gratis con un mes de sus ventas. Entras por la puerta con sus propios números.\n\nPara quién: dueño de local de ticket medio-alto o de pequeño grupo.\n\nEn contra: exige que cargues los costes de cada plato para cumplir lo prometido, y el tono serio no encaja con locales muy informales."
+    },
+    {
+      "id": "nota-datos",
+      "x": 0,
+      "y": 2760,
+      "w": 900,
+      "text": "ANTES DE PUBLICAR CUALQUIERA DE LAS CUATRO\n\n1. No hay ni un cliente, logo, testimonio ni porcentaje de mejora inventado. Donde iría un dato real hay [CORCHETES]: precio, ciudad, moneda, WhatsApp, número de plazas, nombre del restaurante.\n2. Todos los paneles y tickets están marcados como demostración. Si cambias las cifras, deja la marca.\n3. Elige registro: el copy está en español neutro. Si vendes solo en España cambia \"lo que te cuesta cada plato\" por \"escandallo\" y \"sin compromiso\" por \"sin permanencia\"; si vendes en Latinoamérica, revisa \"coste\" y los nombres de los platos.\n4. Pon el símbolo de tu moneda en lugar de [MONEDA].\n\nLas cuatro mantienen animación: entradas escalonadas, cintas en movimiento, barras que crecen, el ticket que entra en la cola y el ticket de caja que se imprime. Todas respetan \"reducir movimiento\" del sistema."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

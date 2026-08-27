@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; background: #f4efe6; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; }
+    a { color: #7a2230; text-decoration: none; } a:hover { color: #5a1622; }
+    @keyframes word { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+    @keyframes rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+    @keyframes print { from { clip-path: inset(0 0 100% 0); transform: translateY(-16px); } to { clip-path: inset(0 0 0 0); transform: none; } }
+    @keyframes growY { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    @keyframes growX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes drift { 0%, 100% { transform: translateY(0) rotate(1.6deg); } 50% { transform: translateY(-10px) rotate(1.6deg); } }
+    .w { display: inline-block; white-space: pre; animation: word .95s cubic-bezier(.16,1,.3,1) both; }
+    .r { animation: rise .9s cubic-bezier(.16,1,.3,1) both; }
+    .pr { animation: print 1.6s cubic-bezier(.16,1,.3,1) both; }
+    .gy { transform-origin: bottom; animation: growY 1.3s cubic-bezier(.16,1,.3,1) both; }
+    .gx { transform-origin: left; animation: growX 1.2s cubic-bezier(.16,1,.3,1) both; }
+    .df { animation: drift 9s ease-in-out infinite; }
+    .lnk { transition: color .3s ease; }
+    .lnk:hover { color: #7a2230; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
+  </style>
+</helmet>
+
+<div style="--accent: {{accent}}; width: 1440px; background: #f4efe6; color: #1c1a17; overflow: hidden;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 40px; padding: 26px 88px 20px;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f4efe6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v7a4 4 0 0 0 8 0V4"></path><path d="M8 4v16"></path><path d="M18 4c-1.6 1.6-2.4 3.6-2.4 6s.8 3 2.4 3 2.4-1 2.4-3-.8-4.4-2.4-6Z"></path><path d="M18 13v7"></path></svg>
+      </div>
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 25px; letter-spacing: -0.01em;">FoodFlow</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 32px; font-size: 14.5px; color: rgba(28,26,23,0.6);">
+      <span class="lnk">El método</span><span class="lnk">El informe</span><span class="lnk">Precio</span><span class="lnk">Contacto</span>
+    </div>
+    <div style="border: 1px solid #1c1a17; border-radius: 4px; padding: 11px 20px; font-size: 14.5px; font-weight: 600;">Pedir diagnóstico</div>
+  </div>
+
+  <div style="height: 1px; background: rgba(28,26,23,0.18); margin: 0 88px;"></div>
+  <div style="height: 3px; background: rgba(28,26,23,0.18); margin: 3px 88px 0;"></div>
+
+  <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px; padding: 56px 88px 64px; align-items: start;">
+    <div style="grid-column: span 7;">
+      <p class="r" style="animation-delay: .05s; margin: 0; font-size: 12.5px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--accent);">Para dueños de restaurante</p>
+
+      <h1 style="margin: 22px 0 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 82px; line-height: 0.98; font-weight: 400; letter-spacing: -0.02em; text-wrap: balance;">
+        <span class="w" style="animation-delay: .12s;">Sabes </span><span class="w" style="animation-delay: .18s;">cuánto </span><span class="w" style="animation-delay: .24s;">vendiste. </span>
+        <span class="w" style="animation-delay: .34s; font-style: italic; color: var(--accent);">¿Sabes </span><span class="w" style="animation-delay: .4s; font-style: italic; color: var(--accent);">cuánto </span><span class="w" style="animation-delay: .46s; font-style: italic; color: var(--accent);">ganaste?</span>
+      </h1>
+
+      <div class="gx" style="animation-delay: 1s; height: 2px; background: var(--accent); margin: 34px 0 0; width: 120px;"></div>
+
+      <p class="r" style="animation-delay: .6s; margin: 30px 0 0; max-width: 520px; font-size: 19px; line-height: 1.68; color: rgba(28,26,23,0.72); text-wrap: pretty;">
+        La caja del día no dice nada del margen. FoodFlow cruza lo que vendes con lo que te cuesta cada plato y te enseña, sin hojas de cálculo, qué platos sostienen tu restaurante y cuáles se lo comen.
+      </p>
+
+      <div class="r" style="animation-delay: .72s; display: flex; align-items: center; gap: 18px; margin-top: 36px;">
+        <div style="border-radius: 4px; background: #1c1a17; color: #f4efe6; padding: 17px 30px; font-size: 16px; font-weight: 600;">Pedir mi diagnóstico gratuito</div>
+        <span style="font-size: 15px; color: rgba(28,26,23,0.55);">Analizamos un mes de tus ventas sin coste.</span>
+      </div>
+    </div>
+
+    <div style="position: relative; grid-column: span 5; display: flex; justify-content: center;">
+      <div class="pr" style="animation-delay: .5s; width: 330px; background: #fffdf8; padding: 30px 28px 22px; box-shadow: 0 30px 60px -34px rgba(28,26,23,.55); clip-path: polygon(0 0, 100% 0, 100% 97%, 92% 100%, 84% 97%, 76% 100%, 68% 97%, 60% 100%, 52% 97%, 44% 100%, 36% 97%, 28% 100%, 20% 97%, 12% 100%, 4% 97%, 0 100%);">
+        <p style="margin: 0; text-align: center; font-family: 'Instrument Serif', Georgia, serif; font-size: 22px;">Cierre del día</p>
+        <p style="margin: 6px 0 0; text-align: center; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,26,23,0.45);">[NOMBRE DEL RESTAURANTE]</p>
+        <div style="height: 1px; background: rgba(28,26,23,0.15); margin: 18px 0;"></div>
+
+        <div style="display: flex; flex-direction: column; gap: 11px; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: rgba(28,26,23,0.6);">Ventas</span><span style="font-weight: 600;">2.480,00</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: rgba(28,26,23,0.6);">Coste de materia prima</span><span style="font-weight: 600;">− 831,40</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: rgba(28,26,23,0.6);">Personal del turno</span><span style="font-weight: 600;">− 612,00</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: rgba(28,26,23,0.6);">Comisiones y pasarela</span><span style="font-weight: 600;">− 74,40</span></div>
+        </div>
+
+        <div style="height: 1px; background: rgba(28,26,23,0.15); margin: 18px 0;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 20px;">Te queda</span>
+          <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 30px; color: var(--accent);">962,20</span>
+        </div>
+        <p style="margin: 14px 0 0; text-align: center; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: rgba(28,26,23,0.4);">Cifras de demostración · [MONEDA]</p>
+      </div>
+
+      <div class="df" style="position: absolute; left: -18px; bottom: 26px; width: 216px; background: var(--accent); color: #f4efe6; padding: 20px 22px; box-shadow: 0 24px 40px -28px rgba(28,26,23,.5);">
+        <p style="margin: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .75;">Plato con más margen · demo</p>
+        <p style="margin: 8px 0 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; line-height: 1.15;">Arroz meloso</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 1px; background: rgba(28,26,23,0.18); margin: 0 88px;"></div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; padding: 56px 88px 60px;">
+    <div class="r" style="animation-delay: .1s;">
+      <p style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 44px; line-height: 1; color: var(--accent);">I.</p>
+      <p style="margin: 16px 0 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">Cada plato, con su coste</p>
+      <p style="margin: 12px 0 0; font-size: 15.5px; line-height: 1.68; color: rgba(28,26,23,0.65);">Cargamos una sola vez lo que te cuesta producir cada plato. A partir de ahí, cada venta ya sabe cuánto te dejó de verdad.</p>
+    </div>
+    <div class="r" style="animation-delay: .2s;">
+      <p style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 44px; line-height: 1; color: var(--accent);">II.</p>
+      <p style="margin: 16px 0 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">La carta, ordenada por margen</p>
+      <p style="margin: 12px 0 0; font-size: 15.5px; line-height: 1.68; color: rgba(28,26,23,0.65);">Verás qué platos conviene destacar en la carta, cuáles subir de precio y cuáles retirar sin que nadie los eche de menos.</p>
+    </div>
+    <div class="r" style="animation-delay: .3s;">
+      <p style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 44px; line-height: 1; color: var(--accent);">III.</p>
+      <p style="margin: 16px 0 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">Un informe cada lunes</p>
+      <p style="margin: 12px 0 0; font-size: 15.5px; line-height: 1.68; color: rgba(28,26,23,0.65);">Una página, en tu correo: semana pasada, margen, horas punta y la decisión que te recomendamos tomar esta semana.</p>
+    </div>
+  </div>
+
+  <div style="background: #1c1a17; color: #f4efe6; padding: 76px 88px;">
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px; align-items: center;">
+      <div style="grid-column: span 5;">
+        <p style="margin: 0; font-size: 12.5px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgba(244,239,230,0.45);">El informe del lunes</p>
+        <h2 style="margin: 20px 0 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 50px; line-height: 1.05; letter-spacing: -0.02em;">Margen por plato, sin abrir una hoja de cálculo.</h2>
+        <p style="margin: 20px 0 0; max-width: 420px; font-size: 16.5px; line-height: 1.65; color: rgba(244,239,230,0.6);">Ordenado de lo que más te deja a lo que menos. El número que casi nunca aparece en el cierre de caja.</p>
+      </div>
+
+      <div style="grid-column: span 7; background: #f4efe6; color: #1c1a17; padding: 34px 36px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <p style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 24px;">Margen por plato</p>
+          <p style="margin: 0; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: rgba(28,26,23,0.45);">Semana [00] · demo</p>
+        </div>
+        <div style="height: 1px; background: rgba(28,26,23,0.15); margin: 18px 0 26px;"></div>
+
+        <div style="display: flex; align-items: flex-end; gap: 20px; height: 190px;">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="gy" style="animation-delay: .2s; width: 100%; height: 172px; background: var(--accent);"></div>
+            <span style="font-size: 12.5px; color: rgba(28,26,23,0.6); text-align: center;">Arroz</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="gy" style="animation-delay: .3s; width: 100%; height: 140px; background: color-mix(in oklab, var(--accent) 78%, #f4efe6);"></div>
+            <span style="font-size: 12.5px; color: rgba(28,26,23,0.6); text-align: center;">Croquetas</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="gy" style="animation-delay: .4s; width: 100%; height: 118px; background: color-mix(in oklab, var(--accent) 60%, #f4efe6);"></div>
+            <span style="font-size: 12.5px; color: rgba(28,26,23,0.6); text-align: center;">Ensalada</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="gy" style="animation-delay: .5s; width: 100%; height: 74px; background: rgba(28,26,23,0.22);"></div>
+            <span style="font-size: 12.5px; color: rgba(28,26,23,0.6); text-align: center;">Carne</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="gy" style="animation-delay: .6s; width: 100%; height: 38px; background: rgba(28,26,23,0.22);"></div>
+            <span style="font-size: 12.5px; color: rgba(28,26,23,0.6); text-align: center;">Postre</span>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: rgba(28,26,23,0.15); margin: 26px 0 18px;"></div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: rgba(28,26,23,0.7);">Recomendación de la semana: sube el postre de la casa a la primera página de la carta y revisa lo que te cuesta la carne a la brasa.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px; padding: 76px 88px 0; align-items: center;">
+    <div style="grid-column: span 6;">
+      <p style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 38px; line-height: 1.25; font-style: italic; color: rgba(28,26,23,0.85);">“[Aquí irá la frase de tu primer cliente: qué hacía antes, qué cambió y en cuánto tiempo.]”</p>
+      <p style="margin: 22px 0 0; font-size: 14.5px; color: rgba(28,26,23,0.5);">[Nombre] · [Restaurante], [Ciudad]</p>
+    </div>
+    <div style="grid-column: span 6; border: 1px solid rgba(28,26,23,0.18); padding: 34px 36px;">
+      <p style="margin: 0; font-size: 12.5px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: rgba(28,26,23,0.45);">Nota honesta</p>
+      <p style="margin: 14px 0 0; font-size: 16px; line-height: 1.65; color: rgba(28,26,23,0.7);">Somos nuevos y no vamos a inventarnos logos de clientes. Por eso el diagnóstico es gratis: preferirás ver tus propios números antes que pagar nada.</p>
+    </div>
+  </div>
+
+  <div style="padding: 70px 88px 88px;">
+    <div style="border-top: 3px solid #1c1a17; padding-top: 44px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px; align-items: end;">
+      <div style="grid-column: span 7;">
+        <h2 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 56px; line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance;">Mándanos un mes de ventas. Te decimos dónde se va el margen.</h2>
+        <p style="margin: 20px 0 0; max-width: 520px; font-size: 16.5px; line-height: 1.65; color: rgba(28,26,23,0.65);">Gratis y sin compromiso. Si después quieres tenerlo cada semana en automático, ahí entra FoodFlow por [PRECIO] al mes.</p>
+      </div>
+      <div style="grid-column: span 5; display: flex; flex-direction: column; gap: 12px;">
+        <div style="border: 1px solid rgba(28,26,23,0.25); padding: 17px 18px; font-size: 15.5px; color: rgba(28,26,23,0.45);">Nombre del restaurante</div>
+        <div style="border: 1px solid rgba(28,26,23,0.25); padding: 17px 18px; font-size: 15.5px; color: rgba(28,26,23,0.45);">Correo o WhatsApp</div>
+        <div style="background: var(--accent); color: #f4efe6; padding: 18px 18px; font-size: 16px; font-weight: 600; text-align: center;">Quiero mi diagnóstico</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 0 88px; padding: 24px 0 48px; border-top: 1px solid rgba(28,26,23,0.18); font-size: 13.5px; color: rgba(28,26,23,0.45);">
+    <span>FoodFlow · [TU CIUDAD]</span>
+    <span>[TU CORREO] · [TU WHATSAPP]</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#7a2230","options":["#7a2230","#3f5d3a","#1c3f5e","#a8571e"]},"$preview":{"width":1440,"height":2700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#7a2230' };
+  }
+}
+</script>
+</body>
+</html>

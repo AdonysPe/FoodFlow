@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #090e13; font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; }
+    a { color: #3ddc97; text-decoration: none; } a:hover { color: #7df0bd; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @keyframes rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+    @keyframes ticketIn { from { opacity: 0; transform: translateY(-14px) scale(.97); } to { opacity: 1; transform: none; } }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(61,220,151,0); } 50% { box-shadow: 0 0 0 3px rgba(61,220,151,.14); } }
+    @keyframes fill { from { width: 4%; } to { width: 100%; } }
+    @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes blip { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+    @keyframes scan { from { transform: translateY(-100%); } to { transform: translateY(900%); } }
+    @keyframes logroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .r { animation: rise .85s cubic-bezier(.16,1,.3,1) both; }
+    .tk { animation: ticketIn 1s cubic-bezier(.16,1,.3,1) .6s both, glow 3.4s ease-in-out 1.6s infinite; }
+    .fill { animation: fill 6s linear infinite; }
+    .bar { transform-origin: left; animation: grow 1.3s cubic-bezier(.16,1,.3,1) both; }
+    .bl { animation: blip 1.8s ease-in-out infinite; }
+    .scan { animation: scan 6s linear infinite; }
+    .log { display: flex; width: 200%; animation: logroll 42s linear infinite; }
+    .row { transition: background-color .3s ease, border-color .3s ease; }
+    .row:hover { background-color: rgba(61,220,151,.06); border-color: rgba(61,220,151,.35); }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
+  </style>
+</helmet>
+
+<div style="--accent: {{accent}}; width: 1440px; background: #090e13; color: #e6edf3; overflow: hidden;">
+
+  <div class="mono" style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 10px 40px; background: #0c1219; border-bottom: 1px solid rgba(230,237,243,0.07); font-size: 12px; color: rgba(230,237,243,0.45); letter-spacing: .04em;">
+    <span style="display: flex; align-items: center; gap: 9px;"><span class="bl" style="width: 6px; height: 6px; border-radius: 999px; background: var(--accent); display: block;"></span>PANTALLAS DE DEMOSTRACIÓN · DATOS DE EJEMPLO</span>
+    <span>SOPORTE EN ESPAÑOL DURANTE EL SERVICIO · [TU WHATSAPP]</span>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 40px; padding: 22px 40px; border-bottom: 1px solid rgba(230,237,243,0.07);">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);"><path d="M4 4v7a4 4 0 0 0 8 0V4"></path><path d="M8 4v16"></path><path d="M18 4c-1.6 1.6-2.4 3.6-2.4 6s.8 3 2.4 3 2.4-1 2.4-3-.8-4.4-2.4-6Z"></path><path d="M18 13v7"></path></svg>
+      </div>
+      <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.02em;">FoodFlow</span>
+      <span class="mono" style="margin-left: 6px; border: 1px solid rgba(230,237,243,0.14); border-radius: 5px; padding: 3px 7px; font-size: 10.5px; color: rgba(230,237,243,0.45);">SALA + COCINA</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 28px; font-size: 14.5px; color: rgba(230,237,243,0.55);">
+      <span>Cola de pedidos</span><span>Cocina</span><span>Antes y después</span><span>Contacto</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 14.5px; color: rgba(230,237,243,0.55);">Entrar</span>
+      <div style="border-radius: 8px; background: var(--accent); color: #06110c; padding: 11px 20px; font-size: 14.5px; font-weight: 600;">Ver una demo en vivo</div>
+    </div>
+  </div>
+
+  <div style="position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px; padding: 72px 40px 64px; align-items: start;">
+    <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to right, rgba(230,237,243,0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(230,237,243,0.035) 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(ellipse 70% 70% at 30% 0%, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse 70% 70% at 30% 0%, #000 20%, transparent 75%);"></div>
+
+    <div style="position: relative; grid-column: span 6;">
+      <p class="mono r" style="animation-delay: .05s; margin: 0; font-size: 12.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent);">Sala + cocina + reparto</p>
+
+      <h1 class="r" style="animation-delay: .14s; margin: 20px 0 0; font-size: 66px; line-height: 1.02; font-weight: 700; letter-spacing: -0.04em; text-wrap: balance;">
+        El servicio de las 8 de la tarde, bajo control.
+      </h1>
+
+      <p class="r" style="animation-delay: .26s; margin: 26px 0 0; max-width: 520px; font-size: 18px; line-height: 1.65; color: rgba(230,237,243,0.6); text-wrap: pretty;">
+        Cuando entran veinte comandas a la vez, el problema no es la cocina: es no saber qué va primero. FoodFlow pone cada pedido en una sola cola, con su cronómetro, y te avisa antes de que algo se atasque.
+      </p>
+
+      <div class="r" style="animation-delay: .36s; display: flex; flex-direction: column; gap: 14px; margin-top: 32px;">
+        <div class="row" style="display: flex; align-items: center; gap: 14px; border: 1px solid rgba(230,237,243,0.1); border-radius: 10px; padding: 15px 18px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex: none;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+          <span style="font-size: 15.5px; color: rgba(230,237,243,0.82);">Cronómetro por ticket: sabes qué mesa lleva esperando 14 minutos.</span>
+        </div>
+        <div class="row" style="display: flex; align-items: center; gap: 14px; border: 1px solid rgba(230,237,243,0.1); border-radius: 10px; padding: 15px 18px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex: none;"><path d="M3 12h4l2 6 4-14 2 8h6"></path></svg>
+          <span style="font-size: 15.5px; color: rgba(230,237,243,0.82);">Carga de cocina en vivo: ves el atasco mientras aún puedes evitarlo.</span>
+        </div>
+        <div class="row" style="display: flex; align-items: center; gap: 14px; border: 1px solid rgba(230,237,243,0.1); border-radius: 10px; padding: 15px 18px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex: none;"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h9"></path></svg>
+          <span style="font-size: 15.5px; color: rgba(230,237,243,0.82);">Una sola cola: mesa, recoger y reparto sin teclear nada dos veces.</span>
+        </div>
+      </div>
+
+      <div class="r" style="animation-delay: .48s; display: flex; align-items: center; gap: 14px; margin-top: 34px;">
+        <div style="border-radius: 9px; background: var(--accent); color: #06110c; padding: 16px 28px; font-size: 16px; font-weight: 700;">Probar en mi próximo servicio</div>
+        <div style="border-radius: 9px; border: 1px solid rgba(230,237,243,0.16); padding: 15px 24px; font-size: 16px; color: rgba(230,237,243,0.85);">Hablar 15 minutos con nosotros</div>
+      </div>
+    </div>
+
+    <div class="r" style="animation-delay: .3s; position: relative; grid-column: span 6; border: 1px solid rgba(230,237,243,0.1); border-radius: 16px; background: #0d141b; overflow: hidden;">
+      <div aria-hidden class="scan" style="position: absolute; left: 0; right: 0; top: 0; height: 60px; background: linear-gradient(to bottom, transparent, color-mix(in oklab, var(--accent) 7%, transparent), transparent); pointer-events: none;"></div>
+
+      <div class="mono" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid rgba(230,237,243,0.08); font-size: 11.5px; letter-spacing: .1em; color: rgba(230,237,243,0.45);">
+        <span>COLA DE SERVICIO · EJEMPLO DE UN VIERNES</span>
+        <span style="display: flex; align-items: center; gap: 8px; color: var(--accent);"><span class="bl" style="width: 6px; height: 6px; border-radius: 999px; background: var(--accent); display: block;"></span>EN VIVO</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: rgba(230,237,243,0.07);">
+        <div style="background: #0d141b; padding: 16px 14px;">
+          <p class="mono" style="margin: 0 0 12px; font-size: 11px; letter-spacing: .12em; color: rgba(230,237,243,0.4);">ENTRAN (3)</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="tk" style="border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); border-radius: 9px; background: color-mix(in oklab, var(--accent) 8%, transparent); padding: 12px;">
+              <p class="mono" style="margin: 0; font-size: 11px; color: var(--accent);">MESA 12</p>
+              <p style="margin: 7px 0 0; font-size: 13.5px; color: rgba(230,237,243,0.85); line-height: 1.4;">2x Ensalada · 1x Pollo a la brasa</p>
+            </div>
+            <div style="border: 1px solid rgba(230,237,243,0.1); border-radius: 9px; padding: 12px;">
+              <p class="mono" style="margin: 0; font-size: 11px; color: rgba(230,237,243,0.45);">REPARTO 084</p>
+              <p style="margin: 7px 0 0; font-size: 13.5px; color: rgba(230,237,243,0.8); line-height: 1.4;">1x Menú del día</p>
+            </div>
+            <div style="border: 1px solid rgba(230,237,243,0.1); border-radius: 9px; padding: 12px;">
+              <p class="mono" style="margin: 0; font-size: 11px; color: rgba(230,237,243,0.45);">BARRA 3</p>
+              <p style="margin: 7px 0 0; font-size: 13.5px; color: rgba(230,237,243,0.8); line-height: 1.4;">2x Croquetas</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #0d141b; padding: 16px 14px;">
+          <p class="mono" style="margin: 0 0 12px; font-size: 11px; letter-spacing: .12em; color: rgba(230,237,243,0.4);">EN COCINA (2)</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="border: 1px solid rgba(230,237,243,0.1); border-radius: 9px; padding: 12px;">
+              <p class="mono" style="margin: 0; font-size: 11px; color: rgba(230,237,243,0.45);">MESA 4 · 04:12</p>
+              <p style="margin: 7px 0 0; font-size: 13.5px; color: rgba(230,237,243,0.8); line-height: 1.4;">3x Arroz meloso</p>
+              <div style="margin-top: 10px; height: 3px; border-radius: 999px; background: rgba(230,237,243,0.1); overflow: hidden;"><div class="fill" style="height: 3px; border-radius: 999px; background: var(--accent);"></div></div>
+            </div>
+            <div style="border: 1px solid rgba(255,180,80,0.35); border-radius: 9px; padding: 12px;">
+              <p class="mono" style="margin: 0; font-size: 11px; color: #ffb450;">MESA 9 · 13:48 · SE PASA</p>
+              <p style="margin: 7px 0 0; font-size: 13.5px; color: rgba(230,237,243,0.8); line-height: 1.4;">1x Carne a la brasa</p>
+              <div style="margin-top: 10px; height: 3px; border-radius: 999px; background: rgba(230,237,243,0.1);"><div class="bar" style="animation-delay: .9s; height: 3px; width: 92%; border-radius: 999px; background: #ffb450;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #0d141b; padding: 16px 14px;">
+          <p class="mono" style="margin: 0 0 12px; font-size: 11px; letter-spacing: .12em; color: rgba(230,237,243,0.4);">LISTOS (2)</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="border: 1px solid rgba(230,237,243,0.1); border-radius: 9px; padding: 12px; opacity: .75;">
+              <p class="mono" style="margin: 0; font-size: 11px; color: rgba(230,237,243,0.45);">RECOGER 22</p>
+              <p style="margin: 7px 0 0; font-size: 13.5px; color: rgba(230,237,243,0.8); line-height: 1.4;">2x Pizza margarita</p>
+            </div>
+            <div style="border: 1px solid rgba(230,237,243,0.1); border-radius: 9px; padding: 12px; opacity: .75;">
+              <p class="mono" style="margin: 0; font-size: 11px; color: rgba(230,237,243,0.45);">MESA 7</p>
+              <p style="margin: 7px 0 0; font-size: 13.5px; color: rgba(230,237,243,0.8); line-height: 1.4;">1x Postre de la casa</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: rgba(230,237,243,0.07); border-top: 1px solid rgba(230,237,243,0.07);">
+        <div style="background: #0d141b; padding: 16px 18px;"><p class="mono" style="margin: 0; font-size: 10.5px; letter-spacing: .12em; color: rgba(230,237,243,0.4);">CARGA DE COCINA</p><p style="margin: 8px 0 0; font-size: 22px; font-weight: 700;">68%</p></div>
+        <div style="background: #0d141b; padding: 16px 18px;"><p class="mono" style="margin: 0; font-size: 10.5px; letter-spacing: .12em; color: rgba(230,237,243,0.4);">ESPERA MEDIA</p><p style="margin: 8px 0 0; font-size: 22px; font-weight: 700;">11:20</p></div>
+        <div style="background: #0d141b; padding: 16px 18px;"><p class="mono" style="margin: 0; font-size: 10.5px; letter-spacing: .12em; color: rgba(230,237,243,0.4);">SERVIDOS HOY</p><p style="margin: 8px 0 0; font-size: 22px; font-weight: 700;">96</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mono" style="border-top: 1px solid rgba(230,237,243,0.07); border-bottom: 1px solid rgba(230,237,243,0.07); background: #0c1219; overflow: hidden; padding: 13px 0;">
+    <div class="log">
+      <div style="display: flex; gap: 40px; padding-right: 40px; white-space: nowrap; font-size: 12px; color: rgba(230,237,243,0.35);">
+        <span>20:41 · MESA 12 RECIBIDA</span><span style="color: var(--accent);">20:42 · MESA 4 A COCINA</span><span>20:44 · REPARTO 084 ASIGNADO</span><span>20:46 · MESA 7 SERVIDA</span><span style="color: #ffb450;">20:47 · AVISO: MESA 9 SE PASA DE TIEMPO</span><span>20:49 · BARRA 3 RECIBIDA</span>
+      </div>
+      <div style="display: flex; gap: 40px; padding-right: 40px; white-space: nowrap; font-size: 12px; color: rgba(230,237,243,0.35);">
+        <span>20:41 · MESA 12 RECIBIDA</span><span style="color: var(--accent);">20:42 · MESA 4 A COCINA</span><span>20:44 · REPARTO 084 ASIGNADO</span><span>20:46 · MESA 7 SERVIDA</span><span style="color: #ffb450;">20:47 · AVISO: MESA 9 SE PASA DE TIEMPO</span><span>20:49 · BARRA 3 RECIBIDA</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 80px 40px 0;">
+    <h2 style="margin: 0; max-width: 620px; font-size: 40px; line-height: 1.1; font-weight: 700; letter-spacing: -0.035em;">Lo que cambia entre un viernes y el siguiente</h2>
+    <p style="margin: 16px 0 0; max-width: 560px; font-size: 17px; line-height: 1.6; color: rgba(230,237,243,0.55);">Sin comprar hardware y sin cambiar cómo cocina tu equipo. Solo dejando de llevar el servicio en la cabeza.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 40px;">
+      <div style="border: 1px solid rgba(230,237,243,0.1); border-radius: 14px; background: #0d141b; padding: 30px;">
+        <p class="mono" style="margin: 0; font-size: 11px; letter-spacing: .16em; color: rgba(230,237,243,0.4);">ANTES</p>
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.55);">Comandas en papel que se pierden entre la barra y la plancha.</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.55);">Tres tablets de tres apps de reparto, cada una pitando.</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.55);">El cierre de caja a mano, a la una de la mañana.</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.55);">Nadie sabe qué plato deja dinero y cuál solo da trabajo.</p>
+        </div>
+      </div>
+      <div style="border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent); border-radius: 14px; background: color-mix(in oklab, var(--accent) 6%, transparent); padding: 30px;">
+        <p class="mono" style="margin: 0; font-size: 11px; letter-spacing: .16em; color: var(--accent);">CON FOODFLOW</p>
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.88);">Un ticket digital por pedido, con cronómetro y estado.</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.88);">Todos los canales entran a la misma cola, ordenados.</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.88);">El cierre se genera solo al terminar el turno.</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: rgba(230,237,243,0.88);">Margen por plato y por hora, sin abrir una hoja de cálculo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 70px 40px 90px;">
+    <div style="border: 1px solid rgba(230,237,243,0.1); border-radius: 18px; background: linear-gradient(140deg, #0d141b, #0a1016); padding: 56px 60px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 40px; align-items: center;">
+      <div style="grid-column: span 7;">
+        <h2 style="margin: 0; font-size: 42px; line-height: 1.06; font-weight: 700; letter-spacing: -0.035em; text-wrap: balance;">Te acompañamos en tu primer servicio.</h2>
+        <p style="margin: 18px 0 0; max-width: 470px; font-size: 17px; line-height: 1.6; color: rgba(230,237,243,0.6);">Montamos tu carta, te damos de alta al equipo y estamos al teléfono el día que lo estrenas. Si el turno no sale mejor, no sigues.</p>
+        <div class="mono" style="display: flex; gap: 26px; margin-top: 26px; font-size: 12px; letter-spacing: .08em; color: rgba(230,237,243,0.4);">
+          <span>SIN COMPROMISO</span><span>SIN COMPRAR EQUIPOS</span><span>PRIMER MES GRATIS</span>
+        </div>
+      </div>
+      <div style="grid-column: span 5; display: flex; flex-direction: column; gap: 12px;">
+        <div style="border: 1px solid rgba(230,237,243,0.14); border-radius: 10px; background: #090e13; color: rgba(230,237,243,0.4); padding: 17px 18px; font-size: 15px;">Nombre del restaurante</div>
+        <div style="border: 1px solid rgba(230,237,243,0.14); border-radius: 10px; background: #090e13; color: rgba(230,237,243,0.4); padding: 17px 18px; font-size: 15px;">Teléfono de contacto</div>
+        <div style="border-radius: 10px; background: var(--accent); color: #06110c; padding: 17px 18px; font-size: 16px; font-weight: 700; text-align: center;">Reservar la demo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mono" style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 26px 40px 40px; border-top: 1px solid rgba(230,237,243,0.07); font-size: 12px; letter-spacing: .06em; color: rgba(230,237,243,0.35);">
+    <span>FOODFLOW · [TU CIUDAD]</span>
+    <span>[TU CORREO] · [TU WHATSAPP]</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#3ddc97","options":["#3ddc97","#4da3ff","#cdf14d","#ff7a2f"]},"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#3ddc97' };
+  }
+}
+</script>
+</body>
+</html>

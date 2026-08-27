@@ -2,38 +2,40 @@
 
 /* ------------------------------------------------------------------
    FoodFlow design tokens
-   Monochrome ink base + a single warm accent (amber) with a cool
-   violet used only for glow. Everything else is opacity on white.
+   Near-black ink base + a single electric lime accent. Everything else
+   is opacity on cream. Mint is kept for positive deltas only.
 ------------------------------------------------------------------ */
 @theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-sora), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-archivo), ui-sans-serif, sans-serif;
 
-  --color-ink-950: #06070a;
-  --color-ink-900: #0a0c11;
-  --color-ink-800: #10131a;
-  --color-ink-700: #171b24;
-  --color-ink-600: #232936;
+  --color-ink-950: #0b0c0e;
+  --color-ink-900: #101216;
+  --color-ink-800: #14161a;
+  --color-ink-700: #1b1e24;
+  --color-ink-600: #262a31;
 
-  --color-accent-50: #fff6ec;
-  --color-accent-200: #ffd9b0;
-  --color-accent-300: #ffc184;
-  --color-accent-400: #ff9f52;
-  --color-accent-500: #ff7a2f;
-  --color-accent-600: #ed5f14;
+  --color-cream: #f3efe6;
 
-  --color-violet-glow: #7c5cff;
+  --color-accent-50: #f9ffe6;
+  --color-accent-200: #eafcb8;
+  --color-accent-300: #ddf87f;
+  --color-accent-400: #cdf14d;
+  --color-accent-500: #b8dd2e;
+  --color-accent-600: #9bbe1c;
+
   --color-mint: #3ddc97;
 
   --radius-4xl: 2rem;
 
-  --shadow-glow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -24px rgb(255 122 47 / 0.45);
+  --shadow-glow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -24px rgb(205 241 77 / 0.35);
   --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 24px 48px -32px rgb(0 0 0 / 0.9);
 
-  --animate-marquee: marquee 38s linear infinite;
+  --animate-marquee: marquee 34s linear infinite;
   --animate-float: float 7s ease-in-out infinite;
   --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
   --animate-shimmer: shimmer 2.6s linear infinite;
+  --animate-sweep: sweep 3.6s linear infinite;
 }
 
 @keyframes marquee {
@@ -52,6 +54,10 @@
   from { background-position: 200% 0; }
   to { background-position: -200% 0; }
 }
+@keyframes sweep {
+  from { background-position: 220% 0; }
+  to { background-position: -120% 0; }
+}
 
 @layer base {
   :root {
@@ -59,7 +65,7 @@
   }
 
   * {
-    border-color: rgb(255 255 255 / 0.08);
+    border-color: rgb(243 239 230 / 0.08);
   }
 
   html {
@@ -70,7 +76,7 @@
 
   body {
     background-color: var(--color-ink-950);
-    color: rgb(255 255 255 / 0.86);
+    color: rgb(243 239 230 / 0.86);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -78,18 +84,18 @@
   }
 
   ::selection {
-    background: rgb(255 122 47 / 0.28);
-    color: #fff;
+    background: rgb(205 241 77 / 0.3);
+    color: #0b0c0e;
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: var(--color-ink-950); }
   ::-webkit-scrollbar-thumb {
-    background: rgb(255 255 255 / 0.1);
+    background: rgb(243 239 230 / 0.1);
     border-radius: 999px;
     border: 3px solid var(--color-ink-950);
   }
-  ::-webkit-scrollbar-thumb:hover { background: rgb(255 255 255 / 0.18); }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(243 239 230 / 0.18); }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -111,14 +117,14 @@
   );
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgb(255 255 255 / 0.09);
+  border: 1px solid rgb(243 239 230 / 0.09);
 }
 
 @utility text-gradient {
   background-image: linear-gradient(
     180deg,
     #ffffff 0%,
-    rgb(255 255 255 / 0.72) 100%
+    rgb(243 239 230 / 0.74) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -129,15 +135,14 @@
   background-image: linear-gradient(
     100deg,
     var(--color-accent-300) 0%,
-    var(--color-accent-500) 45%,
-    #ffd9b0 100%
+    var(--color-accent-400) 45%,
+    var(--color-accent-200) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
 }
 
-/* Animated 1px gradient border that lights up on hover */
 @utility hairline {
   position: relative;
 }
@@ -145,7 +150,7 @@
   background-image: linear-gradient(
     90deg,
     transparent,
-    rgb(255 255 255 / 0.22),
+    rgb(243 239 230 / 0.22),
     transparent
   );
 }
@@ -163,13 +168,77 @@
 @utility shimmer-text {
   background: linear-gradient(
     90deg,
-    rgb(255 255 255 / 0.45) 0%,
-    rgb(255 255 255 / 0.95) 45%,
-    rgb(255 255 255 / 0.45) 60%
+    rgb(243 239 230 / 0.45) 0%,
+    rgb(243 239 230 / 0.95) 45%,
+    rgb(243 239 230 / 0.45) 60%
   );
   background-size: 200% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   animation: var(--animate-shimmer);
+}
+
+/* ------------------------- intro (page load) -------------------------
+   Deliberately CSS-only: it runs on the server-rendered markup, so it plays
+   on every refresh without waiting for hydration, and a page whose JS never
+   loads still ends up with the curtain lifted instead of stuck. The
+   reduced-motion block above collapses every step to ~0ms.
+--------------------------------------------------------------------- */
+
+@keyframes intro-curtain {
+  0%, 58% { transform: translateY(0); }
+  100% { transform: translateY(-101%); visibility: hidden; }
+}
+@keyframes intro-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes intro-pop {
+  from { opacity: 0; transform: scale(0.86); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes intro-word {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes intro-bar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.intro-curtain {
+  animation: intro-curtain 1.5s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+.intro-mark rect {
+  animation: intro-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* Each stroke carries pathLength="1", so one dashoffset step draws them all. */
+.intro-mark path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: intro-draw 0.6s ease-out both;
+}
+.intro-mark path:nth-child(1) { animation-delay: 0.18s; }
+.intro-mark path:nth-child(2) { animation-delay: 0.3s; }
+.intro-mark path:nth-child(3) { animation-delay: 0.42s; }
+
+.intro-word {
+  animation: intro-word 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+.intro-bar {
+  transform-origin: left;
+  animation: intro-bar 0.85s cubic-bezier(0.5, 0, 0.2, 1) 0.18s both;
+}
+
+/* Light sweep that rides across a filled button. */
+@utility sweep-sheen {
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.5) 48%,
+    transparent 62%
+  );
+  background-size: 220% 100%;
+  animation: var(--animate-sweep);
 }

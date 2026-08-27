@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import {
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+} from "framer-motion";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import LanguageToggle from "@/components/ui/LanguageToggle";
-import { LogoMark } from "@/components/DashboardPreview";
+import { LogoMark } from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { EASE } from "@/lib/motion";
+import { EASE, INTRO_DELAY } from "@/lib/motion";
 
-const HREFS = ["#features", "#product", "#how-it-works", "#benefits", "#customer-site"];
+const HREFS = ["#features", "#product", "#customer-site", "#cta"];
 
 export default function Navbar() {
   const { t } = useLanguage();
@@ -17,6 +22,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollY } = useScroll();
+  const intro = useReducedMotion() ? 0 : INTRO_DELAY;
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
 
@@ -32,7 +38,7 @@ export default function Navbar() {
     <motion.header
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
+      transition={{ duration: 0.8, ease: EASE, delay: intro + 0.1 }}
       className="fixed inset-x-0 top-0 z-50"
     >
       <div

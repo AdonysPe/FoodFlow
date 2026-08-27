@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 export default function GlassCard({
   children,
   className = "",
-  glowColor = "255,122,47",
+  glowColor = "205,241,77",
   hoverLift = true,
   ...rest
 }) {
