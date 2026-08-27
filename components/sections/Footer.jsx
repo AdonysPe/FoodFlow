@@ -1,7 +1,7 @@
 "use client";
 
 import Container from "@/components/ui/Container";
-import { LogoMark } from "@/components/DashboardPreview";
+import { LogoMark } from "@/components/ui/Logo";
 import { IconMail } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 

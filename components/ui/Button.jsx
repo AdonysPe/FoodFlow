@@ -11,13 +11,16 @@ const sizes = {
 };
 
 const variants = {
-  // Warm accent fill with an inner highlight — reads as the one true action.
+  // Lime fill with an inner highlight — reads as the one true action.
   primary:
-    "bg-linear-to-b from-accent-400 to-accent-600 text-ink-950 shadow-[0_1px_0_0_rgba(255,255,255,0.35)_inset,0_18px_40px_-18px_rgba(255,122,47,0.8)] hover:to-accent-500",
+    "bg-linear-to-b from-accent-300 to-accent-500 text-ink-950 shadow-[0_1px_0_0_rgba(255,255,255,0.35)_inset,0_18px_40px_-18px_rgba(205,241,77,0.7)] hover:to-accent-400",
   // Glass secondary that brightens on hover.
   secondary:
-    "glass text-white/90 hover:bg-white/[0.09] hover:text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.9)]",
-  ghost: "text-white/70 hover:text-white",
+    "glass text-cream/90 hover:bg-cream/[0.09] hover:text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.9)]",
+  // For use *on* an accent-filled surface, where the fill would disappear.
+  invert:
+    "bg-ink-950 text-accent-400 hover:bg-ink-900 focus-visible:ring-ink-950/70 focus-visible:ring-offset-accent-400",
+  ghost: "text-cream/70 hover:text-white",
 };
 
 export default function Button({

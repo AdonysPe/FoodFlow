@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; background: #fff8f0; font-family: Manrope, ui-sans-serif, system-ui, sans-serif; }
+    a { color: #14795c; text-decoration: none; } a:hover { color: #0d5b45; }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    @keyframes pop { from { opacity: 0; transform: scale(.94) translateY(16px); } to { opacity: 1; transform: none; } }
+    @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(-16px) rotate(-1.2deg); } }
+    @keyframes ring { 0% { transform: scale(.9); opacity: .55; } 70% { transform: scale(1.35); opacity: 0; } 100% { opacity: 0; } }
+    @keyframes chips { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .r { animation: rise .9s cubic-bezier(.16,1,.3,1) both; }
+    .p { animation: pop 1s cubic-bezier(.16,1,.3,1) both; }
+    .pfl { animation: pop 1s cubic-bezier(.16,1,.3,1) both, floaty 8s ease-in-out 1s infinite; }
+    .bar { transform-origin: left; animation: grow 1.5s cubic-bezier(.16,1,.3,1) both; }
+    .fl { animation: floaty 8s ease-in-out infinite; }
+    .ring { animation: ring 2.8s ease-out infinite; }
+    .chips { display: flex; width: 200%; animation: chips 40s linear infinite; }
+    .card { transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease; }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 26px 50px -30px rgba(22,33,28,.45); }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
+  </style>
+</helmet>
+
+<div style="--accent: {{accent}}; width: 1440px; background: #fff8f0; color: #16211c; overflow: hidden;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 40px; padding: 24px 72px;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 34px; height: 34px; border-radius: 12px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v7a4 4 0 0 0 8 0V4"></path><path d="M8 4v16"></path><path d="M18 4c-1.6 1.6-2.4 3.6-2.4 6s.8 3 2.4 3 2.4-1 2.4-3-.8-4.4-2.4-6Z"></path><path d="M18 13v7"></path></svg>
+      </div>
+      <span style="font-family: Syne, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.02em;">FoodFlow</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 30px; font-size: 15px; font-weight: 500; color: rgba(22,33,28,0.6);">
+      <span>Carta QR</span><span>Tu web de pedidos</span><span>Cómo funciona</span><span>Precio</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span style="font-size: 15px; font-weight: 500; color: rgba(22,33,28,0.6);">Entrar</span>
+      <div style="border-radius: 999px; background: #16211c; color: #fff8f0; padding: 12px 22px; font-size: 15px; font-weight: 600;">Quiero mi carta QR</div>
+    </div>
+  </div>
+
+  <div style="position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 40px; padding: 60px 72px 70px; align-items: center;">
+    <div aria-hidden="true" style="position: absolute; right: -180px; top: -140px; width: 620px; height: 620px; border-radius: 999px; background: radial-gradient(circle, color-mix(in oklab, var(--accent) 16%, transparent), transparent 65%); pointer-events: none;"></div>
+
+    <div style="position: relative; grid-column: span 7;">
+      <div class="r" style="animation-delay: .05s; display: inline-flex; align-items: center; gap: 9px; border-radius: 999px; background: #ffe9dd; color: #c23c17; padding: 9px 16px; font-size: 13.5px; font-weight: 600;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+        Las apps de reparto se quedan con hasta un [30]% de cada pedido
+      </div>
+
+      <h1 class="r" style="animation-delay: .16s; margin: 24px 0 0; font-family: Syne, sans-serif; font-size: 68px; line-height: 1.02; font-weight: 800; letter-spacing: -0.035em; text-wrap: balance;">
+        Que tus clientes pidan <span style="position: relative; display: inline-block;"><span style="position: relative; z-index: 1;">directo a ti</span><span aria-hidden="true" class="bar" style="animation-delay: .9s; position: absolute; left: -6px; right: -6px; bottom: 4px; height: 16px; border-radius: 6px; background: color-mix(in oklab, var(--accent) 30%, transparent); z-index: 0;"></span></span>.
+      </h1>
+
+      <p class="r" style="animation-delay: .3s; margin: 26px 0 0; max-width: 540px; font-size: 18.5px; line-height: 1.62; color: rgba(22,33,28,0.65); text-wrap: pretty;">
+        Tu carta digital, tu web de pedidos y tu QR de mesa, con tu nombre y tus fotos. El cliente pide, la cocina lo ve y el dinero entra entero en tu caja.
+      </p>
+
+      <div class="r" style="animation-delay: .42s; display: flex; align-items: center; gap: 14px; margin-top: 34px;">
+        <div style="border-radius: 999px; background: var(--accent); color: #fff8f0; padding: 17px 30px; font-size: 16.5px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+          Crear mi carta QR gratis
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+        </div>
+        <div style="border-radius: 999px; border: 1.5px solid rgba(22,33,28,0.16); padding: 15.5px 26px; font-size: 16.5px; font-weight: 600;">Ver una carta de ejemplo</div>
+      </div>
+
+      <p class="r" style="animation-delay: .52s; margin: 18px 0 0; font-size: 14px; color: rgba(22,33,28,0.45);">La carta QR, gratis para siempre. Los pedidos online, [PRECIO] al mes y sin comisión por pedido.</p>
+
+      <div class="r" style="animation-delay: .62s; margin-top: 38px; border-radius: 22px; background: #fff; border: 1px solid rgba(22,33,28,0.08); padding: 26px 28px; max-width: 560px;">
+        <p style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(22,33,28,0.4);">Ejemplo con un pedido de [100] [MONEDA]</p>
+        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 18px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 14.5px; font-weight: 600;"><span style="color: rgba(22,33,28,0.6);">Con app de reparto</span><span style="color: #c23c17;">te quedan [70]</span></div>
+            <div style="margin-top: 8px; height: 12px; border-radius: 999px; background: rgba(22,33,28,0.07); overflow: hidden;"><div class="bar" style="animation-delay: .8s; height: 12px; width: 70%; border-radius: 999px; background: #f0a68c;"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 14.5px; font-weight: 600;"><span style="color: rgba(22,33,28,0.6);">Con tu web FoodFlow</span><span style="color: var(--accent);">te quedan [97]</span></div>
+            <div style="margin-top: 8px; height: 12px; border-radius: 999px; background: rgba(22,33,28,0.07); overflow: hidden;"><div class="bar" style="animation-delay: 1s; height: 12px; width: 97%; border-radius: 999px; background: var(--accent);"></div></div>
+          </div>
+        </div>
+        <p style="margin: 16px 0 0; font-size: 12.5px; color: rgba(22,33,28,0.4);">Ejemplo ilustrativo: las comisiones reales dependen del acuerdo que tengas con cada app.</p>
+      </div>
+    </div>
+
+    <div style="position: relative; grid-column: span 5; display: flex; justify-content: center;">
+      <div class="pfl" style="animation-delay: .4s, 1.4s; position: relative; width: 320px; border-radius: 42px; background: #16211c; padding: 12px; box-shadow: 0 50px 80px -40px rgba(22,33,28,.6);">
+        <div style="border-radius: 32px; background: #fff8f0; overflow: hidden;">
+          <div style="padding: 26px 22px 18px; background: var(--accent); color: #fff8f0;">
+            <p style="margin: 0; font-size: 12.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; opacity: .75;">Mesa 6</p>
+            <p style="margin: 8px 0 0; font-family: Syne, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.02em;">[NOMBRE DEL RESTAURANTE]</p>
+            <p style="margin: 6px 0 0; font-size: 14px; opacity: .8;">Carta de hoy · abierto hasta las 23:30</p>
+          </div>
+
+          <div style="display: flex; gap: 8px; padding: 16px 18px 6px;">
+            <span style="border-radius: 999px; background: #16211c; color: #fff8f0; padding: 7px 14px; font-size: 12.5px; font-weight: 600;">Para picar</span>
+            <span style="border-radius: 999px; background: rgba(22,33,28,0.06); padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: rgba(22,33,28,0.6);">Principales</span>
+            <span style="border-radius: 999px; background: rgba(22,33,28,0.06); padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: rgba(22,33,28,0.6);">Postres</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 18px 18px;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="width: 54px; height: 54px; flex: none; border-radius: 14px; background: linear-gradient(135deg, #ffd9b0, #ff9f52);"></div>
+              <div style="flex: 1;"><p style="margin: 0; font-size: 15px; font-weight: 700;">Croquetas de la casa</p><p style="margin: 4px 0 0; font-size: 13px; color: rgba(22,33,28,0.5);">6 unidades · [PRECIO]</p></div>
+              <div style="width: 30px; height: 30px; border-radius: 999px; background: var(--accent); color: #fff8f0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;">+</div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="width: 54px; height: 54px; flex: none; border-radius: 14px; background: linear-gradient(135deg, #cbe6c0, #7fb98a);"></div>
+              <div style="flex: 1;"><p style="margin: 0; font-size: 15px; font-weight: 700;">Ensalada de temporada</p><p style="margin: 4px 0 0; font-size: 13px; color: rgba(22,33,28,0.5);">Vegana · [PRECIO]</p></div>
+              <div style="width: 30px; height: 30px; border-radius: 999px; background: var(--accent); color: #fff8f0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;">+</div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="width: 54px; height: 54px; flex: none; border-radius: 14px; background: linear-gradient(135deg, #f6c9c0, #d9705c);"></div>
+              <div style="flex: 1;"><p style="margin: 0; font-size: 15px; font-weight: 700;">Carne a la brasa</p><p style="margin: 4px 0 0; font-size: 13px; color: rgba(22,33,28,0.5);">Con salsa de la casa · [PRECIO]</p></div>
+              <div style="width: 30px; height: 30px; border-radius: 999px; background: var(--accent); color: #fff8f0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;">+</div>
+            </div>
+          </div>
+
+          <div style="margin: 0 18px 22px; border-radius: 16px; background: #16211c; color: #fff8f0; padding: 15px 18px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 14.5px; font-weight: 600;">Enviar a cocina</span>
+            <span style="font-size: 14.5px; font-weight: 700;">3 platos</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p" style="animation-delay: .8s; position: absolute; left: 0; bottom: 60px; border-radius: 18px; background: #fff; border: 1px solid rgba(22,33,28,0.08); padding: 14px 18px; box-shadow: 0 24px 40px -28px rgba(22,33,28,.5);">
+        <p style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(22,33,28,0.4);">Comisión FoodFlow</p>
+        <p style="margin: 6px 0 0; font-family: Syne, sans-serif; font-size: 26px; font-weight: 800; color: var(--accent);">0%</p>
+      </div>
+
+      <div class="p" style="animation-delay: .95s; position: absolute; right: 4px; top: 40px; border-radius: 18px; background: #fff; border: 1px solid rgba(22,33,28,0.08); padding: 16px; box-shadow: 0 24px 40px -28px rgba(22,33,28,.5);">
+        <div style="position: relative; width: 64px; height: 64px; border-radius: 12px; background: #16211c; display: flex; align-items: center; justify-content: center;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff8f0" stroke-width="1.6"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3h-3z"></path><path d="M20 14v3"></path><path d="M14 20h6"></path></svg>
+          <span aria-hidden="true" class="ring" style="position: absolute; inset: -6px; border-radius: 16px; border: 2px solid var(--accent);"></span>
+        </div>
+        <p style="margin: 10px 0 0; font-size: 12.5px; font-weight: 600; text-align: center; color: rgba(22,33,28,0.55);">QR de mesa</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #16211c; color: #fff8f0; overflow: hidden; padding: 16px 0;">
+    <div class="chips">
+      <div style="display: flex; gap: 34px; padding-right: 34px; white-space: nowrap; font-family: Syne, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .02em; align-items: center; opacity: .85;">
+        <span>Carta QR</span><span style="color: var(--accent);">•</span><span>Pedidos a domicilio</span><span style="color: var(--accent);">•</span><span>Recoger en local</span><span style="color: var(--accent);">•</span><span>Tu web con tu dominio</span><span style="color: var(--accent);">•</span><span>Sin comisión por pedido</span><span style="color: var(--accent);">•</span>
+      </div>
+      <div style="display: flex; gap: 34px; padding-right: 34px; white-space: nowrap; font-family: Syne, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .02em; align-items: center; opacity: .85;">
+        <span>Carta QR</span><span style="color: var(--accent);">•</span><span>Pedidos a domicilio</span><span style="color: var(--accent);">•</span><span>Recoger en local</span><span style="color: var(--accent);">•</span><span>Tu web con tu dominio</span><span style="color: var(--accent);">•</span><span>Sin comisión por pedido</span><span style="color: var(--accent);">•</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 84px 72px 0;">
+    <h2 style="margin: 0; max-width: 620px; font-family: Syne, sans-serif; font-size: 44px; line-height: 1.08; font-weight: 800; letter-spacing: -0.03em;">Tres pasos y tu restaurante vende por su cuenta</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 42px;">
+      <div class="card r" style="animation-delay: .1s; border-radius: 24px; background: #fff; border: 1px solid rgba(22,33,28,0.07); padding: 32px;">
+        <p style="margin: 0; font-family: Syne, sans-serif; font-size: 15px; font-weight: 800; color: var(--accent);">01</p>
+        <p style="margin: 14px 0 0; font-size: 20px; font-weight: 700;">Subimos tu carta</p>
+        <p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; color: rgba(22,33,28,0.6);">Mándanos el PDF o la foto de la carta que ya usas. Nosotros la pasamos a digital con fotos y alérgenos.</p>
+      </div>
+      <div class="card r" style="animation-delay: .2s; border-radius: 24px; background: #fff; border: 1px solid rgba(22,33,28,0.07); padding: 32px;">
+        <p style="margin: 0; font-family: Syne, sans-serif; font-size: 15px; font-weight: 800; color: var(--accent);">02</p>
+        <p style="margin: 14px 0 0; font-size: 20px; font-weight: 700;">Pegas el QR en la mesa</p>
+        <p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; color: rgba(22,33,28,0.6);">El cliente escanea, ve la carta y pide sin descargarse nada ni crearse una cuenta.</p>
+      </div>
+      <div class="card r" style="animation-delay: .3s; border-radius: 24px; background: #fff; border: 1px solid rgba(22,33,28,0.07); padding: 32px;">
+        <p style="margin: 0; font-family: Syne, sans-serif; font-size: 15px; font-weight: 800; color: var(--accent);">03</p>
+        <p style="margin: 14px 0 0; font-size: 20px; font-weight: 700;">Cobras tú, entero</p>
+        <p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; color: rgba(22,33,28,0.6);">El pedido entra a tu cocina y el cobro va a tu cuenta. Sin intermediario que se lleve un pellizco.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 70px 72px 90px;">
+    <div style="border-radius: 30px; background: var(--accent); color: #fff8f0; padding: 60px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 40px; align-items: center;">
+      <div style="grid-column: span 7;">
+        <h2 style="margin: 0; font-family: Syne, sans-serif; font-size: 46px; line-height: 1.04; font-weight: 800; letter-spacing: -0.03em; text-wrap: balance;">Te montamos la carta QR gratis, aunque no sigas con nosotros.</h2>
+        <p style="margin: 18px 0 0; max-width: 470px; font-size: 17px; line-height: 1.6; opacity: .82;">Mándanos tu carta y en 24 horas te devolvemos el QR listo para imprimir. Si te gusta cómo funciona, hablamos de los pedidos online.</p>
+      </div>
+      <div style="grid-column: span 5; display: flex; flex-direction: column; gap: 12px;">
+        <div style="border-radius: 14px; background: #fff8f0; color: rgba(22,33,28,0.45); padding: 18px 20px; font-size: 15.5px;">Nombre del restaurante</div>
+        <div style="border-radius: 14px; background: #fff8f0; color: rgba(22,33,28,0.45); padding: 18px 20px; font-size: 15.5px;">WhatsApp o correo</div>
+        <div style="border-radius: 14px; background: #16211c; color: #fff8f0; padding: 18px 20px; font-size: 16px; font-weight: 700; text-align: center;">Enviar mi carta</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0 72px 48px; font-size: 14px; color: rgba(22,33,28,0.45);">
+    <span>FoodFlow · [TU CIUDAD]</span>
+    <span>[TU CORREO] · [TU WHATSAPP]</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#14795c","options":["#14795c","#c2410c","#1d4ed8","#b91c4a"]},"$preview":{"width":1440,"height":2450}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#14795c' };
+  }
+}
+</script>
+</body>
+</html>

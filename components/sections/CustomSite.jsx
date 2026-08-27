@@ -30,13 +30,13 @@ export default function CustomSite() {
             {/* product identity — a distinct sub-brand, not a footnote feature */}
             <Reveal>
               <div className="mb-4 flex flex-wrap items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-[#9b8bff] to-[#7c5cff] text-[10.5px] font-bold text-white shadow-[0_0_20px_-4px_rgba(124,92,255,0.7)]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-accent-300 to-accent-500 text-[10.5px] font-bold text-ink-950 shadow-[0_0_20px_-4px_rgba(205,241,77,0.55)]">
                   FS
                 </span>
                 <span className="font-display text-[15px] font-bold tracking-[-0.01em] text-white">
                   {t.customSite.productName}
                 </span>
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#b7a6ff]">
+                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent-300">
                   {t.customSite.eyebrow}
                 </span>
               </div>
@@ -60,7 +60,7 @@ export default function CustomSite() {
                 <RevealItem key={i}>
                   <div className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 transition-all duration-500 hover:border-white/[0.14] hover:bg-white/[0.04] sm:p-6">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.09] bg-linear-to-b from-white/[0.1] to-white/[0.02] text-[#b7a6ff] transition-all duration-500 group-hover:border-[#7c5cff]/30 group-hover:shadow-[0_0_24px_-6px_rgba(124,92,255,0.6)]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.09] bg-linear-to-b from-white/[0.1] to-white/[0.02] text-accent-300 transition-all duration-500 group-hover:border-accent-400/30 group-hover:shadow-[0_0_24px_-6px_rgba(205,241,77,0.5)]">
                         <item.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">

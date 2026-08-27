@@ -134,8 +134,8 @@ export default function ThreeBackground({ className = "", density = 1 }) {
       uniforms: {
         uTime: { value: 0 },
         uSize: { value: isSmall ? 2.6 : 3.4 },
-        uColorA: { value: new THREE.Color("#ff7a2f") },
-        uColorB: { value: new THREE.Color("#8fa6ff") },
+        uColorA: { value: new THREE.Color("#cdf14d") },
+        uColorB: { value: new THREE.Color("#8fd6a0") },
       },
     });
 

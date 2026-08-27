@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { motion } from "framer-motion";
 import { buildAreaPath } from "@/lib/chart";
+import { LogoMark } from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, viewportOnce } from "@/lib/motion";
 
@@ -21,7 +22,7 @@ const ORDER_META = [
 
 const STATE_TONE = {
   amber: "bg-accent-400/12 text-accent-300 ring-accent-400/25",
-  violet: "bg-[#7c5cff]/12 text-[#b7a6ff] ring-[#7c5cff]/25",
+  violet: "bg-accent-400/12 text-accent-300 ring-accent-400/25",
   mint: "bg-mint/10 text-mint ring-mint/25",
 };
 
@@ -180,12 +181,12 @@ export default function DashboardPreview({ variant = "full", className = "" }) {
               >
                 <defs>
                   <linearGradient id={`fill-${uid}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ff7a2f" stopOpacity="0.42" />
-                    <stop offset="100%" stopColor="#ff7a2f" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#cdf14d" stopOpacity="0.42" />
+                    <stop offset="100%" stopColor="#cdf14d" stopOpacity="0" />
                   </linearGradient>
                   <linearGradient id={`stroke-${uid}`} x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#ffc184" />
-                    <stop offset="100%" stopColor="#ff7a2f" />
+                    <stop offset="100%" stopColor="#cdf14d" />
                   </linearGradient>
                 </defs>
 
@@ -323,26 +324,6 @@ function LockIcon() {
     <svg width="9" height="11" viewBox="0 0 10 12" fill="none" aria-hidden>
       <rect x="1" y="5" width="8" height="6" rx="1.6" stroke="currentColor" strokeWidth="1.1" />
       <path d="M3 5V3.5a2 2 0 1 1 4 0V5" stroke="currentColor" strokeWidth="1.1" />
-    </svg>
-  );
-}
-
-export function LogoMark({ className = "h-7 w-7" }) {
-  return (
-    <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <rect width="32" height="32" rx="9" fill="url(#foodflow-logo)" />
-      <path
-        d="M10 20.5V13.5M16 20.5V10.5M22 20.5V16.5"
-        stroke="#0a0c11"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-      />
-      <defs>
-        <linearGradient id="foodflow-logo" x1="0" y1="0" x2="32" y2="32">
-          <stop stopColor="#ffc184" />
-          <stop offset="1" stopColor="#ed5f14" />
-        </linearGradient>
-      </defs>
     </svg>
   );
 }

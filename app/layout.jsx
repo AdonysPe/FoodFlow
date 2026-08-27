@@ -1,64 +1,65 @@
-import { Inter, Sora } from "next/font/google";
+import { Archivo, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-archivo",
   display: "swap",
 });
 
-const sora = Sora({
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
-  variable: "--font-sora",
+  variable: "--font-bricolage",
   display: "swap",
 });
 
 export const metadata = {
   metadataBase: new URL("https://foodflow.app"),
   title: {
-    default: "FoodFlow — Turn Your Restaurant Into a Smart Business",
+    default: "FoodFlow — Tu restaurante funcionando en 48 horas",
     template: "%s · FoodFlow",
   },
   description:
-    "FoodFlow unifies orders, kitchen operations and analytics in one real-time platform. Sell more, waste less, and decide with data.",
+    "Programa piloto en Lima: montamos tu carta, tus canales de pedido, la pantalla de cocina y tus números en un solo panel. Primer mes gratis.",
   keywords: [
-    "restaurant POS",
-    "order management",
-    "restaurant analytics",
-    "kitchen display system",
-    "restaurant software",
+    "software para restaurantes Lima",
+    "sistema de pedidos restaurante",
+    "carta QR",
+    "pantalla de cocina",
+    "gestión de restaurantes Perú",
   ],
   openGraph: {
-    title: "FoodFlow — Turn Your Restaurant Into a Smart Business",
+    title: "FoodFlow — Tu restaurante funcionando en 48 horas",
     description:
-      "Orders, operations and analytics in one real-time platform built for restaurants.",
+      "Pedidos, cocina, carta y números en un solo panel. Programa piloto en Lima con plazas limitadas.",
     type: "website",
     url: "/",
     siteName: "FoodFlow",
+    locale: "es_PE",
   },
   twitter: {
     card: "summary_large_image",
-    title: "FoodFlow — Turn Your Restaurant Into a Smart Business",
+    title: "FoodFlow — Tu restaurante funcionando en 48 horas",
     description:
-      "Orders, operations and analytics in one real-time platform built for restaurants.",
+      "Pedidos, cocina, carta y números en un solo panel. Programa piloto en Lima con plazas limitadas.",
   },
 };
 
 export const viewport = {
-  themeColor: "#06070a",
+  themeColor: "#0b0c0e",
   colorScheme: "dark",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable}`}>
+    <html lang="es" className={`${archivo.variable} ${bricolage.variable}`}>
       <body className="antialiased">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-ink-950"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-accent-400 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-ink-950"
         >
-          Skip to content
+          Ir al contenido
         </a>
         {children}
       </body>
