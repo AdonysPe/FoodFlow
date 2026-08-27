@@ -13,10 +13,10 @@ const sizes = {
 const variants = {
   // Lime fill with an inner highlight — reads as the one true action.
   primary:
-    "bg-linear-to-b from-accent-300 to-accent-500 text-ink-950 shadow-[0_1px_0_0_rgba(255,255,255,0.35)_inset,0_18px_40px_-18px_rgba(205,241,77,0.7)] hover:to-accent-400",
+    "bg-linear-to-b from-accent-300 to-accent-500 text-ink-950 shadow-accent-btn hover:to-accent-400",
   // Glass secondary that brightens on hover.
   secondary:
-    "glass text-cream/90 hover:bg-cream/[0.09] hover:text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.9)]",
+    "glass text-cream/90 hover:bg-cream/[0.09] hover:text-white shadow-card",
   // For use *on* an accent-filled surface, where the fill would disappear.
   invert:
     "bg-ink-950 text-accent-400 hover:bg-ink-900 focus-visible:ring-ink-950/70 focus-visible:ring-offset-accent-400",
@@ -49,7 +49,7 @@ export default function Button({
           className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl"
         >
           {/* sheen sweep on hover */}
-          <span className="absolute -inset-y-8 -left-1/3 w-1/3 rotate-12 bg-white/30 blur-md transition-transform duration-700 ease-out group-hover:translate-x-[420%]" />
+          <span className="absolute -inset-y-8 -left-1/3 w-1/3 rotate-12 bg-cream/30 blur-md transition-transform duration-700 ease-out group-hover:translate-x-[420%]" />
         </span>
       )}
       <span className="relative flex items-center gap-2">

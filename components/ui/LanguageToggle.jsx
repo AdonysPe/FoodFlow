@@ -21,7 +21,7 @@ export default function LanguageToggle({ className = "" }) {
       onClick={toggleLang}
       aria-label={label}
       title={label}
-      className={`inline-flex h-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] font-semibold text-white/70 transition-colors duration-200 hover:border-white/20 hover:text-white ${className}`}
+      className={`inline-flex h-9 items-center justify-center rounded-lg border border-cream/10 bg-cream/[0.04] px-3 text-[13px] font-semibold text-cream/70 transition-colors duration-200 hover:border-cream/20 hover:text-white ${className}`}
     >
       <span className="tabular-nums">{t.nav.langToggle}</span>
     </button>

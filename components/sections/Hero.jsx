@@ -48,7 +48,7 @@ export default function Hero() {
       {/* lime core glow behind the headline */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-[42%] top-[-24rem] -z-10 h-[46rem] w-[46rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(205,241,77,0.16),transparent_62%)] blur-3xl"
+        className="pointer-events-none absolute left-[42%] top-[-24rem] -z-10 h-[46rem] w-[46rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,90,51,0.16),transparent_62%)] blur-3xl"
       />
 
       {/* grid floor */}
@@ -155,7 +155,7 @@ export default function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.9, ease: EASE, delay: intro + 0.86 }}
-              className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-cream/45"
+              className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-cream/58"
             >
               {t.hero.proof.map((p) => (
                 <li key={p} className="flex items-center gap-1.5">
@@ -174,13 +174,13 @@ export default function Hero() {
             transition={{ duration: 0.9, ease: EASE, delay: intro + 0.45 }}
             className="lg:col-span-5"
           >
-            <div className="relative rounded-3xl border border-cream/10 bg-ink-800/80 p-7 backdrop-blur-xl sm:p-8">
+            <div className="relative rounded-3xl border border-cream/10 bg-ink-800/80 p-7 shadow-lift backdrop-blur-xl sm:p-8">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-8 top-0 h-px hairline-top"
               />
 
-              <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/40">
+              <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/55">
                 {offer.eyebrow}
               </p>
 
@@ -215,7 +215,7 @@ export default function Hero() {
                     </span>
                     <div>
                       <p className="text-[15.5px] font-semibold text-white">{step.title}</p>
-                      <p className="mt-1.5 text-[14px] leading-relaxed text-cream/50">
+                      <p className="mt-1.5 text-[14px] leading-relaxed text-cream/62">
                         {step.copy}
                       </p>
                     </div>
@@ -223,11 +223,11 @@ export default function Hero() {
                 ))}
               </ol>
 
-              <div className="mt-8 border-t border-cream/[0.08] pt-6">
+              <div className="mt-8 border-t border-cream/10 pt-6">
                 <p className="font-display text-[1.7rem] font-extrabold tracking-[-0.03em] text-white">
                   {offer.priceTitle}
                 </p>
-                <p className="mt-2.5 text-[14px] leading-relaxed text-cream/50">
+                <p className="mt-2.5 text-[14px] leading-relaxed text-cream/62">
                   {offer.priceCopy}
                 </p>
               </div>

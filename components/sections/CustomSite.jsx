@@ -30,13 +30,13 @@ export default function CustomSite() {
             {/* product identity — a distinct sub-brand, not a footnote feature */}
             <Reveal>
               <div className="mb-4 flex flex-wrap items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-accent-300 to-accent-500 text-[10.5px] font-bold text-ink-950 shadow-[0_0_20px_-4px_rgba(205,241,77,0.55)]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-accent-300 to-accent-500 text-[10.5px] font-bold text-ink-950 shadow-accent">
                   FS
                 </span>
                 <span className="font-display text-[15px] font-bold tracking-[-0.01em] text-white">
                   {t.customSite.productName}
                 </span>
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent-300">
+                <span className="rounded-full border border-cream/10 bg-cream/[0.03] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent-300">
                   {t.customSite.eyebrow}
                 </span>
               </div>
@@ -47,7 +47,7 @@ export default function CustomSite() {
               </h2>
             </Reveal>
             <Reveal delay={0.12}>
-              <p className="mt-5 max-w-lg text-pretty text-[15px] leading-relaxed text-white/55 sm:text-base">
+              <p className="mt-5 max-w-lg text-pretty text-[15px] leading-relaxed text-cream/66 sm:text-base">
                 {t.customSite.description}
               </p>
             </Reveal>
@@ -58,16 +58,16 @@ export default function CustomSite() {
                 // translated-text key would remount the card on every
                 // language toggle and strand it at opacity 0.
                 <RevealItem key={i}>
-                  <div className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 transition-all duration-500 hover:border-white/[0.14] hover:bg-white/[0.04] sm:p-6">
+                  <div className="group relative rounded-2xl border border-cream/10 bg-cream/[0.02] p-5 transition-all duration-500 hover:border-cream/[0.14] hover:bg-cream/[0.04] sm:p-6">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.09] bg-linear-to-b from-white/[0.1] to-white/[0.02] text-accent-300 transition-all duration-500 group-hover:border-accent-400/30 group-hover:shadow-[0_0_24px_-6px_rgba(205,241,77,0.5)]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cream/10 bg-linear-to-b from-cream/[0.1] to-cream/[0.02] text-accent-300 transition-all duration-500 group-hover:border-accent-400/30 group-hover:shadow-accent">
                         <item.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
                         <h3 className="font-display text-[17px] font-semibold tracking-[-0.015em] text-white">
                           {item.title}
                         </h3>
-                        <p className="mt-2 text-[14px] leading-relaxed text-white/50">
+                        <p className="mt-2 text-[14px] leading-relaxed text-cream/62">
                           {item.copy}
                         </p>
                       </div>
@@ -78,7 +78,7 @@ export default function CustomSite() {
             </RevealGroup>
 
             <Reveal delay={0.1} className="mt-6">
-              <p className="text-[13.5px] leading-relaxed text-white/35">
+              <p className="text-[13.5px] leading-relaxed text-cream/50">
                 {t.customSite.footnote}
               </p>
             </Reveal>
@@ -86,7 +86,7 @@ export default function CustomSite() {
 
           {/* live demo */}
           <Reveal delay={0.1} className="lg:sticky lg:top-28">
-            <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.16em] text-white/30">
+            <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.16em] text-cream/45">
               {t.customSite.productName} · {t.customSite.demo.brand}
             </p>
             <RestaurantSitePreview />

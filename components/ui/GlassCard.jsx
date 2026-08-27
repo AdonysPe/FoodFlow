@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 export default function GlassCard({
   children,
   className = "",
-  glowColor = "205,241,77",
+  glowColor = "255,90,51",
   hoverLift = true,
   ...rest
 }) {
@@ -34,7 +34,7 @@ export default function GlassCard({
       onMouseLeave={() => setActive(false)}
       whileHover={hoverLift ? { y: -6 } : undefined}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
-      className={`group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.028] backdrop-blur-xl shadow-card ${className}`}
+      className={`group relative overflow-hidden rounded-2xl border border-cream/10 bg-cream/[0.028] backdrop-blur-xl shadow-card ${className}`}
       style={{ "--glow": glowColor }}
       {...rest}
     >
@@ -56,7 +56,7 @@ export default function GlassCard({
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset transition-all duration-500 ${
-          active ? "ring-white/[0.14]" : "ring-transparent"
+          active ? "ring-cream/[0.14]" : "ring-transparent"
         }`}
       />
       <div className="relative">{children}</div>

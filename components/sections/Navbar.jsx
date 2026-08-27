@@ -44,7 +44,7 @@ export default function Navbar() {
       <div
         className={`transition-all duration-500 ${
           scrolled
-            ? "border-b border-white/[0.07] bg-ink-950/70 backdrop-blur-xl"
+            ? "border-b border-cream/10 bg-ink-950/70 backdrop-blur-xl"
             : "border-b border-transparent"
         }`}
       >
@@ -62,7 +62,7 @@ export default function Navbar() {
                 <a
                   key={l.href}
                   href={l.href}
-                  className="relative rounded-lg px-3.5 py-2 text-[14px] font-medium text-white/55 transition-colors hover:text-white"
+                  className="relative rounded-lg px-3.5 py-2 text-[14px] font-medium text-cream/66 transition-colors hover:text-white"
                 >
                   {l.label}
                 </a>
@@ -86,7 +86,7 @@ export default function Navbar() {
                 onClick={() => setOpen((v) => !v)}
                 aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
                 aria-expanded={open}
-                className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]"
+                className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-cream/10 bg-cream/[0.04]"
               >
                 <span className="sr-only">Menu</span>
                 <motion.span
@@ -116,7 +116,7 @@ export default function Navbar() {
         }}
         transition={{ duration: 0.32, ease: EASE }}
         inert={!open}
-        className="overflow-hidden border-b border-white/[0.07] bg-ink-950/95 backdrop-blur-2xl md:hidden"
+        className="overflow-hidden border-b border-cream/10 bg-ink-950/95 backdrop-blur-2xl md:hidden"
         style={{ borderBottomWidth: open ? 1 : 0 }}
       >
         <Container className="py-5">
@@ -126,7 +126,7 @@ export default function Navbar() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-3 text-[15px] font-medium text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
+                className="rounded-lg px-3 py-3 text-[15px] font-medium text-cream/70 transition-colors hover:bg-cream/[0.05] hover:text-white"
               >
                 {l.label}
               </a>

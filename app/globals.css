@@ -2,34 +2,53 @@
 
 /* ------------------------------------------------------------------
    FoodFlow design tokens
-   Near-black ink base + a single electric lime accent. Everything else
-   is opacity on cream. Mint is kept for positive deltas only.
+   Warm near-black base + a single vermilion accent — the reddish orange
+   that food places live on: it grabs attention and reads as hot, fresh
+   food. Everything else is opacity on cream; mint is kept for positive
+   deltas only, where green means "up" and nothing else.
 ------------------------------------------------------------------ */
 @theme {
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bricolage), var(--font-archivo), ui-sans-serif, sans-serif;
 
-  --color-ink-950: #0b0c0e;
-  --color-ink-900: #101216;
-  --color-ink-800: #14161a;
-  --color-ink-700: #1b1e24;
-  --color-ink-600: #262a31;
+  --color-ink-950: #0c0908;
+  --color-ink-900: #130f0d;
+  --color-ink-800: #191312;
+  --color-ink-700: #221a18;
+  --color-ink-600: #2e2422;
 
   --color-cream: #f3efe6;
 
-  --color-accent-50: #f9ffe6;
-  --color-accent-200: #eafcb8;
-  --color-accent-300: #ddf87f;
-  --color-accent-400: #cdf14d;
-  --color-accent-500: #b8dd2e;
-  --color-accent-600: #9bbe1c;
+  --color-accent-50: #fff4f0;
+  --color-accent-200: #ffcbb9;
+  --color-accent-300: #ffa285;
+  --color-accent-400: #ff5a33;
+  --color-accent-500: #e8431e;
+  --color-accent-600: #c23414;
 
   --color-mint: #3ddc97;
 
+  /* Conversation teal: the chat launcher and everything inside the chat that
+     is about talking. Kept apart from the vermilion (which means "act") and
+     from the mint (which only ever means "this number went up"). */
+  --color-chat-300: #6fe3cd;
+  --color-chat-400: #22c9ad;
+  --color-chat-500: #0fb5a0;
+  --color-chat-600: #0a9184;
+
   --radius-4xl: 2rem;
 
-  --shadow-glow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -24px rgb(205 241 77 / 0.35);
-  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 24px 48px -32px rgb(0 0 0 / 0.9);
+  /* One elevation ladder for the whole site. Each step is a hairline of light
+     along the top edge plus a wide, soft, low-opacity drop — on a warm black
+     base a heavy shadow reads as dirt, not depth, so these stay shallow and
+     let the border do the edge work. */
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 12px 28px -18px rgb(0 0 0 / 0.7);
+  --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.06) inset, 0 22px 44px -26px rgb(0 0 0 / 0.8);
+  --shadow-panel: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 36px 70px -38px rgb(0 0 0 / 0.85);
+  --shadow-accent: 0 12px 26px -14px rgb(255 90 51 / 0.5);
+  --shadow-accent-btn: 0 1px 0 0 rgb(255 255 255 / 0.28) inset, 0 12px 26px -14px rgb(255 90 51 / 0.5);
+  --shadow-chat: 0 12px 26px -12px rgb(15 181 160 / 0.5);
+  --shadow-glow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -24px rgb(255 90 51 / 0.4);
 
   --animate-marquee: marquee 34s linear infinite;
   --animate-float: float 7s ease-in-out infinite;
@@ -84,8 +103,8 @@
   }
 
   ::selection {
-    background: rgb(205 241 77 / 0.3);
-    color: #0b0c0e;
+    background: rgb(255 90 51 / 0.32);
+    color: #fff;
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -118,6 +137,39 @@
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   border: 1px solid rgb(243 239 230 / 0.09);
+}
+
+/* Frosted material: a blurred, saturated pane of whatever sits behind it,
+   with a specular hairline along the top edge and a darker one along the
+   bottom. The colour comes from the page showing through, not from a fill —
+   which is what keeps a big panel calm. `liquid` is the panel weight;
+   `liquid-soft` is the same material for pills and tiles sitting on it. */
+@utility liquid {
+  background-image:
+    radial-gradient(130% 100% at 50% 0%, rgb(255 255 255 / 0.1), transparent 62%),
+    radial-gradient(90% 120% at 85% 110%, rgb(255 90 51 / 0.1), transparent 65%),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.02));
+  backdrop-filter: blur(30px) saturate(165%);
+  -webkit-backdrop-filter: blur(30px) saturate(165%);
+  border: 1px solid rgb(243 239 230 / 0.12);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.14),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.22),
+    0 30px 62px -32px rgb(0 0 0 / 0.8);
+}
+
+@utility liquid-soft {
+  background-image: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0.075),
+    rgb(255 255 255 / 0.03)
+  );
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgb(243 239 230 / 0.11);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.1),
+    0 10px 24px -16px rgb(0 0 0 / 0.65);
 }
 
 @utility text-gradient {

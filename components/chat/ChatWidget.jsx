@@ -188,13 +188,13 @@ export default function ChatWidget() {
             whileHover={{ y: -3 }}
             whileTap={{ scale: 0.97 }}
             aria-haspopup="dialog"
-            className="group fixed bottom-5 right-5 z-[70] flex items-center gap-2.5 rounded-full bg-accent-400 py-3 pl-3 pr-5 text-[14.5px] font-semibold text-ink-950 shadow-[0_20px_45px_-18px_rgba(205,241,77,0.6)] sm:bottom-6 sm:right-6"
+            className="liquid-soft group fixed bottom-5 right-5 z-[70] flex items-center gap-2.5 rounded-full py-2.5 pl-2.5 pr-5 text-[14.5px] font-semibold text-cream/90 transition-colors duration-300 hover:bg-cream/[0.1] hover:text-white sm:bottom-6 sm:right-6"
           >
-            <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-ink-950">
-              <IconChat className="h-4 w-4 text-accent-400" />
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-chat-500/18 ring-1 ring-inset ring-chat-400/35">
+              <IconChat className="h-4 w-4 text-chat-300" />
               <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ink-950/70" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-ink-950" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chat-400/70" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-chat-400" />
               </span>
             </span>
             {c.launcher}
@@ -211,15 +211,15 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.35, ease: EASE }}
-            className="fixed inset-x-3 bottom-3 top-20 z-[70] flex flex-col overflow-hidden rounded-3xl border border-cream/10 bg-ink-900 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.95)] sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[620px] sm:w-[400px]"
+            className="fixed inset-x-3 bottom-3 top-20 z-[70] flex flex-col overflow-hidden rounded-3xl border border-cream/10 bg-ink-900 shadow-panel sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[620px] sm:w-[400px]"
           >
             {/* --------------------------------------------------- header */}
-            <header className="flex items-center gap-3 border-b border-cream/[0.08] bg-ink-800/80 px-4 py-3.5">
+            <header className="flex items-center gap-3 border-b border-cream/10 bg-ink-800/80 px-4 py-3.5">
               <LogoMark className="h-9 w-9" />
               <div className="min-w-0 flex-1">
                 <p className="text-[14.5px] font-semibold text-white">{c.title}</p>
-                <p className="flex items-center gap-1.5 text-[12px] text-cream/45">
-                  <span className="h-1.5 w-1.5 rounded-full bg-mint" />
+                <p className="flex items-center gap-1.5 text-[12px] text-cream/58">
+                  <span className="h-1.5 w-1.5 rounded-full bg-chat-400" />
                   {c.subtitle}
                 </p>
               </div>
@@ -227,7 +227,7 @@ export default function ChatWidget() {
                 type="button"
                 onClick={closeChat}
                 aria-label={c.close}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-cream/50 transition-colors hover:bg-cream/[0.06] hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-cream/62 transition-colors hover:bg-cream/[0.06] hover:text-white"
               >
                 <IconX className="h-4 w-4" />
               </button>
@@ -274,12 +274,12 @@ export default function ChatWidget() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={c.handoff.emailPlaceholder}
-                      className="h-10 min-w-0 flex-1 rounded-lg border border-cream/10 bg-ink-950 px-3 text-[14px] text-cream placeholder:text-cream/30 outline-none focus:border-accent-400/50"
+                      className="h-10 min-w-0 flex-1 rounded-lg border border-cream/10 bg-ink-950 px-3 text-[14px] text-cream placeholder:text-cream/45 outline-none focus:border-chat-400/60"
                     />
                     <button
                       type="submit"
                       disabled={isPending}
-                      className="flex h-10 items-center gap-1.5 rounded-lg bg-accent-400 px-3.5 text-[13.5px] font-semibold text-ink-950 disabled:opacity-60"
+                      className="flex h-10 items-center gap-1.5 rounded-lg bg-chat-500 px-3.5 text-[13.5px] font-semibold text-ink-950 disabled:opacity-60"
                     >
                       {c.handoff.emailSend}
                       <IconArrowRight className="h-3.5 w-3.5" />
@@ -291,8 +291,8 @@ export default function ChatWidget() {
             </div>
 
             {/* ------------------------------------ suggestions + input */}
-            <div className="border-t border-cream/[0.08] bg-ink-900 px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cream/35">
+            <div className="border-t border-cream/10 bg-ink-900 px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cream/50">
                 {c.suggestionsLabel}
               </p>
               <div className="mt-2.5 flex flex-wrap gap-2">
@@ -304,7 +304,7 @@ export default function ChatWidget() {
                       key={id}
                       type="button"
                       onClick={() => ask(id)}
-                      className="rounded-full border border-cream/12 px-3 py-1.5 text-[12.5px] text-cream/75 transition-colors hover:border-accent-400/50 hover:bg-accent-400/10 hover:text-white"
+                      className="rounded-full border border-cream/14 px-3 py-1.5 text-[12.5px] text-cream/75 transition-colors hover:border-chat-400/50 hover:bg-chat-500/12 hover:text-white"
                     >
                       {topic.question}
                     </button>
@@ -328,12 +328,12 @@ export default function ChatWidget() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder={c.inputPlaceholder}
-                  className="h-11 min-w-0 flex-1 rounded-xl border border-cream/10 bg-ink-950 px-3.5 text-[14px] text-cream placeholder:text-cream/30 outline-none transition-colors focus:border-accent-400/50"
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-cream/10 bg-ink-950 px-3.5 text-[14px] text-cream placeholder:text-cream/45 outline-none transition-colors focus:border-chat-400/60"
                 />
                 <button
                   type="submit"
                   aria-label={c.send}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-400 text-ink-950 transition-transform duration-200 hover:-translate-y-0.5"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-chat-500 text-ink-950 shadow-chat transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   <IconArrowRight className="h-4 w-4" />
                 </button>
@@ -357,7 +357,7 @@ function Bubble({ from, children }) {
       className={
         isBot
           ? "max-w-[88%] rounded-2xl rounded-tl-md bg-ink-800 px-3.5 py-2.5 text-[14px] leading-relaxed text-cream/85"
-          : "ml-auto max-w-[85%] rounded-2xl rounded-tr-md bg-accent-400 px-3.5 py-2.5 text-[14px] leading-relaxed font-medium text-ink-950"
+          : "ml-auto max-w-[85%] rounded-2xl rounded-tr-md bg-chat-500 px-3.5 py-2.5 text-[14px] leading-relaxed font-medium text-ink-950"
       }
     >
       {children}
@@ -404,10 +404,10 @@ function Plans({ plans }) {
             <p className="font-display text-[15.5px] font-bold text-white">{plan.name}</p>
             <p className="font-display text-[15.5px] font-bold text-accent-400">
               {plan.price}
-              <span className="text-[12px] font-medium text-cream/45">{plan.period}</span>
+              <span className="text-[12px] font-medium text-cream/58">{plan.period}</span>
             </p>
           </div>
-          <p className="mt-1 text-[12.5px] text-cream/50">{plan.tagline}</p>
+          <p className="mt-1 text-[12.5px] text-cream/62">{plan.tagline}</p>
           {plan.badge && (
             <span className="mt-2 inline-block rounded-full bg-accent-400 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-950">
               {plan.badge}
@@ -423,7 +423,7 @@ function Plans({ plans }) {
           </ul>
         </div>
       ))}
-      <p className="text-[12px] leading-relaxed text-cream/40">{plans.note}</p>
+      <p className="text-[12px] leading-relaxed text-cream/55">{plans.note}</p>
     </motion.div>
   );
 }
@@ -443,7 +443,7 @@ function Handoff({ copy, whatsappUrl, onEmail }) {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-lg bg-accent-400 px-3 py-2.5 text-[13.5px] font-semibold text-ink-950"
+            className="flex items-center justify-center gap-2 rounded-lg bg-chat-500 px-3 py-2.5 text-[13.5px] font-semibold text-ink-950"
           >
             {copy.whatsapp}
             <IconArrowRight className="h-3.5 w-3.5" />
@@ -452,7 +452,7 @@ function Handoff({ copy, whatsappUrl, onEmail }) {
         <button
           type="button"
           onClick={onEmail}
-          className="rounded-lg border border-cream/12 px-3 py-2.5 text-[13.5px] font-medium text-cream/80 transition-colors hover:border-cream/25 hover:text-white"
+          className="rounded-lg border border-cream/14 px-3 py-2.5 text-[13.5px] font-medium text-cream/80 transition-colors hover:border-cream/25 hover:text-white"
         >
           {copy.email}
         </button>

@@ -24,7 +24,7 @@ export default function Features() {
     <section id="features" className="relative scroll-mt-24 overflow-x-clip py-24 sm:py-28">
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[26rem] w-[56rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(205,241,77,0.07),transparent_65%)] blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[26rem] w-[56rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,90,51,0.07),transparent_65%)] blur-3xl"
       />
 
       <Container>
@@ -41,21 +41,21 @@ export default function Features() {
             // remount the card on every language toggle, stranding it at
             // its pre-reveal opacity with no trigger left to animate it in.
             <RevealItem key={i} variants={scaleIn}>
-              <article className="group h-full rounded-2xl border border-cream/[0.09] bg-ink-800/70 p-6 transition-all duration-500 hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-ink-800">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cream/[0.09] bg-cream/[0.04] text-accent-400 transition-colors duration-500 group-hover:border-accent-400/40 group-hover:bg-accent-400/10">
+              <article className="group h-full rounded-2xl border border-cream/10 bg-ink-800/70 p-6 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-ink-800 hover:shadow-lift">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cream/10 bg-cream/[0.04] text-accent-400 transition-colors duration-500 group-hover:border-accent-400/40 group-hover:bg-accent-400/10">
                   <Icon className="h-5 w-5" />
                 </span>
                 <h3 className="mt-5 font-display text-[17.5px] font-semibold tracking-[-0.01em] text-white">
                   {title}
                 </h3>
-                <p className="mt-2.5 text-[14.5px] leading-relaxed text-cream/55">{copy}</p>
+                <p className="mt-2.5 text-[14.5px] leading-relaxed text-cream/66">{copy}</p>
               </article>
             </RevealItem>
           ))}
         </RevealGroup>
 
         <Reveal delay={0.1}>
-          <p className="mt-8 text-[13.5px] text-cream/40">{t.features.footnote}</p>
+          <p className="mt-8 text-[13.5px] text-cream/55">{t.features.footnote}</p>
         </Reveal>
       </Container>
     </section>

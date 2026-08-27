@@ -29,12 +29,12 @@ export default function AreaChart({
       >
         <defs>
           <linearGradient id={`fill-${uid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#cdf14d" stopOpacity="0.42" />
-            <stop offset="100%" stopColor="#cdf14d" stopOpacity="0" />
+            <stop offset="0%" stopColor="#ff5a33" stopOpacity="0.42" />
+            <stop offset="100%" stopColor="#ff5a33" stopOpacity="0" />
           </linearGradient>
           <linearGradient id={`stroke-${uid}`} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#ffc184" />
-            <stop offset="100%" stopColor="#cdf14d" />
+            <stop offset="100%" stopColor="#ff5a33" />
           </linearGradient>
         </defs>
 

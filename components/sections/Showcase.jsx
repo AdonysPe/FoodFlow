@@ -31,7 +31,7 @@ export default function Showcase() {
     <section id="product" className="relative scroll-mt-24 overflow-x-clip py-24 sm:py-28">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1/4 -z-10 h-[34rem] bg-[radial-gradient(50%_50%_at_50%_50%,rgba(205,241,77,0.08),transparent_70%)] blur-3xl"
+        className="pointer-events-none absolute inset-x-0 top-1/4 -z-10 h-[34rem] bg-[radial-gradient(50%_50%_at_50%_50%,rgba(255,90,51,0.08),transparent_70%)] blur-3xl"
       />
 
       <Container>
@@ -48,9 +48,9 @@ export default function Showcase() {
           >
             <div
               aria-hidden
-              className="pointer-events-none absolute -inset-x-6 -bottom-8 top-8 -z-10 rounded-[3rem] bg-[radial-gradient(60%_60%_at_50%_50%,rgba(205,241,77,0.16),transparent_72%)] blur-2xl"
+              className="pointer-events-none absolute -inset-x-6 -bottom-8 top-8 -z-10 rounded-[3rem] bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,90,51,0.16),transparent_72%)] blur-2xl"
             />
-            <div className="rounded-3xl border border-cream/[0.07] bg-cream/[0.025] p-2 backdrop-blur-xl sm:p-3">
+            <div className="rounded-3xl border border-cream/10 bg-cream/[0.025] p-2 backdrop-blur-xl sm:p-3">
               <DashboardPreview variant="full" />
             </div>
 
@@ -60,7 +60,11 @@ export default function Showcase() {
             ))}
           </motion.div>
 
-          <p className="mt-5 text-center text-[12.5px] text-cream/30">
+          <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[12.5px] text-cream/50">
+            <span className="font-medium text-accent-300">{t.dashboard.demoHint}</span>
+            <span aria-hidden className="text-cream/30">
+              ·
+            </span>
             {t.showcase.demoNote}
           </p>
         </div>
@@ -78,12 +82,12 @@ function Chip({ chip, index }) {
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, amount: 0.4 }}
       transition={{ duration: 0.7, ease: EASE, delay: 0.35 + index * 0.15 }}
-      className={`absolute hidden animate-float rounded-2xl border border-cream/[0.1] bg-ink-900/80 p-3.5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] backdrop-blur-xl 2xl:block ${
+      className={`absolute hidden animate-float rounded-2xl border border-cream/10 bg-ink-900/80 p-3.5 shadow-lift backdrop-blur-xl 2xl:block ${
         left ? "-left-28 top-24" : "-right-28 bottom-24"
       }`}
       style={{ animationDelay: `${index * 1.4}s` }}
     >
-      <p className="text-[10px] uppercase tracking-[0.14em] text-cream/35">{chip.label}</p>
+      <p className="text-[10px] uppercase tracking-[0.14em] text-cream/50">{chip.label}</p>
       <p className="mt-1 font-display text-xl font-semibold text-white">{chip.value}</p>
     </motion.div>
   );
