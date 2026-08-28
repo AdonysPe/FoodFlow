@@ -37,6 +37,31 @@ enum OrderChannel {
   pickup
 }
 
+enum TableShape {
+  round
+  square
+  rect
+}
+
+enum TableZone {
+  salon
+  terraza
+  barra
+}
+
+enum ReservationStatus {
+  pendiente
+  confirmada
+  sentada
+  cancelada
+  no_show
+}
+
+enum ReservationSource {
+  manual
+  web
+}
+
 model User {
   id          String       @id @default(cuid())
   email       String       @unique
@@ -52,9 +77,11 @@ model Restaurant {
   owner     User     @relation(fields: [ownerId], references: [id])
   createdAt DateTime @default(now())
 
-  orders    Order[]
-  menuItems MenuItem[]
-  customers Customer[]
+  orders       Order[]
+  menuItems    MenuItem[]
+  customers    Customer[]
+  tables       RestaurantTable[]
+  reservations Reservation[]
 
   @@index([ownerId])
 }
@@ -70,6 +97,10 @@ model Order {
   total        Float
   channel      OrderChannel @default(dine_in)
   status       OrderStatus  @default(pending)
+  // Optional link to a floor-plan table. Nullable and unset by the existing
+  // order flow — the Mesas module uses it to show a table's active order.
+  tableId      String?
+  table        RestaurantTable? @relation(fields: [tableId], references: [id])
   // Set the moment status flips to "ready" — lets us compute an accurate
   // average prep time without a separate status-history table.
   readyAt      DateTime?
@@ -79,6 +110,7 @@ model Order {
   @@index([restaurantId])
   @@index([restaurantId, status])
   @@index([restaurantId, createdAt])
+  @@index([tableId])
 }
 
 model MenuItem {
@@ -104,6 +136,59 @@ model Customer {
   createdAt    DateTime   @default(now())
 
   @@index([restaurantId])
+}
+
+// A table on the restaurant floor plan. `x`/`y` are stored as RELATIVE
+// coordinates — percentages 0-100 of the canvas width/height — so the plan
+// stays responsive and renders identically on any screen size.
+model RestaurantTable {
+  id           String        @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id])
+  name         String
+  capacity     Int           @default(2)
+  shape        TableShape    @default(round)
+  zone         TableZone     @default(salon)
+  x            Float         @default(50)
+  y            Float         @default(50)
+  active       Boolean       @default(true)
+  // Set when a server marks the table occupied from the floor plan, cleared
+  // when they free it. A linked active order also counts as occupied.
+  occupiedAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reservations Reservation[]
+  orders       Order[]
+
+  @@index([restaurantId])
+}
+
+// `date` is the calendar day (no time component); `startTime` is a local
+// "HH:MM" string and `durationMin` gives the end — kept as wall-clock values
+// so a pilot restaurant never has to think about timezones. Overlap checks
+// live in lib/actions/reservations.ts. Reservations from FoodFlow Sites come
+// in with source "web" and status "pendiente" for the admin to confirm.
+model Reservation {
+  id            String            @id @default(cuid())
+  restaurantId  String
+  restaurant    Restaurant        @relation(fields: [restaurantId], references: [id])
+  tableId       String?
+  table         RestaurantTable?  @relation(fields: [tableId], references: [id])
+  customerName  String
+  customerPhone String?
+  date          DateTime          @db.Date
+  startTime     String
+  durationMin   Int               @default(90)
+  partySize     Int               @default(2)
+  status        ReservationStatus @default(pendiente)
+  source        ReservationSource @default(manual)
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([restaurantId])
+  @@index([restaurantId, date])
+  @@index([tableId])
 }
 
 model ClientLead {

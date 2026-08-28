@@ -12,6 +12,7 @@ import {
   IconUsers,
   IconStore,
   IconAnalytics,
+  IconTables,
   IconLogout,
   IconX,
 } from "@/components/ui/Icons";
@@ -39,6 +40,7 @@ const CLIENT_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/app/overview", label: "Resumen", icon: IconDashboard },
   { href: "/dashboard/app/orders", label: "Pedidos", icon: IconOrders },
   { href: "/dashboard/app/kitchen", label: "Cocina", icon: IconKitchen },
+  { href: "/dashboard/app/mesas", label: "Mesas", icon: IconTables },
   { href: "/dashboard/app/menu", label: "Menú", icon: IconMenuBook },
   { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers },
   { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics },

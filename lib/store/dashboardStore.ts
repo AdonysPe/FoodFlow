@@ -22,6 +22,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   openSidebar: () => set({ sidebarOpen: true }),
   closeSidebar: () => set({ sidebarOpen: false }),
   toasts: [],
+  // Toasts auto-dismiss on a timer owned by the <Toast> component.
   pushToast: (message, tone = "success") =>
     set((state) => ({ toasts: [...state.toasts, { id: ++toastId, message, tone }] })),
   dismissToast: (id) =>

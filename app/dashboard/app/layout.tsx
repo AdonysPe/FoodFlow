@@ -11,6 +11,7 @@ const CLIENT_TITLES: Record<string, string> = {
   overview: "Resumen",
   orders: "Pedidos",
   kitchen: "Cocina",
+  mesas: "Mesas",
   menu: "Menú",
   customers: "Clientes",
   analytics: "Análisis",

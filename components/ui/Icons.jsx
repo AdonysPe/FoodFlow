@@ -194,6 +194,15 @@ export function IconKitchen({ className = "h-5 w-5" }) {
   );
 }
 
+export function IconTables({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 3.3v3M12 17.7v3M3.3 12h3M17.7 12h3" />
+    </svg>
+  );
+}
+
 export function IconLogout({ className = "h-5 w-5" }) {
   return (
     <svg {...base} className={className}>
