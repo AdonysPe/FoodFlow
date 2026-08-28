@@ -1,6 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
+
+// A route link that still takes framer's hover/tap props.
+const MotionLink = motion.create(Link);
 
 const base =
   "group relative inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold tracking-[-0.01em] transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:opacity-50";
@@ -32,7 +36,10 @@ export default function Button({
   icon,
   ...rest
 }) {
-  const Tag = href ? motion.a : motion.button;
+  // Hash links stay plain anchors; real routes go through the router so the
+  // page transition plays instead of a full reload.
+  const isRoute = typeof href === "string" && href.startsWith("/");
+  const Tag = isRoute ? MotionLink : href ? motion.a : motion.button;
 
   return (
     <Tag

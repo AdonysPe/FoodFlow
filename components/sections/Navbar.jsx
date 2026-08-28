@@ -7,6 +7,7 @@ import {
   useReducedMotion,
   useScroll,
 } from "framer-motion";
+import Link from "next/link";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import LanguageToggle from "@/components/ui/LanguageToggle";
@@ -14,7 +15,8 @@ import { LogoMark } from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, INTRO_DELAY } from "@/lib/motion";
 
-const HREFS = ["#features", "#product", "#customer-site", "#cta"];
+// Root-relative so the anchors still work when you are on /precios.
+const HREFS = ["/#features", "/#product", "/precios", "/preguntas", "/#nosotros"];
 
 export default function Navbar() {
   const { t } = useLanguage();
@@ -50,22 +52,22 @@ export default function Navbar() {
       >
         <Container>
           <nav className="flex h-16 items-center justify-between gap-6 sm:h-18">
-            <a href="#" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5">
               <LogoMark className="h-8 w-8" />
               <span className="font-display text-[17px] font-bold tracking-[-0.02em] text-white">
                 FoodFlow
               </span>
-            </a>
+            </Link>
 
             <div className="hidden items-center gap-1 md:flex">
               {links.map((l) => (
-                <a
+                <Link
                   key={l.href}
                   href={l.href}
                   className="relative rounded-lg px-3.5 py-2 text-[14px] font-medium text-cream/66 transition-colors hover:text-white"
                 >
                   {l.label}
-                </a>
+                </Link>
               ))}
             </div>
 
@@ -74,7 +76,7 @@ export default function Navbar() {
               <Button href="/login" variant="ghost" size="md">
                 {t.nav.signIn}
               </Button>
-              <Button href="#cta" variant="primary" size="md">
+              <Button href="/#cta" variant="primary" size="md">
                 {t.nav.startFree}
               </Button>
             </div>
@@ -122,14 +124,14 @@ export default function Navbar() {
         <Container className="py-5">
           <div className="flex flex-col gap-1">
             {links.map((l) => (
-              <a
+              <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-3 text-[15px] font-medium text-cream/70 transition-colors hover:bg-cream/[0.05] hover:text-white"
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
           </div>
           <div className="mt-4 flex flex-col gap-2.5">

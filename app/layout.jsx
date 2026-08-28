@@ -15,7 +15,9 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://foodflow.app"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://food-flow-mu.vercel.app"
+  ),
   title: {
     default: "FoodFlow — Tu restaurante funcionando en 48 horas",
     template: "%s · FoodFlow",

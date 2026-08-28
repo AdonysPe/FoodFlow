@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Container from "@/components/ui/Container";
 import { LogoMark } from "@/components/ui/Logo";
 import { IconMail } from "@/components/ui/Icons";
@@ -44,6 +45,26 @@ export default function Footer() {
             {t.footer.signaturePrefix}{" "}
             <span className="font-medium text-cream/62">Adonys Pereda</span>
           </p>
+          <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link
+              href="/precios"
+              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+            >
+              {t.pricing.eyebrow}
+            </Link>
+            <Link
+              href="/preguntas"
+              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+            >
+              {t.faq.eyebrow}
+            </Link>
+            <Link
+              href="/cookies"
+              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+            >
+              {t.cookies.page.title}
+            </Link>
+          </div>
         </div>
       </Container>
     </footer>
