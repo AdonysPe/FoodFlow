@@ -41,7 +41,7 @@ export default function Hero() {
   return (
     <section
       ref={ref}
-      className="relative isolate overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-40"
+      className="relative isolate overflow-hidden pt-24 pb-14 sm:pt-28 sm:pb-20 lg:pt-32 lg:[@media(max-height:780px)]:pt-24"
     >
       <ThreeBackground className="opacity-60" />
 
@@ -74,7 +74,7 @@ export default function Hero() {
               <Badge>{t.hero.badge}</Badge>
             </motion.div>
 
-            <h1 className="mt-7 font-display text-[2.7rem] font-extrabold leading-[1.0] tracking-[-0.045em] text-balance sm:text-6xl lg:text-[4.1rem]">
+            <h1 className="mt-6 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-balance sm:text-5xl lg:text-[3.85rem] lg:[@media(max-height:780px)]:text-[3.3rem]">
               {words.map((word, i) => (
                 // whitespace-pre keeps the real space inside the span, so the
                 // accessible name and copy-paste read as words, not one blob.
@@ -119,7 +119,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE, delay: intro + 0.58 }}
-              className="mt-7 max-w-xl text-pretty text-[16.5px] leading-relaxed text-cream/60 sm:text-lg"
+              className="mt-6 max-w-xl text-pretty text-[16px] leading-relaxed text-cream/60"
             >
               {t.hero.subheadline}
             </motion.p>
@@ -128,7 +128,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE, delay: intro + 0.7 }}
-              className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row"
+              className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row"
             >
               <Button
                 href="#cta"
@@ -155,7 +155,7 @@ export default function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.9, ease: EASE, delay: intro + 0.86 }}
-              className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-cream/58"
+              className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-cream/55"
             >
               {t.hero.proof.map((p) => (
                 <li key={p} className="flex items-center gap-1.5">
@@ -174,7 +174,7 @@ export default function Hero() {
             transition={{ duration: 0.9, ease: EASE, delay: intro + 0.45 }}
             className="lg:col-span-5"
           >
-            <div className="relative rounded-3xl border border-cream/10 bg-ink-800/80 p-7 shadow-lift backdrop-blur-xl sm:p-8">
+            <div className="relative rounded-3xl border border-cream/10 bg-ink-800/80 p-6 shadow-lift backdrop-blur-xl sm:p-7">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-8 top-0 h-px hairline-top"
@@ -184,14 +184,14 @@ export default function Hero() {
                 {offer.eyebrow}
               </p>
 
-              <ol className="relative mt-6 space-y-6">
+              <ol className="relative mt-5 space-y-3.5">
                 {/* the spine draws itself down through the steps */}
                 <motion.span
                   aria-hidden
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
                   transition={{ duration: 1.4, ease: EASE, delay: intro + 0.8 }}
-                  className="absolute left-4 top-3 bottom-3 w-px origin-top bg-linear-to-b from-accent-400 to-cream/10"
+                  className="absolute left-3.5 top-3 bottom-3 w-px origin-top bg-linear-to-b from-accent-400 to-cream/10"
                 />
 
                 {offer.steps.map((step, i) => (
@@ -202,10 +202,10 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: EASE, delay: intro + 0.9 + i * 0.14 }}
-                    className="relative flex gap-4"
+                    className="relative flex items-center gap-3.5"
                   >
                     <span
-                      className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12.5px] font-bold ${
+                      className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11.5px] font-bold ${
                         i === offer.steps.length - 1
                           ? "bg-cream/10 text-cream"
                           : "bg-accent-400 text-ink-950"
@@ -213,22 +213,40 @@ export default function Hero() {
                     >
                       {step.time}
                     </span>
-                    <div>
-                      <p className="text-[15.5px] font-semibold text-white">{step.title}</p>
-                      <p className="mt-1.5 text-[14px] leading-relaxed text-cream/62">
-                        {step.copy}
-                      </p>
-                    </div>
+                    <p className="text-[14.5px] font-semibold text-white">{step.title}</p>
                   </motion.li>
                 ))}
               </ol>
 
-              <div className="mt-8 border-t border-cream/10 pt-6">
-                <p className="font-display text-[1.7rem] font-extrabold tracking-[-0.03em] text-white">
+              <div className="mt-6 border-t border-cream/10 pt-5">
+                <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/50">
+                  {offer.includedLabel}
+                </p>
+                <ul className="mt-3.5 space-y-2">
+                  {offer.included.map((item, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, ease: EASE, delay: intro + 1.3 + i * 0.1 }}
+                      className="flex gap-2.5 text-[13.5px] leading-snug text-cream/80"
+                    >
+                      <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-400" />
+                      {item}
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-6 border-t border-cream/10 pt-5">
+                <p className="font-display text-[1.35rem] font-extrabold tracking-[-0.03em] text-white">
                   {offer.priceTitle}
                 </p>
-                <p className="mt-2.5 text-[14px] leading-relaxed text-cream/62">
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-cream/62">
                   {offer.priceCopy}
+                </p>
+                <p className="mt-3 text-[12.5px] leading-relaxed text-cream/50">
+                  {offer.dataNote}
                 </p>
               </div>
             </div>
