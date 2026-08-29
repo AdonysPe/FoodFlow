@@ -6,13 +6,13 @@ import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { IconArrowRight, IconCheck } from "@/components/ui/Icons";
-import { useChat } from "@/components/chat/ChatContext";
+import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, scaleIn } from "@/lib/motion";
 
 export default function Pricing() {
   const { t } = useLanguage();
-  const { openChat } = useChat();
+  const { openLeadForm } = useLeadCapture();
   // Same source as the chat and the closing block: prices are written once.
   const plans = t.chat.plans.items;
 
@@ -81,7 +81,7 @@ export default function Pricing() {
                   variant={plan.badge ? "primary" : "secondary"}
                   size="md"
                   className="mt-7 w-full"
-                  onClick={() => openChat("planes")}
+                  onClick={() => openLeadForm()}
                   icon={
                     <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   }
@@ -95,6 +95,9 @@ export default function Pricing() {
 
         <Reveal delay={0.08}>
           <p className="mt-5 text-[13px] text-cream/55">{t.pricing.taxNote}</p>
+          <p className="mt-1.5 text-[13px] font-medium text-accent-300">
+            {t.pricing.savingsNote}
+          </p>
         </Reveal>
 
         {/* add-ons: the "and if I need one more waiter?" answer */}

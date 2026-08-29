@@ -41,7 +41,7 @@ export default function Hero() {
   return (
     <section
       ref={ref}
-      className="relative isolate overflow-hidden pt-24 pb-14 sm:pt-28 sm:pb-20 lg:pt-32 lg:[@media(max-height:780px)]:pt-24"
+      className="relative isolate overflow-hidden pt-24 pb-14 sm:pt-28 sm:pb-20 lg:pt-32 lg:[@media(max-height:820px)]:pt-24"
     >
       <ThreeBackground className="opacity-60" />
 
@@ -74,7 +74,7 @@ export default function Hero() {
               <Badge>{t.hero.badge}</Badge>
             </motion.div>
 
-            <h1 className="mt-6 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-balance sm:text-5xl lg:text-[3.85rem] lg:[@media(max-height:780px)]:text-[3.3rem]">
+            <h1 className="mt-6 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-balance sm:text-5xl lg:text-[3.85rem] lg:[@media(max-height:820px)]:text-[3.3rem]">
               {words.map((word, i) => (
                 // whitespace-pre keeps the real space inside the span, so the
                 // accessible name and copy-paste read as words, not one blob.
@@ -131,7 +131,7 @@ export default function Hero() {
               className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row"
             >
               <Button
-                href="#cta"
+                href="#contacto"
                 size="lg"
                 className="w-full sm:w-auto"
                 icon={
@@ -150,6 +150,15 @@ export default function Hero() {
                 {t.hero.ctaSecondary}
               </Button>
             </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, ease: EASE, delay: intro + 0.78 }}
+              className="mt-3.5 text-[13px] text-cream/55"
+            >
+              {t.hero.ctaNote}
+            </motion.p>
 
             <motion.ul
               initial={{ opacity: 0 }}

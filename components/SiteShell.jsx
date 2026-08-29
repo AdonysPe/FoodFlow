@@ -3,6 +3,10 @@
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import MotionProvider from "@/components/MotionProvider";
 import { ChatProvider } from "@/components/chat/ChatContext";
+import { LeadCaptureProvider } from "@/components/lead/LeadCaptureContext";
+import LeadFormModal from "@/components/lead/LeadFormModal";
+import WhatsAppFab from "@/components/lead/WhatsAppFab";
+import ExitIntent from "@/components/lead/ExitIntent";
 import ChatWidget from "@/components/chat/ChatWidget";
 import CookieBanner from "@/components/CookieBanner";
 import IntroOverlay from "@/components/IntroOverlay";
@@ -25,13 +29,18 @@ export default function SiteShell({ children, intro = false }) {
     <LanguageProvider>
       <MotionProvider>
         <ChatProvider>
-          {intro && <IntroOverlay />}
-          <ScrollProgress />
-          <Navbar />
-          <PageTransition>{children}</PageTransition>
-          <Footer />
-          <ChatWidget />
-          <CookieBanner />
+          <LeadCaptureProvider>
+            {intro && <IntroOverlay />}
+            <ScrollProgress />
+            <Navbar />
+            <PageTransition>{children}</PageTransition>
+            <Footer />
+            <ChatWidget />
+            <WhatsAppFab />
+            <LeadFormModal />
+            <ExitIntent />
+            <CookieBanner />
+          </LeadCaptureProvider>
         </ChatProvider>
       </MotionProvider>
     </LanguageProvider>

@@ -16,7 +16,16 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, INTRO_DELAY } from "@/lib/motion";
 
 // Root-relative so the anchors still work when you are on /precios.
-const HREFS = ["/#features", "/#product", "/precios", "/preguntas", "/#nosotros"];
+// Six links plus both buttons need more than a tablet gives, so the full
+// bar waits for `lg` and everything below that uses the sheet.
+const HREFS = [
+  "/#features",
+  "/#product",
+  "/calculadora",
+  "/precios",
+  "/preguntas",
+  "/#nosotros",
+];
 
 export default function Navbar() {
   const { t } = useLanguage();
@@ -59,7 +68,7 @@ export default function Navbar() {
               </span>
             </Link>
 
-            <div className="hidden items-center gap-1 md:flex">
+            <div className="hidden items-center gap-1 lg:flex">
               {links.map((l) => (
                 <Link
                   key={l.href}
@@ -71,17 +80,17 @@ export default function Navbar() {
               ))}
             </div>
 
-            <div className="hidden items-center gap-2.5 md:flex">
+            <div className="hidden items-center gap-2.5 lg:flex">
               <LanguageToggle />
               <Button href="/login" variant="ghost" size="md">
                 {t.nav.signIn}
               </Button>
-              <Button href="/#cta" variant="primary" size="md">
+              <Button href="/#contacto" variant="primary" size="md">
                 {t.nav.startFree}
               </Button>
             </div>
 
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-2 lg:hidden">
               <LanguageToggle />
               <button
                 type="button"
@@ -118,7 +127,7 @@ export default function Navbar() {
         }}
         transition={{ duration: 0.32, ease: EASE }}
         inert={!open}
-        className="overflow-hidden border-b border-cream/10 bg-ink-950/95 backdrop-blur-2xl md:hidden"
+        className="overflow-hidden border-b border-cream/10 bg-ink-950/95 backdrop-blur-2xl lg:hidden"
         style={{ borderBottomWidth: open ? 1 : 0 }}
       >
         <Container className="py-5">
@@ -144,7 +153,7 @@ export default function Navbar() {
               {t.nav.signIn}
             </Button>
             <Button
-              href="#cta"
+              href="#contacto"
               variant="primary"
               size="lg"
               onClick={() => setOpen(false)}

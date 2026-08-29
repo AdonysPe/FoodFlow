@@ -52,6 +52,12 @@ export default function CustomSite() {
               </p>
             </Reveal>
 
+            <Reveal delay={0.16}>
+              <p className="mt-4 max-w-lg text-[15px] font-semibold leading-relaxed text-accent-300">
+                {t.customSite.commission}
+              </p>
+            </Reveal>
+
             <RevealGroup className="mt-10 space-y-3" gap={0.1}>
               {items.map((item, i) => (
                 // Index key: see the comment in Features.jsx — a

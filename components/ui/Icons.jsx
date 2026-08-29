@@ -268,3 +268,21 @@ export function IconGrip({ className = "h-5 w-5" }) {
     </svg>
   );
 }
+
+/**
+ * WhatsApp. The bubble keeps the family stroke; the handset is filled,
+ * because at 20px an outlined handset turns into a smudge and this mark has
+ * to be recognised instantly to be worth putting in the corner.
+ */
+export function IconWhatsApp({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3.7 20.3l1.25-3.95a8.4 8.4 0 1 1 3.1 3.02L3.7 20.3Z" />
+      <path
+        d="M9.62 8.2c-.16-.37-.33-.38-.54-.38h-.46c-.16 0-.42.06-.63.3-.22.25-.83.81-.83 1.97 0 1.16.85 2.28.97 2.44.12.16 1.65 2.64 4.08 3.6 2.02.8 2.43.64 2.87.6.44-.04 1.4-.58 1.6-1.13.2-.56.2-1.03.14-1.13-.06-.1-.22-.16-.46-.28-.24-.12-1.4-.7-1.62-.78-.22-.08-.38-.12-.53.12-.16.24-.6.77-.74.93-.14.16-.27.18-.51.06-.24-.12-1.01-.37-1.92-1.19-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.01-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.53-1.29-.74-1.76Z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+  );
+}

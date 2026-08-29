@@ -5,6 +5,7 @@ import Features from "@/components/sections/Features";
 import Showcase from "@/components/sections/Showcase";
 import CustomSite from "@/components/sections/CustomSite";
 import About from "@/components/sections/About";
+import LeadCapture from "@/components/sections/LeadCapture";
 import CTA from "@/components/sections/CTA";
 
 export default function Page() {
@@ -16,6 +17,7 @@ export default function Page() {
       <Showcase />
       <CustomSite />
       <About />
+      <LeadCapture />
       <CTA />
     </SiteShell>
   );

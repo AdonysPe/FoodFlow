@@ -53,7 +53,11 @@ export default function CTA() {
                     {t.cta.paragraph}
                   </p>
 
-                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <div className="mt-6 rounded-xl border border-cream/10 bg-cream/[0.04] p-4 text-[13.5px] leading-relaxed text-cream/75">
+                    {t.cta.founder}
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     {/* the one saturated thing on the pane: the action */}
                     <Button
                       type="button"

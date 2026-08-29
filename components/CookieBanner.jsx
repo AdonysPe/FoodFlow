@@ -39,8 +39,9 @@ export default function CookieBanner() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.5, ease: EASE }}
-          // above the chat launcher on phones, centred on wider screens
-          className="liquid fixed inset-x-3 bottom-20 z-[75] rounded-2xl px-4 py-4 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[min(46rem,calc(100vw-3rem))] sm:-translate-x-1/2 sm:px-5"
+          // above the corner stack on phones (chat pill, then WhatsApp),
+          // centred on wider screens
+          className="liquid fixed inset-x-3 bottom-40 z-[75] rounded-2xl px-4 py-4 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[min(46rem,calc(100vw-3rem))] sm:-translate-x-1/2 sm:px-5"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <span

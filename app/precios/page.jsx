@@ -1,5 +1,6 @@
 import SiteShell from "@/components/SiteShell";
 import Pricing from "@/components/sections/Pricing";
+import LeadCapture from "@/components/sections/LeadCapture";
 import CTA from "@/components/sections/CTA";
 
 export const metadata = {
@@ -13,6 +14,7 @@ export default function PricingPage() {
   return (
     <SiteShell>
       <Pricing />
+      <LeadCapture />
       <CTA />
     </SiteShell>
   );

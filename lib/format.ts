@@ -24,3 +24,9 @@ export function formatDurationMs(ms: number): string {
   const seconds = totalSeconds % 60;
   return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
 }
+
+// Whole soles, no cents — for figures a restaurant owner reads at a glance
+// (what commissions took this month, what that is over a year).
+export function formatSoles(value: number): string {
+  return `S/ ${Math.round(value).toLocaleString("es-PE")}`;
+}

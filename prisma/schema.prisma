@@ -116,27 +116,27 @@ model Restaurant {
 // `items` is a JSON snapshot of the order lines (name/price/quantity) taken
 // at order time, so later menu price edits never rewrite historical orders.
 model Order {
-  id           String       @id @default(cuid())
-  restaurantId String
-  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
-  customerName String
-  items        Json
-  total        Float
-  channel      OrderChannel @default(dine_in)
-  status       OrderStatus  @default(pending)
+  id             String           @id @default(cuid())
+  restaurantId   String
+  restaurant     Restaurant       @relation(fields: [restaurantId], references: [id])
+  customerName   String
+  items          Json
+  total          Float
+  channel        OrderChannel     @default(dine_in)
+  status         OrderStatus      @default(pending)
   // Incremented each time a server sends another round of items to an
   // already-open order for the same table, instead of opening a new order.
-  roundNumber  Int          @default(1)
+  roundNumber    Int              @default(1)
   // Display name of the waiter who placed / last added to the order. Shown on
   // the kitchen board. Null for orders logged from the owner dashboard.
-  serverName   String?
+  serverName     String?
   // Optional link to a floor-plan table. Nullable and unset by the existing
   // order flow — the Mesas module uses it to show a table's active order.
-  tableId      String?
-  table        RestaurantTable? @relation(fields: [tableId], references: [id])
+  tableId        String?
+  table          RestaurantTable? @relation(fields: [tableId], references: [id])
   // Set the moment status flips to "ready" — lets us compute an accurate
   // average prep time without a separate status-history table.
-  readyAt      DateTime?
+  readyAt        DateTime?
   // Payment is tracked separately from the kitchen status. A dine-in order
   // keeps its table occupied until it is paid (paidAt) or voided (voidedAt).
   // For cash, amountReceived/changeGiven record the tendered amount and change.
@@ -145,8 +145,8 @@ model Order {
   amountReceived Float?
   changeGiven    Float?
   voidedAt       DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@index([restaurantId])
   @@index([restaurantId, status])
@@ -284,4 +284,57 @@ model OTPCode {
   createdAt  DateTime  @default(now())
 
   @@index([email])
+}
+
+// ---------------------------------------------------------------- leads
+// Capture funnel for the Lima pilot. Separate from `ClientLead` (the old
+// email-only signup the admin dashboard already lists) because these rows
+// carry a whole conversation starter: who they are, which venue, and — when
+// the commission calculator produced it — how much they are losing.
+
+enum LeadSource {
+  web_form
+  calculadora
+  whatsapp
+}
+
+// The pipeline the owner works through by hand. Spanish on purpose: these
+// values are read straight off the admin table.
+enum LeadPipelineStatus {
+  nuevo
+  contactado
+  cita
+  cliente
+  archivado
+}
+
+model Lead {
+  id          String     @id @default(cuid())
+  nombre      String
+  restaurante String
+  // Peru mobile, 9 digits, stored without the country code.
+  whatsapp    String
+  email       String?
+  source      LeadSource
+
+  // Whole soles, straight from the calculator. Null for every other source.
+  perdidaMensual Int? @map("perdida_mensual")
+  perdidaAnual   Int? @map("perdida_anual")
+
+  // 0–100. Derived from the yearly loss, so a form-only lead scores 0.
+  score  Int                @default(0)
+  status LeadPipelineStatus @default(nuevo)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Salted SHA-256 of the caller's IP, never the address itself. It exists
+  // only so the form can be rate limited across cold starts; it cannot be
+  // read back into an IP without the server secret.
+  ipHash String? @map("ip_hash")
+
+  @@index([status])
+  @@index([source])
+  @@index([createdAt])
+  @@index([ipHash, createdAt])
+  @@map("leads")
 }
