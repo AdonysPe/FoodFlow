@@ -12,10 +12,10 @@ const LABEL: Record<string, string> = {
   new: "New",
   contacted: "Contacted",
   converted: "Converted",
-  pending: "Pending",
-  preparing: "Preparing",
-  ready: "Ready",
-  delivered: "Delivered",
+  pending: "Pendiente",
+  preparing: "En preparación",
+  ready: "Lista",
+  delivered: "Entregada",
 };
 
 export default function StatusPill({ status }: { status: string }) {

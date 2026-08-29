@@ -14,6 +14,7 @@ const CLIENT_TITLES: Record<string, string> = {
   mesas: "Mesas",
   menu: "Menú",
   customers: "Clientes",
+  equipo: "Equipo",
   analytics: "Análisis",
 };
 
@@ -28,18 +29,18 @@ export default async function ClientAppLayout({ children }: { children: ReactNod
             {user.email}
           </span>
           <h1 className="mt-5 font-display text-[1.4rem] font-bold tracking-[-0.02em] text-white">
-            No restaurant linked yet
+            Aún no hay un restaurante vinculado
           </h1>
           <p className="mt-3 text-[14px] leading-relaxed text-white/50">
-            Your account isn&apos;t connected to a restaurant. The FoodFlow team will reach out once
-            your restaurant is set up.
+            Tu cuenta todavía no está conectada a un restaurante. El equipo de FoodFlow te
+            contactará en cuanto esté listo.
           </p>
           <form action={logout} className="mt-7">
             <button
               type="submit"
               className="text-[13.5px] font-medium text-white/40 hover:text-white/70"
             >
-              Log out
+              Cerrar sesión
             </button>
           </form>
         </GlassCard>

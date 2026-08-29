@@ -16,6 +16,9 @@ datasource db {
 enum UserRole {
   admin
   client
+  // A waiter. Belongs to one restaurant via StaffMembership and only ever
+  // sees the mobile comanda screen — never the owner dashboard.
+  mozo
 }
 
 enum LeadStatus {
@@ -35,6 +38,12 @@ enum OrderChannel {
   dine_in
   delivery
   pickup
+}
+
+enum PaymentMethod {
+  efectivo
+  tarjeta
+  yape
 }
 
 enum TableShape {
@@ -63,11 +72,27 @@ enum ReservationSource {
 }
 
 model User {
-  id          String       @id @default(cuid())
-  email       String       @unique
-  role        UserRole     @default(client)
-  createdAt   DateTime     @default(now())
-  restaurants Restaurant[]
+  id               String            @id @default(cuid())
+  email            String            @unique
+  role             UserRole          @default(client)
+  createdAt        DateTime          @default(now())
+  restaurants      Restaurant[]
+  staffMemberships StaffMembership[]
+}
+
+// Links a mozo (or, later, other staff roles) to the restaurant they work at.
+// The owner adds a person by email; that person then logs in with the normal
+// email OTP and lands on the comanda.
+model StaffMembership {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@unique([restaurantId, userId])
+  @@index([userId])
 }
 
 model Restaurant {
@@ -79,9 +104,11 @@ model Restaurant {
 
   orders       Order[]
   menuItems    MenuItem[]
+  categories   MenuCategory[]
   customers    Customer[]
   tables       RestaurantTable[]
   reservations Reservation[]
+  staff        StaffMembership[]
 
   @@index([ownerId])
 }
@@ -97,6 +124,12 @@ model Order {
   total        Float
   channel      OrderChannel @default(dine_in)
   status       OrderStatus  @default(pending)
+  // Incremented each time a server sends another round of items to an
+  // already-open order for the same table, instead of opening a new order.
+  roundNumber  Int          @default(1)
+  // Display name of the waiter who placed / last added to the order. Shown on
+  // the kitchen board. Null for orders logged from the owner dashboard.
+  serverName   String?
   // Optional link to a floor-plan table. Nullable and unset by the existing
   // order flow — the Mesas module uses it to show a table's active order.
   tableId      String?
@@ -104,6 +137,14 @@ model Order {
   // Set the moment status flips to "ready" — lets us compute an accurate
   // average prep time without a separate status-history table.
   readyAt      DateTime?
+  // Payment is tracked separately from the kitchen status. A dine-in order
+  // keeps its table occupied until it is paid (paidAt) or voided (voidedAt).
+  // For cash, amountReceived/changeGiven record the tendered amount and change.
+  paidAt         DateTime?
+  paymentMethod  PaymentMethod?
+  amountReceived Float?
+  changeGiven    Float?
+  voidedAt       DateTime?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
@@ -113,17 +154,45 @@ model Order {
   @@index([tableId])
 }
 
-model MenuItem {
+// Menu categories are seeded per restaurant (Entradas, Principales,
+// Guarniciones, Bebidas, Postres) and fully editable. `sortOrder` drives the
+// tab order in the admin and the section order on the public menu; `active`
+// hides the whole category (and its items) from ordering without deleting it.
+model MenuCategory {
   id           String     @id @default(cuid())
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
   name         String
-  price        Float
-  category     String
-  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  active       Boolean    @default(true)
   createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  items        MenuItem[]
 
   @@index([restaurantId])
+}
+
+// `available` is the quick "Disponible / Agotado" toggle — an agotado item
+// still shows in the admin but can't be added to an order or the public menu.
+// `sortOrder` is the manual drag order within its category.
+model MenuItem {
+  id           String        @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id])
+  categoryId   String?
+  category     MenuCategory? @relation(fields: [categoryId], references: [id])
+  name         String
+  description  String?
+  price        Float
+  photoUrl     String?
+  prepMin      Int?
+  available    Boolean       @default(true)
+  sortOrder    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([restaurantId])
+  @@index([categoryId])
 }
 
 model Customer {

@@ -11,9 +11,9 @@ export const metadata = {
 };
 
 const RANGES = [
-  { key: "today", label: "Today" },
-  { key: "week", label: "Week" },
-  { key: "month", label: "Month" },
+  { key: "today", label: "Hoy" },
+  { key: "week", label: "Semana" },
+  { key: "month", label: "Mes" },
 ] as const;
 
 function rangeStart(range: string): Date {
@@ -41,7 +41,7 @@ export default async function OrdersPage({
       orderBy: { createdAt: "desc" },
     }),
     prisma.menuItem.findMany({
-      where: { restaurantId: restaurant.id, isActive: true },
+      where: { restaurantId: restaurant.id, available: true },
       orderBy: { name: "asc" },
     }),
   ]);
@@ -53,7 +53,10 @@ export default async function OrdersPage({
     total: o.total,
     channel: o.channel,
     status: o.status,
-    createdAtLabel: o.createdAt.toLocaleString("en-US", {
+    paymentMethod: o.paymentMethod,
+    paid: o.paidAt != null,
+    voided: o.voidedAt != null,
+    createdAtLabel: o.createdAt.toLocaleString("es-PE", {
       month: "short",
       day: "numeric",
       hour: "numeric",

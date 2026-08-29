@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { seedDefaultCategories } from "@/lib/menu/seedCategories";
 import type { ActionResult } from "@/lib/actions/auth";
 
 const createRestaurantSchema = z.object({
@@ -35,9 +36,10 @@ export async function createRestaurant(input: {
     create: { email: ownerEmail, role: "client" },
   });
 
-  await prisma.restaurant.create({
+  const restaurant = await prisma.restaurant.create({
     data: { name, ownerId: owner.id },
   });
+  await seedDefaultCategories(prisma, restaurant.id);
 
   revalidatePath("/dashboard/admin/overview");
   revalidatePath("/dashboard/admin/restaurants");
@@ -83,12 +85,31 @@ export async function deleteRestaurant(id: string): Promise<ActionResult> {
   const restaurant = await prisma.restaurant.findUnique({ where: { id } });
   if (!restaurant) return { ok: false, error: "Restaurant not found." };
 
+  const staff = await prisma.staffMembership.findMany({
+    where: { restaurantId: id },
+    select: { userId: true },
+  });
+
   await prisma.$transaction([
+    prisma.reservation.deleteMany({ where: { restaurantId: id } }),
     prisma.order.deleteMany({ where: { restaurantId: id } }),
     prisma.menuItem.deleteMany({ where: { restaurantId: id } }),
+    prisma.menuCategory.deleteMany({ where: { restaurantId: id } }),
+    prisma.restaurantTable.deleteMany({ where: { restaurantId: id } }),
+    prisma.staffMembership.deleteMany({ where: { restaurantId: id } }),
     prisma.customer.deleteMany({ where: { restaurantId: id } }),
     prisma.restaurant.delete({ where: { id } }),
   ]);
+
+  // Drop mozo accounts that were only tied to this restaurant.
+  for (const { userId } of staff) {
+    const stillUsed = await prisma.staffMembership.count({ where: { userId } });
+    if (stillUsed === 0) {
+      await prisma.user
+        .deleteMany({ where: { id: userId, role: "mozo", restaurants: { none: {} } } })
+        .catch(() => {});
+    }
+  }
 
   const ownerHasOtherRestaurants = await prisma.restaurant.count({
     where: { ownerId: restaurant.ownerId },

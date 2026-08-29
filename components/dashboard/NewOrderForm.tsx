@@ -8,7 +8,7 @@ import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { CHANNEL_LABELS } from "@/lib/orderMeta";
 import { formatCurrency } from "@/lib/format";
 
-export type MenuItemOption = { id: string; name: string; price: number; category: string };
+export type MenuItemOption = { id: string; name: string; price: number };
 
 export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[] }) {
   const [open, setOpen] = useState(false);
@@ -44,7 +44,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
     e.preventDefault();
     setError("");
     if (lineItems.length === 0) {
-      setError("Add at least one item.");
+      setError("Agrega al menos un plato.");
       return;
     }
     startTransition(async () => {
@@ -57,7 +57,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
       if (result.ok) {
         reset();
         setOpen(false);
-        pushToast("Order logged.", "success");
+        pushToast("Pedido registrado.", "success");
       } else {
         setError(result.error);
       }
@@ -67,7 +67,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
   if (!open) {
     return (
       <Button type="button" onClick={() => setOpen(true)} className="self-start">
-        Log new order
+        Registrar pedido
       </Button>
     );
   }
@@ -75,19 +75,19 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
   return (
     <GlassCard className="p-5 sm:p-6" hoverLift={false}>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-[15px] font-semibold text-white/90">Log new order</h2>
+        <h2 className="text-[15px] font-semibold text-white/90">Registrar pedido</h2>
         <button
           type="button"
           onClick={() => setOpen(false)}
           className="text-[13px] text-white/40 hover:text-white/70"
         >
-          Cancel
+          Cancelar
         </button>
       </div>
 
       {menuItems.length === 0 ? (
         <p className="text-[14px] text-white/40">
-          Add active menu items first to start logging orders.
+          Primero agrega platos disponibles a la carta para registrar pedidos.
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -96,13 +96,13 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
               required
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Customer name"
+              placeholder="Nombre del cliente"
               className="h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
             />
             <input
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="Phone (optional)"
+              placeholder="Teléfono (opcional)"
               className="h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
             />
             <select
@@ -156,7 +156,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
               Total: <span className="font-semibold text-white/90">{formatCurrency(total)}</span>
             </span>
             <Button type="submit" size="md" disabled={isPending}>
-              {isPending ? "Logging…" : "Log order"}
+              {isPending ? "Registrando…" : "Registrar pedido"}
             </Button>
           </div>
         </form>

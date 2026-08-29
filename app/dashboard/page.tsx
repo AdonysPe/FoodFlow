@@ -5,5 +5,7 @@ export default async function DashboardIndexPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  redirect(user.role === "admin" ? "/dashboard/admin/overview" : "/dashboard/app/overview");
+  if (user.role === "admin") redirect("/dashboard/admin/overview");
+  if (user.role === "mozo") redirect("/dashboard/comanda");
+  redirect("/dashboard/app/overview");
 }

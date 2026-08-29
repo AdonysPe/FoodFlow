@@ -30,13 +30,19 @@ export default async function OverviewPage() {
   const sevenDaysAgoStart = startOfDay(6);
 
   const [ordersToday, ordersLast7Days, recentOrders] = await Promise.all([
-    prisma.order.findMany({ where: { restaurantId: restaurant.id, createdAt: { gte: todayStart } } }),
     prisma.order.findMany({
-      where: { restaurantId: restaurant.id, createdAt: { gte: sevenDaysAgoStart } },
+      where: { restaurantId: restaurant.id, createdAt: { gte: todayStart }, voidedAt: null },
+    }),
+    prisma.order.findMany({
+      where: {
+        restaurantId: restaurant.id,
+        createdAt: { gte: sevenDaysAgoStart },
+        voidedAt: null,
+      },
       select: { total: true, createdAt: true },
     }),
     prisma.order.findMany({
-      where: { restaurantId: restaurant.id },
+      where: { restaurantId: restaurant.id, voidedAt: null },
       orderBy: { createdAt: "desc" },
       take: 6,
     }),
@@ -60,7 +66,7 @@ export default async function OverviewPage() {
     const total = ordersLast7Days
       .filter((o) => o.createdAt >= day && o.createdAt < nextDay)
       .reduce((sum, o) => sum + o.total, 0);
-    dayBuckets.push({ label: day.toLocaleDateString("en-US", { weekday: "short" }), total });
+    dayBuckets.push({ label: day.toLocaleDateString("es-PE", { weekday: "short" }), total });
   }
 
   const channelData = (["dine_in", "delivery", "pickup"] as const).map((channel) => ({
@@ -74,22 +80,22 @@ export default async function OverviewPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile
-          label="Total sales today"
+          label="Ventas de hoy"
           value={totalSalesToday}
-          prefix="$"
+          prefix="S/ "
           decimals={2}
           icon={<IconBolt className="h-4 w-4" />}
         />
-        <StatTile label="Orders today" value={orderCountToday} icon={<IconOrders className="h-4 w-4" />} />
+        <StatTile label="Pedidos de hoy" value={orderCountToday} icon={<IconOrders className="h-4 w-4" />} />
         <StatTile
-          label="Average ticket"
+          label="Ticket promedio"
           value={avgTicket}
-          prefix="$"
+          prefix="S/ "
           decimals={2}
           icon={<IconTarget className="h-4 w-4" />}
         />
         <StatTile
-          label="Avg. prep time (min)"
+          label="Tiempo prep. (min)"
           value={avgPrepMs / 60000}
           decimals={1}
           icon={<IconClock className="h-4 w-4" />}
@@ -98,30 +104,30 @@ export default async function OverviewPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <GlassCard className="p-5 sm:p-6 lg:col-span-2" hoverLift={false}>
-          <h2 className="mb-1 text-[15px] font-semibold text-white/90">Sales over time</h2>
-          <p className="mb-4 text-[12.5px] text-white/40">Last 7 days</p>
+          <h2 className="mb-1 text-[15px] font-semibold text-white/90">Ventas en el tiempo</h2>
+          <p className="mb-4 text-[12.5px] text-white/40">Últimos 7 días</p>
           <AreaChart data={dayBuckets.map((d) => d.total)} labels={dayBuckets.map((d) => d.label)} />
         </GlassCard>
 
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <h2 className="mb-4 text-[15px] font-semibold text-white/90">Orders by channel</h2>
+          <h2 className="mb-4 text-[15px] font-semibold text-white/90">Pedidos por canal</h2>
           <ChannelBars data={channelData} />
         </GlassCard>
       </div>
 
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-white/90">Recent orders</h2>
+          <h2 className="text-[15px] font-semibold text-white/90">Pedidos recientes</h2>
           <Link
             href="/dashboard/app/orders"
             className="text-[13px] font-medium text-accent-400 hover:text-accent-300"
           >
-            View all
+            Ver todos
           </Link>
         </div>
         {recentOrders.length === 0 ? (
           <p className="py-6 text-center text-[14px] text-white/40">
-            No orders yet. New orders will show up here as they come in.
+            Aún no hay pedidos. Los nuevos pedidos aparecerán aquí.
           </p>
         ) : (
           <ul className="flex flex-col divide-y divide-white/[0.05]">

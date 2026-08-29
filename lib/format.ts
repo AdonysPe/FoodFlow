@@ -1,18 +1,19 @@
+// The pilot runs in Lima — every price in the product is in Peruvian soles.
 export function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", {
+  return value.toLocaleString("es-PE", {
     style: "currency",
-    currency: "USD",
+    currency: "PEN",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
 export function formatDateLabel(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("es-PE", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export function formatTimeLabel(date: Date): string {
-  return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return date.toLocaleTimeString("es-PE", { hour: "numeric", minute: "2-digit" });
 }
 
 // Minutes + seconds, e.g. 460000ms -> "7m 40s". Used for prep-time metrics

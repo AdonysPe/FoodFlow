@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import GlassCard from "@/components/ui/GlassCard";
 import { getKitchenOrders, updateOrderStatus, type KitchenOrder } from "@/lib/actions/orders";
@@ -13,25 +13,76 @@ type BoardStatus = "pending" | "preparing" | "ready";
 type BoardOrder = Omit<KitchenOrder, "status"> & { status: OrderStatusValue };
 
 const COLUMNS: { status: BoardStatus; label: string }[] = [
-  { status: "pending", label: "Pending" },
-  { status: "preparing", label: "Preparing" },
-  { status: "ready", label: "Ready" },
+  { status: "pending", label: "Pendiente" },
+  { status: "preparing", label: "En preparación" },
+  { status: "ready", label: "Lista" },
 ];
 
 const POLL_MS = 4000;
 
+function OrderLines({ items }: { items: KitchenOrder["items"] }) {
+  // Group by the round each line was sent in. Rounds only matter once a table
+  // has had more than one send, so a single-round order renders as a plain list.
+  const rounds = useMemo(() => {
+    const map = new Map<number, KitchenOrder["items"]>();
+    for (const it of items) {
+      const r = it.round ?? 1;
+      if (!map.has(r)) map.set(r, []);
+      map.get(r)!.push(it);
+    }
+    return [...map.entries()].sort((a, b) => a[0] - b[0]);
+  }, [items]);
+
+  const multi = rounds.length > 1;
+  const lastRound = rounds[rounds.length - 1]?.[0];
+
+  return (
+    <div className="mt-3 flex flex-col gap-2">
+      {rounds.map(([round, lines]) => (
+        <div key={round}>
+          {multi && (
+            <p
+              className={`mb-1 text-[10.5px] font-semibold uppercase tracking-wide ${
+                round === lastRound ? "text-accent-300" : "text-white/30"
+              }`}
+            >
+              Ronda {round}
+              {round === lastRound ? " · nueva" : ""}
+            </p>
+          )}
+          <ul className="flex flex-col gap-1 text-[12.5px] text-white/60">
+            {lines.map((item, i) => (
+              <li key={i}>
+                <span className="text-white/80">
+                  {item.quantity}× {item.name}
+                </span>
+                {item.note && (
+                  <span className="mt-0.5 block pl-3 text-[11.5px] italic text-accent-200/80">
+                    ↳ {item.note}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function KitchenBoard({ initialOrders }: { initialOrders: KitchenOrder[] }) {
   const [orders, setOrders] = useState<BoardOrder[]>(initialOrders);
-  const [now, setNow] = useState(() => Date.now());
+  // Null until mounted so the server and the first client render agree — the
+  // elapsed timer only has a meaningful value on the client anyway.
+  const [now, setNow] = useState<number | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<BoardStatus | null>(null);
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
-  // Muted after a local move so the next poll tick doesn't briefly snap the
-  // card back before the server action has actually landed.
   const suppressPollUntil = useRef(0);
 
   useEffect(() => {
+    setNow(Date.now());
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(tick);
   }, []);
@@ -117,28 +168,28 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate text-[14px] font-medium text-white/90">
-                          {order.customerName}
+                          {order.tableName ?? order.customerName}
                         </p>
                         <p className="text-[11.5px] text-white/40">
                           {CHANNEL_LABELS[order.channel]} · #{order.id.slice(-6).toUpperCase()}
+                          {order.serverName ? ` · Mozo ${order.serverName}` : ""}
+                          {order.paid ? " · Pagado" : ""}
                         </p>
                       </div>
                       <span className="shrink-0 rounded-lg bg-white/[0.06] px-2 py-1 font-mono text-[12px] text-accent-300">
-                        {formatDurationMs(now - new Date(order.createdAt).getTime())}
+                        {now === null
+                          ? "—"
+                          : formatDurationMs(now - new Date(order.createdAt).getTime())}
                       </span>
                     </div>
-                    <ul className="mt-3 flex flex-col gap-1 text-[12.5px] text-white/60">
-                      {order.items.map((item, i) => (
-                        <li key={i}>
-                          {item.quantity}× {item.name}
-                        </li>
-                      ))}
-                    </ul>
+
+                    <OrderLines items={order.items} />
+
                     <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2.5">
                       <span className="text-[13px] font-medium text-white/75">
                         {formatCurrency(order.total)}
                       </span>
-                      {col.status !== "ready" && (
+                      {col.status !== "ready" ? (
                         <button
                           type="button"
                           disabled={isPending}
@@ -147,17 +198,16 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                           }
                           className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
                         >
-                          {col.status === "pending" ? "Start" : "Mark ready"}
+                          {col.status === "pending" ? "Empezar" : "Marcar lista"}
                         </button>
-                      )}
-                      {col.status === "ready" && (
+                      ) : (
                         <button
                           type="button"
                           disabled={isPending}
                           onClick={() => moveOrder(order.id, "delivered")}
                           className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-2.5 py-1 text-[11.5px] font-semibold text-ink-950 disabled:opacity-40"
                         >
-                          Deliver
+                          Entregar
                         </button>
                       )}
                     </div>
@@ -167,7 +217,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
             </AnimatePresence>
 
             {columnOrders.length === 0 && (
-              <p className="px-1.5 py-6 text-center text-[13px] text-white/25">No orders</p>
+              <p className="px-1.5 py-6 text-center text-[13px] text-white/25">Sin pedidos</p>
             )}
           </div>
         );

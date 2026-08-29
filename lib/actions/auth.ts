@@ -29,7 +29,7 @@ function adminEmails(): string[] {
 
 export async function requestOtp(rawEmail: string): Promise<ActionResult> {
   const parsed = emailSchema.safeParse(rawEmail);
-  if (!parsed.success) return { ok: false, error: "Enter a valid email address." };
+  if (!parsed.success) return { ok: false, error: "Escribe un correo válido." };
   const email = parsed.data;
 
   const rateLimit = await checkOtpRequestRateLimit(email);
@@ -47,6 +47,14 @@ export async function requestOtp(rawEmail: string): Promise<ActionResult> {
     data: { email, code: hashOtp(code), expiresAt: otpExpiryDate() },
   });
 
+  // Outside production, always print the code to the server console. Handy for
+  // local testing (e.g. logging in as a mozo whose address can't receive mail
+  // through the email provider's sandbox).
+  const isDev = process.env.NODE_ENV !== "production";
+  if (isDev) {
+    console.log(`\n🔑  [dev] Código de acceso para ${email}: ${code}\n`);
+  }
+
   try {
     await sendOTP(email, code);
   } catch (err) {
@@ -55,9 +63,12 @@ export async function requestOtp(rawEmail: string): Promise<ActionResult> {
     // platform's dashboard). Surface a specific, actionable message instead
     // of letting this bubble up as a generic client-side "connection issue".
     console.error("Failed to send OTP email:", err);
+    // In dev the code is already in the console above — let the flow continue
+    // to the code screen instead of dead-ending on a delivery error.
+    if (isDev) return { ok: true, data: undefined };
     return {
       ok: false,
-      error: "We couldn't send the code right now. Email delivery may not be configured.",
+      error: "No pudimos enviar el código ahora. Puede que el envío de correos no esté configurado.",
     };
   }
 
@@ -67,11 +78,11 @@ export async function requestOtp(rawEmail: string): Promise<ActionResult> {
 export async function verifyOtp(
   rawEmail: string,
   rawCode: string
-): Promise<ActionResult<{ role: "admin" | "client" }>> {
+): Promise<ActionResult<{ role: "admin" | "client" | "mozo" }>> {
   const emailParsed = emailSchema.safeParse(rawEmail);
   const codeParsed = codeSchema.safeParse(rawCode);
   if (!emailParsed.success || !codeParsed.success) {
-    return { ok: false, error: "Enter a valid email and 6-digit code." };
+    return { ok: false, error: "Escribe un correo válido y el código de 6 dígitos." };
   }
   const email = emailParsed.data;
   const code = codeParsed.data;
@@ -82,11 +93,11 @@ export async function verifyOtp(
   });
 
   if (!otp) {
-    return { ok: false, error: "That code has expired. Request a new one." };
+    return { ok: false, error: "Ese código expiró. Pide uno nuevo." };
   }
 
   if (otp.attempts >= maxOtpAttempts()) {
-    return { ok: false, error: "Too many incorrect attempts. Request a new code." };
+    return { ok: false, error: "Demasiados intentos fallidos. Pide un código nuevo." };
   }
 
   if (!verifyOtpHash(code, otp.code)) {
@@ -94,7 +105,7 @@ export async function verifyOtp(
       where: { id: otp.id },
       data: { attempts: { increment: 1 } },
     });
-    return { ok: false, error: "Incorrect code. Please try again." };
+    return { ok: false, error: "Código incorrecto. Inténtalo de nuevo." };
   }
 
   await prisma.oTPCode.update({
@@ -102,7 +113,15 @@ export async function verifyOtp(
     data: { consumedAt: new Date() },
   });
 
-  const role = adminEmails().includes(email) ? "admin" : "client";
+  // The admin allow-list always wins. Otherwise keep whatever role the account
+  // already has — a mozo added by an owner must stay a mozo across logins —
+  // and default a brand-new account to client.
+  const existing = await prisma.user.findUnique({ where: { email } });
+  const role = adminEmails().includes(email)
+    ? "admin"
+    : existing?.role === "mozo"
+      ? "mozo"
+      : "client";
   const user = await prisma.user.upsert({
     where: { email },
     update: { role },

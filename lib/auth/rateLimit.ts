@@ -19,12 +19,12 @@ export async function checkOtpRequestRateLimit(email: string): Promise<RateLimit
   if (recent.length > 0) {
     const mostRecentAgeMs = Date.now() - recent[0].createdAt.getTime();
     if (mostRecentAgeMs < RESEND_COOLDOWN_MS) {
-      return { ok: false, reason: "Please wait a moment before requesting another code." };
+      return { ok: false, reason: "Espera un momento antes de pedir otro código." };
     }
   }
 
   if (recent.length >= MAX_REQUESTS_PER_WINDOW) {
-    return { ok: false, reason: "Too many requests. Please try again in a few minutes." };
+    return { ok: false, reason: "Demasiadas solicitudes. Inténtalo de nuevo en unos minutos." };
   }
 
   return { ok: true };

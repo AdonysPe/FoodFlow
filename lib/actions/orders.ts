@@ -10,17 +10,21 @@ const orderItemSchema = z.object({
   name: z.string().trim().min(1),
   price: z.number().nonnegative(),
   quantity: z.number().int().positive(),
+  // Set by the mobile comanda: a quick per-line instruction ("sin cebolla")
+  // and which round the line was sent in.
+  note: z.string().trim().max(200).optional(),
+  round: z.number().int().positive().optional(),
 });
 
 const channelSchema = z.enum(["dine_in", "delivery", "pickup"]);
 const statusSchema = z.enum(["pending", "preparing", "ready", "delivered"]);
 
 const createOrderSchema = z.object({
-  customerName: z.string().trim().min(1, "Customer name is required").max(120),
+  customerName: z.string().trim().min(1, "El nombre del cliente es obligatorio").max(120),
   customerPhone: z.string().trim().max(40).optional(),
   customerEmail: z.string().trim().toLowerCase().max(120).optional(),
   channel: channelSchema,
-  items: z.array(orderItemSchema).min(1, "Add at least one item"),
+  items: z.array(orderItemSchema).min(1, "Agrega al menos un plato"),
 });
 
 export type OrderItemInput = z.infer<typeof orderItemSchema>;
@@ -47,11 +51,11 @@ export async function createOrder(input: {
   items: OrderItemInput[];
 }): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
-  if (!restaurant) return { ok: false, error: "No restaurant is linked to your account." };
+  if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
 
   const parsed = createOrderSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos." };
   }
   const { customerName, customerPhone, customerEmail, channel, items } = parsed.data;
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -89,13 +93,13 @@ export async function createOrder(input: {
 
 export async function updateOrderStatus(orderId: string, rawStatus: string): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
-  if (!restaurant) return { ok: false, error: "No restaurant is linked to your account." };
+  if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
 
   const parsed = statusSchema.safeParse(rawStatus);
-  if (!parsed.success) return { ok: false, error: "Invalid status." };
+  if (!parsed.success) return { ok: false, error: "Estado no válido." };
 
   const order = await prisma.order.findFirst({ where: { id: orderId, restaurantId: restaurant.id } });
-  if (!order) return { ok: false, error: "Order not found." };
+  if (!order) return { ok: false, error: "Pedido no encontrado." };
 
   await prisma.order.update({
     where: { id: orderId },
@@ -112,10 +116,14 @@ export async function updateOrderStatus(orderId: string, rawStatus: string): Pro
 export type KitchenOrder = {
   id: string;
   customerName: string;
+  tableName: string | null;
+  serverName: string | null;
+  roundNumber: number;
   items: OrderItemInput[];
   total: number;
   channel: OrderChannel;
   status: "pending" | "preparing" | "ready";
+  paid: boolean;
   createdAt: string;
 };
 
@@ -126,17 +134,26 @@ export async function getKitchenOrders(): Promise<KitchenOrder[]> {
   if (!restaurant) return [];
 
   const orders = await prisma.order.findMany({
-    where: { restaurantId: restaurant.id, status: { in: ["pending", "preparing", "ready"] } },
+    where: {
+      restaurantId: restaurant.id,
+      status: { in: ["pending", "preparing", "ready"] },
+      voidedAt: null,
+    },
     orderBy: { createdAt: "asc" },
+    include: { table: { select: { name: true } } },
   });
 
   return orders.map((o) => ({
     id: o.id,
     customerName: o.customerName,
+    tableName: o.table?.name ?? null,
+    serverName: o.serverName,
+    roundNumber: o.roundNumber,
     items: o.items as OrderItemInput[],
     total: o.total,
     channel: o.channel as OrderChannel,
     status: o.status as "pending" | "preparing" | "ready",
+    paid: o.paidAt != null,
     createdAt: o.createdAt.toISOString(),
   }));
 }

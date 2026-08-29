@@ -30,11 +30,13 @@ export default async function AnalyticsPage() {
   const thirtyDaysAgo = startOfDay(29);
 
   const [orders, customerCount, orderStatsByCustomer] = await Promise.all([
-    prisma.order.findMany({ where: { restaurantId: restaurant.id, createdAt: { gte: thirtyDaysAgo } } }),
+    prisma.order.findMany({
+      where: { restaurantId: restaurant.id, createdAt: { gte: thirtyDaysAgo }, voidedAt: null },
+    }),
     prisma.customer.count({ where: { restaurantId: restaurant.id } }),
     prisma.order.groupBy({
       by: ["customerName"],
-      where: { restaurantId: restaurant.id },
+      where: { restaurantId: restaurant.id, voidedAt: null },
       _count: { id: true },
     }),
   ]);
@@ -78,16 +80,16 @@ export default async function AnalyticsPage() {
   return (
     <div className="flex flex-col gap-6">
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-        <h2 className="mb-1 text-[15px] font-semibold text-white/90">Sales trend</h2>
-        <p className="mb-4 text-[12.5px] text-white/40">Last 30 days</p>
+        <h2 className="mb-1 text-[15px] font-semibold text-white/90">Tendencia de ventas</h2>
+        <p className="mb-4 text-[12.5px] text-white/40">Últimos 30 días</p>
         <AreaChart data={dayBuckets} />
       </GlassCard>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <h2 className="mb-4 text-[15px] font-semibold text-white/90">Top products</h2>
+          <h2 className="mb-4 text-[15px] font-semibold text-white/90">Platos más vendidos</h2>
           {topProducts.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-white/40">No sales data yet.</p>
+            <p className="py-6 text-center text-[14px] text-white/40">Aún no hay datos de ventas.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-white/[0.05]">
               {topProducts.map((p, i) => (
@@ -98,7 +100,7 @@ export default async function AnalyticsPage() {
                     </span>
                     <div>
                       <p className="text-[14px] text-white/85">{p.name}</p>
-                      <p className="text-[12px] text-white/40">{p.quantity} sold</p>
+                      <p className="text-[12px] text-white/40">{p.quantity} vendidos</p>
                     </div>
                   </div>
                   <span className="text-[13.5px] font-medium text-white/80">
@@ -111,22 +113,22 @@ export default async function AnalyticsPage() {
         </GlassCard>
 
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <h2 className="mb-4 text-[15px] font-semibold text-white/90">Peak hours</h2>
+          <h2 className="mb-4 text-[15px] font-semibold text-white/90">Horas pico</h2>
           <ChannelBars data={peakHours.map((h) => ({ label: hourLabel(h.hour), count: h.count }))} />
         </GlassCard>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <GlassCard className="p-5 text-center sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-white/50">Total customers</p>
+          <p className="text-[13px] text-white/50">Clientes totales</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold text-white">{customerCount}</p>
         </GlassCard>
         <GlassCard className="p-5 text-center sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-white/50">Repeat customers</p>
+          <p className="text-[13px] text-white/50">Clientes recurrentes</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold text-white">{repeatCustomers}</p>
         </GlassCard>
         <GlassCard className="p-5 text-center sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-white/50">Repeat rate</p>
+          <p className="text-[13px] text-white/50">Tasa de recurrencia</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold text-white">
             {repeatRate.toFixed(1)}%
           </p>

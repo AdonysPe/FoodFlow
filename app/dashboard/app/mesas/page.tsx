@@ -28,11 +28,14 @@ export default async function MesasPage() {
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
       include: { table: { select: { name: true } } },
     }),
+    // A table's open tab keeps it occupied until the order is cobrado (paidAt)
+    // or anulado (voidedAt) — the kitchen status no longer frees it.
     prisma.order.findMany({
       where: {
         restaurantId: restaurant.id,
         tableId: { not: null },
-        status: { in: ["pending", "preparing", "ready"] },
+        paidAt: null,
+        voidedAt: null,
       },
       orderBy: { createdAt: "asc" },
     }),

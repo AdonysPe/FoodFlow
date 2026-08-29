@@ -24,6 +24,7 @@ const ORDER_STATUS_LABELS: Record<OrderMiniDTO["status"], string> = {
   pending: "Pendiente",
   preparing: "En preparación",
   ready: "Lista",
+  delivered: "Servida · por cobrar",
 };
 
 export default function TableDrawer({

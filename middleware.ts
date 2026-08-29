@@ -20,8 +20,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // The comanda is the one shared screen: owners and their waiters both use it.
+  if (
+    pathname.startsWith("/dashboard/comanda") &&
+    session.role !== "client" &&
+    session.role !== "mozo"
+  ) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
   if (pathname.startsWith("/dashboard/app") && session.role !== "client") {
-    return NextResponse.redirect(new URL("/dashboard/admin/overview", request.url));
+    return NextResponse.redirect(
+      new URL(session.role === "mozo" ? "/dashboard/comanda" : "/dashboard/admin/overview", request.url)
+    );
   }
 
   return NextResponse.next();

@@ -227,3 +227,44 @@ export function IconX({ className = "h-5 w-5" }) {
     </svg>
   );
 }
+
+export function IconStaff({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="7.5" r="3" />
+      <path d="M6.5 20c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+      <path d="M9 4.5 12 6l3-1.5" />
+    </svg>
+  );
+}
+
+export function IconReceipt({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3v-17Z" />
+      <path d="M9 8h6M9 11.5h6M9 15h3" />
+    </svg>
+  );
+}
+
+export function IconSearch({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m20 20-3.6-3.6" />
+    </svg>
+  );
+}
+
+export function IconGrip({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="9" cy="6" r="1" />
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="9" cy="18" r="1" />
+      <circle cx="15" cy="6" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <circle cx="15" cy="18" r="1" />
+    </svg>
+  );
+}

@@ -14,7 +14,7 @@ export default function CustomersTable({ customers }: { customers: CustomerRow[]
   if (customers.length === 0) {
     return (
       <GlassCard className="p-10 text-center text-[14px] text-white/40" hoverLift={false}>
-        No customers yet. They&apos;ll appear here once orders are logged with a phone or email.
+        Aún no hay clientes. Aparecerán aquí cuando registres pedidos con teléfono o correo.
       </GlassCard>
     );
   }
@@ -25,10 +25,10 @@ export default function CustomersTable({ customers }: { customers: CustomerRow[]
         <table className="w-full min-w-[560px] text-left text-[14px]">
           <thead>
             <tr className="border-b border-white/[0.07] text-[12px] uppercase tracking-wide text-white/35">
-              <th className="px-5 py-3.5 font-medium">Name</th>
-              <th className="px-5 py-3.5 font-medium">Contact</th>
-              <th className="px-5 py-3.5 font-medium">Orders</th>
-              <th className="px-5 py-3.5 font-medium">Total spent</th>
+              <th className="px-5 py-3.5 font-medium">Nombre</th>
+              <th className="px-5 py-3.5 font-medium">Contacto</th>
+              <th className="px-5 py-3.5 font-medium">Pedidos</th>
+              <th className="px-5 py-3.5 font-medium">Total gastado</th>
             </tr>
           </thead>
           <tbody>

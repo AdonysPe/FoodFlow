@@ -7,7 +7,7 @@ const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 export type SessionPayload = {
   sub: string;
   email: string;
-  role: "admin" | "client";
+  role: "admin" | "client" | "mozo";
 };
 
 function secretKey(): Uint8Array {
@@ -34,7 +34,7 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
     return {
       sub: payload.sub as string,
       email: payload.email as string,
-      role: payload.role as "admin" | "client",
+      role: payload.role as SessionPayload["role"],
     };
   } catch {
     return null;

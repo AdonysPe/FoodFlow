@@ -25,9 +25,9 @@ export type OrderMiniDTO = {
   id: string;
   tableId: string | null;
   customerName: string;
-  items: { name: string; price: number; quantity: number }[];
+  items: { name: string; price: number; quantity: number; note?: string; round?: number }[];
   total: number;
-  status: "pending" | "preparing" | "ready";
+  status: "pending" | "preparing" | "ready" | "delivered";
   createdAt: string;
 };
 

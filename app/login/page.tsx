@@ -5,7 +5,7 @@ import LoginFlow from "@/components/dashboard/LoginFlow";
 import { IconArrowRight } from "@/components/ui/Icons";
 
 export const metadata = {
-  title: "Log in",
+  title: "Entrar",
 };
 
 export default function LoginPage() {
@@ -21,7 +21,7 @@ export default function LoginPage() {
           className="absolute left-5 top-6 inline-flex items-center gap-2 text-[13.5px] font-medium text-white/45 transition-colors hover:text-white/80 sm:left-8 sm:top-8"
         >
           <IconArrowRight className="h-3.5 w-3.5 rotate-180" />
-          Back to home
+          Volver al inicio
         </Link>
         <Suspense fallback={null}>
           <LoginFlow />
