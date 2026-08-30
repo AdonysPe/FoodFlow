@@ -267,8 +267,13 @@ model ClientLead {
   status    LeadStatus @default(new)
   createdAt DateTime   @default(now())
 
+  // Salted SHA-256 of the caller's IP (never the address), so the public
+  // `submitLead` chat escape hatch can be rate limited across cold starts.
+  ipHash String? @map("ip_hash")
+
   @@index([email])
   @@index([status])
+  @@index([ipHash, createdAt])
 }
 
 // One row per requested OTP. The `code` column stores a salted hash, never
@@ -284,6 +289,42 @@ model OTPCode {
   createdAt  DateTime  @default(now())
 
   @@index([email])
+}
+
+// Append-only trail of sensitive actions. Written best-effort (a failed insert
+// never blocks the user action). Readable only by the platform operator
+// (role "admin"). `ipHash` is the salted hash from lib/security/clientHash —
+// never a raw address. `before`/`after` hold just the fields that changed.
+model AuditLog {
+  id           String   @id @default(cuid())
+  action       String // e.g. "auth.login", "menu.item.price_change", "staff.add"
+  actorId      String? // User.id; null for anonymous / system
+  actorEmail   String? // denormalized so a deleted account still traces
+  entity       String? // "MenuItem", "Lead", "Restaurant", …
+  entityId     String?
+  before       Json?
+  after        Json?
+  ipHash       String?
+  restaurantId String? // tenant scope, when the action belongs to one
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([actorId])
+  @@index([restaurantId, createdAt])
+}
+
+// Generic fixed-window rate limiter, DB-backed so it survives cold starts and
+// works across serverless instances. `key` is "<bucket>:<subject>:<window>"
+// (e.g. "otp-ip:<ipHash>:29876"); `count` is the hits in that window;
+// `expiresAt` is when the window closes (also the cue to prune the row).
+// See lib/security/rateLimit.ts.
+model RateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  expiresAt DateTime
+
+  @@index([expiresAt])
 }
 
 // ---------------------------------------------------------------- leads

@@ -2,7 +2,12 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "foodflow_session";
-const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
+// 7 days. The session JWT carries the role claim, and middleware trusts it for
+// routing without a DB read (it can't — Edge runtime). A shorter window bounds
+// how long a stale role (e.g. an owner demoted, a mozo removed) keeps its old
+// routing before the next login re-mints the token. Data access is always
+// re-checked against the DB in layouts/actions via getCurrentUser().
+const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 export type SessionPayload = {
   sub: string;

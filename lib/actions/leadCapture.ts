@@ -1,10 +1,9 @@
 "use server";
 
-import { createHash } from "node:crypto";
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
+import { callerIpHash } from "@/lib/security/clientHash";
 import { leadScore, normalizeWhatsApp } from "@/lib/leads/validation";
 
 /**
@@ -39,23 +38,6 @@ const schema = z.object({
 
 export type LeadInput = z.input<typeof schema>;
 
-/**
- * A salted hash of the caller's address.
- *
- * The counting has to survive a cold start — an in-memory map does not, and
- * under `next dev` it is wiped between requests — so the window is counted
- * over the rows themselves. Hashing means the table never holds an IP, and
- * without AUTH_SECRET the hash cannot be reversed by whoever reads the data.
- */
-async function callerHash(): Promise<string> {
-  const h = await headers();
-  const forwarded = h.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0].trim() : (h.get("x-real-ip") ?? "unknown");
-  return createHash("sha256")
-    .update(`${process.env.AUTH_SECRET ?? "foodflow"}:${ip}`)
-    .digest("hex");
-}
-
 export async function submitLeadCapture(input: LeadInput): Promise<LeadResult> {
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, code: "invalid" };
@@ -66,7 +48,7 @@ export async function submitLeadCapture(input: LeadInput): Promise<LeadResult> {
   // from the response, and nothing reaches the table.
   if (data.website && data.website.trim() !== "") return { ok: true };
 
-  const ipHash = await callerHash();
+  const ipHash = await callerIpHash();
   const perdidaAnual = data.perdidaAnual ?? null;
 
   try {

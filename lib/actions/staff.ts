@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { logAudit } from "@/lib/audit/log";
 import type { ActionResult } from "@/lib/actions/auth";
 
 const EQUIPO_PATH = "/dashboard/app/equipo";
@@ -52,20 +53,39 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
     data: { restaurantId: restaurant.id, userId: staffUser.id },
   });
 
+  await logAudit({
+    action: "staff.add",
+    actor: { id: user.id, email: user.email },
+    entity: "StaffMembership",
+    entityId: staffUser.id,
+    restaurantId: restaurant.id,
+    after: { email, role: "mozo" },
+  });
+
   revalidatePath(EQUIPO_PATH);
   return { ok: true, data: undefined };
 }
 
 export async function removeStaffMember(membershipId: string): Promise<ActionResult> {
-  const { restaurant } = await requireClientRestaurant();
+  const { user, restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
 
   const membership = await prisma.staffMembership.findFirst({
     where: { id: membershipId, restaurantId: restaurant.id },
+    include: { user: { select: { email: true } } },
   });
   if (!membership) return { ok: false, error: "Esa persona no está en tu equipo." };
 
   await prisma.staffMembership.delete({ where: { id: membership.id } });
+
+  await logAudit({
+    action: "staff.remove",
+    actor: { id: user.id, email: user.email },
+    entity: "StaffMembership",
+    entityId: membership.userId,
+    restaurantId: restaurant.id,
+    before: { email: membership.user.email, role: "mozo" },
+  });
 
   // If that mozo has no other job and owns nothing, drop the empty account too.
   const [otherMemberships, ownedRestaurants, staffUser] = await Promise.all([

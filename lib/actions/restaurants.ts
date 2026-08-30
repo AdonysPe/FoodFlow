@@ -3,20 +3,15 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { requireAdmin } from "@/lib/auth/guards";
 import { seedDefaultCategories } from "@/lib/menu/seedCategories";
+import { logAudit } from "@/lib/audit/log";
 import type { ActionResult } from "@/lib/actions/auth";
 
 const createRestaurantSchema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(80),
   ownerEmail: z.string().trim().toLowerCase().email("Enter a valid owner email"),
 });
-
-async function requireAdmin() {
-  const user = await getCurrentUser();
-  if (!user || user.role !== "admin") throw new Error("Not authorized");
-  return user;
-}
 
 export async function createRestaurant(input: {
   name: string;
@@ -80,7 +75,7 @@ export async function updateRestaurant(
 // The owner account itself is only deleted if they don't own any other
 // restaurant — otherwise it'd still be needed for that other restaurant.
 export async function deleteRestaurant(id: string): Promise<ActionResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const restaurant = await prisma.restaurant.findUnique({ where: { id } });
   if (!restaurant) return { ok: false, error: "Restaurant not found." };
@@ -117,6 +112,14 @@ export async function deleteRestaurant(id: string): Promise<ActionResult> {
   if (ownerHasOtherRestaurants === 0) {
     await prisma.user.delete({ where: { id: restaurant.ownerId } }).catch(() => {});
   }
+
+  await logAudit({
+    action: "restaurant.delete",
+    actor: { id: admin.id, email: admin.email },
+    entity: "Restaurant",
+    entityId: id,
+    before: { name: restaurant.name, ownerId: restaurant.ownerId },
+  });
 
   revalidatePath("/dashboard/admin/overview");
   revalidatePath("/dashboard/admin/restaurants");

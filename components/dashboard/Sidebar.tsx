@@ -15,6 +15,7 @@ import {
   IconTables,
   IconStaff,
   IconReceipt,
+  IconShield,
   IconLogout,
   IconX,
 } from "@/components/ui/Icons";
@@ -36,6 +37,7 @@ const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/admin/leads", label: "Leads", icon: IconUsers },
   { href: "/dashboard/admin/restaurants", label: "Restaurants", icon: IconStore },
   { href: "/dashboard/admin/analytics", label: "Analytics", icon: IconAnalytics },
+  { href: "/dashboard/admin/audit", label: "Audit log", icon: IconShield },
 ];
 
 const CLIENT_NAV_ITEMS: NavItem[] = [

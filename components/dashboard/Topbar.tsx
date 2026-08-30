@@ -9,6 +9,7 @@ const DEFAULT_TITLES: Record<string, string> = {
   leads: "Leads",
   restaurants: "Restaurants",
   analytics: "Analytics",
+  audit: "Audit log",
 };
 
 export default function Topbar({ titles = DEFAULT_TITLES }: { titles?: Record<string, string> }) {

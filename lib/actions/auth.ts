@@ -4,6 +4,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { sendOTP } from "@/lib/email/mailer";
 import { checkOtpRequestRateLimit } from "@/lib/auth/rateLimit";
+import { callerIpHash } from "@/lib/security/clientHash";
+import { rateLimit } from "@/lib/security/rateLimit";
 import {
   generateOtp,
   hashOtp,
@@ -12,6 +14,8 @@ import {
   verifyOtpHash,
 } from "@/lib/auth/otp";
 import { createSessionToken, setSessionCookie, clearSessionCookie } from "@/lib/auth/session";
+import { getCurrentUser } from "@/lib/auth/current-user";
+import { logAudit } from "@/lib/audit/log";
 
 const emailSchema = z.string().trim().toLowerCase().email();
 const codeSchema = z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code");
@@ -32,8 +36,19 @@ export async function requestOtp(rawEmail: string): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: "Escribe un correo válido." };
   const email = parsed.data;
 
-  const rateLimit = await checkOtpRequestRateLimit(email);
-  if (!rateLimit.ok) return { ok: false, error: rateLimit.reason };
+  // Per-IP cap first: stops one host from requesting codes for many different
+  // victim addresses (email bombing). Generous enough for a whole restaurant
+  // team logging in from the same venue Wi-Fi. Per-email cap still applies below.
+  const ipLimit = await rateLimit("otp-ip", await callerIpHash(), {
+    max: 15,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!ipLimit.ok) {
+    return { ok: false, error: "Demasiadas solicitudes. Inténtalo de nuevo en unos minutos." };
+  }
+
+  const emailLimit = await checkOtpRequestRateLimit(email);
+  if (!emailLimit.ok) return { ok: false, error: emailLimit.reason };
 
   const code = generateOtp();
 
@@ -131,9 +146,19 @@ export async function verifyOtp(
   const token = await createSessionToken({ sub: user.id, email: user.email, role: user.role });
   await setSessionCookie(token);
 
+  await logAudit({
+    action: "auth.login",
+    actor: { id: user.id, email: user.email },
+    after: { role: user.role },
+  });
+
   return { ok: true, data: { role: user.role } };
 }
 
 export async function logout(): Promise<void> {
+  const user = await getCurrentUser();
   await clearSessionCookie();
+  if (user) {
+    await logAudit({ action: "auth.logout", actor: { id: user.id, email: user.email } });
+  }
 }

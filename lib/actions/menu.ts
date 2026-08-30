@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { logAudit } from "@/lib/audit/log";
 import type { ActionResult } from "@/lib/actions/auth";
 
 function revalidateMenuPaths() {
@@ -73,7 +74,7 @@ export async function createMenuItem(input: MenuItemInput): Promise<ActionResult
 }
 
 export async function updateMenuItem(id: string, input: MenuItemInput): Promise<ActionResult> {
-  const { restaurant } = await requireClientRestaurant();
+  const { user, restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
 
   const parsed = menuItemSchema.safeParse(input);
@@ -83,6 +84,18 @@ export async function updateMenuItem(id: string, input: MenuItemInput): Promise<
   if (!existing) return { ok: false, error: "Plato no encontrado." };
 
   const categoryId = await resolveCategoryId(restaurant.id, parsed.data.categoryId);
+
+  if (existing.price !== parsed.data.price) {
+    await logAudit({
+      action: "menu.item.price_change",
+      actor: { id: user.id, email: user.email },
+      entity: "MenuItem",
+      entityId: id,
+      restaurantId: restaurant.id,
+      before: { name: existing.name, price: existing.price },
+      after: { name: parsed.data.name, price: parsed.data.price },
+    });
+  }
 
   await prisma.menuItem.update({
     where: { id },
@@ -150,13 +163,22 @@ export async function duplicateMenuItem(id: string): Promise<ActionResult<{ id: 
 }
 
 export async function deleteMenuItem(id: string): Promise<ActionResult> {
-  const { restaurant } = await requireClientRestaurant();
+  const { user, restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
 
   const existing = await requireOwnedMenuItem(id, restaurant.id);
   if (!existing) return { ok: false, error: "Plato no encontrado." };
 
   await prisma.menuItem.delete({ where: { id } });
+
+  await logAudit({
+    action: "menu.item.delete",
+    actor: { id: user.id, email: user.email },
+    entity: "MenuItem",
+    entityId: id,
+    restaurantId: restaurant.id,
+    before: { name: existing.name, price: existing.price, categoryId: existing.categoryId },
+  });
 
   revalidateMenuPaths();
   return { ok: true, data: undefined };
