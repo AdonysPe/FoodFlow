@@ -34,7 +34,7 @@ export default function CTA() {
                 className="sweep-sheen pointer-events-none absolute inset-0 opacity-20"
               />
 
-              <div className="relative grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
+              <div className="relative grid gap-10 lg:grid-cols-12 lg:gap-14">
                 <div className="lg:col-span-6">
                   <span className="inline-flex items-center gap-2 rounded-full bg-cream/[0.07] px-3.5 py-1.5 text-[12px] font-semibold text-cream/80 ring-1 ring-inset ring-cream/10">
                     <span className="relative flex h-1.5 w-1.5">
@@ -89,60 +89,99 @@ export default function CTA() {
                   </ul>
                 </div>
 
-                {/* plan teaser — each tile opens the chat on the plans answer */}
-                <div className="lg:col-span-6">
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-cream/55">
-                    {t.cta.plansLabel}
-                  </p>
+                {/* plan teaser — each tile opens the chat on the plans
+                    answer. The tiles carry the first two lines of what the
+                    plan includes and stretch to the height of the copy
+                    beside them, so the column fills instead of leaving a
+                    hole between the prices and the notes. */}
+                <div className="flex h-full flex-col lg:col-span-6">
+                  <div className="flex flex-1 flex-col">
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-cream/55">
+                      {t.cta.plansLabel}
+                    </p>
 
-                  <div className="mt-4 flex flex-col gap-2.5">
-                    {plans.map((plan, i) => (
-                      <motion.button
-                        key={plan.name}
-                        type="button"
-                        onClick={() => openChat("planes")}
-                        initial={{ opacity: 0, y: 12 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.5 }}
-                        transition={{ duration: 0.5, ease: EASE, delay: i * 0.08 }}
-                        whileHover={{ x: 4 }}
-                        className="liquid-soft group flex items-center gap-4 rounded-2xl px-5 py-4 text-left transition-colors duration-300 hover:bg-cream/[0.1]"
-                      >
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-2">
-                            <span className="font-display text-[16px] font-bold text-white">
-                              {plan.name}
-                            </span>
-                            {plan.badge && (
-                              <span className="rounded-full bg-accent-400/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-accent-300 ring-1 ring-inset ring-accent-400/30">
-                                {plan.badge}
+                    <div className="mt-4 flex flex-1 flex-col gap-3">
+                      {plans.map((plan, i) => (
+                        <motion.button
+                          key={plan.name}
+                          type="button"
+                          onClick={() => openChat("planes")}
+                          initial={{ opacity: 0, y: 12 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true, amount: 0.5 }}
+                          transition={{ duration: 0.5, ease: EASE, delay: i * 0.08 }}
+                          whileHover={{ x: 4 }}
+                          className="liquid-soft group flex flex-1 flex-col justify-center gap-3 rounded-2xl px-5 py-4 text-left transition-colors duration-300 hover:bg-cream/[0.1]"
+                        >
+                          <span className="flex items-start justify-between gap-4">
+                            <span className="min-w-0">
+                              <span className="flex items-center gap-2">
+                                <span className="font-display text-[16.5px] font-bold text-white">
+                                  {plan.name}
+                                </span>
+                                {plan.badge && (
+                                  <span className="rounded-full bg-accent-400/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-accent-300 ring-1 ring-inset ring-accent-400/30">
+                                    {plan.badge}
+                                  </span>
+                                )}
                               </span>
-                            )}
+                              <span className="mt-1 block text-[13px] text-cream/55">
+                                {plan.tagline}
+                              </span>
+                            </span>
+
+                            <span className="flex shrink-0 items-center gap-2">
+                              <span className="font-display text-[18px] font-bold text-accent-300">
+                                {plan.price}
+                                <span className="text-[11.5px] font-medium text-cream/45">
+                                  {plan.period}
+                                </span>
+                              </span>
+                              <IconArrowRight className="h-4 w-4 text-cream/40 transition-colors group-hover:text-accent-300" />
+                            </span>
                           </span>
-                          <span className="mt-1 block text-[13px] text-cream/55">
-                            {plan.tagline}
+
+                          {/* the two lines that separate this plan from the
+                              one above it — the same list the pricing page
+                              shows, cut to its opening pair */}
+                          <span className="grid gap-1.5 border-t border-cream/10 pt-3">
+                            {plan.features.slice(0, 2).map((feature) => (
+                              <span
+                                key={feature}
+                                className="flex gap-2 text-[12.5px] leading-snug text-cream/65"
+                              >
+                                <IconCheck className="mt-[3px] h-3 w-3 shrink-0 text-accent-300" />
+                                {feature}
+                              </span>
+                            ))}
                           </span>
-                        </span>
-                        <span className="font-display text-[17px] font-bold text-accent-300">
-                          {plan.price}
-                          <span className="text-[11.5px] font-medium text-cream/45">
-                            {plan.period}
-                          </span>
-                        </span>
-                        <IconArrowRight className="h-4 w-4 shrink-0 text-cream/40 transition-colors group-hover:text-accent-300" />
-                      </motion.button>
-                    ))}
+                        </motion.button>
+                      ))}
+                    </div>
                   </div>
 
-                  <p className="mt-4 text-[13px] text-cream/55">
-                    {t.cta.loginPrompt}{" "}
-                    <a
-                      href="/login"
-                      className="font-semibold text-white underline-offset-4 hover:underline"
-                    >
-                      {t.cta.loginCta}
-                    </a>
-                  </p>
+                  <div className="mt-8">
+                    {/* what it runs on and how their customers pay — the two
+                        questions that arrive right after the price does */}
+                    <ul className="space-y-2 border-t border-cream/10 pt-4 text-[13px] leading-relaxed text-cream/65">
+                      {t.pricing.keyNotes.map((note) => (
+                        <li key={note} className="flex gap-2.5">
+                          <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-300" />
+                          {note}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <p className="mt-4 text-[13px] text-cream/55">
+                      {t.cta.loginPrompt}{" "}
+                      <a
+                        href="/login"
+                        className="font-semibold text-white underline-offset-4 hover:underline"
+                      >
+                        {t.cta.loginCta}
+                      </a>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -30,18 +30,22 @@ export default function Pricing() {
           description={t.pricing.description}
         />
 
-        <RevealGroup className="mt-12 grid gap-4 sm:mt-14 lg:grid-cols-3">
-          {plans.map((plan, i) => (
+        <FounderBanner copy={t.pricing.founder} />
+
+        {/* Narrower than the container: three cards across the full 1280 read
+            as three posters, not as a table you can compare down. */}
+        <RevealGroup className="mx-auto mt-8 grid max-w-5xl gap-4 sm:mt-10 lg:grid-cols-3">
+          {plans.map((plan, planIndex) => (
             <RevealItem key={plan.name} variants={scaleIn}>
               <article
-                className={`flex h-full flex-col rounded-2xl border p-6 transition-all duration-500 hover:-translate-y-1.5 sm:p-7 ${
+                className={`flex h-full flex-col rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 sm:p-6 ${
                   plan.badge
                     ? "border-accent-400/45 bg-accent-400/[0.06] shadow-lift"
                     : "border-cream/10 bg-ink-800/70 shadow-card hover:border-cream/20"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <h3 className="font-display text-[19px] font-bold text-white">
+                  <h3 className="font-display text-[17.5px] font-bold text-white">
                     {plan.name}
                   </h3>
                   {plan.badge && (
@@ -50,37 +54,50 @@ export default function Pricing() {
                     </span>
                   )}
                 </div>
-                <p className="mt-1.5 text-[13.5px] text-cream/55">{plan.tagline}</p>
+                <p className="mt-1 text-[13px] text-cream/55">{plan.tagline}</p>
 
-                <p className="mt-6 flex items-baseline gap-1">
-                  <span className="font-display text-[2.3rem] font-extrabold tracking-[-0.03em] text-white">
+                <p className="mt-5 flex items-baseline gap-1">
+                  <span className="font-display text-[2rem] font-extrabold tracking-[-0.03em] text-white">
                     {plan.price}
                   </span>
-                  <span className="text-[14px] font-medium text-cream/50">
+                  <span className="text-[13.5px] font-medium text-cream/50">
                     {plan.period}
                   </span>
-                  <span aria-hidden className="text-[14px] text-accent-300">
+                  <span aria-hidden className="text-[13.5px] text-accent-300">
                     *
                   </span>
                 </p>
 
-                <ul className="mt-6 flex-1 space-y-2.5 border-t border-cream/10 pt-6">
-                  {plan.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex gap-2.5 text-[14px] leading-snug text-cream/75"
-                    >
-                      <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-400" />
-                      {feature}
-                    </li>
-                  ))}
+                <ul className="mt-5 flex-1 space-y-2 border-t border-cream/10 pt-5">
+                  {plan.features.map((feature, featureIndex) => {
+                    // On every plan after the first, the opening bullet is the
+                    // "everything in the plan before" line — the hinge of the
+                    // comparison, so it carries more weight than the rest.
+                    const isInherited = planIndex > 0 && featureIndex === 0;
+
+                    return (
+                      <li
+                        key={feature}
+                        className={`flex gap-2.5 text-[13.5px] leading-snug ${
+                          isInherited ? "font-semibold text-cream/90" : "text-cream/75"
+                        }`}
+                      >
+                        <IconCheck
+                          className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
+                            isInherited ? "text-accent-300" : "text-accent-400"
+                          }`}
+                        />
+                        {feature}
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <Button
                   type="button"
                   variant={plan.badge ? "primary" : "secondary"}
                   size="md"
-                  className="mt-7 w-full"
+                  className="mt-6 w-full"
                   onClick={() => openLeadForm()}
                   icon={
                     <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -93,16 +110,34 @@ export default function Pricing() {
           ))}
         </RevealGroup>
 
+        {/* The two objections that come up before price ever does: what it
+            runs on, and how their customers actually pay. */}
         <Reveal delay={0.08}>
-          <p className="mt-5 text-[13px] text-cream/55">{t.pricing.taxNote}</p>
-          <p className="mt-1.5 text-[13px] font-medium text-accent-300">
-            {t.pricing.savingsNote}
-          </p>
+          <ul className="mx-auto mt-4 grid max-w-5xl gap-3 sm:grid-cols-2">
+            {t.pricing.keyNotes.map((note) => (
+              <li
+                key={note}
+                className="flex gap-2.5 rounded-xl border border-cream/10 bg-ink-800/50 px-4 py-3.5 text-[13.5px] leading-relaxed text-cream/75"
+              >
+                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-300" />
+                {note}
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div className="mx-auto mt-5 max-w-5xl">
+            <p className="text-[13px] text-cream/55">{t.pricing.taxNote}</p>
+            <p className="mt-1.5 text-[13px] font-medium text-accent-300">
+              {t.pricing.savingsNote}
+            </p>
+          </div>
         </Reveal>
 
         {/* add-ons: the "and if I need one more waiter?" answer */}
         <Reveal delay={0.12}>
-          <div className="mt-12 rounded-2xl border border-cream/10 bg-ink-800/60 p-6 shadow-card sm:p-7">
+          <div className="mx-auto mt-12 max-w-5xl rounded-2xl border border-cream/10 bg-ink-800/60 p-6 shadow-card sm:p-7">
             <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/50">
               {t.pricing.addonsLabel}
             </p>
@@ -139,5 +174,47 @@ export default function Pricing() {
         </Reveal>
       </Container>
     </section>
+  );
+}
+
+/**
+ * The scarcity line, directly above the prices — the one place a visitor is
+ * already weighing cost against what they get, which is where the founder
+ * terms change the answer.
+ */
+function FounderBanner({ copy }) {
+  return (
+    <Reveal delay={0.14}>
+      <div className="relative mx-auto mt-10 max-w-5xl overflow-hidden rounded-2xl border border-accent-400/40 bg-accent-400/[0.07] px-5 py-5 shadow-accent sm:mt-12 sm:px-7 sm:py-6">
+        <span
+          aria-hidden
+          className="sweep-sheen pointer-events-none absolute inset-0 opacity-[0.14]"
+        />
+
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
+          <div className="lg:shrink-0">
+            <span className="inline-flex items-center gap-2 rounded-full bg-ink-950/45 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.16em] text-accent-200 ring-1 ring-inset ring-accent-400/30">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-300/80" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent-300" />
+              </span>
+              {copy.label}
+            </span>
+            <p className="mt-2.5 font-display text-[21px] font-extrabold leading-tight tracking-[-0.02em] text-white sm:text-[23px]">
+              {copy.headline}
+            </p>
+          </div>
+
+          <ul className="grid gap-2 text-[13.5px] leading-snug text-cream/85 sm:grid-cols-3 lg:flex-1 lg:border-l lg:border-accent-400/25 lg:pl-8">
+            {copy.perks.map((perk) => (
+              <li key={perk} className="flex gap-2">
+                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-300" />
+                {perk}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Reveal>
   );
 }
