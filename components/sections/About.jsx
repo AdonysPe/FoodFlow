@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Container from "@/components/ui/Container";
 import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
-import { LogoMark } from "@/components/ui/Logo";
 import { IconCheck } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -22,14 +22,30 @@ export default function About() {
           {/* portrait slot — a face is the point of this section */}
           <Reveal className="lg:col-span-5">
             <figure className="relative mx-auto max-w-sm">
-              <div className="aspect-[4/5] overflow-hidden rounded-3xl border border-cream/10 bg-ink-800 shadow-lift">
-                <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[radial-gradient(70%_60%_at_50%_20%,rgba(255,90,51,0.14),transparent_70%)]">
-                  <LogoMark className="h-12 w-12 opacity-70" />
-                  <p className="text-[13px] font-medium text-cream/45">{a.photoNote}</p>
-                </div>
+              <div className="liquid relative aspect-[4/5] overflow-hidden rounded-3xl shadow-lift">
+                {/* warm light behind the figure: the glass needs something to
+                    refract, and it lifts the mark off the near-black panel */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-[radial-gradient(72%_58%_at_50%_26%,rgba(255,90,51,0.20),transparent_72%)]"
+                />
+                {/* The artwork is a dark figure on transparency — as drawn it
+                    would disappear into the page, so it is inverted to read as
+                    light on dark. The silhouette is the same either way. */}
+                <Image
+                  src="/founder.png"
+                  alt={a.photoAlt}
+                  width={968}
+                  height={1032}
+                  sizes="(min-width: 1024px) 24rem, 20rem"
+                  className="relative h-full w-full object-contain p-7 [filter:invert(1)_brightness(1.06)_drop-shadow(0_14px_26px_rgb(0_0_0_/_0.45))]"
+                />
               </div>
-              <figcaption className="mt-4 text-center text-[13.5px] text-cream/55">
-                {a.signature}
+              <figcaption className="mt-4 text-center">
+                <span className="block text-[13.5px] text-cream/55">{a.signature}</span>
+                <span className="mt-1.5 block text-[12.5px] leading-relaxed text-cream/40">
+                  {a.photoNote}
+                </span>
               </figcaption>
             </figure>
           </Reveal>
