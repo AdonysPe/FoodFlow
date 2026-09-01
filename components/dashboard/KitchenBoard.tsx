@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import GlassCard from "@/components/ui/GlassCard";
 import { getKitchenOrders, updateOrderStatus, type KitchenOrder } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { CHANNEL_LABELS, type OrderStatusValue } from "@/lib/orderMeta";
+import { ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency, formatDurationMs } from "@/lib/format";
 import { EASE } from "@/lib/motion";
 
@@ -19,6 +19,22 @@ const COLUMNS: { status: BoardStatus; label: string }[] = [
 ];
 
 const POLL_MS = 4000;
+
+// How long a ticket has been open, read as a colour from across the kitchen.
+// A chef should not have to do arithmetic to know which board is burning.
+const WARN_MS = 8 * 60 * 1000;
+const LATE_MS = 15 * 60 * 1000;
+
+function ageTone(ms: number) {
+  if (ms >= LATE_MS) return "border-accent-400/50 bg-accent-400/15 text-accent-200";
+  if (ms >= WARN_MS) return "border-amber-400/40 bg-amber-400/12 text-amber-200";
+  return "border-white/[0.1] bg-white/[0.05] text-white/70";
+}
+
+/** Short, sayable ticket number — the same one the server sees on the comanda. */
+function ticketNumber(id: string) {
+  return id.slice(-6).toUpperCase();
+}
 
 function OrderLines({ items }: { items: KitchenOrder["items"] }) {
   // Group by the round each line was sent in. Rounds only matter once a table
@@ -37,35 +53,54 @@ function OrderLines({ items }: { items: KitchenOrder["items"] }) {
   const lastRound = rounds[rounds.length - 1]?.[0];
 
   return (
-    <div className="mt-3 flex flex-col gap-2">
-      {rounds.map(([round, lines]) => (
-        <div key={round}>
-          {multi && (
-            <p
-              className={`mb-1 text-[10.5px] font-semibold uppercase tracking-wide ${
-                round === lastRound ? "text-accent-300" : "text-white/30"
-              }`}
-            >
-              Ronda {round}
-              {round === lastRound ? " · nueva" : ""}
-            </p>
-          )}
-          <ul className="flex flex-col gap-1 text-[12.5px] text-white/60">
-            {lines.map((item, i) => (
-              <li key={i}>
-                <span className="text-white/80">
-                  {item.quantity}× {item.name}
+    <div className="mt-3 flex flex-col gap-3">
+      {rounds.map(([round, lines]) => {
+        const isNew = multi && round === lastRound;
+        return (
+          <div key={round}>
+            {multi && (
+              <div className="mb-1.5 flex items-center gap-2">
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
+                    isNew ? "text-accent-300" : "text-white/30"
+                  }`}
+                >
+                  Ronda {round}
                 </span>
-                {item.note && (
-                  <span className="mt-0.5 block pl-3 text-[11.5px] italic text-accent-200/80">
-                    ↳ {item.note}
+                {isNew && (
+                  <span className="rounded-full bg-accent-400/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-accent-200 ring-1 ring-inset ring-accent-400/30">
+                    Nueva
                   </span>
                 )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+                <span className="h-px flex-1 bg-white/[0.07]" />
+              </div>
+            )}
+
+            <ul className="flex flex-col gap-2">
+              {lines.map((item, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  {/* the quantity is the number a chef counts pans by */}
+                  <span className="mt-px shrink-0 rounded-md border border-white/[0.12] bg-white/[0.07] px-1.5 py-0.5 font-mono text-[13px] font-bold tabular-nums text-white">
+                    {item.quantity}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[14.5px] font-medium leading-snug text-white">
+                      {item.name}
+                    </span>
+                    {/* A missed note is a remade plate, so it gets a filled
+                        chip instead of small italics under the line. */}
+                    {item.note && (
+                      <span className="mt-1 inline-block rounded-md bg-accent-400/15 px-2 py-0.5 text-[12px] font-semibold text-accent-200 ring-1 ring-inset ring-accent-400/25">
+                        {item.note}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -147,73 +182,106 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
             </div>
 
             <AnimatePresence initial={false}>
-              {columnOrders.map((order) => (
-                <motion.div
-                  key={order.id}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.25, ease: EASE }}
-                  draggable
-                  onDragStart={() => setDraggingId(order.id)}
-                  onDragEnd={() => setDraggingId(null)}
-                >
-                  <GlassCard
-                    className={`cursor-grab p-4 active:cursor-grabbing ${
-                      draggingId === order.id ? "opacity-40" : ""
-                    }`}
-                    hoverLift={false}
+              {columnOrders.map((order) => {
+                const ageMs = now === null ? 0 : now - new Date(order.createdAt).getTime();
+                const zone = order.tableZone
+                  ? ZONE_LABELS_ES[order.tableZone] ?? order.tableZone
+                  : null;
+                const late = now !== null && ageMs >= LATE_MS;
+
+                return (
+                  <motion.div
+                    key={order.id}
+                    layout
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.25, ease: EASE }}
+                    draggable
+                    onDragStart={() => setDraggingId(order.id)}
+                    onDragEnd={() => setDraggingId(null)}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-[14px] font-medium text-white/90">
-                          {order.tableName ?? order.customerName}
-                        </p>
-                        <p className="text-[11.5px] text-white/40">
-                          {CHANNEL_LABELS[order.channel]} · #{order.id.slice(-6).toUpperCase()}
-                          {order.serverName ? ` · Mozo ${order.serverName}` : ""}
-                          {order.paid ? " · Pagado" : ""}
-                        </p>
+                    {/* A kitchen ticket, not a dashboard card: opaque paper,
+                        a hard top rule that turns red when the ticket is old,
+                        and the dish names as the biggest thing on it. */}
+                    <article
+                      className={`cursor-grab overflow-hidden rounded-2xl border bg-ink-900 shadow-card transition-colors active:cursor-grabbing ${
+                        draggingId === order.id ? "opacity-40" : ""
+                      } ${late ? "border-accent-400/40" : "border-white/[0.09]"}`}
+                    >
+                      <span
+                        aria-hidden
+                        className={`block h-1 w-full ${
+                          late
+                            ? "bg-accent-400"
+                            : ageMs >= WARN_MS
+                              ? "bg-amber-400/70"
+                              : "bg-white/[0.08]"
+                        }`}
+                      />
+
+                      <div className="p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate font-display text-[19px] font-extrabold leading-tight tracking-[-0.02em] text-white">
+                              {order.tableName ?? order.customerName}
+                            </p>
+                            {/* A table already says "dine-in", so the channel
+                                label only earns its place when there is no
+                                table: delivery and pickup. */}
+                            <p className="mt-0.5 truncate text-[11.5px] text-white/40">
+                              {order.tableName
+                                ? (zone ?? "Salón")
+                                : CHANNEL_LABELS[order.channel]}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-lg border px-2 py-1 font-mono text-[13px] font-semibold tabular-nums ${ageTone(ageMs)}`}
+                          >
+                            {now === null ? "—" : formatDurationMs(ageMs)}
+                          </span>
+                        </div>
+
+                        <OrderLines items={order.items} />
+
+                        {/* the small print a chef never needs mid-service */}
+                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/[0.07] pt-2.5 text-[11px] text-white/35">
+                          <span className="truncate font-mono tracking-wide">
+                            #{ticketNumber(order.id)}
+                            {order.serverName ? ` · ${order.serverName}` : ""}
+                            {order.paid ? " · Pagado" : ""}
+                          </span>
+                          <span className="shrink-0 tabular-nums">
+                            {formatCurrency(order.total)}
+                          </span>
+                        </div>
+
+                        {col.status !== "ready" ? (
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() =>
+                              moveOrder(order.id, col.status === "pending" ? "preparing" : "ready")
+                            }
+                            className="mt-3 h-10 w-full rounded-xl border border-white/[0.12] bg-white/[0.05] text-[13px] font-semibold text-white/85 transition-colors hover:bg-white/[0.09] hover:text-white disabled:opacity-40"
+                          >
+                            {col.status === "pending" ? "Empezar" : "Marcar lista"}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => moveOrder(order.id, "delivered")}
+                            className="mt-3 h-10 w-full rounded-xl bg-linear-to-b from-accent-400 to-accent-600 text-[13px] font-bold text-ink-950 disabled:opacity-40"
+                          >
+                            Entregar
+                          </button>
+                        )}
                       </div>
-                      <span className="shrink-0 rounded-lg bg-white/[0.06] px-2 py-1 font-mono text-[12px] text-accent-300">
-                        {now === null
-                          ? "—"
-                          : formatDurationMs(now - new Date(order.createdAt).getTime())}
-                      </span>
-                    </div>
-
-                    <OrderLines items={order.items} />
-
-                    <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2.5">
-                      <span className="text-[13px] font-medium text-white/75">
-                        {formatCurrency(order.total)}
-                      </span>
-                      {col.status !== "ready" ? (
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() =>
-                            moveOrder(order.id, col.status === "pending" ? "preparing" : "ready")
-                          }
-                          className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
-                        >
-                          {col.status === "pending" ? "Empezar" : "Marcar lista"}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() => moveOrder(order.id, "delivered")}
-                          className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-2.5 py-1 text-[11.5px] font-semibold text-ink-950 disabled:opacity-40"
-                        >
-                          Entregar
-                        </button>
-                      )}
-                    </div>
-                  </GlassCard>
-                </motion.div>
-              ))}
+                    </article>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
 
             {columnOrders.length === 0 && (

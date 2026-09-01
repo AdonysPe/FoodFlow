@@ -11,7 +11,10 @@ export default function About() {
   const a = t.about;
 
   return (
-    <section id="nosotros" className="relative scroll-mt-24 overflow-x-clip py-24 sm:py-28">
+    <section
+      id="nosotros"
+      className="relative scroll-mt-24 overflow-x-clip pt-32 pb-20 sm:pt-40 sm:pb-24"
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-1/3 -z-10 h-[24rem] bg-[radial-gradient(45%_60%_at_30%_50%,rgba(255,90,51,0.07),transparent_70%)] blur-3xl"

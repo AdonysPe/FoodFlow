@@ -117,6 +117,7 @@ export type KitchenOrder = {
   id: string;
   customerName: string;
   tableName: string | null;
+  tableZone: string | null;
   serverName: string | null;
   roundNumber: number;
   items: OrderItemInput[];
@@ -140,13 +141,14 @@ export async function getKitchenOrders(): Promise<KitchenOrder[]> {
       voidedAt: null,
     },
     orderBy: { createdAt: "asc" },
-    include: { table: { select: { name: true } } },
+    include: { table: { select: { name: true, zone: true } } },
   });
 
   return orders.map((o) => ({
     id: o.id,
     customerName: o.customerName,
     tableName: o.table?.name ?? null,
+    tableZone: o.table?.zone ?? null,
     serverName: o.serverName,
     roundNumber: o.roundNumber,
     items: o.items as OrderItemInput[],

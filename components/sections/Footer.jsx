@@ -53,6 +53,12 @@ export default function Footer() {
               {t.pricing.eyebrow}
             </Link>
             <Link
+              href="/nosotros"
+              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+            >
+              {t.about.eyebrow}
+            </Link>
+            <Link
               href="/preguntas"
               className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
             >

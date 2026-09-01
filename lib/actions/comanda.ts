@@ -16,6 +16,9 @@ const lineSchema = z.object({
 const sendSchema = z.object({
   channel: z.enum(["dine_in", "delivery", "pickup"]),
   tableId: z.string().trim().optional().or(z.literal("")),
+  // Who the account is under, asked once when the order is opened. Optional:
+  // a busy service should never be blocked on a name nobody gave.
+  customerName: z.string().trim().max(60).optional().or(z.literal("")),
   lines: z.array(lineSchema).min(1, "Agrega al menos un plato"),
 });
 
@@ -57,7 +60,7 @@ export async function sendComanda(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos." };
   }
-  const { channel, tableId, lines } = parsed.data;
+  const { channel, tableId, customerName, lines } = parsed.data;
 
   // Resolve every line against the live menu — only items that belong to this
   // restaurant, are available, and sit in an active (or no) category can be sent.
@@ -137,7 +140,11 @@ export async function sendComanda(
   const created = await prisma.order.create({
     data: {
       restaurantId: restaurant.id,
-      customerName: table ? table.name : channel === "delivery" ? "Delivery" : "Para llevar",
+      // Falls back to the table (or the channel) so the kitchen board and
+      // the orders list always have something to print.
+      customerName:
+        customerName?.trim() ||
+        (table ? table.name : channel === "delivery" ? "Delivery" : "Para llevar"),
       tableId: table?.id ?? null,
       channel,
       items: newLines,

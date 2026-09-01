@@ -3,8 +3,25 @@
 import { useMemo } from "react";
 import { TABLE_STATE_LABELS, TABLE_STATE_TONE } from "@/lib/tableMeta";
 import { ZONE_LABELS_ES, type ComandaTableDTO, type OpenTabDTO } from "@/lib/comandaMeta";
-import { IconReceipt } from "@/components/ui/Icons";
+import { IconCart, IconReceipt, IconStore, IconUsers } from "@/components/ui/Icons";
 import { formatPrice } from "@/components/dashboard/menu/ui";
+
+/**
+ * "Lista" is the one kitchen state a server must act on from this screen —
+ * food is sitting on the pass. The rest stay quiet so it does not.
+ */
+const KITCHEN_FLAG: Partial<
+  Record<OpenTabDTO["kitchenStatus"], { label: string; className: string }>
+> = {
+  preparing: {
+    label: "En cocina",
+    className: "bg-amber-400/15 text-amber-200 ring-amber-400/25",
+  },
+  ready: {
+    label: "Lista",
+    className: "bg-mint/15 text-mint ring-mint/30",
+  },
+};
 
 export default function TargetPicker({
   tables,
@@ -32,37 +49,56 @@ export default function TargetPicker({
   }, [tables]);
 
   const openCount = openTabs.length;
+  const openTotal = openTabs.reduce((sum, t) => sum + t.total, 0);
+  const readyCount = openTabs.filter((t) => t.kitchenStatus === "ready").length;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <div>
-        <h1 className="font-display text-[20px] font-bold tracking-[-0.01em] text-white">
+        <h1 className="font-display text-[21px] font-bold tracking-[-0.01em] text-white">
           ¿Para dónde es?
         </h1>
         <p className="mt-0.5 text-[13px] text-white/45">
-          {openCount > 0
-            ? `${openCount} ${openCount === 1 ? "cuenta abierta" : "cuentas abiertas"} · toca la mesa para añadir o cobrar`
-            : "Elige una mesa o el tipo de pedido."}
+          Toca una mesa para abrir, añadir o cobrar.
         </p>
       </div>
 
+      {/* the floor in one line: what is open, what it adds up to, and whether
+          anything is waiting on the pass right now */}
+      {openCount > 0 && (
+        <div className="flex items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/35">
+              Cuentas abiertas
+            </p>
+            <p className="mt-0.5 font-display text-[19px] font-bold tabular-nums text-white">
+              {openCount}
+              <span className="ml-2 text-[14px] font-medium text-white/50">
+                {formatPrice(openTotal)}
+              </span>
+            </p>
+          </div>
+          {readyCount > 0 && (
+            <span className="ml-auto rounded-lg bg-mint/15 px-2.5 py-1.5 text-[12px] font-semibold text-mint ring-1 ring-inset ring-mint/30">
+              {readyCount} {readyCount === 1 ? "lista" : "listas"} en cocina
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
+        <ChannelButton
+          label="Para llevar"
+          hint="Sin mesa"
+          icon={<IconCart className="h-[18px] w-[18px]" />}
           onClick={() => onPickOther("pickup")}
-          className="flex min-h-[76px] flex-col items-start justify-center gap-1 rounded-2xl border border-white/[0.1] bg-white/[0.04] px-4 text-left transition-colors hover:bg-white/[0.07] active:scale-[0.98]"
-        >
-          <span className="text-[15px] font-semibold text-white/90">Para llevar</span>
-          <span className="text-[12px] text-white/40">Sin mesa</span>
-        </button>
-        <button
-          type="button"
+        />
+        <ChannelButton
+          label="Delivery"
+          hint="A domicilio"
+          icon={<IconStore className="h-[18px] w-[18px]" />}
           onClick={() => onPickOther("delivery")}
-          className="flex min-h-[76px] flex-col items-start justify-center gap-1 rounded-2xl border border-white/[0.1] bg-white/[0.04] px-4 text-left transition-colors hover:bg-white/[0.07] active:scale-[0.98]"
-        >
-          <span className="text-[15px] font-semibold text-white/90">Delivery</span>
-          <span className="text-[12px] text-white/40">A domicilio</span>
-        </button>
+        />
       </div>
 
       {tables.length === 0 ? (
@@ -70,46 +106,117 @@ export default function TargetPicker({
           Aún no hay mesas. Créalas en el módulo Mesas para tomar comandas de salón.
         </p>
       ) : (
-        zones.map(([zone, zoneTables]) => (
-          <div key={zone}>
-            <h2 className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-white/35">
-              {ZONE_LABELS_ES[zone] ?? zone}
-            </h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {zoneTables.map((t) => {
-                const tone = TABLE_STATE_TONE[t.state];
-                const tab = tabByTable.get(t.id);
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => onPickTable(t)}
-                    className="relative flex min-h-[92px] flex-col justify-between rounded-2xl border p-3 text-left transition-transform active:scale-[0.98]"
-                    style={{ borderColor: tone.stroke, backgroundColor: tone.fill }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[15px] font-bold text-white/90">{t.name}</span>
+        zones.map(([zone, zoneTables]) => {
+          const busy = zoneTables.filter((t) => tabByTable.has(t.id)).length;
+          return (
+            <div key={zone}>
+              <div className="mb-2.5 flex items-center gap-2.5">
+                <h2 className="text-[12px] font-semibold uppercase tracking-wide text-white/40">
+                  {ZONE_LABELS_ES[zone] ?? zone}
+                </h2>
+                <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[10.5px] font-medium tabular-nums text-white/45">
+                  {busy}/{zoneTables.length}
+                </span>
+                <span className="h-px flex-1 bg-white/[0.06]" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {zoneTables.map((t) => {
+                  const tone = TABLE_STATE_TONE[t.state];
+                  const tab = tabByTable.get(t.id);
+                  const flag = tab ? KITCHEN_FLAG[tab.kitchenStatus] : undefined;
+
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => onPickTable(t)}
+                      className="relative flex min-h-[108px] flex-col justify-between overflow-hidden rounded-2xl border p-3 text-left transition-transform active:scale-[0.98]"
+                      style={{ borderColor: tone.stroke, backgroundColor: tone.fill }}
+                    >
+                      {/* the state as a colour band down the edge, readable
+                          before any of the text is */}
                       <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: tone.solid, boxShadow: `0 0 7px -1px ${tone.solid}` }}
+                        aria-hidden
+                        className="absolute inset-y-0 left-0 w-1"
+                        style={{ backgroundColor: tone.solid, opacity: 0.75 }}
                       />
-                    </div>
-                    <span className="text-[11.5px]" style={{ color: tone.text }}>
-                      {TABLE_STATE_LABELS[t.state]} · {t.capacity}p
-                    </span>
-                    {tab && (
-                      <span className="mt-1 inline-flex items-center gap-1 rounded-md bg-black/25 px-1.5 py-0.5 text-[10.5px] font-semibold text-white/85">
-                        <IconReceipt className="h-3 w-3" />
-                        {formatPrice(tab.total)}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+
+                      <div className="flex items-start justify-between gap-2 pl-1.5">
+                        <span className="font-display text-[17px] font-bold leading-none text-white">
+                          {t.name}
+                        </span>
+                        <span className="flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-white/45">
+                          <IconUsers className="h-3 w-3" />
+                          {t.capacity}
+                        </span>
+                      </div>
+
+                      <div className="pl-1.5">
+                        <span className="flex items-center gap-1.5 text-[11.5px] font-medium">
+                          <span style={{ color: tone.text }}>
+                            {TABLE_STATE_LABELS[t.state]}
+                          </span>
+                          {/* the round rides with the state so the money and
+                              the kitchen flag keep a line to themselves, even
+                              on a four-figure total */}
+                          {tab && tab.roundNumber > 1 && (
+                            <span className="text-white/40">· R{tab.roundNumber}</span>
+                          )}
+                        </span>
+
+                        {tab && (
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-black/30 px-1.5 py-0.5 text-[11.5px] font-bold tabular-nums text-white">
+                              <IconReceipt className="h-3 w-3 opacity-70" />
+                              {formatPrice(tab.total)}
+                            </span>
+                            {flag && (
+                              <span
+                                className={`rounded-md px-1.5 py-0.5 text-[10.5px] font-semibold ring-1 ring-inset ${flag.className}`}
+                              >
+                                {flag.label}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
+  );
+}
+
+function ChannelButton({
+  label,
+  hint,
+  icon,
+  onClick,
+}: {
+  label: string;
+  hint: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-[76px] items-center gap-3 rounded-2xl border border-white/[0.1] bg-white/[0.04] px-4 text-left transition-colors hover:bg-white/[0.07] active:scale-[0.98]"
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-white/60">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-[15px] font-semibold text-white/90">{label}</span>
+        <span className="block truncate text-[12px] text-white/40">{hint}</span>
+      </span>
+    </button>
   );
 }

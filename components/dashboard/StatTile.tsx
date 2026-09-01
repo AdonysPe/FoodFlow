@@ -11,6 +11,8 @@ export default function StatTile({
   prefix = "",
   suffix = "",
   decimals = 0,
+  delta,
+  hint,
 }: {
   label: string;
   value: number;
@@ -18,6 +20,9 @@ export default function StatTile({
   prefix?: string;
   suffix?: string;
   decimals?: number;
+  /** Percentage change against the comparable previous period. */
+  delta?: number | null;
+  hint?: string;
 }) {
   const { ref, display } = useCountUp(value, { decimals });
 
@@ -32,6 +37,20 @@ export default function StatTile({
         {display}
         {suffix}
       </p>
+      {(delta != null || hint) && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {delta != null && (
+            <span
+              className={`rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums ${
+                delta >= 0 ? "bg-mint/12 text-mint" : "bg-accent-400/12 text-accent-200"
+              }`}
+            >
+              {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(0)}%
+            </span>
+          )}
+          {hint && <span className="text-[11.5px] text-white/35">{hint}</span>}
+        </div>
+      )}
     </GlassCard>
   );
 }

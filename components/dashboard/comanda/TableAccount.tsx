@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { voidOrder } from "@/lib/actions/comanda";
 import { formatPrice } from "@/components/dashboard/menu/ui";
-import type { OpenTabDTO, OpenTabLine } from "@/lib/comandaMeta";
+import { ZONE_LABELS_ES, type OpenTabDTO, type OpenTabLine } from "@/lib/comandaMeta";
 
 const KITCHEN_LABELS: Record<OpenTabDTO["kitchenStatus"], string> = {
   pending: "En cola",
@@ -12,6 +12,28 @@ const KITCHEN_LABELS: Record<OpenTabDTO["kitchenStatus"], string> = {
   ready: "Lista",
   delivered: "Servida",
 };
+
+// The kitchen state is the one thing a server checks at a glance, so it gets
+// a colour rather than another grey chip.
+const KITCHEN_TONE: Record<OpenTabDTO["kitchenStatus"], string> = {
+  pending: "border-white/15 bg-white/[0.06] text-white/60",
+  preparing: "border-amber-400/35 bg-amber-400/10 text-amber-200",
+  ready: "border-mint/40 bg-mint/10 text-mint",
+  delivered: "border-white/10 bg-white/[0.04] text-white/40",
+};
+
+/** Short, sayable ticket number — what a server reads out loud on the phone. */
+function ticketNumber(orderId: string) {
+  return orderId.slice(-6).toUpperCase();
+}
+
+function openedAtLabel(iso: string) {
+  return new Date(iso).toLocaleTimeString("es-PE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
 
 export default function TableAccount({
   tab,
@@ -40,7 +62,17 @@ export default function TableAccount({
     return [...map.entries()].sort((a, b) => a[0] - b[0]);
   }, [tab.lines]);
 
+  const dishCount = useMemo(
+    () => tab.lines.reduce((sum, l) => sum + l.quantity, 0),
+    [tab.lines]
+  );
+
   const multi = rounds.length > 1;
+  const zone = tab.tableZone ? ZONE_LABELS_ES[tab.tableZone] ?? tab.tableZone : null;
+  // The comanda stores the table name as the customer for a dine-in order, so
+  // this only prints when someone actually put the account under a name.
+  const namedFor =
+    tab.customerName && tab.customerName !== tab.tableName ? tab.customerName : null;
 
   function handleVoid() {
     if (!confirmingVoid) {
@@ -61,7 +93,9 @@ export default function TableAccount({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-[16px] font-bold text-white">{tab.tableName}</span>
-            <span className="rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] text-white/55">
+            <span
+              className={`rounded-md border px-1.5 py-0.5 text-[11px] font-medium ${KITCHEN_TONE[tab.kitchenStatus]}`}
+            >
               {KITCHEN_LABELS[tab.kitchenStatus]}
             </span>
           </div>
@@ -73,44 +107,123 @@ export default function TableAccount({
             Mesas
           </button>
         </div>
-        {tab.serverName && (
-          <p className="mt-1 text-[11.5px] text-white/35">Mozo {tab.serverName}</p>
-        )}
       </div>
 
       <div className="flex-1 px-4 py-4">
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-          {rounds.map(([round, lines]) => (
-            <div key={round} className="mb-3 last:mb-0">
-              {multi && (
-                <p className="mb-1 text-[10.5px] font-semibold uppercase tracking-wide text-white/30">
-                  Ronda {round}
+        {/* ---------------------------------------------------- the ticket */}
+        <article className="overflow-hidden rounded-2xl border border-white/[0.09] bg-ink-900 shadow-lift">
+          {/* header: who and where, plus the number the server reads out */}
+          <header className="px-4 pt-4 pb-3.5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent-300">
+                  Comanda
                 </p>
-              )}
-              <ul className="flex flex-col gap-1.5">
-                {lines.map((l, i) => (
-                  <li key={i} className="flex items-start justify-between gap-3 text-[13.5px]">
-                    <span className="text-white/80">
-                      {l.quantity}× {l.name}
-                      {l.note && (
-                        <span className="mt-0.5 block text-[11.5px] italic text-white/40">
-                          ↳ {l.note}
-                        </span>
-                      )}
-                    </span>
-                    <span className="shrink-0 tabular-nums text-white/60">
-                      {formatPrice(l.price * l.quantity)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                <h2 className="mt-1 truncate font-display text-[22px] font-extrabold tracking-[-0.02em] text-white">
+                  {tab.tableName}
+                </h2>
+                {zone && <p className="text-[12px] text-white/40">{zone}</p>}
+              </div>
+              <span className="shrink-0 rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1 font-mono text-[12px] tracking-wide text-white/55">
+                #{ticketNumber(tab.orderId)}
+              </span>
             </div>
-          ))}
-          <div className="mt-3 flex items-center justify-between border-t border-white/[0.08] pt-3">
-            <span className="text-[14px] font-semibold text-white/85">Total</span>
-            <span className="text-[16px] font-bold text-white">{formatPrice(tab.total)}</span>
+
+            <dl className="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-2 text-[12px]">
+              <div>
+                <dt className="text-white/35">Abierta</dt>
+                <dd className="mt-0.5 font-medium tabular-nums text-white/75">
+                  {openedAtLabel(tab.openedAt)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-white/35">Mozo</dt>
+                <dd className="mt-0.5 truncate font-medium text-white/75">
+                  {tab.serverName ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-white/35">A nombre de</dt>
+                <dd className="mt-0.5 truncate font-medium text-white/75">
+                  {namedFor ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-white/35">Rondas</dt>
+                <dd className="mt-0.5 font-medium tabular-nums text-white/75">
+                  {tab.roundNumber}
+                </dd>
+              </div>
+            </dl>
+          </header>
+
+          {/* perforation — the fold every paper ticket has */}
+          <div className="relative h-4">
+            <span className="absolute inset-x-4 top-1/2 border-t border-dashed border-white/15" />
+            <span className="absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-ink-950" />
+            <span className="absolute -right-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-ink-950" />
           </div>
-        </div>
+
+          {/* lines, grouped by the round they were sent in */}
+          <div className="px-4 pb-1 pt-2">
+            {rounds.map(([round, lines], roundIndex) => (
+              <section key={round} className={roundIndex > 0 ? "mt-4" : ""}>
+                {multi && (
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">
+                      Ronda {round}
+                    </span>
+                    <span className="h-px flex-1 bg-white/[0.07]" />
+                  </div>
+                )}
+
+                <ul className="flex flex-col gap-2.5">
+                  {lines.map((l, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <span className="mt-px shrink-0 rounded-md border border-white/[0.1] bg-white/[0.05] px-1.5 py-0.5 font-mono text-[12px] font-semibold tabular-nums text-white/80">
+                        {l.quantity}
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[13.5px] leading-snug text-white/85">
+                          {l.name}
+                        </span>
+                        {/* unit price, so a corrected line can be checked */}
+                        <span className="mt-0.5 block text-[11.5px] tabular-nums text-white/35">
+                          {formatPrice(l.price)} c/u
+                        </span>
+                        {l.note && (
+                          <span className="mt-1 inline-block rounded-md bg-accent-400/10 px-1.5 py-0.5 text-[11.5px] text-accent-200">
+                            {l.note}
+                          </span>
+                        )}
+                      </span>
+
+                      <span className="shrink-0 pt-px font-mono text-[13px] tabular-nums text-white/70">
+                        {formatPrice(l.price * l.quantity)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+
+          {/* totals */}
+          <footer className="mt-4 border-t border-dashed border-white/15 px-4 py-3.5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[13px] font-semibold uppercase tracking-wide text-white/70">
+                Total
+                <span className="ml-2 font-normal normal-case tracking-normal text-white/35">
+                  {dishCount} {dishCount === 1 ? "plato" : "platos"}
+                </span>
+              </span>
+              <span className="font-display text-[24px] font-extrabold tabular-nums tracking-[-0.02em] text-white">
+                {formatPrice(tab.total)}
+              </span>
+            </div>
+          </footer>
+        </article>
 
         <button
           type="button"

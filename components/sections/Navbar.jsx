@@ -24,7 +24,7 @@ const HREFS = [
   "/calculadora",
   "/precios",
   "/preguntas",
-  "/#nosotros",
+  "/nosotros",
 ];
 
 export default function Navbar() {

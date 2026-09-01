@@ -47,6 +47,9 @@ export default function ComandaFlow({
   const [step, setStep] = useState<Step>("target");
   const [target, setTarget] = useState<Target | null>(null);
   const [cart, setCart] = useState<Cart>({});
+  // Only asked when the order is being opened; a table that already has
+  // an open tab keeps the name it was opened with.
+  const [customerName, setCustomerName] = useState("");
   const [isSending, startSending] = useTransition();
 
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
@@ -74,12 +77,14 @@ export default function ComandaFlow({
   function chooseTable(t: ComandaTableDTO) {
     setTarget({ kind: "table", id: t.id, name: t.name });
     setCart({});
+    setCustomerName("");
     setStep(tabByTable.has(t.id) ? "account" : "items");
   }
 
   function chooseOther(kind: "pickup" | "delivery") {
     setTarget({ kind });
     setCart({});
+    setCustomerName("");
     setStep("items");
   }
 
@@ -87,6 +92,7 @@ export default function ComandaFlow({
     setStep("target");
     setTarget(null);
     setCart({});
+    setCustomerName("");
   }
 
   function setQty(itemId: string, qty: number) {
@@ -114,6 +120,7 @@ export default function ComandaFlow({
       const result = await sendComanda({
         channel: target.kind === "table" ? "dine_in" : target.kind === "delivery" ? "delivery" : "pickup",
         tableId: target.kind === "table" ? target.id : "",
+        customerName: activeTab ? undefined : customerName.trim() || undefined,
         lines,
       });
 
@@ -135,6 +142,7 @@ export default function ComandaFlow({
         "success"
       );
       setCart({});
+      setCustomerName("");
       // A table order sticks around to be cobrada; other channels are one-shot.
       if (target.kind === "table") setStep("account");
       else resetToTarget();
@@ -244,7 +252,16 @@ export default function ComandaFlow({
       </AnimatePresence>
 
       {step === "items" && (
-        <CartBar count={count} total={total} sending={isSending} onSend={send} />
+        <CartBar
+          count={count}
+          total={total}
+          sending={isSending}
+          onSend={send}
+          // A round added to an open tab inherits the name already on it.
+          askName={!activeTab}
+          customerName={customerName}
+          onCustomerNameChange={setCustomerName}
+        />
       )}
     </div>
   );

@@ -38,6 +38,10 @@ export type OpenTabDTO = {
   orderId: string;
   tableId: string;
   tableName: string;
+  // Whose account this is. For a table the comanda stores the table name, so
+  // the ticket only prints it when it actually says something different.
+  customerName: string;
+  tableZone: string | null;
   lines: OpenTabLine[];
   total: number;
   roundNumber: number;

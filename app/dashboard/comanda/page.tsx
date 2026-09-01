@@ -62,7 +62,7 @@ export default async function ComandaPage() {
         voidedAt: null,
       },
       orderBy: { createdAt: "desc" },
-      include: { table: { select: { name: true } } },
+      include: { table: { select: { name: true, zone: true } } },
     }),
     prisma.reservation.findMany({
       where: { restaurantId: restaurant.id, date: { gte: rangeStart, lte: rangeEnd } },
@@ -85,6 +85,8 @@ export default async function ComandaPage() {
       orderId: o.id,
       tableId: o.tableId!,
       tableName: o.table?.name ?? o.customerName,
+      customerName: o.customerName,
+      tableZone: o.table?.zone ?? null,
       lines: o.items as OpenTabLine[],
       total: o.total,
       roundNumber: o.roundNumber,
