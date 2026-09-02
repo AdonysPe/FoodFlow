@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
-import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { requirePlanFeature } from "@/lib/auth/plan";
+import PlanGate from "@/components/dashboard/PlanGate";
 import OrdersTable, { type OrderRow } from "@/components/dashboard/OrdersTable";
 import NewOrderForm from "@/components/dashboard/NewOrderForm";
 import AutoRefresh from "@/components/dashboard/AutoRefresh";
@@ -29,7 +30,8 @@ export default async function OrdersPage({
 }: {
   searchParams: Promise<{ range?: string }>;
 }) {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, plan, allowed } = await requirePlanFeature("orders");
+  if (!allowed) return <PlanGate feature="orders" plan={plan} />;
   if (!restaurant) return null;
 
   const { range: rawRange } = await searchParams;

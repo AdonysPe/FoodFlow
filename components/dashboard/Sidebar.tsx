@@ -10,23 +10,35 @@ import {
   IconKitchen,
   IconMenuBook,
   IconUsers,
+  IconMail,
   IconStore,
   IconAnalytics,
   IconTables,
   IconStaff,
   IconReceipt,
   IconShield,
+  IconLock,
   IconLogout,
   IconX,
 } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { logout } from "@/lib/actions/auth";
 import { EASE } from "@/lib/motion";
+import {
+  PLANS,
+  PLAN_FEATURES,
+  PLAN_LABELS,
+  firstPlanWith,
+  type FeatureValue,
+  type PlanValue,
+} from "@/lib/plans";
 
 export type NavItem = {
   href: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
+  // Client nav only: which plan feature opens this module.
+  feature?: FeatureValue;
 };
 
 // Icon components can't cross the server→client boundary as props (RSC
@@ -35,35 +47,51 @@ export type NavItem = {
 const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/admin/overview", label: "Overview", icon: IconDashboard },
   { href: "/dashboard/admin/leads", label: "Leads", icon: IconUsers },
+  { href: "/dashboard/admin/contactos", label: "Contactos", icon: IconMail },
   { href: "/dashboard/admin/restaurants", label: "Restaurants", icon: IconStore },
   { href: "/dashboard/admin/analytics", label: "Analytics", icon: IconAnalytics },
   { href: "/dashboard/admin/audit", label: "Audit log", icon: IconShield },
 ];
 
 const CLIENT_NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard/app/overview", label: "Resumen", icon: IconDashboard },
-  { href: "/dashboard/comanda", label: "Comanda", icon: IconReceipt },
-  { href: "/dashboard/app/orders", label: "Pedidos", icon: IconOrders },
-  { href: "/dashboard/app/kitchen", label: "Cocina", icon: IconKitchen },
-  { href: "/dashboard/app/mesas", label: "Mesas", icon: IconTables },
-  { href: "/dashboard/app/menu", label: "Menú", icon: IconMenuBook },
-  { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers },
-  { href: "/dashboard/app/equipo", label: "Equipo", icon: IconStaff },
-  { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics },
+  { href: "/dashboard/app/overview", label: "Resumen", icon: IconDashboard, feature: "overview" },
+  { href: "/dashboard/comanda", label: "Comanda", icon: IconReceipt, feature: "comanda" },
+  { href: "/dashboard/app/orders", label: "Pedidos", icon: IconOrders, feature: "orders" },
+  { href: "/dashboard/app/kitchen", label: "Cocina", icon: IconKitchen, feature: "kitchen" },
+  { href: "/dashboard/app/mesas", label: "Mesas", icon: IconTables, feature: "tables" },
+  { href: "/dashboard/app/menu", label: "Menú", icon: IconMenuBook, feature: "menu" },
+  { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers, feature: "customers" },
+  { href: "/dashboard/app/equipo", label: "Equipo", icon: IconStaff, feature: "staff" },
+  { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics, feature: "analytics" },
 ];
 
 function NavList({
   pathname,
   navItems,
+  plan,
   onNavigate,
 }: {
   pathname: string;
   navItems: NavItem[];
+  // Undefined for the admin sidebar, which has no plan gating.
+  plan?: PlanValue;
   onNavigate?: () => void;
 }) {
+  const included = plan
+    ? navItems.filter((i) => !i.feature || PLAN_FEATURES[plan].includes(i.feature))
+    : navItems;
+  // Locked modules stay visible but muted, grouped under the plan that opens
+  // each one — so "Análisis" never sits under a "Servicio" heading.
+  const locked = plan
+    ? navItems.filter((i) => i.feature && !PLAN_FEATURES[plan].includes(i.feature))
+    : [];
+  const lockedByPlan = PLANS.map(
+    (p) => [p, locked.filter((i) => firstPlanWith(i.feature!) === p)] as const
+  ).filter(([, items]) => items.length > 0);
+
   return (
-    <nav className="flex flex-1 flex-col gap-1 px-3">
-      {navItems.map((item) => {
+    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3">
+      {included.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (
@@ -86,6 +114,29 @@ function NavList({
           </Link>
         );
       })}
+
+      {lockedByPlan.map(([neededPlan, items]) => (
+        <div key={neededPlan}>
+          <p className="mt-5 px-3.5 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-white/25">
+            Con el plan {PLAN_LABELS[neededPlan]}
+          </p>
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className="group flex items-center gap-3 rounded-xl px-3.5 py-2 text-[13.5px] font-medium text-white/25 transition-colors duration-200 hover:bg-white/[0.03] hover:text-white/45"
+              >
+                <Icon className="h-[17px] w-[17px] shrink-0 text-white/20" />
+                {item.label}
+                <IconLock className="ml-auto h-3.5 w-3.5 shrink-0 text-white/20" />
+              </Link>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
 }
@@ -94,12 +145,15 @@ export default function Sidebar({
   userEmail,
   variant = "admin",
   badgeLabel = "Admin",
+  plan,
 }: {
   userEmail: string;
   variant?: "admin" | "client";
   badgeLabel?: string;
+  plan?: PlanValue;
 }) {
   const navItems = variant === "client" ? CLIENT_NAV_ITEMS : ADMIN_NAV_ITEMS;
+  const navPlan = variant === "client" ? plan : undefined;
   const pathname = usePathname();
   const router = useRouter();
   const sidebarOpen = useDashboardStore((s) => s.sidebarOpen);
@@ -148,7 +202,7 @@ export default function Sidebar({
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/[0.07] bg-ink-950/70 backdrop-blur-xl lg:flex">
         {brand}
-        <NavList pathname={pathname} navItems={navItems} />
+        <NavList pathname={pathname} navItems={navItems} plan={navPlan} />
         {footer}
       </aside>
 
@@ -185,7 +239,12 @@ export default function Sidebar({
                   <IconX className="h-5 w-5" />
                 </button>
               </div>
-              <NavList pathname={pathname} navItems={navItems} onNavigate={closeSidebar} />
+              <NavList
+                pathname={pathname}
+                navItems={navItems}
+                plan={navPlan}
+                onNavigate={closeSidebar}
+              />
               {footer}
             </motion.aside>
           </>

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
-import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { requirePlanFeature } from "@/lib/auth/plan";
+import PlanGate from "@/components/dashboard/PlanGate";
 import GlassCard from "@/components/ui/GlassCard";
 import StatTile from "@/components/dashboard/StatTile";
 import SalesTrendChart, { type TrendPoint } from "@/components/dashboard/SalesTrendChart";
@@ -55,7 +56,8 @@ function pctChange(current: number, previous: number): number | null {
 }
 
 export default async function AnalyticsPage() {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, plan, allowed } = await requirePlanFeature("analytics");
+  if (!allowed) return <PlanGate feature="analytics" plan={plan} />;
   if (!restaurant) return null;
 
   // 70 days covers both the 30-vs-30 comparison and eight Monday-aligned

@@ -5,10 +5,19 @@ import GlassCard from "@/components/ui/GlassCard";
 import Button from "@/components/ui/Button";
 import { createRestaurant } from "@/lib/actions/restaurants";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
+import {
+  PLANS,
+  PLAN_LABELS,
+  PLAN_PRICES,
+  PLAN_SUMMARIES,
+  type PlanValue,
+} from "@/lib/plans";
 
 export default function CreateRestaurantForm() {
   const [name, setName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
+  // Defaults to the plan the pricing page calls "Más elegido".
+  const [plan, setPlan] = useState<PlanValue>("servicio");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
@@ -17,10 +26,11 @@ export default function CreateRestaurantForm() {
     e.preventDefault();
     setError("");
     startTransition(async () => {
-      const result = await createRestaurant({ name, ownerEmail });
+      const result = await createRestaurant({ name, ownerEmail, plan });
       if (result.ok) {
         setName("");
         setOwnerEmail("");
+        setPlan("servicio");
         pushToast("Restaurant created.", "success");
       } else {
         setError(result.error);
@@ -59,10 +69,28 @@ export default function CreateRestaurantForm() {
             className="h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
           />
         </div>
+        <div className="sm:w-44">
+          <label htmlFor="restaurant-plan" className="sr-only">
+            Plan
+          </label>
+          <select
+            id="restaurant-plan"
+            value={plan}
+            onChange={(e) => setPlan(e.target.value as PlanValue)}
+            className="h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
+          >
+            {PLANS.map((p) => (
+              <option key={p} value={p} className="bg-ink-900">
+                {PLAN_LABELS[p]} · {PLAN_PRICES[p]}
+              </option>
+            ))}
+          </select>
+        </div>
         <Button type="submit" size="md" className="shrink-0" disabled={isPending}>
           {isPending ? "Creating…" : "Create"}
         </Button>
       </form>
+      <p className="mt-2.5 text-[12.5px] text-white/40">{PLAN_SUMMARIES[plan]}</p>
       {error && <p className="mt-2.5 text-[13px] text-accent-400">{error}</p>}
     </GlassCard>
   );

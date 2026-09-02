@@ -8,8 +8,10 @@ import AreaChart from "@/components/dashboard/AreaChart";
 import AutoRefresh from "@/components/dashboard/AutoRefresh";
 import GlassCard from "@/components/ui/GlassCard";
 import { IconBolt, IconOrders, IconTarget, IconClock } from "@/components/ui/Icons";
+import CartaOverview from "@/components/dashboard/CartaOverview";
 import { CHANNEL_LABELS } from "@/lib/orderMeta";
 import { formatCurrency, formatTimeLabel } from "@/lib/format";
+import { planAllows, type PlanValue } from "@/lib/plans";
 
 export const metadata = {
   title: "Resumen",
@@ -25,6 +27,32 @@ function startOfDay(daysAgo = 0): Date {
 export default async function OverviewPage() {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return null;
+
+  const plan = restaurant.plan as PlanValue;
+
+  // Without the orders module there is nothing to total up, so the Carta plan
+  // gets a menu-shaped overview instead of four zeroed sales tiles.
+  if (!planAllows(plan, "orders")) {
+    const [items, categoryCount] = await Promise.all([
+      prisma.menuItem.findMany({
+        where: { restaurantId: restaurant.id },
+        select: { id: true, name: true, available: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.menuCategory.count({ where: { restaurantId: restaurant.id } }),
+    ]);
+
+    return (
+      <CartaOverview
+        restaurantName={restaurant.name}
+        plan={plan}
+        itemCount={items.length}
+        availableCount={items.filter((i) => i.available).length}
+        categoryCount={categoryCount}
+        soldOut={items.filter((i) => !i.available).map((i) => ({ id: i.id, name: i.name }))}
+      />
+    );
+  }
 
   const todayStart = startOfDay(0);
   const sevenDaysAgoStart = startOfDay(6);

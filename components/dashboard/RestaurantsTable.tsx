@@ -2,30 +2,92 @@
 
 import { useState, useTransition } from "react";
 import GlassCard from "@/components/ui/GlassCard";
-import { updateRestaurant, deleteRestaurant } from "@/lib/actions/restaurants";
+import {
+  updateRestaurant,
+  updateRestaurantPlan,
+  deleteRestaurant,
+} from "@/lib/actions/restaurants";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
+import {
+  PLANS,
+  PLAN_LABELS,
+  PLAN_MAX_USERS,
+  PLAN_PRICES,
+  type PlanValue,
+} from "@/lib/plans";
 
 export type RestaurantRow = {
   id: string;
   name: string;
   ownerEmail: string;
+  plan: PlanValue;
+  staffCount: number;
   createdAtLabel: string;
 };
 
 const inputClass =
   "h-9 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 text-[13.5px] text-white outline-none focus:border-accent-400/50";
 
+const PLAN_TONE: Record<PlanValue, string> = {
+  carta: "bg-white/[0.06] text-white/60 ring-white/15",
+  servicio: "bg-accent-400/10 text-accent-300 ring-accent-400/25",
+  negocio: "bg-mint/10 text-mint ring-mint/25",
+};
+
+// Changing the plan is the one thing an admin does most on this screen, so it
+// is a one-click select on the row rather than something behind "Edit".
+function PlanPicker({ restaurant }: { restaurant: RestaurantRow }) {
+  const [isPending, startTransition] = useTransition();
+  const pushToast = useDashboardStore((s) => s.pushToast);
+
+  // Waiters already added can exceed a downgraded plan's cap — warn, don't block.
+  function change(next: PlanValue) {
+    const cap = PLAN_MAX_USERS[next];
+    startTransition(async () => {
+      const result = await updateRestaurantPlan(restaurant.id, next);
+      if (!result.ok) {
+        pushToast(result.error, "error");
+        return;
+      }
+      const overCap = cap !== Infinity && restaurant.staffCount + 1 > cap;
+      pushToast(
+        overCap
+          ? `${restaurant.name} → ${PLAN_LABELS[next]}. Ojo: tiene ${restaurant.staffCount + 1} usuarios y el plan permite ${cap}.`
+          : `${restaurant.name} → plan ${PLAN_LABELS[next]}.`,
+        overCap ? "error" : "success"
+      );
+    });
+  }
+
+  return (
+    <select
+      value={restaurant.plan}
+      disabled={isPending}
+      onChange={(e) => change(e.target.value as PlanValue)}
+      aria-label={`Plan for ${restaurant.name}`}
+      className={`rounded-full px-2.5 py-1 text-[12px] font-medium ring-1 ring-inset outline-none disabled:opacity-40 ${PLAN_TONE[restaurant.plan]}`}
+    >
+      {PLANS.map((p) => (
+        <option key={p} value={p} className="bg-ink-900 text-white">
+          {PLAN_LABELS[p]} · {PLAN_PRICES[p]}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(restaurant.name);
   const [ownerEmail, setOwnerEmail] = useState(restaurant.ownerEmail);
+  const [plan, setPlan] = useState<PlanValue>(restaurant.plan);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
 
   function handleSave() {
     startTransition(async () => {
-      const result = await updateRestaurant(restaurant.id, { name, ownerEmail });
+      const result = await updateRestaurant(restaurant.id, { name, ownerEmail, plan });
       if (result.ok) {
         setEditing(false);
         pushToast("Restaurant updated.", "success");
@@ -64,6 +126,19 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
             className={inputClass}
           />
         </td>
+        <td className="px-5 py-3">
+          <select
+            value={plan}
+            onChange={(e) => setPlan(e.target.value as PlanValue)}
+            className={inputClass}
+          >
+            {PLANS.map((p) => (
+              <option key={p} value={p} className="bg-ink-900">
+                {PLAN_LABELS[p]}
+              </option>
+            ))}
+          </select>
+        </td>
         <td className="px-5 py-3 text-white/45">{restaurant.createdAtLabel}</td>
         <td className="px-5 py-3">
           <div className="flex gap-2">
@@ -81,6 +156,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
               onClick={() => {
                 setName(restaurant.name);
                 setOwnerEmail(restaurant.ownerEmail);
+                setPlan(restaurant.plan);
                 setEditing(false);
               }}
               className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-white/70 hover:bg-white/[0.08]"
@@ -96,7 +172,18 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
   return (
     <tr className="border-b border-white/[0.04] last:border-0">
       <td className="px-5 py-3.5 font-medium text-white/85">{restaurant.name}</td>
-      <td className="px-5 py-3.5 text-white/55">{restaurant.ownerEmail}</td>
+      <td className="px-5 py-3.5 text-white/55">
+        <p>{restaurant.ownerEmail}</p>
+        <p className="text-[12px] text-white/35">
+          {restaurant.staffCount + 1}{" "}
+          {PLAN_MAX_USERS[restaurant.plan] === Infinity
+            ? "usuarios"
+            : `de ${PLAN_MAX_USERS[restaurant.plan]} usuarios`}
+        </p>
+      </td>
+      <td className="px-5 py-3.5">
+        <PlanPicker restaurant={restaurant} />
+      </td>
       <td className="px-5 py-3.5 text-white/45">{restaurant.createdAtLabel}</td>
       <td className="px-5 py-3.5">
         <div className="flex flex-wrap gap-2">
@@ -138,11 +225,12 @@ export default function RestaurantsTable({ restaurants }: { restaurants: Restaur
   return (
     <GlassCard className="overflow-hidden p-0" hoverLift={false}>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-left text-[14px]">
+        <table className="w-full min-w-[720px] text-left text-[14px]">
           <thead>
             <tr className="border-b border-white/[0.07] text-[12px] uppercase tracking-wide text-white/35">
               <th className="px-5 py-3.5 font-medium">Name</th>
               <th className="px-5 py-3.5 font-medium">Owner</th>
+              <th className="px-5 py-3.5 font-medium">Plan</th>
               <th className="px-5 py-3.5 font-medium">Created</th>
               <th className="px-5 py-3.5 font-medium">Actions</th>
             </tr>

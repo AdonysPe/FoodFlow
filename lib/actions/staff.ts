@@ -5,6 +5,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { logAudit } from "@/lib/audit/log";
+import {
+  PLAN_LABELS,
+  PLAN_MAX_USERS,
+  firstPlanWith,
+  planAllows,
+  staffSeatsLeft,
+  type PlanValue,
+} from "@/lib/plans";
 import type { ActionResult } from "@/lib/actions/auth";
 
 const EQUIPO_PATH = "/dashboard/app/equipo";
@@ -33,6 +41,24 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
 
   if (email === user.email.toLowerCase()) {
     return { ok: false, error: "Ese es tu propio correo." };
+  }
+
+  // The plan caps how many people can use the dashboard, owner included.
+  const plan = restaurant.plan as PlanValue;
+  if (!planAllows(plan, "staff")) {
+    return {
+      ok: false,
+      error: `El plan ${PLAN_LABELS[plan]} es de un solo usuario. Sube a ${PLAN_LABELS[firstPlanWith("staff")]} para agregar mozos.`,
+    };
+  }
+  const currentStaff = await prisma.staffMembership.count({
+    where: { restaurantId: restaurant.id },
+  });
+  if (staffSeatsLeft(plan, currentStaff) <= 0) {
+    return {
+      ok: false,
+      error: `Tu plan ${PLAN_LABELS[plan]} llega hasta ${PLAN_MAX_USERS[plan]} usuarios (dueño incluido). Quita a alguien o sube de plan.`,
+    };
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });

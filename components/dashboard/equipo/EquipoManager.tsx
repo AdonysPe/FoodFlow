@@ -54,7 +54,16 @@ function MemberRow({ member }: { member: StaffMemberDTO }) {
   );
 }
 
-export default function EquipoManager({ members }: { members: StaffMemberDTO[] }) {
+export default function EquipoManager({
+  members,
+  maxUsers,
+  seatsLeft,
+}: {
+  members: StaffMemberDTO[];
+  // null on an uncapped plan.
+  maxUsers: number | null;
+  seatsLeft: number | null;
+}) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -74,6 +83,8 @@ export default function EquipoManager({ members }: { members: StaffMemberDTO[] }
     });
   }
 
+  const full = seatsLeft != null && seatsLeft <= 0;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -85,20 +96,36 @@ export default function EquipoManager({ members }: { members: StaffMemberDTO[] }
       </div>
 
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-        <h2 className="mb-3 text-[15px] font-semibold text-white/90">Agregar mozo</h2>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-[15px] font-semibold text-white/90">Agregar mozo</h2>
+          {maxUsers != null && (
+            <span className="text-[12.5px] text-white/40">
+              {members.length + 1} de {maxUsers} usuarios
+              {seatsLeft != null && seatsLeft > 0
+                ? ` · quedan ${seatsLeft}`
+                : " · sin cupo libre"}
+            </span>
+          )}
+        </div>
         <form onSubmit={handleAdd} className="flex flex-col gap-3 sm:flex-row">
           <input
             type="email"
             required
+            disabled={full}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="mozo@correo.com"
-            className="h-11 w-full flex-1 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
+            className="h-11 w-full flex-1 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-40"
           />
-          <Button type="submit" size="md" className="shrink-0" disabled={isPending}>
+          <Button type="submit" size="md" className="shrink-0" disabled={isPending || full}>
             {isPending ? "Agregando…" : "Agregar"}
           </Button>
         </form>
+        {full && (
+          <p className="mt-2.5 text-[13px] text-amber-200">
+            Tu plan llegó al tope de usuarios. Quita a alguien o sube de plan para agregar más.
+          </p>
+        )}
         {error && <p className="mt-2.5 text-[13px] text-accent-400">{error}</p>}
       </GlassCard>
 

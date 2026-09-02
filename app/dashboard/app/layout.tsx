@@ -6,6 +6,7 @@ import Toast from "@/components/dashboard/Toast";
 import GlassCard from "@/components/ui/GlassCard";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { logout } from "@/lib/actions/auth";
+import type { PlanValue } from "@/lib/plans";
 
 const CLIENT_TITLES: Record<string, string> = {
   overview: "Resumen",
@@ -51,7 +52,12 @@ export default async function ClientAppLayout({ children }: { children: ReactNod
   return (
     <MotionProvider>
       <div className="min-h-screen bg-ink-950">
-        <Sidebar userEmail={user.email} variant="client" badgeLabel={restaurant.name} />
+        <Sidebar
+          userEmail={user.email}
+          variant="client"
+          badgeLabel={restaurant.name}
+          plan={restaurant.plan as PlanValue}
+        />
         <div className="flex min-h-screen flex-col lg:pl-64">
           <Topbar titles={CLIENT_TITLES} />
           <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>

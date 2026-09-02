@@ -1,13 +1,15 @@
 import { prisma } from "@/lib/db/prisma";
-import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { requirePlanFeature } from "@/lib/auth/plan";
 import CustomersTable, { type CustomerRow } from "@/components/dashboard/CustomersTable";
+import PlanGate from "@/components/dashboard/PlanGate";
 
 export const metadata = {
   title: "Clientes",
 };
 
 export default async function CustomersPage() {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, plan, allowed } = await requirePlanFeature("customers");
+  if (!allowed) return <PlanGate feature="customers" plan={plan} />;
   if (!restaurant) return null;
 
   const [customers, orderStats] = await Promise.all([

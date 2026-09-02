@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
-import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { requirePlanFeature } from "@/lib/auth/plan";
+import PlanGate from "@/components/dashboard/PlanGate";
 import MesasWorkspace from "@/components/dashboard/mesas/MesasWorkspace";
 import { toDateInputValue, startOfWeek, addDays } from "@/lib/tableMeta";
 import type { TableDTO, ReservationDTO, OrderMiniDTO } from "@/components/dashboard/mesas/types";
@@ -9,7 +10,8 @@ export const metadata = {
 };
 
 export default async function MesasPage() {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, plan, allowed } = await requirePlanFeature("tables");
+  if (!allowed) return <PlanGate feature="tables" plan={plan} />;
   if (!restaurant) return null;
 
   const todayStr = toDateInputValue(new Date());

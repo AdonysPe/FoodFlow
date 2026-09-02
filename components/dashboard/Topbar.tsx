@@ -7,6 +7,7 @@ import { useDashboardStore } from "@/lib/store/dashboardStore";
 const DEFAULT_TITLES: Record<string, string> = {
   overview: "Overview",
   leads: "Leads",
+  contactos: "Contactos",
   restaurants: "Restaurants",
   analytics: "Analytics",
   audit: "Audit log",

@@ -3,8 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
+import { requireAdmin } from "@/lib/auth/guards";
 import { callerIpHash } from "@/lib/security/clientHash";
+import { logAudit } from "@/lib/audit/log";
 import { leadScore, normalizeWhatsApp } from "@/lib/leads/validation";
+import type { ActionResult } from "@/lib/actions/auth";
 
 /**
  * Result codes, not sentences: the landing runs in two languages and the
@@ -75,8 +78,55 @@ export async function submitLeadCapture(input: LeadInput): Promise<LeadResult> {
     return { ok: false, code: "server" };
   }
 
-  revalidatePath("/dashboard/admin/leads");
+  revalidatePath("/dashboard/admin/contactos");
   revalidatePath("/dashboard/admin/overview");
 
   return { ok: true };
+}
+
+// The by-hand pipeline the operator works the funnel through. Spanish on
+// purpose — the values are read straight off the admin table.
+const pipelineSchema = z.enum([
+  "nuevo",
+  "contactado",
+  "cita",
+  "cliente",
+  "archivado",
+]);
+
+/**
+ * Admin-only: move a form lead along the pipeline from the Contactos table.
+ * Mirrors `updateLeadStatus` (the ClientLead one) — guarded, audited, and it
+ * revalidates every page that shows a lead count.
+ */
+export async function updateLeadPipeline(
+  leadId: string,
+  rawStatus: string
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+
+  const parsed = pipelineSchema.safeParse(rawStatus);
+  if (!parsed.success) return { ok: false, error: "Estado inválido." };
+
+  const existing = await prisma.lead.findUnique({ where: { id: leadId } });
+  if (!existing) return { ok: false, error: "Contacto no encontrado." };
+
+  await prisma.lead.update({
+    where: { id: leadId },
+    data: { status: parsed.data },
+  });
+
+  await logAudit({
+    action: "lead.status_change",
+    actor: { id: admin.id, email: admin.email },
+    entity: "Lead",
+    entityId: leadId,
+    before: { status: existing.status },
+    after: { status: parsed.data },
+  });
+
+  revalidatePath("/dashboard/admin/contactos");
+  revalidatePath("/dashboard/admin/overview");
+
+  return { ok: true, data: undefined };
 }

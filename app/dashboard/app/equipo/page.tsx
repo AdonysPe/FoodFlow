@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
-import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { requirePlanFeature } from "@/lib/auth/plan";
+import { PLAN_MAX_USERS, staffSeatsLeft } from "@/lib/plans";
 import EquipoManager from "@/components/dashboard/equipo/EquipoManager";
+import PlanGate from "@/components/dashboard/PlanGate";
 import type { StaffMemberDTO } from "@/lib/actions/staff";
 
 export const metadata = {
@@ -8,7 +10,8 @@ export const metadata = {
 };
 
 export default async function EquipoPage() {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, plan, allowed } = await requirePlanFeature("staff");
+  if (!allowed) return <PlanGate feature="staff" plan={plan} />;
   if (!restaurant) return null;
 
   const memberships = await prisma.staffMembership.findMany({
@@ -37,5 +40,13 @@ export default async function EquipoPage() {
     active: seenEmails.has(m.user.email),
   }));
 
-  return <EquipoManager members={members} />;
+  const seatsLeft = staffSeatsLeft(plan, members.length);
+
+  return (
+    <EquipoManager
+      members={members}
+      maxUsers={PLAN_MAX_USERS[plan] === Infinity ? null : PLAN_MAX_USERS[plan]}
+      seatsLeft={seatsLeft === Infinity ? null : seatsLeft}
+    />
+  );
 }

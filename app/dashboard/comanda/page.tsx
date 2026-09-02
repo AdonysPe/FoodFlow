@@ -13,12 +13,13 @@ import type {
   OpenTabDTO,
   OpenTabLine,
 } from "@/lib/comandaMeta";
+import { planAllows, PLAN_LABELS, firstPlanWith, type PlanValue } from "@/lib/plans";
 import ComandaFlow from "@/components/dashboard/comanda/ComandaFlow";
 
 export const metadata = { title: "Comanda" };
 
 export default async function ComandaPage() {
-  const { restaurant } = await requireComandaRestaurant();
+  const { restaurant, isOwner } = await requireComandaRestaurant();
 
   if (!restaurant) {
     return (
@@ -27,6 +28,34 @@ export default async function ComandaPage() {
           Tu cuenta todavía no está vinculada a un restaurante. Pídele al dueño que te agregue al
           equipo.
         </p>
+      </div>
+    );
+  }
+
+  // The comanda has its own bare layout (no sidebar), so it explains the gate
+  // here instead of rendering the dashboard's PlanGate screen.
+  const plan = restaurant.plan as PlanValue;
+  if (!planAllows(plan, "comanda")) {
+    return (
+      <div className="mx-auto max-w-md px-5 py-20 text-center">
+        <h1 className="font-display text-[20px] font-bold tracking-[-0.02em] text-white">
+          La comanda viene con el plan {PLAN_LABELS[firstPlanWith("comanda")]}
+        </h1>
+        <p className="mt-2.5 text-[14px] leading-relaxed text-white/50">
+          {isOwner
+            ? `Tu plan actual es ${PLAN_LABELS[plan]}. Escríbenos para activarla y que tus mozos tomen pedidos desde el teléfono.`
+            : "Este restaurante todavía no tiene la comanda activa. Avísale al dueño."}
+        </p>
+        {isOwner && (
+          <a
+            href="https://wa.me/51950360685"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 inline-block rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-5 py-2.5 text-[14px] font-semibold text-ink-950"
+          >
+            Hablar para subir de plan
+          </a>
+        )}
       </div>
     );
   }

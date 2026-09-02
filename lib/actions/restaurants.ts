@@ -6,16 +6,20 @@ import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/guards";
 import { seedDefaultCategories } from "@/lib/menu/seedCategories";
 import { logAudit } from "@/lib/audit/log";
+import { PLANS, type PlanValue } from "@/lib/plans";
 import type { ActionResult } from "@/lib/actions/auth";
 
 const createRestaurantSchema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(80),
   ownerEmail: z.string().trim().toLowerCase().email("Enter a valid owner email"),
+  // Which plan the client bought — this decides the modules they can open.
+  plan: z.enum(PLANS),
 });
 
 export async function createRestaurant(input: {
   name: string;
   ownerEmail: string;
+  plan: PlanValue;
 }): Promise<ActionResult> {
   await requireAdmin();
 
@@ -23,7 +27,7 @@ export async function createRestaurant(input: {
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
-  const { name, ownerEmail } = parsed.data;
+  const { name, ownerEmail, plan } = parsed.data;
 
   const owner = await prisma.user.upsert({
     where: { email: ownerEmail },
@@ -32,7 +36,7 @@ export async function createRestaurant(input: {
   });
 
   const restaurant = await prisma.restaurant.create({
-    data: { name, ownerId: owner.id },
+    data: { name, ownerId: owner.id, plan },
   });
   await seedDefaultCategories(prisma, restaurant.id);
 
@@ -44,7 +48,7 @@ export async function createRestaurant(input: {
 
 export async function updateRestaurant(
   id: string,
-  input: { name: string; ownerEmail: string }
+  input: { name: string; ownerEmail: string; plan: PlanValue }
 ): Promise<ActionResult> {
   await requireAdmin();
 
@@ -52,7 +56,7 @@ export async function updateRestaurant(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
-  const { name, ownerEmail } = parsed.data;
+  const { name, ownerEmail, plan } = parsed.data;
 
   const restaurant = await prisma.restaurant.findUnique({ where: { id } });
   if (!restaurant) return { ok: false, error: "Restaurant not found." };
@@ -63,10 +67,39 @@ export async function updateRestaurant(
     create: { email: ownerEmail, role: "client" },
   });
 
-  await prisma.restaurant.update({ where: { id }, data: { name, ownerId: owner.id } });
+  await prisma.restaurant.update({
+    where: { id },
+    data: { name, ownerId: owner.id, plan },
+  });
 
   revalidatePath("/dashboard/admin/overview");
   revalidatePath("/dashboard/admin/restaurants");
+  // The owner's own dashboard changes shape with the plan, so drop its cache.
+  revalidatePath("/dashboard/app", "layout");
+
+  return { ok: true, data: undefined };
+}
+
+// Downgrading below "staff" would leave waiters signed in with no comanda, so
+// changing only the plan runs through the same path and the admin sees the
+// staff count on the row.
+export async function updateRestaurantPlan(
+  id: string,
+  plan: PlanValue
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = z.enum(PLANS).safeParse(plan);
+  if (!parsed.success) return { ok: false, error: "Invalid plan." };
+
+  const restaurant = await prisma.restaurant.findUnique({ where: { id } });
+  if (!restaurant) return { ok: false, error: "Restaurant not found." };
+
+  await prisma.restaurant.update({ where: { id }, data: { plan: parsed.data } });
+
+  revalidatePath("/dashboard/admin/overview");
+  revalidatePath("/dashboard/admin/restaurants");
+  revalidatePath("/dashboard/app", "layout");
 
   return { ok: true, data: undefined };
 }
