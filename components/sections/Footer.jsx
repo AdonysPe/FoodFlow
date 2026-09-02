@@ -38,35 +38,35 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col items-center gap-1.5 border-t border-cream/10 py-7 text-center">
-          <p className="text-[12.5px] text-cream/45">
+          <p className="text-[12.5px] text-cream/55">
             &copy; {new Date().getFullYear()} {t.footer.copyrightSuffix}
           </p>
-          <p className="text-[12.5px] text-cream/45">
+          <p className="text-[12.5px] text-cream/55">
             {t.footer.signaturePrefix}{" "}
             <span className="font-medium text-cream/62">Adonys Pereda</span>
           </p>
           <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <Link
               href="/precios"
-              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+              className="text-[12.5px] text-cream/55 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
             >
               {t.pricing.eyebrow}
             </Link>
             <Link
               href="/nosotros"
-              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+              className="text-[12.5px] text-cream/55 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
             >
               {t.about.eyebrow}
             </Link>
             <Link
               href="/preguntas"
-              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+              className="text-[12.5px] text-cream/55 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
             >
               {t.faq.eyebrow}
             </Link>
             <Link
               href="/cookies"
-              className="text-[12.5px] text-cream/45 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
+              className="text-[12.5px] text-cream/55 underline-offset-4 transition-colors hover:text-cream/80 hover:underline"
             >
               {t.cookies.page.title}
             </Link>

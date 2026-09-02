@@ -274,7 +274,7 @@ export default function ChatWidget() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={c.handoff.emailPlaceholder}
-                      className="h-10 min-w-0 flex-1 rounded-lg border border-cream/10 bg-ink-950 px-3 text-[14px] text-cream placeholder:text-cream/45 outline-none focus:border-chat-400/60"
+                      className="h-10 min-w-0 flex-1 rounded-lg border border-cream/10 bg-ink-950 px-3 text-[14px] text-cream placeholder:text-cream/55 outline-none focus:border-chat-400/60"
                     />
                     <button
                       type="submit"
@@ -328,7 +328,7 @@ export default function ChatWidget() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder={c.inputPlaceholder}
-                  className="h-11 min-w-0 flex-1 rounded-xl border border-cream/10 bg-ink-950 px-3.5 text-[14px] text-cream placeholder:text-cream/45 outline-none transition-colors focus:border-chat-400/60"
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-cream/10 bg-ink-950 px-3.5 text-[14px] text-cream placeholder:text-cream/55 outline-none transition-colors focus:border-chat-400/60"
                 />
                 <button
                   type="submit"

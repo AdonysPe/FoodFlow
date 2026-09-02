@@ -1,4 +1,5 @@
 import SiteShell from "@/components/SiteShell";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import About from "@/components/sections/About";
 import CTA from "@/components/sections/CTA";
 
@@ -12,6 +13,7 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <SiteShell>
+      <BreadcrumbJsonLd name="Quiénes somos" path="/nosotros" />
       <About />
       <CTA />
     </SiteShell>

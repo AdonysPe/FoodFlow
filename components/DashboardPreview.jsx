@@ -651,7 +651,7 @@ function StatePill({ tone, children }) {
 }
 
 function Note({ children }) {
-  return <p className="mt-3 text-[11.5px] leading-relaxed text-cream/45">{children}</p>;
+  return <p className="mt-3 text-[11.5px] leading-relaxed text-cream/55">{children}</p>;
 }
 
 /* --------------------------------- icons --------------------------------- */

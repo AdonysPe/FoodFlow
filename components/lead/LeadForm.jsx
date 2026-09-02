@@ -197,7 +197,7 @@ export default function LeadForm({
         {isPending ? copy.sending : copy.submit}
       </Button>
 
-      <p className="text-center text-[12.5px] leading-relaxed text-cream/45">
+      <p className="text-center text-[12.5px] leading-relaxed text-cream/55">
         {copy.privacy}
       </p>
     </form>
@@ -229,7 +229,7 @@ function Field({
       >
         {label}
         {optional && (
-          <span className="text-[11.5px] font-medium uppercase tracking-[0.12em] text-cream/40">
+          <span className="text-[11.5px] font-medium uppercase tracking-[0.12em] text-cream/55">
             {optional}
           </span>
         )}
@@ -237,7 +237,7 @@ function Field({
 
       <div className="relative mt-1.5">
         {prefix && (
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[15px] font-medium text-cream/45">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[15px] font-medium text-cream/55">
             {prefix}
           </span>
         )}
@@ -273,7 +273,7 @@ function Field({
         </motion.p>
       ) : (
         hint && (
-          <p id={`${id}-hint`} className="mt-1.5 text-[12.5px] text-cream/40">
+          <p id={`${id}-hint`} className="mt-1.5 text-[12.5px] text-cream/55">
             {hint}
           </p>
         )

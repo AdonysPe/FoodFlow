@@ -11,10 +11,22 @@ import {
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
-import ThreeBackground from "@/components/ThreeBackground";
+import dynamic from "next/dynamic";
 import { IconArrowRight, IconCheck, IconPlay } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, INTRO_DELAY } from "@/lib/motion";
+
+/**
+ * Three.js is ~126 kB gzipped — more than half of everything the home page
+ * shipped, for a decorative field that is `aria-hidden` and carries no
+ * content. Loaded on demand and client-only: the CSS glow and the grid floor
+ * underneath already stand on their own, so nothing is missing while it
+ * arrives, and nothing moves when it does — the canvas is absolutely
+ * positioned inside an `isolate` section, so it never touches layout.
+ */
+const ThreeBackground = dynamic(() => import("@/components/ThreeBackground"), {
+  ssr: false,
+});
 
 export default function Hero() {
   const { t } = useLanguage();

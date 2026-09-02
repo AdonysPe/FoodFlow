@@ -1,4 +1,5 @@
 import SiteShell from "@/components/SiteShell";
+import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/seo/JsonLd";
 import FAQ from "@/components/sections/FAQ";
 import CTA from "@/components/sections/CTA";
 
@@ -12,6 +13,8 @@ export const metadata = {
 export default function FaqPage() {
   return (
     <SiteShell>
+      <FaqJsonLd />
+      <BreadcrumbJsonLd name="Preguntas frecuentes" path="/preguntas" />
       <FAQ />
       <CTA />
     </SiteShell>

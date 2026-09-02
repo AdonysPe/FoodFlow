@@ -1,4 +1,5 @@
 import SiteShell from "@/components/SiteShell";
+import { BreadcrumbJsonLd, PricingJsonLd } from "@/components/seo/JsonLd";
 import Pricing from "@/components/sections/Pricing";
 import LeadCapture from "@/components/sections/LeadCapture";
 import CTA from "@/components/sections/CTA";
@@ -13,6 +14,8 @@ export const metadata = {
 export default function PricingPage() {
   return (
     <SiteShell>
+      <PricingJsonLd />
+      <BreadcrumbJsonLd name="Precios" path="/precios" />
       <Pricing />
       <LeadCapture />
       <CTA />

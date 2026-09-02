@@ -133,7 +133,7 @@ export default function CTA() {
                             <span className="flex shrink-0 items-center gap-2">
                               <span className="font-display text-[18px] font-bold text-accent-300">
                                 {plan.price}
-                                <span className="text-[11.5px] font-medium text-cream/45">
+                                <span className="text-[11.5px] font-medium text-cream/55">
                                   {plan.period}
                                 </span>
                               </span>

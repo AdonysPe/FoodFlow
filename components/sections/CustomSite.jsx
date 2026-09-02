@@ -92,7 +92,7 @@ export default function CustomSite() {
 
           {/* live demo */}
           <Reveal delay={0.1} className="lg:sticky lg:top-28">
-            <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.16em] text-cream/45">
+            <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.16em] text-cream/55">
               {t.customSite.productName} · {t.customSite.demo.brand}
             </p>
             <RestaurantSitePreview />

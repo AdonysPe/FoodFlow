@@ -46,7 +46,7 @@ export default function About() {
               </div>
               <figcaption className="mt-4 text-center">
                 <span className="block text-[13.5px] text-cream/55">{a.signature}</span>
-                <span className="mt-1.5 block text-[12.5px] leading-relaxed text-cream/40">
+                <span className="mt-1.5 block text-[12.5px] leading-relaxed text-cream/55">
                   {a.photoNote}
                 </span>
               </figcaption>

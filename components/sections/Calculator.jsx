@@ -88,7 +88,7 @@ export default function Calculator() {
                   {copy.salesLabel}
                 </label>
                 <div className="relative mt-1.5">
-                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[15px] font-medium text-cream/45">
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[15px] font-medium text-cream/55">
                     S/
                   </span>
                   <input
@@ -102,7 +102,7 @@ export default function Calculator() {
                     className="h-12 w-full rounded-xl border border-cream/12 bg-ink-950/80 pl-11 pr-3.5 text-[17px] font-semibold text-cream tabular-nums placeholder:font-normal placeholder:text-cream/30 outline-none transition-colors duration-200 focus:border-accent-400/60"
                   />
                 </div>
-                <p className="mt-1.5 text-[12.5px] text-cream/40">{copy.salesHint}</p>
+                <p className="mt-1.5 text-[12.5px] text-cream/55">{copy.salesHint}</p>
               </div>
 
               <div className="mt-6">
@@ -135,7 +135,7 @@ export default function Calculator() {
                   <span>{COMMISSION_MIN}%</span>
                   <span>{COMMISSION_MAX}%</span>
                 </div>
-                <p className="mt-1.5 text-[12.5px] text-cream/40">
+                <p className="mt-1.5 text-[12.5px] text-cream/55">
                   {copy.commissionHint}
                 </p>
               </div>
@@ -146,7 +146,7 @@ export default function Calculator() {
                   className="flex items-baseline justify-between gap-2 text-[13px] font-semibold text-cream/75"
                 >
                   {copy.ordersLabel}
-                  <span className="text-[11.5px] font-medium uppercase tracking-[0.12em] text-cream/40">
+                  <span className="text-[11.5px] font-medium uppercase tracking-[0.12em] text-cream/55">
                     {copy.ordersOptional}
                   </span>
                 </label>
@@ -160,7 +160,7 @@ export default function Calculator() {
                   onChange={(e) => setOrders(toAmount(e.target.value))}
                   className="mt-1.5 h-12 w-full rounded-xl border border-cream/12 bg-ink-950/80 px-3.5 text-[17px] font-semibold text-cream tabular-nums placeholder:font-normal placeholder:text-cream/30 outline-none transition-colors duration-200 focus:border-accent-400/60"
                 />
-                <p className="mt-1.5 text-[12.5px] text-cream/40">{copy.ordersHint}</p>
+                <p className="mt-1.5 text-[12.5px] text-cream/55">{copy.ordersHint}</p>
               </div>
             </div>
           </Reveal>
@@ -214,7 +214,7 @@ export default function Calculator() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3, ease: EASE }}
-                      className="text-[15px] leading-relaxed text-cream/45"
+                      className="text-[15px] leading-relaxed text-cream/55"
                     >
                       {copy.empty}
                     </motion.p>
@@ -245,7 +245,7 @@ export default function Calculator() {
                 {copy.cta}
               </Button>
 
-              <p className="mt-3 text-center text-[12.5px] text-cream/45">
+              <p className="mt-3 text-center text-[12.5px] text-cream/55">
                 {copy.ctaNote}
               </p>
             </div>
@@ -253,7 +253,7 @@ export default function Calculator() {
         </div>
 
         <Reveal delay={0.16}>
-          <p className="mx-auto mt-8 max-w-2xl text-center text-[12.5px] leading-relaxed text-cream/40">
+          <p className="mx-auto mt-8 max-w-2xl text-center text-[12.5px] leading-relaxed text-cream/55">
             {copy.disclaimer}
           </p>
         </Reveal>

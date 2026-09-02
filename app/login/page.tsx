@@ -6,6 +6,10 @@ import { IconArrowRight } from "@/components/ui/Icons";
 
 export const metadata = {
   title: "Entrar",
+  // The sign-in screen has nothing for a searcher and everything behind
+  // it is private. robots.js blocks the crawl; this covers the case where
+  // the URL is reached from a link somewhere else.
+  robots: { index: false, follow: false },
 };
 
 export default function LoginPage() {

@@ -1,5 +1,12 @@
 import { Archivo, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+  SOCIAL_DESCRIPTION,
+} from "@/lib/seo";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -15,15 +22,12 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://food-flow-mu.vercel.app"
-  ),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "FoodFlow — Tu restaurante funcionando en 48 horas",
-    template: "%s · FoodFlow",
+    default: SITE_TITLE,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Programa piloto en Lima: montamos tu carta, tus canales de pedido, la pantalla de cocina y tus números en un solo panel. Primer mes gratis.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "software para restaurantes Lima",
     "sistema de pedidos restaurante",
@@ -32,19 +36,17 @@ export const metadata = {
     "gestión de restaurantes Perú",
   ],
   openGraph: {
-    title: "FoodFlow — Tu restaurante funcionando en 48 horas",
-    description:
-      "Pedidos, cocina, carta y números en un solo panel. Programa piloto en Lima con plazas limitadas.",
+    title: SITE_TITLE,
+    description: SOCIAL_DESCRIPTION,
     type: "website",
     url: "/",
-    siteName: "FoodFlow",
+    siteName: SITE_NAME,
     locale: "es_PE",
   },
   twitter: {
     card: "summary_large_image",
-    title: "FoodFlow — Tu restaurante funcionando en 48 horas",
-    description:
-      "Pedidos, cocina, carta y números en un solo panel. Programa piloto en Lima con plazas limitadas.",
+    title: SITE_TITLE,
+    description: SOCIAL_DESCRIPTION,
   },
 };
 
