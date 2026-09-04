@@ -3,6 +3,7 @@
 import Container from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { CONTACT_EMAIL } from "@/lib/contact";
+import { LEGAL_UPDATED } from "@/lib/legal/holder";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function CookiePolicy() {
@@ -23,7 +24,9 @@ export default function CookiePolicy() {
           </h1>
         </Reveal>
         <Reveal delay={0.06}>
-          <p className="mt-3 text-[13px] text-cream/50">{page.updated}</p>
+          <p className="mt-3 text-[13px] text-cream/50">
+            {page.updatedLabel}: {LEGAL_UPDATED}
+          </p>
         </Reveal>
         <Reveal delay={0.1}>
           <p className="mt-6 text-[16px] leading-relaxed text-cream/70">{page.intro}</p>

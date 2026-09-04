@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { buildWhatsAppUrl } from "@/lib/contact";
 import { submitLeadCapture } from "@/lib/actions/leadCapture";
 import { formatWhatsApp, normalizeWhatsApp, validateLead } from "@/lib/leads/validation";
+import Link from "next/link";
 import { LEAD_SENT_KEY, writeFlag } from "@/lib/leads/storage";
 import { formatSoles } from "@/lib/format";
 import { EASE } from "@/lib/motion";
@@ -36,6 +37,8 @@ export default function LeadForm({
 
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState({});
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState(false);
   const [formError, setFormError] = useState("");
   const [done, setDone] = useState(null);
   const [isPending, startTransition] = useTransition();
@@ -68,6 +71,15 @@ export default function LeadForm({
     const form = event.currentTarget;
     const found = validateLead(values);
 
+    // Ley 29733 asks for consent that is prior, express and informed, so the
+    // submit is blocked until the box is ticked — never pre-ticked for them.
+    if (!consent) {
+      setConsentError(true);
+      setErrors(found);
+      form.querySelector(`#${CSS.escape(fieldId("consent"))}`)?.focus();
+      return;
+    }
+
     if (Object.keys(found).length > 0) {
       for (const name of ORDER) touched.current[name] = true;
       setErrors(found);
@@ -90,6 +102,7 @@ export default function LeadForm({
         source,
         perdidaMensual: loss?.mensual ?? null,
         perdidaAnual: loss?.anual ?? null,
+        consent: true,
         website: honeypot,
       });
 
@@ -184,6 +197,46 @@ export default function LeadForm({
           {formError}
         </p>
       )}
+
+      <div>
+        <label
+          htmlFor={fieldId("consent")}
+          className="flex cursor-pointer items-start gap-3 text-[13px] leading-relaxed text-cream/70"
+        >
+          <input
+            id={fieldId("consent")}
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => {
+              setConsent(e.target.checked);
+              if (e.target.checked) setConsentError(false);
+            }}
+            aria-invalid={consentError ? true : undefined}
+            aria-describedby={consentError ? `${fieldId("consent")}-error` : undefined}
+            className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#ff5a33]"
+          />
+          <span>
+            {copy.consent.before}
+            <Link
+              href="/privacidad"
+              target="_blank"
+              className="font-medium text-accent-300 underline underline-offset-2 hover:text-accent-200"
+            >
+              {copy.consent.link}
+            </Link>
+            {copy.consent.after}
+          </span>
+        </label>
+        {consentError && (
+          <p
+            id={`${fieldId("consent")}-error`}
+            role="alert"
+            className="mt-1.5 pl-[30px] text-[12.5px] font-medium text-accent-300"
+          >
+            {copy.consent.error}
+          </p>
+        )}
+      </div>
 
       <Button
         type="submit"

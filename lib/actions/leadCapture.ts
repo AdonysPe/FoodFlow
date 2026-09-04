@@ -33,6 +33,10 @@ const schema = z.object({
     .optional()
     .transform((v) => (v ? v : undefined)),
   source: z.enum(["web_form", "calculadora", "whatsapp"]),
+  // Ley 29733 puts the burden of proving consent on us, so the box has to be
+  // ticked for the row to exist at all — a lead without it is not a lead we
+  // are allowed to contact.
+  consent: z.literal(true),
   perdidaMensual: z.number().int().min(0).max(10_000_000).nullish(),
   perdidaAnual: z.number().int().min(0).max(100_000_000).nullish(),
   // Honeypot: a field no human ever sees, so anything in it is a bot.
@@ -71,6 +75,9 @@ export async function submitLeadCapture(input: LeadInput): Promise<LeadResult> {
         perdidaAnual,
         score: leadScore(perdidaAnual),
         status: "nuevo",
+        // The moment the box was ticked — what we would show if anyone ever
+        // asks us to prove this person agreed to be contacted.
+        consentAt: new Date(),
         ipHash,
       },
     });

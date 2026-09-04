@@ -379,6 +379,11 @@ model Lead {
 
   createdAt DateTime @default(now()) @map("created_at")
 
+  // When the visitor ticked the privacy consent box. Ley 29733 puts the
+  // burden of proving consent on us, so the moment it was given is stored
+  // rather than a bare boolean.
+  consentAt DateTime? @map("consent_at")
+
   // Salted SHA-256 of the caller's IP, never the address itself. It exists
   // only so the form can be rate limited across cold starts; it cannot be
   // read back into an IP without the server secret.
@@ -389,4 +394,57 @@ model Lead {
   @@index([createdAt])
   @@index([ipHash, createdAt])
   @@map("leads")
+}
+
+// ------------------------------------------------- libro de reclamaciones
+// Virtual complaints book required of any supplier that sells to consumers in
+// Peru (Código de Protección y Defensa del Consumidor, Ley 29571, and its
+// reglamento D.S. 011-2011-PCM). Every entry gets a correlative number the
+// consumer keeps as proof, and the supplier must answer within the published
+// deadline. Rows are never deleted — the record is the compliance.
+
+enum ClaimKind {
+  // Disconformidad ligada al producto o servicio contratado.
+  reclamo
+  // Malestar o descontento ajeno al producto: la atención, el trato.
+  queja
+}
+
+enum ClaimStatus {
+  recibido
+  en_proceso
+  respondido
+}
+
+model Claim {
+  id   String @id @default(cuid())
+  // Correlative shown to the consumer, e.g. "LR-2026-000012". Unique because
+  // it is the number they quote if they escalate to INDECOPI.
+  code String @unique
+
+  // Identificación del consumidor — every field required by the regulation.
+  nombre    String
+  dni       String
+  telefono  String
+  email     String
+  direccion String
+
+  kind    ClaimKind
+  // Detalle de la reclamación y, cuando lo indica, lo que el consumidor pide.
+  detalle String    @db.Text
+  pedido  String?   @db.Text
+
+  status      ClaimStatus @default(recibido)
+  // Filled when the supplier answers, which starts the clock on the record.
+  respondedAt DateTime?   @map("responded_at")
+  respuesta   String?     @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Salted hash of the caller's IP, for rate limiting only. Never an address.
+  ipHash String? @map("ip_hash")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("claims")
 }

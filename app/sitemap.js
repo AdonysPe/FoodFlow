@@ -16,6 +16,9 @@ const ROUTES = [
   { path: "/calculadora", priority: 0.9, changeFrequency: "monthly" },
   { path: "/preguntas", priority: 0.8, changeFrequency: "monthly" },
   { path: "/nosotros", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/libro-de-reclamaciones", priority: 0.3, changeFrequency: "yearly" },
+  { path: "/terminos", priority: 0.2, changeFrequency: "yearly" },
+  { path: "/privacidad", priority: 0.2, changeFrequency: "yearly" },
   { path: "/cookies", priority: 0.2, changeFrequency: "yearly" },
 ];
 

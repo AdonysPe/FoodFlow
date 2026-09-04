@@ -295,3 +295,20 @@ export function IconWhatsApp({ className = "h-5 w-5" }) {
     </svg>
   );
 }
+
+/**
+ * Complaints book. Drawn in the family stroke rather than shipped as
+ * INDECOPI's official artwork, which is their trademark and has to come from
+ * them — drop it in /public and swap this out if you want the exact asset.
+ * What the law actually requires is that the link be visible and say what it
+ * is, and the label next to this icon does that.
+ */
+export function IconClaimsBook({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4.5 5.2A1.7 1.7 0 0 1 6.2 3.5H19a.5.5 0 0 1 .5.5v14a.5.5 0 0 1-.5.5H6.2a1.7 1.7 0 0 0-1.7 1.7Z" />
+      <path d="M4.5 5.2v15" />
+      <path d="M8.6 8h7M8.6 11.4h4.6" />
+    </svg>
+  );
+}
