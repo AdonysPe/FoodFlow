@@ -18,6 +18,7 @@ import SegmentedControl from "./SegmentedControl";
 import TableFigure from "./TableFigure";
 import TableDrawer from "./TableDrawer";
 import TablePropertiesPanel from "./TablePropertiesPanel";
+import ServicePanel from "./ServicePanel";
 import type { TableDTO, ReservationDTO, OrderMiniDTO } from "./types";
 
 type ZoneFilter = "all" | TableZoneValue;
@@ -276,9 +277,10 @@ export default function FloorPlan({
         </p>
       )}
 
-      <div className="@container">
-        <div
-          ref={canvasRef}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="@container">
+          <div
+            ref={canvasRef}
           className={`relative w-full touch-none overflow-hidden rounded-[20px] border transition-colors duration-300 aspect-[4/3] sm:aspect-[16/10] ${
             editing
               ? "border-accent-400/30 shadow-[inset_0_0_0_1px_rgba(255,90,51,0.12),inset_0_1px_0_0_var(--spec)]"
@@ -291,24 +293,39 @@ export default function FloorPlan({
             backgroundSize: "auto, 22px 22px",
           }}
         >
-          {visibleTables.map((t) => {
-            const p = posOf(t);
-            return (
-              <TableFigure
-                key={t.id}
-                table={{ ...t, x: p.x, y: p.y }}
-                state={stateById.get(t.id) ?? "libre"}
-                selected={selectedId === t.id}
-                editing={editing}
-                dragging={dragId === t.id}
-                onPointerDown={(e) => handlePointerDown(e, t)}
-                onPointerMove={(e) => handlePointerMove(e, t)}
-                onPointerUp={(e) => handlePointerUp(e, t)}
-                onClick={editing ? undefined : () => setSelectedId(t.id)}
-              />
-            );
-          })}
+            {visibleTables.map((t) => {
+              const p = posOf(t);
+              return (
+                <TableFigure
+                  key={t.id}
+                  table={{ ...t, x: p.x, y: p.y }}
+                  state={stateById.get(t.id) ?? "libre"}
+                  selected={selectedId === t.id}
+                  editing={editing}
+                  dragging={dragId === t.id}
+                  onPointerDown={(e) => handlePointerDown(e, t)}
+                  onPointerMove={(e) => handlePointerMove(e, t)}
+                  onPointerUp={(e) => handlePointerUp(e, t)}
+                  onClick={editing ? undefined : () => setSelectedId(t.id)}
+                />
+              );
+            })}
+          </div>
         </div>
+
+        {/* Service information, not furniture: while the plan is being
+            rearranged it would only be noise, so it steps out. */}
+        {!editing && (
+          <ServicePanel
+            tables={tables}
+            orders={orders}
+            reservations={reservations}
+            today={today}
+            stateById={stateById}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+        )}
       </div>
 
       {editing ? (

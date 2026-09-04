@@ -7,6 +7,7 @@ import SalesTrendChart, { type TrendPoint } from "@/components/dashboard/SalesTr
 import WeeklyEarnings, { type WeekBucket } from "@/components/dashboard/WeeklyEarnings";
 import ChannelBars from "@/components/dashboard/ChannelBars";
 import { IconBolt, IconOrders, IconTarget, IconTrendUp } from "@/components/ui/Icons";
+import { CHANNEL_LABELS } from "@/lib/orderMeta";
 import { formatCurrency } from "@/lib/format";
 import type { OrderItemInput } from "@/lib/actions/orders";
 
@@ -64,7 +65,7 @@ export default async function AnalyticsPage() {
   // weeks, whose first bucket can start a few days earlier than 8 × 7.
   const windowStart = startOfDay(69);
 
-  const [orders, customerCount, orderStatsByCustomer] = await Promise.all([
+  const [orders, customerCount, orderStatsByCustomer, tables] = await Promise.all([
     prisma.order.findMany({
       where: { restaurantId: restaurant.id, createdAt: { gte: windowStart }, voidedAt: null },
       select: { total: true, createdAt: true, items: true },
@@ -75,7 +76,13 @@ export default async function AnalyticsPage() {
       where: { restaurantId: restaurant.id, voidedAt: null },
       _count: { id: true },
     }),
+    prisma.restaurantTable.findMany({
+      where: { restaurantId: restaurant.id },
+      select: { name: true },
+    }),
   ]);
+
+  const tableNames = tables.map((t) => t.name);
 
   // ------------------------------------------------------- daily trend
   const trend: TrendPoint[] = [];
@@ -163,8 +170,22 @@ export default async function AnalyticsPage() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  const repeatCustomers = orderStatsByCustomer.filter((c) => c._count.id > 1).length;
-  const repeatRate = customerCount > 0 ? (repeatCustomers / customerCount) * 100 : 0;
+  // An order without a diner's name carries the table it was taken at, or the
+  // channel it came through. Those are not people, and counting them made the
+  // recurrence rate exceed 100% — the numerator was drawn from a wider set
+  // than the denominator.
+  const notPeople = new Set([
+    ...tableNames,
+    ...Object.values(CHANNEL_LABELS),
+    "Delivery",
+    "Para llevar",
+  ]);
+  const peopleWhoOrdered = orderStatsByCustomer.filter(
+    (c) => !notPeople.has(c.customerName)
+  );
+  const repeatCustomers = peopleWhoOrdered.filter((c) => c._count.id > 1).length;
+  const repeatRate =
+    peopleWhoOrdered.length > 0 ? (repeatCustomers / peopleWhoOrdered.length) * 100 : 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -286,13 +307,13 @@ export default async function AnalyticsPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-fg/50">Clientes totales</p>
+          <p className="text-[13px] text-fg/50">Clientes registrados</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
             {customerCount}
           </p>
         </GlassCard>
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-fg/50">Clientes recurrentes</p>
+          <p className="text-[13px] text-fg/50">Comensales que repiten</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
             {repeatCustomers}
           </p>
