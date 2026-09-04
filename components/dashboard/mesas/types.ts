@@ -17,6 +17,9 @@ export type TableDTO = {
   y: number;
   active: boolean;
   occupiedAt: string | null;
+  // What the table's QR encodes. Null only for a row created before codes
+  // existed and not yet backfilled.
+  publicCode: string | null;
 };
 
 // A trimmed order row — just what the table drawer needs to show the active

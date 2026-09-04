@@ -53,6 +53,7 @@ export default async function MesasPage() {
     y: t.y,
     active: t.active,
     occupiedAt: t.occupiedAt ? t.occupiedAt.toISOString() : null,
+    publicCode: t.publicCode,
   }));
 
   const reservationDTOs: ReservationDTO[] = reservations.map((r) => ({

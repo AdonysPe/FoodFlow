@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
+import { generateTableCode } from "@/lib/tableCode";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import type { ActionResult } from "@/lib/actions/auth";
 import { TABLE_SHAPES, TABLE_ZONES } from "@/lib/tableMeta";
@@ -54,8 +55,16 @@ export async function createTable(
     y = 22 + row * 26;
   }
 
+  // Every table is born with its QR code, so the print sheet never has to
+  // stop and mint one.
   const created = await prisma.restaurantTable.create({
-    data: { restaurantId: restaurant.id, ...parsed.data, x, y },
+    data: {
+      restaurantId: restaurant.id,
+      ...parsed.data,
+      x,
+      y,
+      publicCode: generateTableCode(),
+    },
   });
 
   revalidatePath(MESAS_PATH);

@@ -9,7 +9,6 @@ import ChannelBars from "@/components/dashboard/ChannelBars";
 import { IconBolt, IconOrders, IconTarget, IconTrendUp } from "@/components/ui/Icons";
 import { CHANNEL_LABELS } from "@/lib/orderMeta";
 import { formatCurrency } from "@/lib/format";
-import type { OrderItemInput } from "@/lib/actions/orders";
 
 export const metadata = {
   title: "Análisis",
@@ -65,11 +64,27 @@ export default async function AnalyticsPage() {
   // weeks, whose first bucket can start a few days earlier than 8 × 7.
   const windowStart = startOfDay(69);
 
-  const [orders, customerCount, orderStatsByCustomer, tables] = await Promise.all([
+  // The 30-day window the dish ranking is drawn from. Computed here so the
+  // SQL below filters on exactly the boundary the rest of the page uses.
+  const dishWindowStart = startOfDay(TREND_DAYS - 1);
+
+  const [orders, topProducts, customerCount, orderStatsByCustomer, tables] = await Promise.all([
     prisma.order.findMany({
       where: { restaurantId: restaurant.id, createdAt: { gte: windowStart }, voidedAt: null },
-      select: { total: true, createdAt: true, items: true },
+      select: { total: true, createdAt: true },
     }),
+    prisma.$queryRaw<{ name: string; quantity: bigint; revenue: string }[]>`
+      SELECT it->>'name' AS name,
+             SUM((it->>'quantity')::int) AS quantity,
+             SUM((it->>'price')::numeric * (it->>'quantity')::int) AS revenue
+      FROM "Order" o, jsonb_array_elements(o."items") AS it
+      WHERE o."restaurantId" = ${restaurant.id}
+        AND o."voidedAt" IS NULL
+        AND o."createdAt" >= ${dishWindowStart}
+      GROUP BY 1
+      ORDER BY revenue DESC
+      LIMIT 5
+    `,
     prisma.customer.count({ where: { restaurantId: restaurant.id } }),
     prisma.order.groupBy({
       by: ["customerName"],
@@ -147,20 +162,14 @@ export default async function AnalyticsPage() {
     .reduce((sum, o) => sum + o.total, 0);
 
   // ------------------------------------------------------- dishes, hours
-  const productTotals = new Map<string, { quantity: number; revenue: number }>();
-  for (const order of inPeriod) {
-    for (const item of order.items as OrderItemInput[]) {
-      const current = productTotals.get(item.name) ?? { quantity: 0, revenue: 0 };
-      current.quantity += item.quantity;
-      current.revenue += item.price * item.quantity;
-      productTotals.set(item.name, current);
-    }
-  }
-  const topProducts = [...productTotals.entries()]
-    .map(([name, stats]) => ({ name, ...stats }))
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 5);
-  const topRevenue = Math.max(1, ...topProducts.map((p) => p.revenue));
+  // COUNT/SUM come back as bigint and numeric, which are a BigInt and a
+  // string over the wire.
+  const dishes = topProducts.map((row) => ({
+    name: row.name,
+    quantity: Number(row.quantity),
+    revenue: Number(row.revenue),
+  }));
+  const topRevenue = Math.max(1, ...dishes.map((d) => d.revenue));
 
   const hourCounts = Array.from({ length: 24 }, () => 0);
   for (const order of inPeriod) hourCounts[order.createdAt.getHours()] += 1;
@@ -253,13 +262,13 @@ export default async function AnalyticsPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
           <h2 className="mb-4 text-[15px] font-semibold text-fg/90">Platos más vendidos</h2>
-          {topProducts.length === 0 ? (
+          {dishes.length === 0 ? (
             <p className="py-6 text-center text-[14px] text-fg/40">
               Aún no hay datos de ventas.
             </p>
           ) : (
             <ul className="flex flex-col gap-3.5">
-              {topProducts.map((p, i) => (
+              {dishes.map((p, i) => (
                 <li key={p.name}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2.5">

@@ -187,6 +187,43 @@ export default function TableDrawer({
                 )}
               </section>
 
+              {/* The sticker on the table: what a diner scans to order their
+                  own next round. */}
+              {table.publicCode && (
+                <section className="mt-6">
+                  <p className="text-[12px] font-medium uppercase tracking-wide text-fg/35">
+                    QR de la mesa
+                  </p>
+                  <div className="mt-2 flex items-center gap-4 rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-3.5">
+                    {/* White ground on purpose: a scanner needs the quiet zone
+                        light no matter which theme the dashboard is in. */}
+                    <span className="shrink-0 rounded-lg bg-white p-1.5">
+                      <img
+                        src={`/api/qr/${table.publicCode}`}
+                        alt={`Código QR de ${table.name}`}
+                        width={76}
+                        height={76}
+                        className="block h-[76px] w-[76px]"
+                      />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-mono text-[13px] tracking-wide text-fg/70">
+                        {table.publicCode}
+                      </p>
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-fg/45">
+                        El comensal lo escanea y pide su ronda desde la mesa.
+                      </p>
+                      <a
+                        href={`/dashboard/app/mesas/qr`}
+                        className="mt-2 inline-block text-[12.5px] font-medium text-accent-ink underline-offset-4 hover:underline"
+                      >
+                        Imprimir los QR
+                      </a>
+                    </div>
+                  </div>
+                </section>
+              )}
+
               <section className="mt-6">
                 <p className="text-[12px] font-medium uppercase tracking-wide text-fg/35">
                   Reservas de hoy

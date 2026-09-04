@@ -65,6 +65,10 @@ export type ComandaLineInput = {
 // Quick note chips offered under each line.
 export const NOTE_CHIPS = ["sin cebolla", "sin sal", "sin ají", "aparte", "salsa aparte", "para llevar"];
 
+// What the kitchen board and the table drawer print where a waiter's name
+// would go, when the round was sent by the diner from the table QR.
+export const QR_ORIGIN_LABEL = "Pedido desde la mesa";
+
 export const ZONE_LABELS_ES: Record<string, string> = {
   salon: "Salón",
   terraza: "Terraza",

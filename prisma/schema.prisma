@@ -235,6 +235,10 @@ model RestaurantTable {
   // Set when a server marks the table occupied from the floor plan, cleared
   // when they free it. A linked active order also counts as occupied.
   occupiedAt   DateTime?
+  // What the QR on the table encodes. Random rather than the row id so the
+  // codes cannot be walked from one table to the next, and stable so a
+  // printed QR keeps working. Nullable only until every row is backfilled.
+  publicCode   String?       @unique
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   reservations Reservation[]
