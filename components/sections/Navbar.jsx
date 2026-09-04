@@ -11,6 +11,7 @@ import Link from "next/link";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import LanguageToggle from "@/components/ui/LanguageToggle";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import { LogoMark } from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, INTRO_DELAY } from "@/lib/motion";
@@ -63,7 +64,7 @@ export default function Navbar() {
           <nav className="flex h-16 items-center justify-between gap-6 sm:h-18">
             <Link href="/" className="flex items-center gap-2.5">
               <LogoMark className="h-8 w-8" />
-              <span className="font-display text-[17px] font-bold tracking-[-0.02em] text-white">
+              <span className="font-display text-[17px] font-bold tracking-[-0.02em] text-fg">
                 FoodFlow
               </span>
             </Link>
@@ -73,7 +74,7 @@ export default function Navbar() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="relative rounded-lg px-3.5 py-2 text-[14px] font-medium text-cream/66 transition-colors hover:text-white"
+                  className="relative rounded-lg px-3.5 py-2 text-[14px] font-medium text-cream/66 transition-colors hover:text-fg"
                 >
                   {l.label}
                 </Link>
@@ -81,6 +82,7 @@ export default function Navbar() {
             </div>
 
             <div className="hidden items-center gap-2.5 lg:flex">
+              <ThemeToggle />
               <LanguageToggle />
               <Button href="/login" variant="ghost" size="md">
                 {t.nav.signIn}
@@ -91,6 +93,7 @@ export default function Navbar() {
             </div>
 
             <div className="flex items-center gap-2 lg:hidden">
+              <ThemeToggle />
               <LanguageToggle />
               <button
                 type="button"
@@ -103,12 +106,12 @@ export default function Navbar() {
                 <motion.span
                   animate={open ? { rotate: 45, y: 0 } : { rotate: 0, y: -3.5 }}
                   transition={{ duration: 0.25, ease: EASE }}
-                  className="absolute h-px w-4 bg-white"
+                  className="absolute h-px w-4 bg-fg"
                 />
                 <motion.span
                   animate={open ? { rotate: -45, y: 0 } : { rotate: 0, y: 3.5 }}
                   transition={{ duration: 0.25, ease: EASE }}
-                  className="absolute h-px w-4 bg-white"
+                  className="absolute h-px w-4 bg-fg"
                 />
               </button>
             </div>
@@ -137,7 +140,7 @@ export default function Navbar() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-3 text-[15px] font-medium text-cream/70 transition-colors hover:bg-cream/[0.05] hover:text-white"
+                className="rounded-lg px-3 py-3 text-[15px] font-medium text-cream/70 transition-colors hover:bg-cream/[0.05] hover:text-fg"
               >
                 {l.label}
               </Link>

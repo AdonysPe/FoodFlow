@@ -52,8 +52,13 @@ export default function DashboardPreview({ variant = "full", className = "" }) {
   const [range, setRange] = useState(1);
 
   return (
+    // A screenshot of the product, not a part of the page: it keeps the dark
+    // UI in both themes — which is also the only one the dashboard has. The
+    // explicit text colour re-states what <body> gives it in dark mode, since
+    // inside a light page it would otherwise inherit the page's ink.
     <section
-      className={`relative overflow-hidden rounded-2xl border border-cream/10 bg-linear-to-b from-ink-800/90 to-ink-900/95 shadow-panel backdrop-blur-2xl ${className}`}
+      data-theme="dark"
+      className={`relative overflow-hidden rounded-2xl border border-cream/10 bg-linear-to-b from-ink-800/90 to-ink-900/95 text-cream/86 shadow-panel backdrop-blur-2xl ${className}`}
       aria-label={d.ariaLabel}
     >
       {/* window chrome */}

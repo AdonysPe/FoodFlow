@@ -31,11 +31,11 @@ export default function FAQ() {
                     type="button"
                     onClick={() => setOpen(isOpen ? -1 : i)}
                     aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-6 py-5 text-left transition-colors hover:text-white"
+                    className="flex w-full items-center justify-between gap-6 py-5 text-left transition-colors hover:text-fg"
                   >
                     <span
                       className={`text-[16px] font-semibold sm:text-[17px] ${
-                        isOpen ? "text-white" : "text-cream/85"
+                        isOpen ? "text-fg" : "text-cream/85"
                       }`}
                     >
                       {item.q}
@@ -44,7 +44,7 @@ export default function FAQ() {
                       aria-hidden
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors ${
                         isOpen
-                          ? "border-accent-400/50 bg-accent-400/12 text-accent-300"
+                          ? "border-accent-400/50 bg-accent-400/12 text-accent-ink"
                           : "border-cream/15 text-cream/55"
                       }`}
                     >
@@ -90,7 +90,7 @@ export default function FAQ() {
           <button
             type="button"
             onClick={() => openChat()}
-            className="mt-7 text-[14px] font-medium text-chat-300 underline-offset-4 transition-colors hover:text-chat-400 hover:underline"
+            className="mt-7 text-[14px] font-medium text-chat-ink underline-offset-4 transition-colors hover:text-chat-400 hover:underline"
           >
             {t.faq.more}
           </button>

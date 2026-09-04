@@ -69,7 +69,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[52rem] grid-mask opacity-50"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(243,239,230,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(243,239,230,0.05) 1px, transparent 1px)",
+            "linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px)",
           backgroundSize: "64px 64px",
         }}
       />
@@ -105,7 +105,7 @@ export default function Hero() {
                 initial={{ opacity: 0, y: 22, filter: "blur(8px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 0.8, ease: EASE, delay: intro + 0.18 + words.length * 0.06 }}
-                className="relative inline-block text-accent-400"
+                className="relative inline-block text-accent-icon"
               >
                 {t.hero.headlineAccent}
                 <motion.span
@@ -180,7 +180,7 @@ export default function Hero() {
             >
               {t.hero.proof.map((p) => (
                 <li key={p} className="flex items-center gap-1.5">
-                  <IconCheck className="h-3.5 w-3.5 text-accent-400" />
+                  <IconCheck className="h-3.5 w-3.5 text-accent-icon" />
                   {p}
                 </li>
               ))}
@@ -229,12 +229,12 @@ export default function Hero() {
                       className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11.5px] font-bold ${
                         i === offer.steps.length - 1
                           ? "bg-cream/10 text-cream"
-                          : "bg-accent-400 text-ink-950"
+                          : "bg-accent-400 text-on-accent"
                       }`}
                     >
                       {step.time}
                     </span>
-                    <p className="text-[14.5px] font-semibold text-white">{step.title}</p>
+                    <p className="text-[14.5px] font-semibold text-fg">{step.title}</p>
                   </motion.li>
                 ))}
               </ol>
@@ -252,7 +252,7 @@ export default function Hero() {
                       transition={{ duration: 0.5, ease: EASE, delay: intro + 1.3 + i * 0.1 }}
                       className="flex gap-2.5 text-[13.5px] leading-snug text-cream/80"
                     >
-                      <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-400" />
+                      <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-icon" />
                       {item}
                     </motion.li>
                   ))}
@@ -260,7 +260,7 @@ export default function Hero() {
               </div>
 
               <div className="mt-6 border-t border-cream/10 pt-5">
-                <p className="font-display text-[1.35rem] font-extrabold tracking-[-0.03em] text-white">
+                <p className="font-display text-[1.35rem] font-extrabold tracking-[-0.03em] text-fg">
                   {offer.priceTitle}
                 </p>
                 <p className="mt-1.5 text-[13.5px] leading-relaxed text-cream/62">

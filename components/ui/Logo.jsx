@@ -12,7 +12,7 @@ export function LogoMark({ className = "h-8 w-8", tile = true }) {
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden="true">
       {tile && <rect width="32" height="32" rx="9" className="fill-accent-400" />}
       <g
-        className={tile ? "stroke-ink-950" : "stroke-accent-400"}
+        className={tile ? "stroke-on-accent" : "stroke-accent-400"}
         strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"

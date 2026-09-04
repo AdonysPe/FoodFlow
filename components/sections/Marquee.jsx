@@ -19,7 +19,7 @@ export default function Marquee() {
   return (
     <section
       aria-label={t.features.eyebrow}
-      className="border-y border-cream/10 bg-ink-900/60 py-4.5"
+      className="border-y border-cream/10 bg-[var(--band)] py-4.5"
     >
       <div className="fade-edges overflow-hidden">
         <div className="flex w-max animate-marquee">
@@ -35,7 +35,7 @@ export default function Marquee() {
                   className="flex items-center gap-11 text-[13px] font-medium uppercase tracking-[0.18em] text-cream/55"
                 >
                   {item}
-                  <span aria-hidden className="text-accent-400">
+                  <span aria-hidden className="text-accent-icon">
                     /
                   </span>
                 </li>

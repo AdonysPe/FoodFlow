@@ -188,10 +188,10 @@ export default function ChatWidget() {
             whileHover={{ y: -3 }}
             whileTap={{ scale: 0.97 }}
             aria-haspopup="dialog"
-            className="liquid-soft group fixed bottom-5 right-5 z-[70] flex items-center gap-2.5 rounded-full py-2.5 pl-2.5 pr-5 text-[14.5px] font-semibold text-cream/90 transition-colors duration-300 hover:bg-cream/[0.1] hover:text-white sm:bottom-6 sm:right-6"
+            className="liquid-soft group fixed bottom-5 right-5 z-[70] flex items-center gap-2.5 rounded-full py-2.5 pl-2.5 pr-5 text-[14.5px] font-semibold text-cream/90 transition-colors duration-300 hover:bg-cream/[0.1] hover:text-fg sm:bottom-6 sm:right-6"
           >
             <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-chat-500/18 ring-1 ring-inset ring-chat-400/35">
-              <IconChat className="h-4 w-4 text-chat-300" />
+              <IconChat className="h-4 w-4 text-chat-ink" />
               <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chat-400/70" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-chat-400" />
@@ -217,7 +217,7 @@ export default function ChatWidget() {
             <header className="flex items-center gap-3 border-b border-cream/10 bg-ink-800/80 px-4 py-3.5">
               <LogoMark className="h-9 w-9" />
               <div className="min-w-0 flex-1">
-                <p className="text-[14.5px] font-semibold text-white">{c.title}</p>
+                <p className="text-[14.5px] font-semibold text-fg">{c.title}</p>
                 <p className="flex items-center gap-1.5 text-[12px] text-cream/58">
                   <span className="h-1.5 w-1.5 rounded-full bg-chat-400" />
                   {c.subtitle}
@@ -227,7 +227,7 @@ export default function ChatWidget() {
                 type="button"
                 onClick={closeChat}
                 aria-label={c.close}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-cream/62 transition-colors hover:bg-cream/[0.06] hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-cream/62 transition-colors hover:bg-cream/[0.06] hover:text-fg"
               >
                 <IconX className="h-4 w-4" />
               </button>
@@ -279,13 +279,13 @@ export default function ChatWidget() {
                     <button
                       type="submit"
                       disabled={isPending}
-                      className="flex h-10 items-center gap-1.5 rounded-lg bg-chat-500 px-3.5 text-[13.5px] font-semibold text-ink-950 disabled:opacity-60"
+                      className="flex h-10 items-center gap-1.5 rounded-lg bg-chat-500 px-3.5 text-[13.5px] font-semibold text-on-accent disabled:opacity-60"
                     >
                       {c.handoff.emailSend}
                       <IconArrowRight className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  {error && <p className="mt-2 text-[12.5px] text-accent-300">{error}</p>}
+                  {error && <p className="mt-2 text-[12.5px] text-accent-ink">{error}</p>}
                 </form>
               )}
             </div>
@@ -304,7 +304,7 @@ export default function ChatWidget() {
                       key={id}
                       type="button"
                       onClick={() => ask(id)}
-                      className="rounded-full border border-cream/14 px-3 py-1.5 text-[12.5px] text-cream/75 transition-colors hover:border-chat-400/50 hover:bg-chat-500/12 hover:text-white"
+                      className="rounded-full border border-cream/14 px-3 py-1.5 text-[12.5px] text-cream/75 transition-colors hover:border-chat-400/50 hover:bg-chat-500/12 hover:text-fg"
                     >
                       {topic.question}
                     </button>
@@ -333,7 +333,7 @@ export default function ChatWidget() {
                 <button
                   type="submit"
                   aria-label={c.send}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-chat-500 text-ink-950 shadow-chat transition-transform duration-200 hover:-translate-y-0.5"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-chat-500 text-on-accent shadow-chat transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   <IconArrowRight className="h-4 w-4" />
                 </button>
@@ -357,7 +357,7 @@ function Bubble({ from, children }) {
       className={
         isBot
           ? "max-w-[88%] rounded-2xl rounded-tl-md bg-ink-800 px-3.5 py-2.5 text-[14px] leading-relaxed text-cream/85"
-          : "ml-auto max-w-[85%] rounded-2xl rounded-tr-md bg-chat-500 px-3.5 py-2.5 text-[14px] leading-relaxed font-medium text-ink-950"
+          : "ml-auto max-w-[85%] rounded-2xl rounded-tr-md bg-chat-500 px-3.5 py-2.5 text-[14px] leading-relaxed font-medium text-on-accent"
       }
     >
       {children}
@@ -401,22 +401,22 @@ function Plans({ plans }) {
           }`}
         >
           <div className="flex items-baseline justify-between gap-3">
-            <p className="font-display text-[15.5px] font-bold text-white">{plan.name}</p>
-            <p className="font-display text-[15.5px] font-bold text-accent-400">
+            <p className="font-display text-[15.5px] font-bold text-fg">{plan.name}</p>
+            <p className="font-display text-[15.5px] font-bold text-accent-icon">
               {plan.price}
               <span className="text-[12px] font-medium text-cream/58">{plan.period}</span>
             </p>
           </div>
           <p className="mt-1 text-[12.5px] text-cream/62">{plan.tagline}</p>
           {plan.badge && (
-            <span className="mt-2 inline-block rounded-full bg-accent-400 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-950">
+            <span className="mt-2 inline-block rounded-full bg-accent-400 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-on-accent">
               {plan.badge}
             </span>
           )}
           <ul className="mt-2.5 space-y-1.5">
             {plan.features.map((feature) => (
               <li key={feature} className="flex gap-2 text-[13px] leading-snug text-cream/70">
-                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-400" />
+                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-icon" />
                 {feature}
               </li>
             ))}
@@ -443,7 +443,7 @@ function Handoff({ copy, whatsappUrl, onEmail }) {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-lg bg-chat-500 px-3 py-2.5 text-[13.5px] font-semibold text-ink-950"
+            className="flex items-center justify-center gap-2 rounded-lg bg-chat-500 px-3 py-2.5 text-[13.5px] font-semibold text-on-accent"
           >
             {copy.whatsapp}
             <IconArrowRight className="h-3.5 w-3.5" />
@@ -452,7 +452,7 @@ function Handoff({ copy, whatsappUrl, onEmail }) {
         <button
           type="button"
           onClick={onEmail}
-          className="rounded-lg border border-cream/14 px-3 py-2.5 text-[13.5px] font-medium text-cream/80 transition-colors hover:border-cream/25 hover:text-white"
+          className="rounded-lg border border-cream/14 px-3 py-2.5 text-[13.5px] font-medium text-cream/80 transition-colors hover:border-cream/25 hover:text-fg"
         >
           {copy.email}
         </button>

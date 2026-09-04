@@ -192,7 +192,7 @@ export default function LeadForm({
       {formError && (
         <p
           role="alert"
-          className="rounded-xl border border-accent-400/30 bg-accent-400/[0.07] px-3.5 py-3 text-[13.5px] leading-relaxed text-accent-200"
+          className="rounded-xl border border-accent-400/30 bg-accent-400/[0.07] px-3.5 py-3 text-[13.5px] leading-relaxed text-accent-label"
         >
           {formError}
         </p>
@@ -220,7 +220,7 @@ export default function LeadForm({
             <Link
               href="/privacidad"
               target="_blank"
-              className="font-medium text-accent-300 underline underline-offset-2 hover:text-accent-200"
+              className="font-medium text-accent-ink underline underline-offset-2 hover:text-accent-label"
             >
               {copy.consent.link}
             </Link>
@@ -231,7 +231,7 @@ export default function LeadForm({
           <p
             id={`${fieldId("consent")}-error`}
             role="alert"
-            className="mt-1.5 pl-[30px] text-[12.5px] font-medium text-accent-300"
+            className="mt-1.5 pl-[30px] text-[12.5px] font-medium text-accent-ink"
           >
             {copy.consent.error}
           </p>
@@ -320,7 +320,7 @@ function Field({
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: EASE }}
-          className="mt-1.5 text-[12.5px] font-medium text-accent-300"
+          className="mt-1.5 text-[12.5px] font-medium text-accent-ink"
         >
           {error}
         </motion.p>
@@ -359,10 +359,10 @@ function Success({ copy, lead, loss, className = "" }) {
       className={`rounded-2xl border border-cream/10 bg-ink-800/70 p-6 text-center shadow-card sm:p-7 ${className}`}
     >
       <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent-400/12 ring-1 ring-inset ring-accent-400/35">
-        <IconCheck className="h-5 w-5 text-accent-300" />
+        <IconCheck className="h-5 w-5 text-accent-ink" />
       </span>
 
-      <p className="mt-4 font-display text-[19px] font-bold leading-snug text-white sm:text-[21px]">
+      <p className="mt-4 font-display text-[19px] font-bold leading-snug text-fg sm:text-[21px]">
         {copy.success.title.replace("{nombre}", lead.nombre)}
       </p>
       <p className="mx-auto mt-2.5 max-w-sm text-[14.5px] leading-relaxed text-cream/62">
@@ -374,7 +374,7 @@ function Success({ copy, lead, loss, className = "" }) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2.5 rounded-xl border border-[#25D366]/35 bg-[#25D366]/12 px-5 text-[14.5px] font-semibold text-[#8af0b4] transition-colors duration-200 hover:bg-[#25D366]/20 hover:text-white"
+          className="mt-6 inline-flex h-12 items-center justify-center gap-2.5 rounded-xl border border-[#25D366]/35 bg-[#25D366]/12 px-5 text-[14.5px] font-semibold text-[#8af0b4] transition-colors duration-200 hover:bg-[#25D366]/20 hover:text-fg"
         >
           <IconWhatsApp className="h-5 w-5" />
           {copy.success.whatsapp}

@@ -44,7 +44,7 @@ export default function CTA() {
                     {t.cta.badge}
                   </span>
 
-                  <h2 className="mt-6 font-display text-[2.1rem] font-extrabold leading-[1.04] tracking-[-0.04em] text-balance text-white sm:text-[2.9rem]">
+                  <h2 className="mt-6 font-display text-[2.1rem] font-extrabold leading-[1.04] tracking-[-0.04em] text-balance text-fg sm:text-[2.9rem]">
                     {t.cta.titleLead}{" "}
                     <span className="text-cream/45">{t.cta.titleAccent}</span>
                   </h2>
@@ -72,9 +72,9 @@ export default function CTA() {
                     <button
                       type="button"
                       onClick={() => openChat()}
-                      className="liquid-soft inline-flex h-13 items-center justify-center gap-2 rounded-xl px-6 text-[15px] font-semibold text-cream/90 transition-colors duration-300 hover:bg-cream/[0.1] hover:text-white"
+                      className="liquid-soft inline-flex h-13 items-center justify-center gap-2 rounded-xl px-6 text-[15px] font-semibold text-cream/90 transition-colors duration-300 hover:bg-cream/[0.1] hover:text-fg"
                     >
-                      <IconChat className="h-4 w-4 text-chat-300" />
+                      <IconChat className="h-4 w-4 text-chat-ink" />
                       {t.cta.askAnything}
                     </button>
                   </div>
@@ -82,7 +82,7 @@ export default function CTA() {
                   <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-2 text-[13px] font-medium text-cream/70">
                     {t.cta.bullets.map((b) => (
                       <li key={b} className="flex items-center gap-1.5">
-                        <IconCheck className="h-3.5 w-3.5 text-accent-300" />
+                        <IconCheck className="h-3.5 w-3.5 text-accent-ink" />
                         {b}
                       </li>
                     ))}
@@ -116,11 +116,11 @@ export default function CTA() {
                           <span className="flex items-start justify-between gap-4">
                             <span className="min-w-0">
                               <span className="flex items-center gap-2">
-                                <span className="font-display text-[16.5px] font-bold text-white">
+                                <span className="font-display text-[16.5px] font-bold text-fg">
                                   {plan.name}
                                 </span>
                                 {plan.badge && (
-                                  <span className="rounded-full bg-accent-400/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-accent-300 ring-1 ring-inset ring-accent-400/30">
+                                  <span className="rounded-full bg-accent-400/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-accent-ink ring-1 ring-inset ring-accent-400/30">
                                     {plan.badge}
                                   </span>
                                 )}
@@ -131,13 +131,13 @@ export default function CTA() {
                             </span>
 
                             <span className="flex shrink-0 items-center gap-2">
-                              <span className="font-display text-[18px] font-bold text-accent-300">
+                              <span className="font-display text-[18px] font-bold text-accent-ink">
                                 {plan.price}
                                 <span className="text-[11.5px] font-medium text-cream/55">
                                   {plan.period}
                                 </span>
                               </span>
-                              <IconArrowRight className="h-4 w-4 text-cream/40 transition-colors group-hover:text-accent-300" />
+                              <IconArrowRight className="h-4 w-4 text-cream/40 transition-colors group-hover:text-accent-ink" />
                             </span>
                           </span>
 
@@ -150,7 +150,7 @@ export default function CTA() {
                                 key={feature}
                                 className="flex gap-2 text-[12.5px] leading-snug text-cream/65"
                               >
-                                <IconCheck className="mt-[3px] h-3 w-3 shrink-0 text-accent-300" />
+                                <IconCheck className="mt-[3px] h-3 w-3 shrink-0 text-accent-ink" />
                                 {feature}
                               </span>
                             ))}
@@ -166,7 +166,7 @@ export default function CTA() {
                     <ul className="space-y-2 border-t border-cream/10 pt-4 text-[13px] leading-relaxed text-cream/65">
                       {t.pricing.keyNotes.map((note) => (
                         <li key={note} className="flex gap-2.5">
-                          <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-300" />
+                          <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-ink" />
                           {note}
                         </li>
                       ))}
@@ -176,7 +176,7 @@ export default function CTA() {
                       {t.cta.loginPrompt}{" "}
                       <a
                         href="/login"
-                        className="font-semibold text-white underline-offset-4 hover:underline"
+                        className="font-semibold text-fg underline-offset-4 hover:underline"
                       >
                         {t.cta.loginCta}
                       </a>

@@ -97,7 +97,7 @@ export default function WhatsAppFab() {
           whileHover={{ y: -3 }}
           whileTap={{ scale: 0.95 }}
           // Sits one step above the chat launcher, which owns the corner.
-          className="group fixed bottom-[5.5rem] right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_12px_26px_-12px_rgba(37,211,102,0.7)] transition-colors duration-300 hover:bg-[#1fbe5b] sm:bottom-[6.25rem] sm:right-6"
+          className="group fixed bottom-[5.5rem] right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-fg shadow-[0_12px_26px_-12px_rgba(37,211,102,0.7)] transition-colors duration-300 hover:bg-[#1fbe5b] sm:bottom-[6.25rem] sm:right-6"
         >
           {/* one slow ring outward — a heartbeat, not a strobe */}
           <motion.span

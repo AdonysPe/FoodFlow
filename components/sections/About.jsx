@@ -55,7 +55,7 @@ export default function About() {
 
           <div className="lg:col-span-7">
             <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-cream/10 bg-cream/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-300">
+              <span className="inline-flex items-center gap-2 rounded-full border border-cream/10 bg-cream/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-ink">
                 {a.eyebrow}
               </span>
             </Reveal>
@@ -76,7 +76,7 @@ export default function About() {
 
             <Reveal delay={0.3}>
               <blockquote className="mt-9 border-l-2 border-accent-400 pl-5">
-                <p className="font-display text-[21px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[23px]">
+                <p className="font-display text-[21px] font-semibold leading-snug tracking-[-0.02em] text-fg sm:text-[23px]">
                   {a.quote}
                 </p>
               </blockquote>
@@ -92,7 +92,7 @@ export default function About() {
               {a.commitment.map((item, i) => (
                 <RevealItem key={i}>
                   <p className="flex gap-2.5 text-[15px] leading-snug text-cream/80">
-                    <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent-400" />
+                    <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent-icon" />
                     {item}
                   </p>
                 </RevealItem>

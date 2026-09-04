@@ -20,7 +20,9 @@ export default function RestaurantSitePreview({ className = "" }) {
   const d = t.customSite.demo;
 
   return (
-    <div className={`relative mx-auto w-full max-w-[300px] ${className}`}>
+    // Same as the dashboard preview: the phone shows the customer's own
+    // site, so it keeps its dark UI whatever the page around it is doing.
+    <div data-theme="dark" className={`relative mx-auto w-full max-w-[300px] text-cream/86 ${className}`}>
       {/* phone bezel */}
       <div className="relative overflow-hidden rounded-[2.75rem] border border-white/[0.12] bg-ink-950 p-2.5 shadow-[0_60px_120px_-40px_rgba(0,0,0,0.95)]">
         <div className="relative overflow-hidden rounded-[2.1rem] border border-white/[0.08] bg-ink-900">

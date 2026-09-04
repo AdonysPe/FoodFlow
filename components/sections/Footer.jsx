@@ -45,7 +45,7 @@ export default function Footer() {
           <div className="lg:col-span-5">
             <Link href="/" className="flex items-center gap-2.5">
               <LogoMark className="h-8 w-8" />
-              <span className="font-display text-[17px] font-bold tracking-[-0.02em] text-white">
+              <span className="font-display text-[17px] font-bold tracking-[-0.02em] text-fg">
                 FoodFlow
               </span>
             </Link>
@@ -71,7 +71,7 @@ export default function Footer() {
                 <dd>
                   <a
                     href={`mailto:${LEGAL_HOLDER.email}`}
-                    className="inline-flex items-center gap-1.5 text-cream/70 underline-offset-4 transition-colors hover:text-white hover:underline"
+                    className="inline-flex items-center gap-1.5 text-cream/70 underline-offset-4 transition-colors hover:text-fg hover:underline"
                   >
                     <IconMail className="h-3.5 w-3.5" />
                     {LEGAL_HOLDER.email}
@@ -91,7 +91,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[13.5px] text-cream/60 underline-offset-4 transition-colors hover:text-white hover:underline"
+                    className="text-[13.5px] text-cream/60 underline-offset-4 transition-colors hover:text-fg hover:underline"
                   >
                     {link.label}
                   </Link>
@@ -110,7 +110,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[13.5px] text-cream/60 underline-offset-4 transition-colors hover:text-white hover:underline"
+                    className="text-[13.5px] text-cream/60 underline-offset-4 transition-colors hover:text-fg hover:underline"
                   >
                     {link.label}
                   </Link>
@@ -125,7 +125,7 @@ export default function Footer() {
               href="/libro-de-reclamaciones"
               aria-label="Libro de Reclamaciones Virtual"
               title="Libro de Reclamaciones Virtual"
-              className="mt-5 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-cream/15 bg-cream/[0.04] text-accent-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-400/40 hover:bg-accent-400/[0.06]"
+              className="mt-5 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-cream/15 bg-cream/[0.04] text-accent-ink transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-400/40 hover:bg-accent-400/[0.06]"
             >
               <IconClaimsBook className="h-6 w-6" />
               <span className="sr-only">Libro de Reclamaciones Virtual</span>

@@ -16,7 +16,7 @@ export default function IntroOverlay() {
       className="intro-curtain pointer-events-none fixed inset-0 z-[80] flex flex-col items-center justify-center gap-5 bg-ink-950"
     >
       <LogoMark className="intro-mark h-16 w-16" />
-      <span className="intro-word font-display text-[17px] font-bold tracking-[-0.02em] text-white">
+      <span className="intro-word font-display text-[17px] font-bold tracking-[-0.02em] text-fg">
         FoodFlow
       </span>
       <span className="intro-bar block h-0.5 w-24 rounded-full bg-accent-400" />

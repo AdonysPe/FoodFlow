@@ -61,7 +61,7 @@ export default function Showcase() {
           </motion.div>
 
           <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[12.5px] text-cream/50">
-            <span className="font-medium text-accent-300">{t.dashboard.demoHint}</span>
+            <span className="font-medium text-accent-ink">{t.dashboard.demoHint}</span>
             <span aria-hidden className="text-cream/30">
               ·
             </span>
@@ -88,7 +88,7 @@ function Chip({ chip, index }) {
       style={{ animationDelay: `${index * 1.4}s` }}
     >
       <p className="text-[10px] uppercase tracking-[0.14em] text-cream/50">{chip.label}</p>
-      <p className="mt-1 font-display text-xl font-semibold text-white">{chip.value}</p>
+      <p className="mt-1 font-display text-xl font-semibold text-fg">{chip.value}</p>
     </motion.div>
   );
 }

@@ -36,7 +36,7 @@ export default function CookiePolicy() {
           {page.sections.map((section, i) => (
             <Reveal key={i} delay={Math.min(i, 3) * 0.05}>
               <div className="py-6">
-                <h2 className="font-display text-[19px] font-semibold text-white">
+                <h2 className="font-display text-[19px] font-semibold text-fg">
                   {section.title}
                 </h2>
                 <p className="mt-2.5 text-[15px] leading-relaxed text-cream/66">
@@ -50,7 +50,7 @@ export default function CookiePolicy() {
         <Reveal delay={0.1}>
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className="mt-8 inline-block text-[15px] font-medium text-accent-300 underline-offset-4 hover:underline"
+            className="mt-8 inline-block text-[15px] font-medium text-accent-ink underline-offset-4 hover:underline"
           >
             {CONTACT_EMAIL}
           </a>

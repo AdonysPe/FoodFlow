@@ -46,7 +46,7 @@ export default function CookieBanner() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <span
               aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-400/12 text-accent-300 ring-1 ring-inset ring-accent-400/25"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-400/12 text-accent-ink ring-1 ring-inset ring-accent-400/25"
             >
               <CookieIcon />
             </span>
@@ -55,7 +55,7 @@ export default function CookieBanner() {
               {c.text}{" "}
               <Link
                 href="/cookies"
-                className="font-medium text-cream/90 underline underline-offset-4 decoration-cream/30 transition-colors hover:text-white hover:decoration-cream/70"
+                className="font-medium text-cream/90 underline underline-offset-4 decoration-cream/30 transition-colors hover:text-fg hover:decoration-cream/70"
               >
                 {c.more}
               </Link>
@@ -65,14 +65,14 @@ export default function CookieBanner() {
               <button
                 type="button"
                 onClick={() => decide(CONSENT.necessary)}
-                className="rounded-lg border border-cream/15 px-4 py-2 text-[13.5px] font-medium text-cream/75 transition-colors hover:border-cream/30 hover:text-white"
+                className="rounded-lg border border-cream/15 px-4 py-2 text-[13.5px] font-medium text-cream/75 transition-colors hover:border-cream/30 hover:text-fg"
               >
                 {c.reject}
               </button>
               <button
                 type="button"
                 onClick={() => decide(CONSENT.all)}
-                className="rounded-lg bg-accent-400 px-4 py-2 text-[13.5px] font-semibold text-ink-950 shadow-accent transition-transform duration-200 hover:-translate-y-0.5"
+                className="rounded-lg bg-accent-400 px-4 py-2 text-[13.5px] font-semibold text-on-accent shadow-accent transition-transform duration-200 hover:-translate-y-0.5"
               >
                 {c.accept}
               </button>

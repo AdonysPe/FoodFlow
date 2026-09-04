@@ -30,13 +30,13 @@ export default function CustomSite() {
             {/* product identity — a distinct sub-brand, not a footnote feature */}
             <Reveal>
               <div className="mb-4 flex flex-wrap items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-accent-300 to-accent-500 text-[10.5px] font-bold text-ink-950 shadow-accent">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-accent-300 to-accent-500 text-[10.5px] font-bold text-on-accent shadow-accent">
                   FS
                 </span>
-                <span className="font-display text-[15px] font-bold tracking-[-0.01em] text-white">
+                <span className="font-display text-[15px] font-bold tracking-[-0.01em] text-fg">
                   {t.customSite.productName}
                 </span>
-                <span className="rounded-full border border-cream/10 bg-cream/[0.03] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent-300">
+                <span className="rounded-full border border-cream/10 bg-cream/[0.03] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent-ink">
                   {t.customSite.eyebrow}
                 </span>
               </div>
@@ -53,7 +53,7 @@ export default function CustomSite() {
             </Reveal>
 
             <Reveal delay={0.16}>
-              <p className="mt-4 max-w-lg text-[15px] font-semibold leading-relaxed text-accent-300">
+              <p className="mt-4 max-w-lg text-[15px] font-semibold leading-relaxed text-accent-ink">
                 {t.customSite.commission}
               </p>
             </Reveal>
@@ -66,11 +66,11 @@ export default function CustomSite() {
                 <RevealItem key={i}>
                   <div className="group relative rounded-2xl border border-cream/10 bg-cream/[0.02] p-5 transition-all duration-500 hover:border-cream/[0.14] hover:bg-cream/[0.04] sm:p-6">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cream/10 bg-linear-to-b from-cream/[0.1] to-cream/[0.02] text-accent-300 transition-all duration-500 group-hover:border-accent-400/30 group-hover:shadow-accent">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cream/10 bg-linear-to-b from-cream/[0.1] to-cream/[0.02] text-accent-ink transition-all duration-500 group-hover:border-accent-400/30 group-hover:shadow-accent">
                         <item.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-display text-[17px] font-semibold tracking-[-0.015em] text-white">
+                        <h3 className="font-display text-[17px] font-semibold tracking-[-0.015em] text-fg">
                           {item.title}
                         </h3>
                         <p className="mt-2 text-[14px] leading-relaxed text-cream/62">

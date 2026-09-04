@@ -42,10 +42,10 @@ export default function Features() {
             // its pre-reveal opacity with no trigger left to animate it in.
             <RevealItem key={i} variants={scaleIn}>
               <article className="group h-full rounded-2xl border border-cream/10 bg-ink-800/70 p-6 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-ink-800 hover:shadow-lift">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cream/10 bg-cream/[0.04] text-accent-400 transition-colors duration-500 group-hover:border-accent-400/40 group-hover:bg-accent-400/10">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cream/10 bg-cream/[0.04] text-accent-icon transition-colors duration-500 group-hover:border-accent-400/40 group-hover:bg-accent-400/10">
                   <Icon className="h-5 w-5" />
                 </span>
-                <h3 className="mt-5 font-display text-[17.5px] font-semibold tracking-[-0.01em] text-white">
+                <h3 className="mt-5 font-display text-[17.5px] font-semibold tracking-[-0.01em] text-fg">
                   {title}
                 </h3>
                 <p className="mt-2.5 text-[14.5px] leading-relaxed text-cream/66">{copy}</p>

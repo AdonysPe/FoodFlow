@@ -58,7 +58,7 @@ export default function LeadFormModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: EASE }}
-            className="absolute inset-0 h-full w-full cursor-default bg-ink-950/75 backdrop-blur-sm"
+            className="absolute inset-0 h-full w-full cursor-default bg-[var(--scrim)] backdrop-blur-sm"
           />
 
           <motion.div
@@ -76,16 +76,16 @@ export default function LeadFormModal() {
               type="button"
               onClick={closeLeadForm}
               aria-label={copy.close}
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg text-cream/55 transition-colors hover:bg-cream/[0.06] hover:text-white"
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg text-cream/55 transition-colors hover:bg-cream/[0.06] hover:text-fg"
             >
               <IconX className="h-4 w-4" />
             </button>
 
-            <span className="inline-flex items-center rounded-full border border-cream/10 bg-cream/[0.03] px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-accent-300">
+            <span className="inline-flex items-center rounded-full border border-cream/10 bg-cream/[0.03] px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-accent-ink">
               {copy.eyebrow}
             </span>
 
-            <h2 className="mt-4 pr-8 font-display text-[22px] font-extrabold leading-[1.15] tracking-[-0.03em] text-white sm:text-[25px]">
+            <h2 className="mt-4 pr-8 font-display text-[22px] font-extrabold leading-[1.15] tracking-[-0.03em] text-fg sm:text-[25px]">
               {title}
             </h2>
             <p className="mt-2.5 text-[14px] leading-relaxed text-cream/62">{subtitle}</p>

@@ -17,7 +17,7 @@ export default function SectionHeading({
     >
       {eyebrow && (
         <Reveal>
-          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-cream/10 bg-cream/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-300">
+          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-cream/10 bg-cream/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-ink">
             {eyebrow}
           </span>
         </Reveal>

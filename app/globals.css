@@ -28,6 +28,30 @@
 
   --color-mint: #3ddc97;
 
+  /* ---------------------------------------------------------------
+     Semantic tokens. Everything above is a fixed pigment; everything
+     here is "what this role looks like on the current surface", and it
+     flips with the theme (see the theme blocks in @layer base).
+
+     Rule of thumb when writing markup:
+       surfaces               -> ink-*      (page ground -> raised panel)
+       body copy              -> cream/NN   (the ink, at an opacity)
+       loudest text and icons -> fg
+       the accent AS TEXT     -> accent-ink (accent-300 dies on paper)
+       text ON an accent fill -> on-accent  (constant in both themes)
+  --------------------------------------------------------------- */
+  --color-fg: #ffffff;
+  /* Three accent roles, because on warm black the accent-as-foreground came
+     in three weights (200 label / 300 ink / 400 icon) and all three have to
+     land somewhere readable on paper. The fills keep using accent-* directly
+     and are identical in both themes. */
+  --color-accent-label: #ffcbb9;
+  --color-accent-ink: #ffa285;
+  --color-accent-icon: #ff5a33;
+  --color-on-accent: #0c0908;
+  --color-mint-ink: #3ddc97;
+  --color-chat-ink: #6fe3cd;
+
   /* Conversation teal: the chat launcher and everything inside the chat that
      is about talking. Kept apart from the vermilion (which means "act") and
      from the mint (which only ever means "this number went up"). */
@@ -79,12 +103,160 @@
 }
 
 @layer base {
-  :root {
+  /* ------------------------------------------------------------------
+     THEMES
+
+     Dark is the default and is also what a subtree opts back into: the
+     product mockups carry data-theme="dark" so the phone and the panel
+     keep showing the real (dark) product while the page around them is
+     lit. Light is warm paper, not white — the brand lives on a warm
+     black, so its daylight counterpart is off-white with the same warm
+     cast, and the vermilion is the very same pigment in both.
+
+     Only what actually changes is re-declared here; the pigments
+     themselves (accent, mint, chat) live in @theme and are shared.
+     Specificity: :root[data-theme="light"] (0,2,0) beats the plain
+     :root (0,1,0) above it, and a nested [data-theme="dark"] matches
+     none of the light selectors, so it wins inside its own subtree.
+  ------------------------------------------------------------------ */
+  :root,
+  [data-theme="dark"] {
     color-scheme: dark;
+
+    --color-ink-950: #0c0908;
+    --color-ink-900: #130f0d;
+    --color-ink-800: #191312;
+    --color-ink-700: #221a18;
+    --color-ink-600: #2e2422;
+    --color-cream: #f3efe6;
+
+    --color-fg: #ffffff;
+    --color-accent-label: #ffcbb9;
+    --color-accent-ink: #ffa285;
+    --color-accent-icon: #ff5a33;
+    --color-mint-ink: #3ddc97;
+    --color-chat-ink: #6fe3cd;
+
+    /* materials */
+    --line: rgb(243 239 230 / 0.08);
+    --rule: rgb(243 239 230 / 0.22);
+    --grid-line: rgba(243, 239, 230, 0.05);
+    --sheen: rgb(255 255 255 / 0.5);
+    --grad-from: #ffffff;
+    --grad-to: rgb(243 239 230 / 0.74);
+    --shimmer-lo: rgb(243 239 230 / 0.45);
+    --shimmer-hi: rgb(243 239 230 / 0.95);
+    --select-bg: rgb(255 90 51 / 0.32);
+    --select-fg: #ffffff;
+    --thumb: rgb(243 239 230 / 0.1);
+    --thumb-hover: rgb(243 239 230 / 0.18);
+    --thumb-face: var(--color-cream);
+    /* Full-bleed band under the hero. Inverting the ink ladder would make it
+       a white strip on paper, i.e. invisible, so it is its own tint. */
+    --band: rgb(19 15 13 / 0.6);
+    /* A modal scrim is dark in both themes — a pale one over a pale page
+       stops separating the dialog from what is behind it. */
+    --scrim: rgb(12 9 8 / 0.75);
+
+    --glass-top: rgb(255 255 255 / 0.07);
+    --glass-bot: rgb(255 255 255 / 0.025);
+    --glass-border: rgb(243 239 230 / 0.09);
+
+    --liquid-spec: rgb(255 255 255 / 0.1);
+    --liquid-warm: rgb(255 90 51 / 0.1);
+    --liquid-top: rgb(255 255 255 / 0.055);
+    --liquid-bot: rgb(255 255 255 / 0.02);
+    --liquid-border: rgb(243 239 230 / 0.12);
+    --liquid-inset-top: rgb(255 255 255 / 0.14);
+    --liquid-inset-bot: rgb(0 0 0 / 0.22);
+    --liquid-drop: 0 30px 62px -32px rgb(0 0 0 / 0.8);
+
+    --soft-top: rgb(255 255 255 / 0.075);
+    --soft-bot: rgb(255 255 255 / 0.03);
+    --soft-border: rgb(243 239 230 / 0.11);
+    --soft-inset: rgb(255 255 255 / 0.1);
+    --soft-drop: 0 10px 24px -16px rgb(0 0 0 / 0.65);
+
+    --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 12px 28px -18px rgb(0 0 0 / 0.7);
+    --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.06) inset, 0 22px 44px -26px rgb(0 0 0 / 0.8);
+    --shadow-panel: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 36px 70px -38px rgb(0 0 0 / 0.85);
+    --shadow-glow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -24px rgb(255 90 51 / 0.4);
+  }
+
+  :root[data-theme="light"],
+  [data-theme="light"] {
+    color-scheme: light;
+
+    /* The ladder inverts direction: on paper a raised surface is lighter
+       than the ground, so ink-950 is the page and ink-900/800 are the
+       panels sitting on it. */
+    --color-ink-950: #f6f2ea;
+    --color-ink-900: #fcfaf6;
+    --color-ink-800: #ffffff;
+    --color-ink-700: #ffffff;
+    --color-ink-600: #ffffff;
+    /* "cream" is the ink, not the paper: every text-cream/NN in the
+       markup is an opacity of the foreground, so flipping this one value
+       carries all ~150 of those call sites over untouched. */
+    --color-cream: #17110f;
+
+    --color-fg: #17110f;
+    /* accent-300 is 2.2:1 on paper. The accent AS TEXT gets its own
+       darker pigment; the fills keep the original vermilion. */
+    --color-accent-label: #a82b0e;
+    --color-accent-ink: #b32f10;
+    --color-accent-icon: #c23414;
+    --color-mint-ink: #0f8f5a;
+    --color-chat-ink: #06776c;
+
+    --line: rgb(28 20 18 / 0.1);
+    --rule: rgb(28 20 18 / 0.14);
+    --grid-line: rgba(28, 20, 18, 0.055);
+    --sheen: rgb(255 255 255 / 0.65);
+    --grad-from: #0c0908;
+    --grad-to: rgb(23 17 15 / 0.72);
+    --shimmer-lo: rgb(23 17 15 / 0.35);
+    --shimmer-hi: rgb(23 17 15 / 0.95);
+    --select-bg: rgb(255 90 51 / 0.24);
+    --select-fg: #0c0908;
+    --thumb: rgb(28 20 18 / 0.16);
+    --thumb-hover: rgb(28 20 18 / 0.28);
+    --thumb-face: #ffffff;
+    --band: rgb(28 20 18 / 0.035);
+    --scrim: rgb(28 20 18 / 0.45);
+
+    /* On paper the frosted panes are white-on-warm rather than
+       white-on-black: the pane lightens what is behind it instead of
+       lifting it, and the border does more of the edge work. */
+    --glass-top: rgb(255 255 255 / 0.85);
+    --glass-bot: rgb(255 255 255 / 0.6);
+    --glass-border: rgb(28 20 18 / 0.1);
+
+    --liquid-spec: rgb(255 255 255 / 0.95);
+    --liquid-warm: rgb(255 90 51 / 0.07);
+    --liquid-top: rgb(255 255 255 / 0.82);
+    --liquid-bot: rgb(255 255 255 / 0.55);
+    --liquid-border: rgb(28 20 18 / 0.11);
+    --liquid-inset-top: rgb(255 255 255 / 0.9);
+    --liquid-inset-bot: rgb(28 20 18 / 0.05);
+    --liquid-drop: 0 30px 62px -34px rgb(28 20 18 / 0.28);
+
+    --soft-top: rgb(255 255 255 / 0.72);
+    --soft-bot: rgb(255 255 255 / 0.45);
+    --soft-border: rgb(28 20 18 / 0.09);
+    --soft-inset: rgb(255 255 255 / 0.85);
+    --soft-drop: 0 10px 24px -16px rgb(28 20 18 / 0.16);
+
+    /* A heavy black drop reads as dirt on paper exactly as it does on
+       warm black, so these stay shallow and warm. */
+    --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.9) inset, 0 12px 28px -18px rgb(28 20 18 / 0.2);
+    --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.9) inset, 0 22px 44px -26px rgb(28 20 18 / 0.26);
+    --shadow-panel: 0 1px 0 0 rgb(255 255 255 / 0.9) inset, 0 36px 70px -38px rgb(28 20 18 / 0.3);
+    --shadow-glow: 0 0 0 1px rgb(28 20 18 / 0.08), 0 24px 60px -24px rgb(255 90 51 / 0.3);
   }
 
   * {
-    border-color: rgb(243 239 230 / 0.08);
+    border-color: var(--line);
   }
 
   html {
@@ -95,7 +267,8 @@
 
   body {
     background-color: var(--color-ink-950);
-    color: rgb(243 239 230 / 0.86);
+    color: color-mix(in oklab, var(--color-cream) 86%, transparent);
+    transition: background-color 0.5s ease, color 0.5s ease;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -103,18 +276,18 @@
   }
 
   ::selection {
-    background: rgb(255 90 51 / 0.32);
-    color: #fff;
+    background: var(--select-bg);
+    color: var(--select-fg);
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: var(--color-ink-950); }
   ::-webkit-scrollbar-thumb {
-    background: rgb(243 239 230 / 0.1);
+    background: var(--thumb);
     border-radius: 999px;
     border: 3px solid var(--color-ink-950);
   }
-  ::-webkit-scrollbar-thumb:hover { background: rgb(243 239 230 / 0.18); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--thumb-hover); }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -129,14 +302,10 @@
 /* ---------------------------- utilities ---------------------------- */
 
 @utility glass {
-  background-image: linear-gradient(
-    to bottom,
-    rgb(255 255 255 / 0.07),
-    rgb(255 255 255 / 0.025)
-  );
+  background-image: linear-gradient(to bottom, var(--glass-top), var(--glass-bot));
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgb(243 239 230 / 0.09);
+  border: 1px solid var(--glass-border);
 }
 
 /* Frosted material: a blurred, saturated pane of whatever sits behind it,
@@ -146,37 +315,33 @@
    `liquid-soft` is the same material for pills and tiles sitting on it. */
 @utility liquid {
   background-image:
-    radial-gradient(130% 100% at 50% 0%, rgb(255 255 255 / 0.1), transparent 62%),
-    radial-gradient(90% 120% at 85% 110%, rgb(255 90 51 / 0.1), transparent 65%),
-    linear-gradient(to bottom, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.02));
+    radial-gradient(130% 100% at 50% 0%, var(--liquid-spec), transparent 62%),
+    radial-gradient(90% 120% at 85% 110%, var(--liquid-warm), transparent 65%),
+    linear-gradient(to bottom, var(--liquid-top), var(--liquid-bot));
   backdrop-filter: blur(30px) saturate(165%);
   -webkit-backdrop-filter: blur(30px) saturate(165%);
-  border: 1px solid rgb(243 239 230 / 0.12);
+  border: 1px solid var(--liquid-border);
   box-shadow:
-    inset 0 1px 0 0 rgb(255 255 255 / 0.14),
-    inset 0 -1px 0 0 rgb(0 0 0 / 0.22),
-    0 30px 62px -32px rgb(0 0 0 / 0.8);
+    inset 0 1px 0 0 var(--liquid-inset-top),
+    inset 0 -1px 0 0 var(--liquid-inset-bot),
+    var(--liquid-drop);
 }
 
 @utility liquid-soft {
-  background-image: linear-gradient(
-    to bottom,
-    rgb(255 255 255 / 0.075),
-    rgb(255 255 255 / 0.03)
-  );
+  background-image: linear-gradient(to bottom, var(--soft-top), var(--soft-bot));
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
-  border: 1px solid rgb(243 239 230 / 0.11);
+  border: 1px solid var(--soft-border);
   box-shadow:
-    inset 0 1px 0 0 rgb(255 255 255 / 0.1),
-    0 10px 24px -16px rgb(0 0 0 / 0.65);
+    inset 0 1px 0 0 var(--soft-inset),
+    var(--soft-drop);
 }
 
 @utility text-gradient {
   background-image: linear-gradient(
     180deg,
-    #ffffff 0%,
-    rgb(243 239 230 / 0.74) 100%
+    var(--grad-from) 0%,
+    var(--grad-to) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -199,12 +364,7 @@
   position: relative;
 }
 @utility hairline-top {
-  background-image: linear-gradient(
-    90deg,
-    transparent,
-    rgb(243 239 230 / 0.22),
-    transparent
-  );
+  background-image: linear-gradient(90deg, transparent, var(--rule), transparent);
 }
 
 @utility grid-mask {
@@ -220,9 +380,9 @@
 @utility shimmer-text {
   background: linear-gradient(
     90deg,
-    rgb(243 239 230 / 0.45) 0%,
-    rgb(243 239 230 / 0.95) 45%,
-    rgb(243 239 230 / 0.45) 60%
+    var(--shimmer-lo) 0%,
+    var(--shimmer-hi) 45%,
+    var(--shimmer-lo) 60%
   );
   background-size: 200% 100%;
   background-clip: text;
@@ -288,7 +448,7 @@
   background-image: linear-gradient(
     100deg,
     transparent 30%,
-    rgb(255 255 255 / 0.5) 48%,
+    var(--sheen) 48%,
     transparent 62%
   );
   background-size: 220% 100%;
@@ -319,7 +479,7 @@
   background: linear-gradient(
     to right,
     var(--color-accent-400) var(--pct, 50%),
-    rgb(243 239 230 / 0.12) var(--pct, 50%)
+    color-mix(in oklab, var(--color-cream) 12%, transparent) var(--pct, 50%)
   );
 }
 .range-accent::-webkit-slider-thumb {
@@ -329,8 +489,8 @@
   height: 1.3rem;
   width: 1.3rem;
   border-radius: 999px;
-  background: var(--color-cream);
-  box-shadow: var(--shadow-accent);
+  background: var(--thumb-face);
+  box-shadow: var(--shadow-accent), 0 0 0 1px var(--line);
   transition: transform 0.2s ease;
 }
 .range-accent:active::-webkit-slider-thumb {
@@ -343,7 +503,7 @@
 .range-accent::-moz-range-track {
   height: 0.5rem;
   border-radius: 999px;
-  background: rgb(243 239 230 / 0.12);
+  background: color-mix(in oklab, var(--color-cream) 12%, transparent);
 }
 .range-accent::-moz-range-progress {
   height: 0.5rem;
@@ -355,9 +515,84 @@
   width: 1.3rem;
   border: none;
   border-radius: 999px;
-  background: var(--color-cream);
-  box-shadow: var(--shadow-accent);
+  background: var(--thumb-face);
+  box-shadow: var(--shadow-accent), 0 0 0 1px var(--line);
 }
 .range-accent:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 4px rgb(255 90 51 / 0.45);
+}
+
+/* ------------------------------------------------------------------
+   Ink weight on paper
+
+   `text-cream/55` is not the same read on paper as it is on warm black.
+   The blend is symmetric but the contrast formula is not: the same 55%
+   of the foreground scores 5.5:1 over #0c0908 and only 4.0:1 over
+   #f6f2ea. Left alone, every muted line in the light theme would come
+   out roughly one step fainter than the design it is copying.
+
+   So each rung is re-pitched to the opacity that reproduces its own
+   dark-theme contrast ratio exactly — measured, not guessed. The
+   hierarchy is unchanged (a /40 label is still quieter than a /55
+   line); only the ink needed to hold each position changes.
+
+   The :not() keeps this off the product mockups, which stay dark
+   inside a light page and therefore still want the original rungs.
+------------------------------------------------------------------ */
+:root[data-theme="light"] .text-cream\/30:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 37%, transparent);
+}
+:root[data-theme="light"] .text-cream\/35:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 43%, transparent);
+}
+:root[data-theme="light"] .text-cream\/40:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 50%, transparent);
+}
+:root[data-theme="light"] .text-cream\/45:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 55%, transparent);
+}
+:root[data-theme="light"] .text-cream\/50:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 61%, transparent);
+}
+:root[data-theme="light"] .text-cream\/55:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 65%, transparent);
+}
+:root[data-theme="light"] .text-cream\/58:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 68%, transparent);
+}
+:root[data-theme="light"] .text-cream\/60:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 69%, transparent);
+}
+:root[data-theme="light"] .text-cream\/62:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 71%, transparent);
+}
+:root[data-theme="light"] .text-cream\/65:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 74%, transparent);
+}
+:root[data-theme="light"] .text-cream\/66:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 74%, transparent);
+}
+:root[data-theme="light"] .text-cream\/70:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 77%, transparent);
+}
+:root[data-theme="light"] .text-cream\/75:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 81%, transparent);
+}
+:root[data-theme="light"] .text-cream\/80:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 84%, transparent);
+}
+:root[data-theme="light"] .text-cream\/85:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 88%, transparent);
+}
+:root[data-theme="light"] .text-cream\/90:not([data-theme="dark"] *) {
+  color: color-mix(in oklab, var(--color-cream) 92%, transparent);
+}
+:root[data-theme="light"] .placeholder\:text-cream\/30:not([data-theme="dark"] *)::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 37%, transparent);
+}
+:root[data-theme="light"] .placeholder\:text-cream\/35:not([data-theme="dark"] *)::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 43%, transparent);
+}
+:root[data-theme="light"] .placeholder\:text-cream\/55:not([data-theme="dark"] *)::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 65%, transparent);
 }

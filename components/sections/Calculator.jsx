@@ -115,7 +115,7 @@ export default function Calculator() {
                   </label>
                   <output
                     htmlFor={commissionId}
-                    className="font-display text-[19px] font-bold tabular-nums text-accent-300"
+                    className="font-display text-[19px] font-bold tabular-nums text-accent-ink"
                   >
                     {commission}%
                   </output>
@@ -181,14 +181,14 @@ export default function Calculator() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, ease: EASE }}
                     >
-                      <p className="font-display text-[2.6rem] font-extrabold leading-none tracking-[-0.04em] tabular-nums text-accent-300 sm:text-[3.1rem]">
+                      <p className="font-display text-[2.6rem] font-extrabold leading-none tracking-[-0.04em] tabular-nums text-accent-ink sm:text-[3.1rem]">
                         {formatSoles(monthly)}
                       </p>
                       <p className="mt-1 text-[14px] font-medium text-cream/60">
                         {copy.perMonth}
                       </p>
 
-                      <p className="mt-5 font-display text-[1.6rem] font-bold leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[1.8rem]">
+                      <p className="mt-5 font-display text-[1.6rem] font-bold leading-none tracking-[-0.03em] tabular-nums text-fg sm:text-[1.8rem]">
                         {formatSoles(yearly)}
                       </p>
                       <p className="mt-1 text-[14px] font-medium text-cream/60">
@@ -222,8 +222,8 @@ export default function Calculator() {
                 </AnimatePresence>
               </div>
 
-              <p className="mt-7 flex items-start gap-2.5 border-t border-cream/12 pt-5 text-[14.5px] font-semibold leading-snug text-white">
-                <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-mint" />
+              <p className="mt-7 flex items-start gap-2.5 border-t border-cream/12 pt-5 text-[14.5px] font-semibold leading-snug text-fg">
+                <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-mint-ink" />
                 {copy.foodflow}
               </p>
 

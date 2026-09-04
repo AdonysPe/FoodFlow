@@ -42,7 +42,7 @@ export default function LegalDoc({ doc }) {
           {doc.sections.map((section, i) => (
             <Reveal key={section.title} delay={Math.min(i, 3) * 0.05}>
               <div className="py-7">
-                <h2 className="font-display text-[19px] font-semibold text-white">
+                <h2 className="font-display text-[19px] font-semibold text-fg">
                   {section.title}
                 </h2>
                 {section.body.map((paragraph, j) => (
@@ -65,7 +65,7 @@ export default function LegalDoc({ doc }) {
             </p>
             <a
               href={`mailto:${LEGAL_HOLDER.email}`}
-              className="mt-1 inline-block text-[15px] font-medium text-accent-300 underline-offset-4 hover:underline"
+              className="mt-1 inline-block text-[15px] font-medium text-accent-ink underline-offset-4 hover:underline"
             >
               {LEGAL_HOLDER.email}
             </a>

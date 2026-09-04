@@ -45,11 +45,11 @@ export default function Pricing() {
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <h3 className="font-display text-[17.5px] font-bold text-white">
+                  <h3 className="font-display text-[17.5px] font-bold text-fg">
                     {plan.name}
                   </h3>
                   {plan.badge && (
-                    <span className="rounded-full bg-accent-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-950">
+                    <span className="rounded-full bg-accent-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-on-accent">
                       {t.pricing.popular}
                     </span>
                   )}
@@ -57,13 +57,13 @@ export default function Pricing() {
                 <p className="mt-1 text-[13px] text-cream/55">{plan.tagline}</p>
 
                 <p className="mt-5 flex items-baseline gap-1">
-                  <span className="font-display text-[2rem] font-extrabold tracking-[-0.03em] text-white">
+                  <span className="font-display text-[2rem] font-extrabold tracking-[-0.03em] text-fg">
                     {plan.price}
                   </span>
                   <span className="text-[13.5px] font-medium text-cream/50">
                     {plan.period}
                   </span>
-                  <span aria-hidden className="text-[13.5px] text-accent-300">
+                  <span aria-hidden className="text-[13.5px] text-accent-ink">
                     *
                   </span>
                 </p>
@@ -84,7 +84,7 @@ export default function Pricing() {
                       >
                         <IconCheck
                           className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
-                            isInherited ? "text-accent-300" : "text-accent-400"
+                            isInherited ? "text-accent-ink" : "text-accent-icon"
                           }`}
                         />
                         {feature}
@@ -119,7 +119,7 @@ export default function Pricing() {
                 key={note}
                 className="flex gap-2.5 rounded-xl border border-cream/10 bg-ink-800/50 px-4 py-3.5 text-[13.5px] leading-relaxed text-cream/75"
               >
-                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-300" />
+                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-ink" />
                 {note}
               </li>
             ))}
@@ -129,7 +129,7 @@ export default function Pricing() {
         <Reveal delay={0.1}>
           <div className="mx-auto mt-5 max-w-5xl">
             <p className="text-[13px] text-cream/55">{t.pricing.taxNote}</p>
-            <p className="mt-1.5 text-[13px] font-medium text-accent-300">
+            <p className="mt-1.5 text-[13px] font-medium text-accent-ink">
               {t.pricing.savingsNote}
             </p>
           </div>
@@ -152,12 +152,12 @@ export default function Pricing() {
                   transition={{ duration: 0.5, ease: EASE, delay: i * 0.08 }}
                 >
                   <p className="flex items-baseline gap-1">
-                    <span className="font-display text-[19px] font-bold text-accent-300">
+                    <span className="font-display text-[19px] font-bold text-accent-ink">
                       {addon.price}
                     </span>
                     <span className="text-[12.5px] text-cream/50">{addon.unit}</span>
                   </p>
-                  <p className="mt-1.5 text-[14.5px] font-semibold text-white">
+                  <p className="mt-1.5 text-[14.5px] font-semibold text-fg">
                     {addon.name}
                   </p>
                   <p className="mt-1 text-[13.5px] leading-relaxed text-cream/55">
@@ -193,14 +193,14 @@ function FounderBanner({ copy }) {
 
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
           <div className="lg:shrink-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-ink-950/45 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.16em] text-accent-200 ring-1 ring-inset ring-accent-400/30">
+            <span className="inline-flex items-center gap-2 rounded-full bg-ink-950/45 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.16em] text-accent-label ring-1 ring-inset ring-accent-400/30">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-300/80" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent-300" />
               </span>
               {copy.label}
             </span>
-            <p className="mt-2.5 font-display text-[21px] font-extrabold leading-tight tracking-[-0.02em] text-white sm:text-[23px]">
+            <p className="mt-2.5 font-display text-[21px] font-extrabold leading-tight tracking-[-0.02em] text-fg sm:text-[23px]">
               {copy.headline}
             </p>
           </div>
@@ -208,7 +208,7 @@ function FounderBanner({ copy }) {
           <ul className="grid gap-2 text-[13.5px] leading-snug text-cream/85 sm:grid-cols-3 lg:flex-1 lg:border-l lg:border-accent-400/25 lg:pl-8">
             {copy.perks.map((perk) => (
               <li key={perk} className="flex gap-2">
-                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-300" />
+                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-ink" />
                 {perk}
               </li>
             ))}
