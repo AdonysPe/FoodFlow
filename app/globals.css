@@ -182,6 +182,8 @@
        chart rules and ticks, the floor-plan paper, the specular edge on a
        raised knob, and the two drop-shadow weights. */
     --spec: rgb(255 255 255 / 0.09);
+    /* Strength of the cursor highlight on a panel (see PointerGlow). */
+    --glow-strength: 0.16;
     --drop-soft: rgb(0 0 0 / 0.45);
     --drop-hard: rgb(0 0 0 / 0.66);
     --chart-grid: rgb(255 255 255 / 0.05);
@@ -267,6 +269,9 @@
     --art-shadow: rgb(28 20 18 / 0.3);
 
     --spec: rgb(255 255 255 / 0.9);
+    /* A warm tint over white loses more of its punch than the same tint
+       over warm black, so paper gets a touch more of it. */
+    --glow-strength: 0.15;
     --drop-soft: rgb(28 20 18 / 0.16);
     --drop-hard: rgb(28 20 18 / 0.24);
     --chart-grid: rgb(28 20 18 / 0.09);

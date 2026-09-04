@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@/components/ui/Container";
+import PointerGlow from "@/components/ui/PointerGlow";
 import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import RestaurantSitePreview from "@/components/RestaurantSitePreview";
 import { IconMenuBook, IconCart, IconChat } from "@/components/ui/Icons";
@@ -64,8 +65,9 @@ export default function CustomSite() {
                 // translated-text key would remount the card on every
                 // language toggle and strand it at opacity 0.
                 <RevealItem key={i}>
-                  <div className="group relative rounded-2xl border border-cream/10 bg-cream/[0.02] p-5 transition-all duration-500 hover:border-cream/[0.14] hover:bg-cream/[0.04] sm:p-6">
-                    <div className="flex items-start gap-4">
+                  <div className="group relative overflow-hidden rounded-2xl border border-cream/10 bg-cream/[0.02] p-5 transition-all duration-500 hover:border-cream/[0.14] hover:bg-cream/[0.04] sm:p-6">
+                    <PointerGlow radius={300} />
+                    <div className="relative flex items-start gap-4">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cream/10 bg-linear-to-b from-cream/[0.1] to-cream/[0.02] text-accent-ink transition-all duration-500 group-hover:border-accent-400/30 group-hover:shadow-accent">
                         <item.icon className="h-5 w-5" />
                       </div>

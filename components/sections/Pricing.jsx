@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Container from "@/components/ui/Container";
+import PointerGlow from "@/components/ui/PointerGlow";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
@@ -38,13 +39,14 @@ export default function Pricing() {
           {plans.map((plan, planIndex) => (
             <RevealItem key={plan.name} variants={scaleIn}>
               <article
-                className={`flex h-full flex-col rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 sm:p-6 ${
+                className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 sm:p-6 ${
                   plan.badge
                     ? "border-accent-400/45 bg-accent-400/[0.06] shadow-lift"
                     : "border-cream/10 bg-ink-800/70 shadow-card hover:border-cream/20"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <PointerGlow radius={320} />
+                <div className="relative flex items-center gap-2.5">
                   <h3 className="font-display text-[17.5px] font-bold text-fg">
                     {plan.name}
                   </h3>

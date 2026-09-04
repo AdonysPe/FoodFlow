@@ -11,6 +11,7 @@ import {
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
+import PointerGlow from "@/components/ui/PointerGlow";
 import dynamic from "next/dynamic";
 import { IconArrowRight, IconCheck, IconPlay } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -195,7 +196,8 @@ export default function Hero() {
             transition={{ duration: 0.9, ease: EASE, delay: intro + 0.45 }}
             className="lg:col-span-5"
           >
-            <div className="relative rounded-3xl border border-cream/10 bg-ink-800/80 p-6 shadow-lift backdrop-blur-xl sm:p-7">
+            <div className="group relative overflow-hidden rounded-3xl border border-cream/10 bg-ink-800/80 p-6 shadow-lift backdrop-blur-xl sm:p-7">
+              <PointerGlow radius={420} />
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-8 top-0 h-px hairline-top"

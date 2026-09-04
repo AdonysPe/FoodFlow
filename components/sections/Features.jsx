@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@/components/ui/Container";
+import PointerGlow from "@/components/ui/PointerGlow";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import {
@@ -41,7 +42,8 @@ export default function Features() {
             // remount the card on every language toggle, stranding it at
             // its pre-reveal opacity with no trigger left to animate it in.
             <RevealItem key={i} variants={scaleIn}>
-              <article className="group h-full rounded-2xl border border-cream/10 bg-ink-800/70 p-6 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-ink-800 hover:shadow-lift">
+              <article className="group relative h-full overflow-hidden rounded-2xl border border-cream/10 bg-ink-800/70 p-6 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-ink-800 hover:shadow-lift">
+                <PointerGlow radius={300} />
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cream/10 bg-cream/[0.04] text-accent-icon transition-colors duration-500 group-hover:border-accent-400/40 group-hover:bg-accent-400/10">
                   <Icon className="h-5 w-5" />
                 </span>

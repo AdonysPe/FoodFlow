@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Container from "@/components/ui/Container";
+import PointerGlow from "@/components/ui/PointerGlow";
 import Button from "@/components/ui/Button";
 import Reveal from "@/components/ui/Reveal";
 import { IconArrowRight, IconChat, IconCheck } from "@/components/ui/Icons";
@@ -27,7 +28,8 @@ export default function CTA() {
               className="pointer-events-none absolute -inset-x-10 -bottom-6 top-6 -z-10 rounded-[3rem] bg-[radial-gradient(60%_70%_at_75%_60%,rgba(255,90,51,0.22),transparent_70%),radial-gradient(50%_60%_at_20%_10%,rgba(255,162,133,0.12),transparent_70%)] blur-2xl"
             />
 
-            <div className="relative isolate overflow-hidden rounded-[2rem] liquid px-6 py-14 text-cream sm:px-12 sm:py-16">
+            <div className="group relative isolate overflow-hidden rounded-[2rem] liquid px-6 py-14 text-cream sm:px-12 sm:py-16">
+              <PointerGlow radius={520} />
               {/* slow sheen across the pane, so the light never sits still */}
               <span
                 aria-hidden

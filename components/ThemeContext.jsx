@@ -95,8 +95,22 @@ export function ThemeProvider({ children }) {
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (typeof document.startViewTransition === "function" && !reduced) {
-      document.startViewTransition(commit);
+    // A hidden document is not painting, so there is nothing to snapshot and
+    // the browser rejects the transition outright. Swap instantly instead.
+    const canAnimate =
+      typeof document.startViewTransition === "function" &&
+      document.visibilityState === "visible" &&
+      !reduced;
+
+    if (canAnimate) {
+      const transition = document.startViewTransition(commit);
+      // A second click before the first fade ends, or a click in a tab the
+      // browser is not painting, aborts the transition and rejects these.
+      // The theme has already been applied by then — the only thing lost is
+      // the animation — so the rejection is swallowed rather than surfaced
+      // as an unhandled promise error.
+      transition.ready.catch(() => {});
+      transition.finished.catch(() => {});
     } else {
       // Firefox, older Safari, or someone who asked for less motion: the swap
       // is instant, which is the fastest it can possibly be.
