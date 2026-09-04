@@ -4,10 +4,10 @@ import { RESERVATION_STATUS_LABELS, type ReservationStatusValue } from "@/lib/ta
 // inside a tinted, ring-inset capsule.
 const TONE: Record<ReservationStatusValue, string> = {
   pendiente: "bg-amber-300/10 text-amber-200 ring-amber-300/25",
-  confirmada: "bg-mint/10 text-mint ring-mint/25",
-  sentada: "bg-accent-400/10 text-accent-300 ring-accent-400/25",
-  cancelada: "bg-white/[0.06] text-white/50 ring-white/15",
-  no_show: "bg-white/[0.06] text-white/50 ring-white/15",
+  confirmada: "bg-mint/10 text-mint-ink ring-mint/25",
+  sentada: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
+  cancelada: "bg-fg/[0.06] text-fg/50 ring-fg/15",
+  no_show: "bg-fg/[0.06] text-fg/50 ring-fg/15",
 };
 
 export default function ReservationStatusPill({

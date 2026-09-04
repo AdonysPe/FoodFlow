@@ -44,3 +44,16 @@ export function useLanguage() {
   }
   return ctx;
 }
+
+/**
+ * Same context, but null instead of a throw when there is no provider.
+ *
+ * For the handful of controls that live on both sides of the site: the
+ * marketing shell is bilingual, the dashboard and the sign-in screen are
+ * Spanish-only and never mount LanguageProvider. A component that works in
+ * both takes the translation when there is one and falls back to its own
+ * copy when there is not.
+ */
+export function useOptionalLanguage() {
+  return useContext(LanguageContext);
+}

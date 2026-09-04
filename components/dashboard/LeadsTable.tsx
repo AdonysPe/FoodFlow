@@ -36,7 +36,7 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
 
   if (leads.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-white/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
         No leads yet. New leads from the landing page will show up here.
       </GlassCard>
     );
@@ -47,7 +47,7 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-white/[0.07] text-[12px] uppercase tracking-wide text-white/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
               <th className="px-5 py-3.5 font-medium">Email</th>
               <th className="px-5 py-3.5 font-medium">Status</th>
               <th className="px-5 py-3.5 font-medium">Date</th>
@@ -56,12 +56,12 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
           </thead>
           <tbody>
             {optimisticLeads.map((lead) => (
-              <tr key={lead.id} className="border-b border-white/[0.04] last:border-0">
-                <td className="px-5 py-3.5 text-white/85">{lead.email}</td>
+              <tr key={lead.id} className="border-b border-fg/[0.04] last:border-0">
+                <td className="px-5 py-3.5 text-fg/85">{lead.email}</td>
                 <td className="px-5 py-3.5">
                   <StatusPill status={lead.status} />
                 </td>
-                <td className="px-5 py-3.5 text-white/45">{lead.createdAtLabel}</td>
+                <td className="px-5 py-3.5 text-fg/45">{lead.createdAtLabel}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex flex-wrap gap-2">
                     {lead.status === "new" && (
@@ -69,7 +69,7 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
                         type="button"
                         disabled={isPending}
                         onClick={() => handleUpdate(lead.id, "contacted")}
-                        className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
+                        className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg disabled:opacity-40"
                       >
                         Mark contacted
                       </button>
@@ -79,7 +79,7 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
                         type="button"
                         disabled={isPending}
                         onClick={() => handleUpdate(lead.id, "converted")}
-                        className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 transition-opacity hover:opacity-90 disabled:opacity-40"
+                        className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
                       >
                         Mark converted
                       </button>

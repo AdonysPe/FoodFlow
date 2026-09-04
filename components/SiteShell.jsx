@@ -1,7 +1,6 @@
 "use client";
 
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
-import { ThemeProvider } from "@/components/ThemeContext";
 import MotionProvider from "@/components/MotionProvider";
 import { ChatProvider } from "@/components/chat/ChatContext";
 import { LeadCaptureProvider } from "@/components/lead/LeadCaptureContext";
@@ -25,14 +24,11 @@ import Footer from "@/components/sections/Footer";
  * inner page it would fire on every visit and delay the content people
  * navigated to on purpose.
  *
- * `theme` opts a route into light/dark. It is off by default while the light
- * palette is only signed off for the landing page: an inner page renders the
- * dark design exactly as before and shows no switch. The pre-paint script in
- * the root layout gates on the same route, so the two stay in step.
+ * The theme lives above this, in the root layout, so /login and the dashboard
+ * are on the same switch without going through the marketing shell.
  */
-export default function SiteShell({ children, intro = false, theme = false }) {
+export default function SiteShell({ children, intro = false }) {
   return (
-    <ThemeProvider enabled={theme}>
     <LanguageProvider>
       <MotionProvider>
         <ChatProvider>
@@ -51,6 +47,5 @@ export default function SiteShell({ children, intro = false, theme = false }) {
         </ChatProvider>
       </MotionProvider>
     </LanguageProvider>
-    </ThemeProvider>
   );
 }

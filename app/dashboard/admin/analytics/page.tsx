@@ -55,14 +55,14 @@ export default async function AnalyticsPage() {
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.5fr_1fr]">
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-white/90">Leads over time</h2>
-          <span className="text-[12px] text-white/35">Last {DAYS} days</span>
+          <h2 className="text-[15px] font-semibold text-fg/90">Leads over time</h2>
+          <span className="text-[12px] text-fg/35">Last {DAYS} days</span>
         </div>
         <AreaChart data={dailyCounts} labels={labels} />
       </GlassCard>
 
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-        <h2 className="mb-5 text-[15px] font-semibold text-white/90">Conversion funnel</h2>
+        <h2 className="mb-5 text-[15px] font-semibold text-fg/90">Conversion funnel</h2>
         <FunnelChart stages={funnelStages} />
       </GlassCard>
     </div>

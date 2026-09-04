@@ -62,10 +62,10 @@ const TableFigure = forwardRef<
           "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0) 55%)",
         color: tone.text,
         boxShadow: dragging
-          ? `0 20px 44px -12px rgba(0,0,0,0.62), 0 0 0 1px ${tone.stroke}, 0 0 26px -4px ${tone.solid}`
+          ? `0 20px 44px -12px var(--drop-hard), 0 0 0 1px ${tone.stroke}, 0 0 26px -4px ${tone.solid}`
           : state === "libre"
-            ? "0 8px 20px -12px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.09)"
-            : `0 8px 20px -12px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.09), 0 0 18px -8px ${tone.solid}`,
+            ? "0 8px 20px -12px var(--drop-soft), inset 0 1px 0 0 var(--spec)"
+            : `0 8px 20px -12px var(--drop-soft), inset 0 1px 0 0 var(--spec), 0 0 18px -8px ${tone.solid}`,
         ...style,
       }}
       className={`absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center border backdrop-blur-[3px] transition-[transform,box-shadow] duration-200 ${
@@ -74,14 +74,14 @@ const TableFigure = forwardRef<
         dragging ? "z-20 scale-[1.04]" : "hover:scale-[1.02]"
       } ${
         selected
-          ? "outline outline-2 outline-offset-[3px] outline-white/80"
-          : "outline outline-1 -outline-offset-1 outline-white/10"
+          ? "outline outline-2 outline-offset-[3px] outline-fg/80"
+          : "outline outline-1 -outline-offset-1 outline-fg/10"
       }`}
     >
-      <span className="px-1 text-center text-[clamp(9.5px,3cqi,13px)] font-semibold leading-tight tracking-[-0.01em] text-white">
+      <span className="px-1 text-center text-[clamp(9.5px,3cqi,13px)] font-semibold leading-tight tracking-[-0.01em] text-fg">
         {table.name}
       </span>
-      <span className="mt-0.5 flex items-center gap-0.5 text-[clamp(7.5px,2.2cqi,10px)] font-medium tabular-nums text-white/55">
+      <span className="mt-0.5 flex items-center gap-0.5 text-[clamp(7.5px,2.2cqi,10px)] font-medium tabular-nums text-fg/55">
         <svg viewBox="0 0 24 24" className="h-[1em] w-[1em]" fill="currentColor" aria-hidden>
           <circle cx="12" cy="8" r="4" />
           <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7z" />

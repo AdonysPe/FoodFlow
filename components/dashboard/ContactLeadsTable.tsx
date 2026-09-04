@@ -64,7 +64,7 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
 
   if (leads.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-white/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
         Aún no hay contactos. Cuando alguien complete el formulario de la landing
         (nombre, restaurante y WhatsApp) aparecerá aquí.
       </GlassCard>
@@ -76,7 +76,7 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[860px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-white/[0.07] text-[12px] uppercase tracking-wide text-white/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
               <th className="px-5 py-3.5 font-medium">Contacto</th>
               <th className="px-5 py-3.5 font-medium">WhatsApp</th>
               <th className="px-5 py-3.5 font-medium">Origen</th>
@@ -89,12 +89,12 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
           </thead>
           <tbody>
             {optimisticLeads.map((lead) => (
-              <tr key={lead.id} className="border-b border-white/[0.04] last:border-0 align-top">
+              <tr key={lead.id} className="border-b border-fg/[0.04] last:border-0 align-top">
                 <td className="px-5 py-3.5">
-                  <div className="font-medium text-white/85">{lead.nombre}</div>
-                  <div className="text-[12.5px] text-white/45">{lead.restaurante}</div>
+                  <div className="font-medium text-fg/85">{lead.nombre}</div>
+                  <div className="text-[12.5px] text-fg/45">{lead.restaurante}</div>
                   {lead.email && (
-                    <div className="text-[12.5px] text-white/35">{lead.email}</div>
+                    <div className="text-[12.5px] text-fg/35">{lead.email}</div>
                   )}
                 </td>
                 <td className="px-5 py-3.5">
@@ -102,16 +102,16 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
                     href={`https://wa.me/51${lead.whatsapp}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[13.5px] text-[#8af0b4] hover:text-white"
+                    className="inline-flex items-center gap-1.5 text-[13.5px] text-wa-ink hover:text-fg"
                   >
                     <IconWhatsApp className="h-4 w-4" />
                     +51 {lead.whatsapp}
                   </a>
                 </td>
-                <td className="px-5 py-3.5 text-white/60">{SOURCE_LABEL[lead.source]}</td>
-                <td className="px-5 py-3.5 text-white/60">{lead.perdidaAnualLabel ?? "—"}</td>
-                <td className="px-5 py-3.5 text-white/60">{lead.score > 0 ? lead.score : "—"}</td>
-                <td className="px-5 py-3.5 text-white/45">{lead.createdAtLabel}</td>
+                <td className="px-5 py-3.5 text-fg/60">{SOURCE_LABEL[lead.source]}</td>
+                <td className="px-5 py-3.5 text-fg/60">{lead.perdidaAnualLabel ?? "—"}</td>
+                <td className="px-5 py-3.5 text-fg/60">{lead.score > 0 ? lead.score : "—"}</td>
+                <td className="px-5 py-3.5 text-fg/45">{lead.createdAtLabel}</td>
                 <td className="px-5 py-3.5">
                   <StatusPill status={lead.status} />
                 </td>
@@ -125,8 +125,8 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
                         onClick={() => handleUpdate(lead.id, move.to)}
                         className={
                           move.primary
-                            ? "rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 transition-opacity hover:opacity-90 disabled:opacity-40"
-                            : "rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
+                            ? "rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
+                            : "rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg disabled:opacity-40"
                         }
                       >
                         {move.label}
@@ -137,7 +137,7 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
                         type="button"
                         disabled={isPending}
                         onClick={() => handleUpdate(lead.id, "archivado")}
-                        className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-white/50 transition-colors hover:bg-white/[0.08] hover:text-white/80 disabled:opacity-40"
+                        className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/50 transition-colors hover:bg-fg/[0.08] hover:text-fg/80 disabled:opacity-40"
                       >
                         Archivar
                       </button>

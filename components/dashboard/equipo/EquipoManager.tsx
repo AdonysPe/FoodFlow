@@ -7,9 +7,9 @@ import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { addStaffMember, removeStaffMember, type StaffMemberDTO } from "@/lib/actions/staff";
 
 const ghostButton =
-  "rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-40";
+  "rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg disabled:opacity-40";
 const dangerButton =
-  "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-accent-600 disabled:opacity-40";
+  "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-fg transition-colors hover:bg-accent-600 disabled:opacity-40";
 
 function MemberRow({ member }: { member: StaffMemberDTO }) {
   const [confirming, setConfirming] = useState(false);
@@ -29,14 +29,14 @@ function MemberRow({ member }: { member: StaffMemberDTO }) {
   }
 
   return (
-    <li className="flex items-center justify-between gap-3 border-b border-white/[0.05] px-5 py-3.5 last:border-0">
+    <li className="flex items-center justify-between gap-3 border-b border-fg/[0.05] px-5 py-3.5 last:border-0">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[13px] font-bold text-white/70">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-fg/[0.06] text-[13px] font-bold text-fg/70">
           {member.email.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-medium text-white/85">{member.email}</p>
-          <p className="text-[12px] text-white/40">
+          <p className="truncate text-[13.5px] font-medium text-fg/85">{member.email}</p>
+          <p className="text-[12px] text-fg/40">
             {member.active ? "Mozo · ya inició sesión" : "Mozo · pendiente de primer inicio"}
           </p>
         </div>
@@ -88,8 +88,8 @@ export default function EquipoManager({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-white">Equipo</h1>
-        <p className="mt-1 max-w-prose text-[13px] leading-relaxed text-white/45">
+        <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">Equipo</h1>
+        <p className="mt-1 max-w-prose text-[13px] leading-relaxed text-fg/45">
           Agrega a tus mozos por correo. Cada uno inicia sesión con su propio correo y un código —
           solo verán la pantalla de comanda, nunca la administración de la carta ni los reportes.
         </p>
@@ -97,9 +97,9 @@ export default function EquipoManager({
 
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-[15px] font-semibold text-white/90">Agregar mozo</h2>
+          <h2 className="text-[15px] font-semibold text-fg/90">Agregar mozo</h2>
           {maxUsers != null && (
-            <span className="text-[12.5px] text-white/40">
+            <span className="text-[12.5px] text-fg/40">
               {members.length + 1} de {maxUsers} usuarios
               {seatsLeft != null && seatsLeft > 0
                 ? ` · quedan ${seatsLeft}`
@@ -115,7 +115,7 @@ export default function EquipoManager({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="mozo@correo.com"
-            className="h-11 w-full flex-1 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-40"
+            className="h-11 w-full flex-1 rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-40"
           />
           <Button type="submit" size="md" className="shrink-0" disabled={isPending || full}>
             {isPending ? "Agregando…" : "Agregar"}
@@ -126,12 +126,12 @@ export default function EquipoManager({
             Tu plan llegó al tope de usuarios. Quita a alguien o sube de plan para agregar más.
           </p>
         )}
-        {error && <p className="mt-2.5 text-[13px] text-accent-400">{error}</p>}
+        {error && <p className="mt-2.5 text-[13px] text-accent-icon">{error}</p>}
       </GlassCard>
 
       {members.length === 0 ? (
         <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-white/45">
+          <p className="text-[14px] text-fg/45">
             Aún no hay mozos en el equipo. Agrega el primero arriba.
           </p>
         </GlassCard>

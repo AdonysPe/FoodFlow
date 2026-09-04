@@ -78,8 +78,8 @@ export default async function OrdersPage({
             href={`/dashboard/app/orders?range=${r.key}`}
             className={`rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
               range === r.key
-                ? "bg-white/[0.09] text-white"
-                : "text-white/50 hover:bg-white/[0.05] hover:text-white/80"
+                ? "bg-fg/[0.09] text-fg"
+                : "text-fg/50 hover:bg-fg/[0.05] hover:text-fg/80"
             }`}
           >
             {r.label}

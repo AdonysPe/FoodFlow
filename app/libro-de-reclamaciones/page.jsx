@@ -20,7 +20,7 @@ export default function ClaimsBookPage() {
         />
 
         <Container className="max-w-3xl">
-          <span className="inline-flex items-center rounded-full border border-cream/10 bg-cream/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-300">
+          <span className="inline-flex items-center rounded-full border border-cream/10 bg-cream/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-ink">
             Libro de Reclamaciones Virtual
           </span>
 
@@ -58,7 +58,7 @@ export default function ClaimsBookPage() {
               <dd className="mt-0.5 font-medium text-cream/85">
                 <a
                   href={`mailto:${LEGAL_HOLDER.email}`}
-                  className="text-accent-300 underline-offset-4 hover:underline"
+                  className="text-accent-ink underline-offset-4 hover:underline"
                 >
                   {LEGAL_HOLDER.email}
                 </a>
@@ -68,7 +68,7 @@ export default function ClaimsBookPage() {
 
           <p className="mt-6 rounded-xl border border-accent-400/25 bg-accent-400/[0.06] px-4 py-3.5 text-[13.5px] leading-relaxed text-cream/75">
             Nos comprometemos a responder tu reclamo o queja en un plazo máximo de{" "}
-            <span className="font-semibold text-white">
+            <span className="font-semibold text-fg">
               {CLAIM_RESPONSE_DAYS} días hábiles
             </span>{" "}
             desde su registro. La respuesta llegará al correo que indiques.

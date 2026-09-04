@@ -3,7 +3,16 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useTheme } from "@/components/ThemeContext";
 import { IconMoon, IconSun } from "@/components/ui/Icons";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useOptionalLanguage } from "@/lib/i18n/LanguageContext";
+
+// The dashboard and the sign-in screen are Spanish-only and never mount the
+// language provider, so the control carries its own copy and uses the
+// translation when it happens to be inside the marketing shell. Two strings
+// is cheaper than pulling the whole dictionary into those bundles.
+const FALLBACK = {
+  toLight: "Cambiar a modo claro",
+  toDark: "Cambiar a modo oscuro",
+};
 
 /**
  * Light/dark switch. Two slots rather than one morphing glyph, so both states
@@ -11,18 +20,18 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
  * and it sits in the same 36px pill family as the language switch beside it.
  *
  * The knob is the only thing that moves: it slides under the target icon on a
- * spring while the two glyphs trade weight. Renders nothing on routes that do
- * not offer the theme yet, so the navbar is unchanged everywhere else.
+ * spring while the two glyphs trade weight. The page swap itself is a view
+ * transition owned by ThemeProvider; this only has to have finished moving
+ * before the snapshot is taken, which is why the provider flushes its state
+ * synchronously.
  */
 export default function ThemeToggle({ className = "" }) {
-  const { theme, toggleTheme, available } = useTheme();
-  const { t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const lang = useOptionalLanguage();
   const reduced = useReducedMotion();
 
-  if (!available) return null;
-
   const light = theme === "light";
-  const copy = t.nav.theme ?? {};
+  const copy = lang?.t?.nav?.theme ?? FALLBACK;
   const label = light ? copy.toDark : copy.toLight;
 
   return (
@@ -33,11 +42,10 @@ export default function ThemeToggle({ className = "" }) {
       aria-checked={light}
       aria-label={label}
       title={label}
-      className={`relative inline-flex h-9 w-[4.4rem] items-center rounded-lg border border-cream/10 bg-cream/[0.04] p-1 transition-colors duration-200 hover:border-cream/20 ${className}`}
+      className={`relative inline-flex h-9 w-[4.4rem] shrink-0 items-center rounded-lg border border-cream/10 bg-cream/[0.04] p-1 transition-colors duration-200 hover:border-cream/20 ${className}`}
     >
       <motion.span
         aria-hidden
-        layout
         initial={false}
         animate={{ x: light ? "100%" : "0%" }}
         transition={

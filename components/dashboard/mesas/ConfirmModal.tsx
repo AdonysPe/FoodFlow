@@ -44,7 +44,7 @@ export default function ConfirmModal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease: EASE }}
             onClick={onCancel}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
             aria-hidden
           />
           <motion.div
@@ -57,16 +57,16 @@ export default function ConfirmModal({
             aria-label={title}
             className="glass relative w-full max-w-sm rounded-2xl p-6 shadow-panel"
           >
-            <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-white">
+            <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-fg">
               {title}
             </h2>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-white/55">{message}</p>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-fg/55">{message}</p>
             <div className="mt-6 flex justify-end gap-2.5">
               <button
                 type="button"
                 onClick={onCancel}
                 disabled={pending}
-                className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-[13px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
+                className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-4 py-2 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg disabled:opacity-40"
               >
                 {cancelLabel}
               </button>
@@ -74,7 +74,7 @@ export default function ConfirmModal({
                 type="button"
                 onClick={onConfirm}
                 disabled={pending}
-                className="rounded-lg bg-accent-500 px-4 py-2 text-[13px] font-semibold text-white hover:bg-accent-600 disabled:opacity-40"
+                className="rounded-lg bg-accent-500 px-4 py-2 text-[13px] font-semibold text-fg hover:bg-accent-600 disabled:opacity-40"
               >
                 {pending ? "Eliminando…" : confirmLabel}
               </button>

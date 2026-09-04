@@ -81,7 +81,7 @@ export default function OtpInput({
           value={digit}
           onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKeyDown(i, e)}
-          className="h-13 w-11 rounded-xl border border-white/[0.1] bg-white/[0.04] text-center text-xl font-semibold text-white outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-50 sm:h-14 sm:w-12"
+          className="h-13 w-11 rounded-xl border border-fg/[0.1] bg-fg/[0.04] text-center text-xl font-semibold text-fg outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-50 sm:h-14 sm:w-12"
         />
       ))}
     </div>

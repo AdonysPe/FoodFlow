@@ -29,10 +29,10 @@ export default function StatTile({
   return (
     <GlassCard className="p-5 sm:p-6" hoverLift={false}>
       <div className="flex items-center justify-between">
-        <span className="text-[13px] text-white/50">{label}</span>
-        <span className="rounded-lg bg-white/[0.05] p-2 text-accent-400">{icon}</span>
+        <span className="text-[13px] text-fg/50">{label}</span>
+        <span className="rounded-lg bg-fg/[0.05] p-2 text-accent-icon">{icon}</span>
       </div>
-      <p ref={ref} className="mt-4 font-display text-[1.9rem] font-extrabold tracking-[-0.02em] text-white">
+      <p ref={ref} className="mt-4 font-display text-[1.9rem] font-extrabold tracking-[-0.02em] text-fg">
         {prefix}
         {display}
         {suffix}
@@ -42,13 +42,13 @@ export default function StatTile({
           {delta != null && (
             <span
               className={`rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums ${
-                delta >= 0 ? "bg-mint/12 text-mint" : "bg-accent-400/12 text-accent-200"
+                delta >= 0 ? "bg-mint/12 text-mint-ink" : "bg-accent-400/12 text-accent-label"
               }`}
             >
               {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(0)}%
             </span>
           )}
-          {hint && <span className="text-[11.5px] text-white/35">{hint}</span>}
+          {hint && <span className="text-[11.5px] text-fg/35">{hint}</span>}
         </div>
       )}
     </GlassCard>

@@ -100,7 +100,7 @@ export default function ReservationsPanel({
                 pushToast(r.ok ? "Llegó una reserva web (pendiente)." : r.error, r.ok ? "success" : "error")
               );
             }}
-            className="rounded-xl border border-chat-400/25 bg-chat-400/10 px-3 py-2.5 text-[13px] font-medium text-chat-300 hover:bg-chat-400/20"
+            className="rounded-xl border border-chat-400/25 bg-chat-400/10 px-3 py-2.5 text-[13px] font-medium text-chat-ink hover:bg-chat-400/20"
             title="Crea una reserva de prueba como si llegara desde FoodFlow Sites"
           >
             Simular web
@@ -175,11 +175,11 @@ export default function ReservationsPanel({
 
       {view === "hoy" ? (
         <div>
-          <h2 className="text-[15px] font-semibold text-white/90">Agenda de hoy</h2>
-          <p className="mt-0.5 mb-2 text-[12.5px] capitalize text-white/40">{formatDayLabel(today)}</p>
+          <h2 className="text-[15px] font-semibold text-fg/90">Agenda de hoy</h2>
+          <p className="mt-0.5 mb-2 text-[12.5px] capitalize text-fg/40">{formatDayLabel(today)}</p>
           {todays.length === 0 ? (
             <GlassCard className="p-10 text-center" hoverLift={false}>
-              <p className="text-[14px] text-white/45">
+              <p className="text-[14px] text-fg/45">
                 Aún no hay reservas para hoy. Crea una con “+ Nueva reserva”.
               </p>
             </GlassCard>
@@ -201,23 +201,23 @@ export default function ReservationsPanel({
       ) : (
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-[15px] font-semibold text-white/90">Semana</h2>
+            <h2 className="text-[15px] font-semibold text-fg/90">Semana</h2>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setWeekStart((w) => addDays(w, -7))}
-                className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-1.5 text-[13px] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 py-1.5 text-[13px] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
                 aria-label="Semana anterior"
               >
                 ‹
               </button>
-              <span className="min-w-[120px] text-center text-[12.5px] text-white/55">
+              <span className="min-w-[120px] text-center text-[12.5px] text-fg/55">
                 {weekLabel}
               </span>
               <button
                 type="button"
                 onClick={() => setWeekStart((w) => addDays(w, 7))}
-                className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-1.5 text-[13px] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 py-1.5 text-[13px] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
                 aria-label="Semana siguiente"
               >
                 ›
@@ -226,7 +226,7 @@ export default function ReservationsPanel({
                 <button
                   type="button"
                   onClick={() => setWeekStart(startOfWeek(today))}
-                  className="rounded-lg px-2 py-1.5 text-[12.5px] font-medium text-accent-400 hover:text-accent-300"
+                  className="rounded-lg px-2 py-1.5 text-[12.5px] font-medium text-accent-icon hover:text-accent-ink"
                 >
                   Hoy
                 </button>

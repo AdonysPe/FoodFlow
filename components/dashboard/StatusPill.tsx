@@ -1,17 +1,17 @@
 const TONE: Record<string, string> = {
-  new: "bg-accent-400/10 text-accent-300 ring-accent-400/25",
-  contacted: "bg-white/[0.06] text-white/70 ring-white/15",
-  converted: "bg-mint/10 text-mint ring-mint/25",
-  pending: "bg-accent-400/10 text-accent-300 ring-accent-400/25",
-  preparing: "bg-violet-glow/10 text-[#c3b4ff] ring-violet-glow/25",
-  ready: "bg-mint/10 text-mint ring-mint/25",
-  delivered: "bg-white/[0.06] text-white/60 ring-white/15",
+  new: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
+  contacted: "bg-fg/[0.06] text-fg/70 ring-fg/15",
+  converted: "bg-mint/10 text-mint-ink ring-mint/25",
+  pending: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
+  preparing: "bg-violet/10 text-violet-ink ring-violet/25",
+  ready: "bg-mint/10 text-mint-ink ring-mint/25",
+  delivered: "bg-fg/[0.06] text-fg/60 ring-fg/15",
   // Form-lead pipeline (Lead model): nuevo → contactado → cita → cliente.
-  nuevo: "bg-accent-400/10 text-accent-300 ring-accent-400/25",
-  contactado: "bg-white/[0.06] text-white/70 ring-white/15",
-  cita: "bg-violet-glow/10 text-[#c3b4ff] ring-violet-glow/25",
-  cliente: "bg-mint/10 text-mint ring-mint/25",
-  archivado: "bg-white/[0.04] text-white/40 ring-white/10",
+  nuevo: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
+  contactado: "bg-fg/[0.06] text-fg/70 ring-fg/15",
+  cita: "bg-violet/10 text-violet-ink ring-violet/25",
+  cliente: "bg-mint/10 text-mint-ink ring-mint/25",
+  archivado: "bg-fg/[0.04] text-fg/40 ring-fg/10",
 };
 
 const LABEL: Record<string, string> = {

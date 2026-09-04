@@ -32,7 +32,7 @@ function AvailabilityToggle({
     >
       <span
         className={`relative h-[22px] w-[38px] shrink-0 rounded-full transition-colors duration-200 ${
-          available ? "bg-[#30D158]/80" : "bg-white/[0.12]"
+          available ? "bg-ok/80" : "bg-fg/[0.12]"
         }`}
       >
         <span
@@ -43,7 +43,7 @@ function AvailabilityToggle({
       </span>
       <span
         className={`shrink-0 text-[12.5px] font-medium ${
-          available ? "text-[#57DE85]" : "text-white/45"
+          available ? "text-ok-ink" : "text-fg/45"
         }`}
       >
         {available ? "Disponible" : "Agotado"}
@@ -106,11 +106,11 @@ export default function MenuItemCard({
   }
 
   return (
-    <div className="flex h-full gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5">
+    <div className="flex h-full gap-3 rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-3.5">
       {showGrip && (
         <span
           aria-hidden
-          className="mt-0.5 shrink-0 self-start text-white/25"
+          className="mt-0.5 shrink-0 self-start text-fg/25"
           title="Arrastra para reordenar"
         >
           <IconGrip className="h-4 w-4" />
@@ -119,7 +119,7 @@ export default function MenuItemCard({
 
       <div
         aria-hidden
-        className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-white/20"
+        className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-fg/[0.06] bg-fg/[0.03] text-fg/20"
       >
         <IconMenuBook className="h-6 w-6" />
       </div>
@@ -127,22 +127,22 @@ export default function MenuItemCard({
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className={`truncate text-[14px] font-medium ${dimmed ? "text-white/45" : "text-white/85"}`}>
+            <p className={`truncate text-[14px] font-medium ${dimmed ? "text-fg/45" : "text-fg/85"}`}>
               {item.name}
             </p>
-            <p className="mt-0.5 text-[12.5px] text-white/40">
+            <p className="mt-0.5 text-[12.5px] text-fg/40">
               {formatPrice(item.price)}
               {item.prepMin != null ? ` · ${item.prepMin} min` : ""}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-1">
             {showCategory && (
-              <span className="rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] text-white/45">
+              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
                 {item.categoryName ?? "Sin categoría"}
               </span>
             )}
             {hiddenByCategory && (
-              <span className="rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] text-white/45">
+              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
                 categoría oculta
               </span>
             )}
@@ -150,14 +150,14 @@ export default function MenuItemCard({
         </div>
 
         {item.description && (
-          <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-white/45">
+          <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-fg/45">
             {item.description}
           </p>
         )}
 
         <div className="mt-auto flex flex-col gap-2.5 pt-3">
           <AvailabilityToggle available={item.available} disabled={isPending} onToggle={toggle} />
-          <div className="flex flex-wrap gap-1.5 border-t border-white/[0.05] pt-2.5">
+          <div className="flex flex-wrap gap-1.5 border-t border-fg/[0.05] pt-2.5">
             <button type="button" onClick={onEdit} className={ghostButtonClass}>
               Editar
             </button>

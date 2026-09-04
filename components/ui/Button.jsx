@@ -55,7 +55,9 @@ export default function Button({
           aria-hidden
           className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl"
         >
-          {/* sheen sweep on hover */}
+          {/* Sheen sweep on hover. Literally white in both themes, not `fg`:
+              this is a glint of light travelling across a vermilion fill, and
+              the fill is the same colour on paper as it is on warm black. */}
           <span className="absolute -inset-y-8 -left-1/3 w-1/3 rotate-12 bg-white/30 blur-md transition-transform duration-700 ease-out group-hover:translate-x-[420%]" />
         </span>
       )}

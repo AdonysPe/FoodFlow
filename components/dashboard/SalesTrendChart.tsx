@@ -73,7 +73,7 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
     <div>
       <div className="flex gap-3">
         {/* value axis — the amounts the shape is measured against */}
-        <div className="flex w-14 shrink-0 flex-col justify-between py-[10px] text-right text-[10.5px] tabular-nums text-white/30">
+        <div className="flex w-14 shrink-0 flex-col justify-between py-[10px] text-right text-[10.5px] tabular-nums text-fg/30">
           <span>{shortMoney(max)}</span>
           <span>{shortMoney(max / 2)}</span>
           <span>S/ 0</span>
@@ -109,7 +109,7 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
                 x2={W}
                 y1={PAD + f * (H - PAD * 2)}
                 y2={PAD + f * (H - PAD * 2)}
-                stroke="rgba(255,255,255,0.06)"
+                stroke="var(--chart-axis)"
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
@@ -141,7 +141,7 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
                   x2={pts[hover][0]}
                   y1={PAD}
                   y2={H - PAD}
-                  stroke="rgba(255,255,255,0.25)"
+                  stroke="var(--chart-tick)"
                   strokeWidth="1"
                   strokeDasharray="3 3"
                   vectorEffect="non-scaling-stroke"
@@ -151,7 +151,7 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
                   cy={pts[hover][1]}
                   r="4"
                   fill="#ff5a33"
-                  stroke="#0c0908"
+                  stroke="var(--color-ink-950)"
                   strokeWidth="2"
                   vectorEffect="non-scaling-stroke"
                 />
@@ -162,19 +162,19 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
           {/* the amount for the day under the finger */}
           {active && (
             <div
-              className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded-lg border border-white/[0.12] bg-ink-950/95 px-2.5 py-1.5 text-center shadow-lift backdrop-blur-sm"
+              className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded-lg border border-fg/[0.12] bg-ink-950/95 px-2.5 py-1.5 text-center shadow-lift backdrop-blur-sm"
               style={{
                 left: `${(hover! / Math.max(1, points.length - 1)) * 100}%`,
               }}
             >
-              <p className="whitespace-nowrap text-[10.5px] text-white/45">{active.label}</p>
-              <p className="whitespace-nowrap text-[13px] font-semibold tabular-nums text-white">
+              <p className="whitespace-nowrap text-[10.5px] text-fg/45">{active.label}</p>
+              <p className="whitespace-nowrap text-[13px] font-semibold tabular-nums text-fg">
                 {formatCurrency(active.value)}
               </p>
             </div>
           )}
 
-          <div className="mt-2 flex justify-between text-[10.5px] text-white/30">
+          <div className="mt-2 flex justify-between text-[10.5px] text-fg/30">
             {tickIdx.map((i) => (
               <span key={i}>{points[i]?.label}</span>
             ))}
@@ -183,7 +183,7 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
       </div>
 
       {!hasSales && (
-        <p className="mt-3 text-center text-[13px] text-white/35">
+        <p className="mt-3 text-center text-[13px] text-fg/35">
           Todavía no hay ventas en este periodo.
         </p>
       )}

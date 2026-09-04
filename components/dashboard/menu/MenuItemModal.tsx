@@ -45,7 +45,7 @@ export default function MenuItemModal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease: EASE }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-[var(--scrim)] backdrop-blur-sm"
             aria-hidden
           />
           <motion.div
@@ -59,14 +59,14 @@ export default function MenuItemModal({
             className="glass relative my-auto w-full max-w-xl rounded-2xl p-6 shadow-panel"
           >
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-white">
+              <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-fg">
                 {title}
               </h2>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Cerrar"
-                className="rounded-lg p-1.5 text-white/40 hover:bg-white/[0.06] hover:text-white/80"
+                className="rounded-lg p-1.5 text-fg/40 hover:bg-fg/[0.06] hover:text-fg/80"
               >
                 <IconX className="h-5 w-5" />
               </button>

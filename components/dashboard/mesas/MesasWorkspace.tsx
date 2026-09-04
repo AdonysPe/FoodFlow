@@ -49,7 +49,7 @@ export default function MesasWorkspace({
               <>
                 {t.label}
                 {t.id === "reservas" && pendingWeb > 0 && (
-                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-500 px-1 text-[10.5px] font-bold text-white">
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-500 px-1 text-[10.5px] font-bold text-fg">
                     {pendingWeb}
                   </span>
                 )}

@@ -29,7 +29,7 @@ export default function CategoryTabs({
 
   return (
     <div className="-mx-1 overflow-x-auto px-1 pb-1">
-      <div className="flex w-max gap-1 rounded-xl border border-white/[0.08] bg-white/[0.03] p-1">
+      <div className="flex w-max gap-1 rounded-xl border border-fg/[0.08] bg-fg/[0.03] p-1">
         {tabs.map((t) => {
           const active = t.id === value;
           return (
@@ -38,14 +38,14 @@ export default function CategoryTabs({
               type="button"
               onClick={() => onChange(t.id)}
               className={`relative shrink-0 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors duration-200 ${
-                active ? "text-white" : "text-white/45 hover:text-white/75"
+                active ? "text-fg" : "text-fg/45 hover:text-fg/75"
               }`}
             >
               {active && (
                 <motion.span
                   layoutId="menu-cat-tab"
                   transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
-                  className="absolute inset-0 rounded-lg bg-white/[0.1] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.09),0_2px_8px_-2px_rgba(0,0,0,0.45)]"
+                  className="absolute inset-0 rounded-lg bg-fg/[0.1] shadow-[inset_0_1px_0_0_var(--spec),0_2px_8px_-2px_var(--drop-soft)]"
                 />
               )}
               <span className="relative flex items-center gap-1.5">
@@ -53,7 +53,7 @@ export default function CategoryTabs({
                 {t.count != null && (
                   <span
                     className={`rounded-full px-1.5 text-[10.5px] tabular-nums ${
-                      active ? "bg-white/15 text-white/70" : "bg-white/[0.06] text-white/35"
+                      active ? "bg-fg/15 text-fg/70" : "bg-fg/[0.06] text-fg/35"
                     }`}
                   >
                     {t.count}

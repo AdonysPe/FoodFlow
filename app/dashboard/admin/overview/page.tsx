@@ -66,25 +66,25 @@ export default async function OverviewPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-white/90">Contactos recientes</h2>
+            <h2 className="text-[15px] font-semibold text-fg/90">Contactos recientes</h2>
             <Link
               href="/dashboard/admin/contactos"
-              className="text-[13px] font-medium text-accent-400 hover:text-accent-300"
+              className="text-[13px] font-medium text-accent-icon hover:text-accent-ink"
             >
               Ver todos
             </Link>
           </div>
           {recentContacts.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-white/40">
+            <p className="py-6 text-center text-[14px] text-fg/40">
               Sin contactos del formulario todavía.
             </p>
           ) : (
-            <ul className="flex flex-col divide-y divide-white/[0.05]">
+            <ul className="flex flex-col divide-y divide-fg/[0.05]">
               {recentContacts.map((lead) => (
                 <li key={lead.id} className="flex items-center justify-between gap-3 py-3">
-                  <span className="min-w-0 text-[14px] text-white/80">
+                  <span className="min-w-0 text-[14px] text-fg/80">
                     <span className="font-medium">{lead.nombre}</span>
-                    <span className="text-white/40"> · {lead.restaurante}</span>
+                    <span className="text-fg/40"> · {lead.restaurante}</span>
                   </span>
                   <StatusPill status={lead.status} />
                 </li>
@@ -95,21 +95,21 @@ export default async function OverviewPage() {
 
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-white/90">Leads por email (chat)</h2>
+            <h2 className="text-[15px] font-semibold text-fg/90">Leads por email (chat)</h2>
             <Link
               href="/dashboard/admin/leads"
-              className="text-[13px] font-medium text-accent-400 hover:text-accent-300"
+              className="text-[13px] font-medium text-accent-icon hover:text-accent-ink"
             >
               Ver todos
             </Link>
           </div>
           {recentLeads.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-white/40">Sin leads todavía.</p>
+            <p className="py-6 text-center text-[14px] text-fg/40">Sin leads todavía.</p>
           ) : (
-            <ul className="flex flex-col divide-y divide-white/[0.05]">
+            <ul className="flex flex-col divide-y divide-fg/[0.05]">
               {recentLeads.map((lead) => (
                 <li key={lead.id} className="flex items-center justify-between py-3">
-                  <span className="text-[14px] text-white/80">{lead.email}</span>
+                  <span className="text-[14px] text-fg/80">{lead.email}</span>
                   <StatusPill status={lead.status} />
                 </li>
               ))}

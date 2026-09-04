@@ -107,10 +107,10 @@ export default function LoginFlow() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.35, ease: EASE }}
           >
-            <h1 className="font-display text-[1.4rem] font-bold tracking-[-0.02em] text-white">
+            <h1 className="font-display text-[1.4rem] font-bold tracking-[-0.02em] text-fg">
               Entra a FoodFlow
             </h1>
-            <p className="mt-2 text-[14px] text-white/50">
+            <p className="mt-2 text-[14px] text-fg/50">
               Escribe tu correo y te enviamos un código de un solo uso.
             </p>
 
@@ -127,7 +127,7 @@ export default function LoginFlow() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@restaurante.com"
-                className="h-12 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[15px] text-white placeholder:text-white/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
+                className="h-12 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[15px] text-fg placeholder:text-fg/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
               />
               <Button
                 type="submit"
@@ -147,14 +147,14 @@ export default function LoginFlow() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.35, ease: EASE }}
           >
-            <div className="mx-auto mb-1 flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.06] text-accent-400">
+            <div className="mx-auto mb-1 flex h-11 w-11 items-center justify-center rounded-full bg-fg/[0.06] text-accent-icon">
               <IconMail className="h-5 w-5" />
             </div>
-            <h1 className="text-center font-display text-[1.4rem] font-bold tracking-[-0.02em] text-white">
+            <h1 className="text-center font-display text-[1.4rem] font-bold tracking-[-0.02em] text-fg">
               Revisa tu correo
             </h1>
-            <p className="mt-2 text-center text-[14px] text-white/50">
-              Escribe el código de 6 dígitos que enviamos a <span className="text-white/75">{email}</span>
+            <p className="mt-2 text-center text-[14px] text-fg/50">
+              Escribe el código de 6 dígitos que enviamos a <span className="text-fg/75">{email}</span>
             </p>
 
             <div className="mt-7">
@@ -168,9 +168,9 @@ export default function LoginFlow() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2, ease: EASE }}
-                  className="mt-5 flex items-center justify-center gap-2.5 text-[13px] text-white/55"
+                  className="mt-5 flex items-center justify-center gap-2.5 text-[13px] text-fg/55"
                 >
-                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/15 border-t-accent-400" />
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-fg/15 border-t-accent-400" />
                   Verificando tu código…
                 </motion.div>
               )}
@@ -184,16 +184,16 @@ export default function LoginFlow() {
                   setError("");
                 }}
                 disabled={verifying}
-                className="text-white/40 hover:text-white/70 disabled:opacity-40"
+                className="text-fg/40 hover:text-fg/70 disabled:opacity-40"
               >
                 Cambiar correo
               </button>
-              <span className="text-white/15">•</span>
+              <span className="text-fg/15">•</span>
               <button
                 type="button"
                 onClick={() => handleRequestOtp()}
                 disabled={cooldown > 0 || isPending || verifying}
-                className="text-accent-400 hover:text-accent-300 disabled:text-white/25"
+                className="text-accent-icon hover:text-accent-ink disabled:text-fg/25"
               >
                 {cooldown > 0 ? `Reenviar en ${cooldown}s` : "Reenviar código"}
               </button>
@@ -203,7 +203,7 @@ export default function LoginFlow() {
       </AnimatePresence>
 
       {error && (
-        <p className="mt-5 rounded-lg border border-accent-500/20 bg-accent-500/[0.08] px-3.5 py-2.5 text-center text-[13px] text-accent-300">
+        <p className="mt-5 rounded-lg border border-accent-500/20 bg-accent-500/[0.08] px-3.5 py-2.5 text-center text-[13px] text-accent-ink">
           {error}
         </p>
       )}

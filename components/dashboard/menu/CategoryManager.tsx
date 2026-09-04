@@ -72,7 +72,7 @@ function CategoryRow({ category }: { category: MenuCategoryDTO }) {
 
   return (
     <div className="flex items-center gap-2.5 px-4 py-2.5">
-      <span aria-hidden className="shrink-0 text-white/25">
+      <span aria-hidden className="shrink-0 text-fg/25">
         <IconGrip className="h-4 w-4" />
       </span>
 
@@ -95,16 +95,16 @@ function CategoryRow({ category }: { category: MenuCategoryDTO }) {
         <span className="flex min-w-0 items-center gap-2">
           <span
             className={`truncate text-[14px] font-medium ${
-              category.active ? "text-white/85" : "text-white/40 line-through"
+              category.active ? "text-fg/85" : "text-fg/40 line-through"
             }`}
           >
             {category.name}
           </span>
-          <span className="shrink-0 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] text-white/45">
+          <span className="shrink-0 rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
             {category.itemCount}
           </span>
           {!category.active && (
-            <span className="shrink-0 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] text-white/45">
+            <span className="shrink-0 rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
               oculta
             </span>
           )}
@@ -187,18 +187,18 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02]">
-      <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
+    <div className="overflow-hidden rounded-2xl border border-fg/[0.08] bg-fg/[0.02]">
+      <div className="flex items-center justify-between border-b border-fg/[0.07] px-4 py-3">
         <div>
-          <h2 className="text-[14px] font-semibold text-white/90">Categorías</h2>
-          <p className="mt-0.5 text-[12px] text-white/40">
+          <h2 className="text-[14px] font-semibold text-fg/90">Categorías</h2>
+          <p className="mt-0.5 text-[12px] text-fg/40">
             Arrástralas para cambiar el orden de las pestañas.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setAdding((v) => !v)}
-          className="rounded-lg border border-accent-400/30 bg-accent-400/[0.12] px-3 py-1.5 text-[12.5px] font-medium text-accent-300 hover:bg-accent-400/20"
+          className="rounded-lg border border-accent-400/30 bg-accent-400/[0.12] px-3 py-1.5 text-[12.5px] font-medium text-accent-ink hover:bg-accent-400/20"
         >
           {adding ? "Cerrar" : "+ Añadir categoría"}
         </button>
@@ -211,7 +211,7 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: EASE }}
-            className="overflow-hidden border-b border-white/[0.07]"
+            className="overflow-hidden border-b border-fg/[0.07]"
           >
             <form onSubmit={handleAdd} className="flex items-center gap-2 px-4 py-3">
               <input
@@ -224,7 +224,7 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
               <button
                 type="submit"
                 disabled={isPending || !newName.trim()}
-                className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 disabled:opacity-40"
+                className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent disabled:opacity-40"
               >
                 Añadir
               </button>
@@ -234,12 +234,12 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
       </AnimatePresence>
 
       {ordered.length === 0 ? (
-        <p className="px-4 py-6 text-center text-[13.5px] text-white/40">Aún no hay categorías.</p>
+        <p className="px-4 py-6 text-center text-[13.5px] text-fg/40">Aún no hay categorías.</p>
       ) : (
         <SortableList
           items={ordered}
           onReorder={handleReorder}
-          itemClassName="border-b border-white/[0.05] last:border-0"
+          itemClassName="border-b border-fg/[0.05] last:border-0"
           renderItem={(c) => <CategoryRow category={c} />}
         />
       )}

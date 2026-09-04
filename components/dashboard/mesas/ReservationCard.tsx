@@ -76,38 +76,38 @@ export default function ReservationCard({
   });
 
   return (
-    <li className="border-b border-white/[0.05] px-5 py-4 last:border-0">
+    <li className="border-b border-fg/[0.05] px-5 py-4 last:border-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             {showDate && (
-              <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[11px] capitalize text-white/50">
+              <span className="rounded-md bg-fg/[0.05] px-1.5 py-0.5 text-[11px] capitalize text-fg/50">
                 {dateLabel}
               </span>
             )}
-            <span className="font-mono text-[13px] text-accent-300">
+            <span className="font-mono text-[13px] text-accent-ink">
               {formatClock(reservation.startTime)}
             </span>
-            <span className="text-[12px] text-white/30">
+            <span className="text-[12px] text-fg/30">
               – {endTimeLabel(reservation.startTime, reservation.durationMin)}
             </span>
           </div>
-          <p className="mt-1 truncate text-[14px] font-medium text-white/85">
+          <p className="mt-1 truncate text-[14px] font-medium text-fg/85">
             {reservation.customerName}
           </p>
-          <p className="mt-0.5 text-[12.5px] text-white/45">
+          <p className="mt-0.5 text-[12.5px] text-fg/45">
             {reservation.partySize} personas
             {tableName ? ` · ${tableName}` : " · sin mesa"}
             {reservation.customerPhone ? ` · ${reservation.customerPhone}` : ""}
           </p>
           {reservation.notes && (
-            <p className="mt-1 text-[12.5px] italic text-white/40">“{reservation.notes}”</p>
+            <p className="mt-1 text-[12.5px] italic text-fg/40">“{reservation.notes}”</p>
           )}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <div className="flex items-center gap-1.5">
             {reservation.source === "web" && (
-              <span className="rounded-full border border-chat-400/25 bg-chat-400/10 px-2 py-0.5 text-[11px] font-medium text-chat-300">
+              <span className="rounded-full border border-chat-400/25 bg-chat-400/10 px-2 py-0.5 text-[11px] font-medium text-chat-ink">
                 {RESERVATION_SOURCE_LABELS.web}
               </span>
             )}
@@ -139,7 +139,7 @@ export default function ReservationCard({
               onBlur={() => setConfirmingDelete(false)}
               className={
                 confirmingDelete
-                  ? "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-white hover:bg-accent-600 disabled:opacity-40"
+                  ? "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-fg hover:bg-accent-600 disabled:opacity-40"
                   : ghostButtonClass
               }
             >
@@ -158,7 +158,7 @@ export default function ReservationCard({
             transition={{ duration: 0.28, ease: EASE }}
             className="overflow-hidden"
           >
-            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+            <div className="mt-4 rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-4">
               <ReservationForm
                 tables={tables}
                 reservations={reservations}

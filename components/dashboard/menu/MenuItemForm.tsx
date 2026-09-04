@@ -141,7 +141,7 @@ export default function MenuItemForm({
         </div>
         <div className={compact ? "sm:col-span-4" : "sm:col-span-6"}>
           <label htmlFor="mi-desc" className={labelClass}>
-            Descripción <span className="text-white/25">· opcional</span>
+            Descripción <span className="text-fg/25">· opcional</span>
           </label>
           <textarea
             id="mi-desc"
@@ -154,7 +154,7 @@ export default function MenuItemForm({
         </div>
       </div>
 
-      {error && <p className="text-[13px] text-accent-400">{error}</p>}
+      {error && <p className="text-[13px] text-accent-icon">{error}</p>}
 
       <div className="flex gap-2">
         <Button type="submit" size="md" disabled={isPending}>

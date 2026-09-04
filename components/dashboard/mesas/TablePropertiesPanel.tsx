@@ -78,19 +78,19 @@ export default function TablePropertiesPanel({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.3, ease: EASE }}
-            className="fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-white/[0.08] bg-ink-950"
+            className="fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-fg/[0.08] bg-ink-950"
             role="dialog"
             aria-label={`Editar ${table.name}`}
           >
-            <header className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-5 py-4">
-              <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-white">
+            <header className="flex items-center justify-between gap-3 border-b border-fg/[0.07] px-5 py-4">
+              <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-fg">
                 Editar mesa
               </h2>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Cerrar"
-                className="rounded-lg p-2 text-white/40 hover:bg-white/[0.06] hover:text-white/80"
+                className="rounded-lg p-2 text-fg/40 hover:bg-fg/[0.06] hover:text-fg/80"
               >
                 <IconX className="h-5 w-5" />
               </button>
@@ -98,17 +98,17 @@ export default function TablePropertiesPanel({
 
             <div className="flex-1 overflow-y-auto px-5 py-5">
               <TableFormFields value={form} onChange={setForm} idPrefix={`props-${table.id}`} />
-              <p className="mt-4 text-[12px] text-white/35">
+              <p className="mt-4 text-[12px] text-fg/35">
                 Arrastra la mesa en el plano para moverla. La posición se guarda sola.
               </p>
             </div>
 
-            <footer className="flex items-center justify-between gap-2 border-t border-white/[0.07] px-5 py-4">
+            <footer className="flex items-center justify-between gap-2 border-t border-fg/[0.07] px-5 py-4">
               <button
                 type="button"
                 onClick={() => setConfirmingDelete(true)}
                 disabled={isPending}
-                className="rounded-lg border border-accent-500/30 bg-accent-500/10 px-3 py-1.5 text-[12.5px] font-medium text-accent-300 hover:bg-accent-500/20 disabled:opacity-40"
+                className="rounded-lg border border-accent-500/30 bg-accent-500/10 px-3 py-1.5 text-[12.5px] font-medium text-accent-ink hover:bg-accent-500/20 disabled:opacity-40"
               >
                 Eliminar
               </button>

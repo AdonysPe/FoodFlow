@@ -25,15 +25,15 @@ export default function Error({ error, reset }) {
       <div className="w-full max-w-md text-center">
         <a href="/" className="inline-flex items-center gap-2.5">
           <LogoMark className="h-9 w-9" />
-          <span className="font-display text-[18px] font-bold tracking-[-0.02em] text-white">
+          <span className="font-display text-[18px] font-bold tracking-[-0.02em] text-fg">
             FoodFlow
           </span>
         </a>
 
-        <p className="mt-10 font-display text-[4.5rem] font-extrabold leading-none tracking-[-0.05em] text-accent-400">
+        <p className="mt-10 font-display text-[4.5rem] font-extrabold leading-none tracking-[-0.05em] text-accent-icon">
           500
         </p>
-        <h1 className="mt-4 font-display text-2xl font-bold tracking-[-0.02em] text-white">
+        <h1 className="mt-4 font-display text-2xl font-bold tracking-[-0.02em] text-fg">
           Algo se nos rompió
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-cream/62">
@@ -51,7 +51,7 @@ export default function Error({ error, reset }) {
           </button>
           <a
             href="/"
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-cream/12 px-6 text-[15px] font-semibold text-cream/85 transition-colors hover:border-cream/25 hover:text-white"
+            className="inline-flex h-12 items-center justify-center rounded-xl border border-cream/12 px-6 text-[15px] font-semibold text-cream/85 transition-colors hover:border-cream/25 hover:text-fg"
           >
             Ir al inicio
           </a>

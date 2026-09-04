@@ -57,7 +57,7 @@ export default function WeeklyEarnings({
               <div key={week.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
                 <span
                   className={`text-[11px] font-semibold tabular-nums ${
-                    week.isCurrent ? "text-accent-300" : "text-white/55"
+                    week.isCurrent ? "text-accent-ink" : "text-fg/55"
                   }`}
                 >
                   {week.value > 0 ? shortMoney(week.value) : "—"}
@@ -72,14 +72,14 @@ export default function WeeklyEarnings({
                     className={`w-full rounded-t-lg ${
                       week.isCurrent
                         ? "bg-linear-to-t from-accent-600 to-accent-400"
-                        : "bg-linear-to-t from-white/[0.06] to-white/[0.16]"
+                        : "bg-linear-to-t from-fg/[0.06] to-fg/[0.16]"
                     }`}
                   />
                 </div>
 
                 <span
                   className={`w-full truncate text-center text-[10.5px] ${
-                    week.isCurrent ? "font-medium text-white/70" : "text-white/35"
+                    week.isCurrent ? "font-medium text-fg/70" : "text-fg/35"
                   }`}
                 >
                   {week.label}
@@ -90,20 +90,20 @@ export default function WeeklyEarnings({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-white/[0.06] pt-4">
-        <span className="text-[12.5px] text-white/45">
+      <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-fg/[0.06] pt-4">
+        <span className="text-[12.5px] text-fg/45">
           Esta semana
           {partial && (
-            <span className="ml-1.5 text-white/30">· día {daysElapsed} de 7</span>
+            <span className="ml-1.5 text-fg/30">· día {daysElapsed} de 7</span>
           )}
         </span>
-        <span className="font-display text-[19px] font-bold tabular-nums text-white">
+        <span className="font-display text-[19px] font-bold tabular-nums text-fg">
           {formatCurrency(current?.value ?? 0)}
         </span>
         {delta !== null && (
           <span
             className={`rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums ${
-              delta >= 0 ? "bg-mint/12 text-mint" : "bg-accent-400/12 text-accent-200"
+              delta >= 0 ? "bg-mint/12 text-mint-ink" : "bg-accent-400/12 text-accent-label"
             }`}
           >
             {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(0)}%{" "}
@@ -111,7 +111,7 @@ export default function WeeklyEarnings({
           </span>
         )}
         {!hasSales && (
-          <span className="text-[12.5px] text-white/35">
+          <span className="text-[12.5px] text-fg/35">
             Aún sin ventas registradas en estas semanas.
           </span>
         )}

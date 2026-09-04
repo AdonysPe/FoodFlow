@@ -105,8 +105,8 @@ export default function MenuWorkspace({
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-white">Carta</h1>
-          <p className="mt-0.5 text-[12.5px] text-white/45">
+          <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">Carta</h1>
+          <p className="mt-0.5 text-[12.5px] text-fg/45">
             {items.length} plato(s) · {available} disponible(s) · {categories.length} categoría(s)
           </p>
         </div>
@@ -116,8 +116,8 @@ export default function MenuWorkspace({
             onClick={() => setShowCats((v) => !v)}
             className={`rounded-xl border px-3.5 py-2 text-[13px] font-medium transition-colors ${
               showCats
-                ? "border-white/20 bg-white/[0.08] text-white"
-                : "border-white/[0.1] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                ? "border-fg/20 bg-fg/[0.08] text-fg"
+                : "border-fg/[0.1] bg-fg/[0.04] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
             }`}
           >
             Categorías
@@ -144,7 +144,7 @@ export default function MenuWorkspace({
 
       <div className="flex flex-col gap-3">
         <div className="relative max-w-sm">
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg/30">
             <IconSearch className="h-[18px] w-[18px]" />
           </span>
           <input
@@ -166,8 +166,8 @@ export default function MenuWorkspace({
       </div>
 
       {emptyAll ? (
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-10 text-center">
-          <p className="text-[14px] text-white/45">Tu carta está vacía. Agrega tu primer plato.</p>
+        <div className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center">
+          <p className="text-[14px] text-fg/45">Tu carta está vacía. Agrega tu primer plato.</p>
           <Button
             type="button"
             size="md"
@@ -178,14 +178,14 @@ export default function MenuWorkspace({
           </Button>
         </div>
       ) : visible.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-10 text-center text-[13.5px] text-white/40">
+        <div className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center text-[13.5px] text-fg/40">
           {trimmedQuery
             ? "Ningún plato coincide con la búsqueda."
             : "No hay platos en esta categoría todavía."}
         </div>
       ) : sortable ? (
         <div>
-          <p className="mb-2 px-1 text-[12px] text-white/35">
+          <p className="mb-2 px-1 text-[12px] text-fg/35">
             Arrastra los platos para ordenarlos dentro de la categoría.
           </p>
           <SortableList
@@ -209,13 +209,13 @@ export default function MenuWorkspace({
         <div className="flex flex-col gap-5">
           {groups.map((g) => (
             <div key={g.id ?? "none"}>
-              <h3 className="mb-2 flex items-center gap-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-white/40">
+              <h3 className="mb-2 flex items-center gap-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-fg/40">
                 {g.name}
-                <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-white/40">
+                <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-fg/40">
                   {g.items.length}
                 </span>
                 {!g.active && (
-                  <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-white/40">
+                  <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-fg/40">
                     oculta
                   </span>
                 )}

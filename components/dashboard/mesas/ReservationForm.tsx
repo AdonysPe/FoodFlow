@@ -240,7 +240,7 @@ export default function ReservationForm({
               );
             })}
           </select>
-          <p className="mt-1.5 text-[12px] text-white/40">
+          <p className="mt-1.5 text-[12px] text-fg/40">
             {freeCount === 0
               ? "Ninguna mesa libre para esa fecha y hora."
               : `${freeCount} ${freeCount === 1 ? "mesa disponible" : "mesas disponibles"} a esa hora · cada reserva bloquea la mesa 3 h.`}
@@ -266,7 +266,7 @@ export default function ReservationForm({
         </div>
       </div>
 
-      {error && <p className="text-[13px] text-accent-400">{error}</p>}
+      {error && <p className="text-[13px] text-accent-icon">{error}</p>}
 
       <div className="flex gap-2">
         <Button type="submit" size="md" disabled={isPending}>

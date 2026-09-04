@@ -197,13 +197,13 @@ export default function FloorPlan({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-3.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white"
+            className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-2 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
           >
             Editar plano
           </button>
         </div>
         <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-white/45">Aún no hay mesas. Crea tu plano para empezar.</p>
+          <p className="text-[14px] text-fg/45">Aún no hay mesas. Crea tu plano para empezar.</p>
         </GlassCard>
       </div>
     );
@@ -216,7 +216,7 @@ export default function FloorPlan({
           {TABLE_STATES.map((s) => (
             <span
               key={s}
-              className="inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.03] px-2.5 py-1 text-[12px] text-white/60"
+              className="inline-flex items-center gap-2 rounded-full border border-fg/[0.07] bg-fg/[0.03] px-2.5 py-1 text-[12px] text-fg/60"
             >
               <span
                 className="h-2 w-2 rounded-full"
@@ -226,7 +226,7 @@ export default function FloorPlan({
                 }}
               />
               {TABLE_STATE_LABELS[s]}
-              <span className="tabular-nums font-semibold text-white/35">{counts[s]}</span>
+              <span className="tabular-nums font-semibold text-fg/35">{counts[s]}</span>
             </span>
           ))}
         </div>
@@ -248,7 +248,7 @@ export default function FloorPlan({
             <button
               type="button"
               onClick={handleAddTable}
-              className="rounded-lg border border-accent-400/30 bg-accent-400/[0.12] px-3.5 py-2 text-[13px] font-semibold text-accent-200 transition-colors hover:bg-accent-400/20"
+              className="rounded-lg border border-accent-400/30 bg-accent-400/[0.12] px-3.5 py-2 text-[13px] font-semibold text-accent-label transition-colors hover:bg-accent-400/20"
             >
               + Añadir mesa
             </button>
@@ -261,8 +261,8 @@ export default function FloorPlan({
             }}
             className={`rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors ${
               editing
-                ? "bg-white text-ink-950 hover:bg-white/90"
-                : "border border-white/[0.1] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                ? "bg-fg text-ink-950 hover:bg-fg/90"
+                : "border border-fg/[0.1] bg-fg/[0.04] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
             }`}
           >
             {editing ? "Listo" : "Editar plano"}
@@ -271,7 +271,7 @@ export default function FloorPlan({
       </div>
 
       {editing && (
-        <p className="text-[12.5px] text-white/40">
+        <p className="text-[12.5px] text-fg/40">
           Arrastra las mesas para colocarlas. Toca una mesa para editar sus datos o eliminarla.
         </p>
       )}
@@ -281,13 +281,13 @@ export default function FloorPlan({
           ref={canvasRef}
           className={`relative w-full touch-none overflow-hidden rounded-[20px] border transition-colors duration-300 aspect-[4/3] sm:aspect-[16/10] ${
             editing
-              ? "border-accent-400/30 shadow-[inset_0_0_0_1px_rgba(255,90,51,0.12),inset_0_1px_0_0_rgba(255,255,255,0.05)]"
-              : "border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+              ? "border-accent-400/30 shadow-[inset_0_0_0_1px_rgba(255,90,51,0.12),inset_0_1px_0_0_var(--spec)]"
+              : "border-fg/[0.08] shadow-[inset_0_1px_0_0_var(--spec)]"
           }`}
           style={{
-            backgroundColor: "rgb(255 255 255 / 0.012)",
+            backgroundColor: "var(--plan-ground)",
             backgroundImage:
-              "radial-gradient(130% 100% at 50% -10%, rgb(255 255 255 / 0.045), transparent 55%), radial-gradient(rgb(255 255 255 / 0.05) 0.8px, transparent 0.8px)",
+              "radial-gradient(130% 100% at 50% -10%, var(--plan-sheen), transparent 55%), radial-gradient(var(--plan-dot) 0.8px, transparent 0.8px)",
             backgroundSize: "auto, 22px 22px",
           }}
         >

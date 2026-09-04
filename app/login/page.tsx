@@ -3,6 +3,7 @@ import Link from "next/link";
 import MotionProvider from "@/components/MotionProvider";
 import LoginFlow from "@/components/dashboard/LoginFlow";
 import { IconArrowRight } from "@/components/ui/Icons";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export const metadata = {
   title: "Entrar",
@@ -22,11 +23,12 @@ export default function LoginPage() {
         />
         <Link
           href="/"
-          className="absolute left-5 top-6 inline-flex items-center gap-2 text-[13.5px] font-medium text-white/45 transition-colors hover:text-white/80 sm:left-8 sm:top-8"
+          className="absolute left-5 top-6 inline-flex items-center gap-2 text-[13.5px] font-medium text-fg/45 transition-colors hover:text-fg/80 sm:left-8 sm:top-8"
         >
           <IconArrowRight className="h-3.5 w-3.5 rotate-180" />
           Volver al inicio
         </Link>
+        <ThemeToggle className="absolute right-5 top-6 sm:right-8 sm:top-8" />
         <Suspense fallback={null}>
           <LoginFlow />
         </Suspense>

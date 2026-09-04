@@ -21,7 +21,7 @@ function Stepper({
       <button
         type="button"
         onClick={() => onChange(1)}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.05] text-[19px] font-bold text-white/70 transition-colors active:scale-95"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[19px] font-bold text-fg/70 transition-colors active:scale-95"
         aria-label="Agregar"
       >
         +
@@ -33,18 +33,18 @@ function Stepper({
       <button
         type="button"
         onClick={() => onChange(qty - 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-[19px] font-bold text-white/60 active:scale-95"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-[19px] font-bold text-fg/60 active:scale-95"
         aria-label="Quitar uno"
       >
         −
       </button>
-      <span className="w-6 text-center font-display text-[16px] font-bold tabular-nums text-white">
+      <span className="w-6 text-center font-display text-[16px] font-bold tabular-nums text-fg">
         {qty}
       </span>
       <button
         type="button"
         onClick={() => onChange(qty + 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-400/20 text-[19px] font-bold text-accent-200 active:scale-95"
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-400/20 text-[19px] font-bold text-accent-label active:scale-95"
         aria-label="Agregar uno"
       >
         +
@@ -61,7 +61,7 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-2 rounded-lg border border-dashed border-white/[0.14] px-2.5 py-1 text-[12px] font-medium text-white/45 transition-colors hover:border-accent-400/40 hover:text-accent-300"
+        className="mt-2 rounded-lg border border-dashed border-fg/[0.14] px-2.5 py-1 text-[12px] font-medium text-fg/45 transition-colors hover:border-accent-400/40 hover:text-accent-ink"
       >
         + Nota para cocina
       </button>
@@ -75,7 +75,7 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
         value={note}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Nota para cocina…"
-        className="h-10 w-full rounded-lg border border-white/[0.12] bg-ink-950/60 px-3 text-[13.5px] text-white placeholder:text-white/30 outline-none focus:border-accent-400/50"
+        className="h-10 w-full rounded-lg border border-fg/[0.12] bg-ink-950/60 px-3 text-[13.5px] text-fg placeholder:text-fg/30 outline-none focus:border-accent-400/50"
       />
       <div className="flex flex-wrap gap-1.5">
         {NOTE_CHIPS.map((chip) => {
@@ -91,8 +91,8 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
               }}
               className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
                 active
-                  ? "bg-accent-400/20 text-accent-200 ring-1 ring-inset ring-accent-400/30"
-                  : "border border-white/[0.1] bg-white/[0.03] text-white/50 hover:text-white/80"
+                  ? "bg-accent-400/20 text-accent-label ring-1 ring-inset ring-accent-400/30"
+                  : "border border-fg/[0.1] bg-fg/[0.03] text-fg/50 hover:text-fg/80"
               }`}
             >
               {chip}
@@ -157,14 +157,14 @@ export default function ItemPicker({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="sticky top-[53px] z-20 border-b border-white/[0.07] bg-ink-950/85 px-4 py-3 backdrop-blur-xl">
+      <div className="sticky top-[53px] z-20 border-b border-fg/[0.07] bg-ink-950/85 px-4 py-3 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate font-display text-[17px] font-bold text-white">
+            <span className="truncate font-display text-[17px] font-bold text-fg">
               {targetLabel}
             </span>
             {roundLabel && (
-              <span className="shrink-0 rounded-md bg-accent-400/15 px-1.5 py-0.5 text-[11px] font-semibold text-accent-200 ring-1 ring-inset ring-accent-400/25">
+              <span className="shrink-0 rounded-md bg-accent-400/15 px-1.5 py-0.5 text-[11px] font-semibold text-accent-label ring-1 ring-inset ring-accent-400/25">
                 {roundLabel}
               </span>
             )}
@@ -172,7 +172,7 @@ export default function ItemPicker({
           <button
             type="button"
             onClick={onBack}
-            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-white/45 hover:bg-white/[0.06] hover:text-white/80"
+            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-fg/45 hover:bg-fg/[0.06] hover:text-fg/80"
           >
             Cambiar
           </button>
@@ -181,7 +181,7 @@ export default function ItemPicker({
         {frequent.length > 0 && (
           <div className="-mx-4 mt-3 overflow-x-auto px-4">
             <div className="flex w-max items-center gap-2">
-              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-white/30">
+              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-fg/30">
                 Frecuentes
               </span>
               {frequent.map((f) => {
@@ -193,8 +193,8 @@ export default function ItemPicker({
                     onClick={() => onSetQty(f.id, qty + 1)}
                     className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors active:scale-95 ${
                       qty > 0
-                        ? "bg-accent-400/15 text-accent-200 ring-1 ring-inset ring-accent-400/30"
-                        : "border border-white/[0.12] bg-white/[0.04] text-white/80"
+                        ? "bg-accent-400/15 text-accent-label ring-1 ring-inset ring-accent-400/30"
+                        : "border border-fg/[0.12] bg-fg/[0.04] text-fg/80"
                     }`}
                   >
                     {f.name}
@@ -207,7 +207,7 @@ export default function ItemPicker({
         )}
 
         <div className="-mx-4 mt-3 overflow-x-auto px-4">
-          <div className="flex w-max gap-1 rounded-xl border border-white/[0.08] bg-white/[0.03] p-1">
+          <div className="flex w-max gap-1 rounded-xl border border-fg/[0.08] bg-fg/[0.03] p-1">
             {tabs.map((t) => {
               const active = t.id === activeTab;
               const picked = pickedPerTab.get(t.id) ?? 0;
@@ -217,20 +217,20 @@ export default function ItemPicker({
                   type="button"
                   onClick={() => setActiveTab(t.id)}
                   className={`relative shrink-0 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-                    active ? "text-white" : "text-white/45"
+                    active ? "text-fg" : "text-fg/45"
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="comanda-tab"
                       transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
-                      className="absolute inset-0 rounded-lg bg-white/[0.1]"
+                      className="absolute inset-0 rounded-lg bg-fg/[0.1]"
                     />
                   )}
                   <span className="relative flex items-center gap-1.5">
                     {t.name}
                     {picked > 0 && (
-                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-400 px-1 text-[10px] font-bold tabular-nums text-ink-950">
+                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-400 px-1 text-[10px] font-bold tabular-nums text-on-accent">
                         {picked}
                       </span>
                     )}
@@ -244,7 +244,7 @@ export default function ItemPicker({
 
       <div className="flex-1 px-4 py-3">
         {shown.length === 0 ? (
-          <p className="py-10 text-center text-[13.5px] text-white/40">
+          <p className="py-10 text-center text-[13.5px] text-fg/40">
             No hay platos disponibles en esta categoría.
           </p>
         ) : (
@@ -260,7 +260,7 @@ export default function ItemPicker({
                   className={`relative overflow-hidden rounded-2xl border p-3 transition-colors ${
                     picked
                       ? "border-accent-400/35 bg-accent-400/[0.07]"
-                      : "border-white/[0.07] bg-white/[0.02]"
+                      : "border-fg/[0.07] bg-fg/[0.02]"
                   }`}
                 >
                   {picked && (
@@ -278,20 +278,20 @@ export default function ItemPicker({
                       onClick={() => onSetQty(item.id, qty + 1)}
                       className="min-w-0 flex-1 py-1 text-left"
                     >
-                      <p className="text-[15px] font-medium leading-snug text-white">
+                      <p className="text-[15px] font-medium leading-snug text-fg">
                         {item.name}
                       </p>
                       <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]">
-                        <span className="font-semibold tabular-nums text-white/70">
+                        <span className="font-semibold tabular-nums text-fg/70">
                           {formatPrice(item.price)}
                         </span>
                         {item.prepMin != null && (
-                          <span className="rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] text-white/45">
+                          <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
                             {item.prepMin} min
                           </span>
                         )}
                         {picked && (
-                          <span className="font-semibold tabular-nums text-accent-300">
+                          <span className="font-semibold tabular-nums text-accent-ink">
                             = {formatPrice(item.price * qty)}
                           </span>
                         )}

@@ -1,6 +1,6 @@
 import { Archivo, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
-import { THEME_SCRIPT } from "@/components/ThemeContext";
+import { THEME_SCRIPT, ThemeProvider } from "@/components/ThemeContext";
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -80,7 +80,7 @@ export default function RootLayout({ children }) {
         >
           Ir al contenido
         </a>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

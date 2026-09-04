@@ -26,9 +26,9 @@ const WARN_MS = 8 * 60 * 1000;
 const LATE_MS = 15 * 60 * 1000;
 
 function ageTone(ms: number) {
-  if (ms >= LATE_MS) return "border-accent-400/50 bg-accent-400/15 text-accent-200";
+  if (ms >= LATE_MS) return "border-accent-400/50 bg-accent-400/15 text-accent-label";
   if (ms >= WARN_MS) return "border-amber-400/40 bg-amber-400/12 text-amber-200";
-  return "border-white/[0.1] bg-white/[0.05] text-white/70";
+  return "border-fg/[0.1] bg-fg/[0.05] text-fg/70";
 }
 
 /** Short, sayable ticket number — the same one the server sees on the comanda. */
@@ -62,17 +62,17 @@ function OrderLines({ items }: { items: KitchenOrder["items"] }) {
               <div className="mb-1.5 flex items-center gap-2">
                 <span
                   className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
-                    isNew ? "text-accent-300" : "text-white/30"
+                    isNew ? "text-accent-ink" : "text-fg/30"
                   }`}
                 >
                   Ronda {round}
                 </span>
                 {isNew && (
-                  <span className="rounded-full bg-accent-400/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-accent-200 ring-1 ring-inset ring-accent-400/30">
+                  <span className="rounded-full bg-accent-400/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-accent-label ring-1 ring-inset ring-accent-400/30">
                     Nueva
                   </span>
                 )}
-                <span className="h-px flex-1 bg-white/[0.07]" />
+                <span className="h-px flex-1 bg-fg/[0.07]" />
               </div>
             )}
 
@@ -80,17 +80,17 @@ function OrderLines({ items }: { items: KitchenOrder["items"] }) {
               {lines.map((item, i) => (
                 <li key={i} className="flex items-start gap-2.5">
                   {/* the quantity is the number a chef counts pans by */}
-                  <span className="mt-px shrink-0 rounded-md border border-white/[0.12] bg-white/[0.07] px-1.5 py-0.5 font-mono text-[13px] font-bold tabular-nums text-white">
+                  <span className="mt-px shrink-0 rounded-md border border-fg/[0.12] bg-fg/[0.07] px-1.5 py-0.5 font-mono text-[13px] font-bold tabular-nums text-fg">
                     {item.quantity}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14.5px] font-medium leading-snug text-white">
+                    <span className="block text-[14.5px] font-medium leading-snug text-fg">
                       {item.name}
                     </span>
                     {/* A missed note is a remade plate, so it gets a filled
                         chip instead of small italics under the line. */}
                     {item.note && (
-                      <span className="mt-1 inline-block rounded-md bg-accent-400/15 px-2 py-0.5 text-[12px] font-semibold text-accent-200 ring-1 ring-inset ring-accent-400/25">
+                      <span className="mt-1 inline-block rounded-md bg-accent-400/15 px-2 py-0.5 text-[12px] font-semibold text-accent-label ring-1 ring-inset ring-accent-400/25">
                         {item.note}
                       </span>
                     )}
@@ -169,14 +169,14 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
             className={`flex min-h-[240px] flex-col gap-3 rounded-2xl border p-3 transition-colors ${
               dragOverStatus === col.status
                 ? "border-accent-400/40 bg-accent-400/[0.04]"
-                : "border-white/[0.06] bg-white/[0.015]"
+                : "border-fg/[0.06] bg-fg/[0.015]"
             }`}
           >
             <div className="flex items-center justify-between px-1.5 py-1">
-              <h3 className="text-[13px] font-semibold uppercase tracking-wide text-white/60">
+              <h3 className="text-[13px] font-semibold uppercase tracking-wide text-fg/60">
                 {col.label}
               </h3>
-              <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[11.5px] font-medium text-white/50">
+              <span className="rounded-full bg-fg/[0.06] px-2 py-0.5 text-[11.5px] font-medium text-fg/50">
                 {columnOrders.length}
               </span>
             </div>
@@ -207,7 +207,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                     <article
                       className={`cursor-grab overflow-hidden rounded-2xl border bg-ink-900 shadow-card transition-colors active:cursor-grabbing ${
                         draggingId === order.id ? "opacity-40" : ""
-                      } ${late ? "border-accent-400/40" : "border-white/[0.09]"}`}
+                      } ${late ? "border-accent-400/40" : "border-fg/[0.09]"}`}
                     >
                       <span
                         aria-hidden
@@ -216,20 +216,20 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                             ? "bg-accent-400"
                             : ageMs >= WARN_MS
                               ? "bg-amber-400/70"
-                              : "bg-white/[0.08]"
+                              : "bg-fg/[0.08]"
                         }`}
                       />
 
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="truncate font-display text-[19px] font-extrabold leading-tight tracking-[-0.02em] text-white">
+                            <p className="truncate font-display text-[19px] font-extrabold leading-tight tracking-[-0.02em] text-fg">
                               {order.tableName ?? order.customerName}
                             </p>
                             {/* A table already says "dine-in", so the channel
                                 label only earns its place when there is no
                                 table: delivery and pickup. */}
-                            <p className="mt-0.5 truncate text-[11.5px] text-white/40">
+                            <p className="mt-0.5 truncate text-[11.5px] text-fg/40">
                               {order.tableName
                                 ? (zone ?? "Salón")
                                 : CHANNEL_LABELS[order.channel]}
@@ -245,7 +245,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                         <OrderLines items={order.items} />
 
                         {/* the small print a chef never needs mid-service */}
-                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/[0.07] pt-2.5 text-[11px] text-white/35">
+                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-fg/[0.07] pt-2.5 text-[11px] text-fg/35">
                           <span className="truncate font-mono tracking-wide">
                             #{ticketNumber(order.id)}
                             {order.serverName ? ` · ${order.serverName}` : ""}
@@ -263,7 +263,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                             onClick={() =>
                               moveOrder(order.id, col.status === "pending" ? "preparing" : "ready")
                             }
-                            className="mt-3 h-10 w-full rounded-xl border border-white/[0.12] bg-white/[0.05] text-[13px] font-semibold text-white/85 transition-colors hover:bg-white/[0.09] hover:text-white disabled:opacity-40"
+                            className="mt-3 h-10 w-full rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[13px] font-semibold text-fg/85 transition-colors hover:bg-fg/[0.09] hover:text-fg disabled:opacity-40"
                           >
                             {col.status === "pending" ? "Empezar" : "Marcar lista"}
                           </button>
@@ -272,7 +272,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                             type="button"
                             disabled={isPending}
                             onClick={() => moveOrder(order.id, "delivered")}
-                            className="mt-3 h-10 w-full rounded-xl bg-linear-to-b from-accent-400 to-accent-600 text-[13px] font-bold text-ink-950 disabled:opacity-40"
+                            className="mt-3 h-10 w-full rounded-xl bg-linear-to-b from-accent-400 to-accent-600 text-[13px] font-bold text-on-accent disabled:opacity-40"
                           >
                             Entregar
                           </button>
@@ -285,7 +285,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
             </AnimatePresence>
 
             {columnOrders.length === 0 && (
-              <p className="px-1.5 py-6 text-center text-[13px] text-white/25">Sin pedidos</p>
+              <p className="px-1.5 py-6 text-center text-[13px] text-fg/25">Sin pedidos</p>
             )}
           </div>
         );

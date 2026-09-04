@@ -31,20 +31,20 @@ export type OrderRow = {
 function PaymentCell({ row }: { row: OrderRow }) {
   if (row.voided) {
     return (
-      <span className="inline-flex items-center rounded-full bg-white/[0.06] px-2.5 py-1 text-[12px] font-medium text-white/45 ring-1 ring-inset ring-white/15">
+      <span className="inline-flex items-center rounded-full bg-fg/[0.06] px-2.5 py-1 text-[12px] font-medium text-fg/45 ring-1 ring-inset ring-fg/15">
         Anulado
       </span>
     );
   }
   if (row.paid) {
     return (
-      <span className="inline-flex items-center rounded-full bg-mint/10 px-2.5 py-1 text-[12px] font-medium text-mint ring-1 ring-inset ring-mint/25">
+      <span className="inline-flex items-center rounded-full bg-mint/10 px-2.5 py-1 text-[12px] font-medium text-mint-ink ring-1 ring-inset ring-mint/25">
         {row.paymentMethod ? PAYMENT_METHOD_LABELS[row.paymentMethod] : "Cobrado"}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-full bg-accent-400/10 px-2.5 py-1 text-[12px] font-medium text-accent-300 ring-1 ring-inset ring-accent-400/25">
+    <span className="inline-flex items-center rounded-full bg-accent-400/10 px-2.5 py-1 text-[12px] font-medium text-accent-ink ring-1 ring-inset ring-accent-400/25">
       Por cobrar
     </span>
   );
@@ -72,7 +72,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
 
   if (orders.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-white/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
         No hay pedidos en este rango.
       </GlassCard>
     );
@@ -83,7 +83,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-white/[0.07] text-[12px] uppercase tracking-wide text-white/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
               <th className="px-5 py-3.5 font-medium">Pedido</th>
               <th className="px-5 py-3.5 font-medium">Cliente</th>
               <th className="px-5 py-3.5 font-medium">Platos</th>
@@ -97,20 +97,20 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
             {optimisticOrders.map((order) => {
               const upcoming = nextStatus(order.status);
               return (
-                <tr key={order.id} className="border-b border-white/[0.04] align-top last:border-0">
-                  <td className="px-5 py-3.5 font-mono text-[12.5px] text-white/45">
+                <tr key={order.id} className="border-b border-fg/[0.04] align-top last:border-0">
+                  <td className="px-5 py-3.5 font-mono text-[12.5px] text-fg/45">
                     #{order.id.slice(-6).toUpperCase()}
                   </td>
-                  <td className="px-5 py-3.5 text-white/85">
+                  <td className="px-5 py-3.5 text-fg/85">
                     <p>{order.customerName}</p>
-                    <p className="text-[12px] text-white/40">
+                    <p className="text-[12px] text-fg/40">
                       {CHANNEL_LABELS[order.channel]} · {order.createdAtLabel}
                     </p>
                   </td>
-                  <td className="max-w-[220px] px-5 py-3.5 text-white/55">
+                  <td className="max-w-[220px] px-5 py-3.5 text-fg/55">
                     {order.items.map((it) => `${it.quantity}× ${it.name}`).join(", ")}
                   </td>
-                  <td className="px-5 py-3.5 font-medium text-white/85">
+                  <td className="px-5 py-3.5 font-medium text-fg/85">
                     {formatCurrency(order.total)}
                   </td>
                   <td className="px-5 py-3.5">
@@ -125,12 +125,12 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                         type="button"
                         disabled={isPending}
                         onClick={() => handleAdvance(order.id, upcoming)}
-                        className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 transition-opacity hover:opacity-90 disabled:opacity-40"
+                        className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
                       >
                         Marcar {ORDER_STATUS_LABELS[upcoming].toLowerCase()}
                       </button>
                     ) : (
-                      <span className="text-[12px] text-white/30">—</span>
+                      <span className="text-[12px] text-fg/30">—</span>
                     )}
                   </td>
                 </tr>

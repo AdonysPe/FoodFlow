@@ -101,13 +101,13 @@ function NavList({
             onClick={onNavigate}
             className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] font-medium transition-colors duration-200 ${
               active
-                ? "bg-white/[0.07] text-white"
-                : "text-white/45 hover:bg-white/[0.04] hover:text-white/80"
+                ? "bg-fg/[0.07] text-fg"
+                : "text-fg/45 hover:bg-fg/[0.04] hover:text-fg/80"
             }`}
           >
             <Icon
               className={`h-[18px] w-[18px] shrink-0 transition-colors duration-200 ${
-                active ? "text-accent-400" : "text-white/35 group-hover:text-white/60"
+                active ? "text-accent-icon" : "text-fg/35 group-hover:text-fg/60"
               }`}
             />
             {item.label}
@@ -117,7 +117,7 @@ function NavList({
 
       {lockedByPlan.map(([neededPlan, items]) => (
         <div key={neededPlan}>
-          <p className="mt-5 px-3.5 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-white/25">
+          <p className="mt-5 px-3.5 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-fg/25">
             Con el plan {PLAN_LABELS[neededPlan]}
           </p>
           {items.map((item) => {
@@ -127,11 +127,11 @@ function NavList({
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
-                className="group flex items-center gap-3 rounded-xl px-3.5 py-2 text-[13.5px] font-medium text-white/25 transition-colors duration-200 hover:bg-white/[0.03] hover:text-white/45"
+                className="group flex items-center gap-3 rounded-xl px-3.5 py-2 text-[13.5px] font-medium text-fg/25 transition-colors duration-200 hover:bg-fg/[0.03] hover:text-fg/45"
               >
-                <Icon className="h-[17px] w-[17px] shrink-0 text-white/20" />
+                <Icon className="h-[17px] w-[17px] shrink-0 text-fg/20" />
                 {item.label}
-                <IconLock className="ml-auto h-3.5 w-3.5 shrink-0 text-white/20" />
+                <IconLock className="ml-auto h-3.5 w-3.5 shrink-0 text-fg/20" />
               </Link>
             );
           })}
@@ -170,26 +170,26 @@ export default function Sidebar({
       <span className="font-display text-[17px] font-extrabold tracking-[-0.02em] text-gradient-accent">
         FoodFlow
       </span>
-      <span className="truncate rounded-full border border-white/[0.1] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/45">
+      <span className="truncate rounded-full border border-fg/[0.1] bg-fg/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-fg/45">
         {badgeLabel}
       </span>
     </div>
   );
 
   const footer = (
-    <div className="mt-auto border-t border-white/[0.07] p-3">
+    <div className="mt-auto border-t border-fg/[0.07] p-3">
       <div className="flex items-center gap-2 rounded-xl px-2.5 py-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-accent-400 to-accent-600 text-[13px] font-bold text-ink-950">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-accent-400 to-accent-600 text-[13px] font-bold text-on-accent">
           {userEmail.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-medium text-white/85">{userEmail}</p>
+          <p className="truncate text-[13px] font-medium text-fg/85">{userEmail}</p>
         </div>
         <button
           type="button"
           onClick={handleLogout}
           aria-label="Log out"
-          className="shrink-0 rounded-lg p-2 text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/80"
+          className="shrink-0 rounded-lg p-2 text-fg/40 transition-colors hover:bg-fg/[0.06] hover:text-fg/80"
         >
           <IconLogout className="h-[17px] w-[17px]" />
         </button>
@@ -200,7 +200,7 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/[0.07] bg-ink-950/70 backdrop-blur-xl lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-fg/[0.07] bg-ink-950/70 backdrop-blur-xl lg:flex">
         {brand}
         <NavList pathname={pathname} navItems={navItems} plan={navPlan} />
         {footer}
@@ -217,7 +217,7 @@ export default function Sidebar({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25, ease: EASE }}
               onClick={closeSidebar}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-[var(--scrim)] backdrop-blur-sm lg:hidden"
               aria-hidden
             />
             <motion.aside
@@ -226,7 +226,7 @@ export default function Sidebar({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 0.35, ease: EASE }}
-              className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/[0.08] bg-ink-950 lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-fg/[0.08] bg-ink-950 lg:hidden"
             >
               <div className="flex items-center justify-between">
                 {brand}
@@ -234,7 +234,7 @@ export default function Sidebar({
                   type="button"
                   onClick={closeSidebar}
                   aria-label="Close menu"
-                  className="mr-4 rounded-lg p-2 text-white/50 hover:bg-white/[0.06] hover:text-white"
+                  className="mr-4 rounded-lg p-2 text-fg/50 hover:bg-fg/[0.06] hover:text-fg"
                 >
                   <IconX className="h-5 w-5" />
                 </button>

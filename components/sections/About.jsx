@@ -32,16 +32,17 @@ export default function About() {
                   aria-hidden
                   className="absolute inset-0 bg-[radial-gradient(72%_58%_at_50%_26%,rgba(255,90,51,0.20),transparent_72%)]"
                 />
-                {/* The artwork is a dark figure on transparency — as drawn it
-                    would disappear into the page, so it is inverted to read as
-                    light on dark. The silhouette is the same either way. */}
+                {/* The artwork is a dark figure on transparency. On warm
+                    black it would disappear, so it is inverted to read as
+                    light on dark; on paper it is left as drawn. Both the
+                    inversion and the drop shadow come from the theme. */}
                 <Image
                   src="/founder.png"
                   alt={a.photoAlt}
                   width={968}
                   height={1032}
                   sizes="(min-width: 1024px) 24rem, 20rem"
-                  className="relative h-full w-full object-contain p-7 [filter:invert(1)_brightness(1.06)_drop-shadow(0_14px_26px_rgb(0_0_0_/_0.45))]"
+                  className="relative h-full w-full object-contain p-7 [filter:invert(var(--art-invert))_brightness(var(--art-bright))_drop-shadow(0_14px_26px_var(--art-shadow))]"
                 />
               </div>
               <figcaption className="mt-4 text-center">

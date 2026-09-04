@@ -43,7 +43,7 @@ export default async function AuditLogPage() {
 
   if (entries.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-white/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
         No audit entries yet. Sensitive actions (logins, price changes, deletions,
         role changes) will be recorded here.
       </GlassCard>
@@ -52,7 +52,7 @@ export default async function AuditLogPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-[13px] text-white/40">
+      <p className="text-[13px] text-fg/40">
         Last {entries.length} events. Append-only. IP is stored as a salted hash,
         never the address.
       </p>
@@ -60,7 +60,7 @@ export default async function AuditLogPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-[13.5px]">
             <thead>
-              <tr className="border-b border-white/[0.07] text-[12px] uppercase tracking-wide text-white/35">
+              <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
                 <th className="px-5 py-3.5 font-medium">When</th>
                 <th className="px-5 py-3.5 font-medium">Action</th>
                 <th className="px-5 py-3.5 font-medium">Actor</th>
@@ -69,8 +69,8 @@ export default async function AuditLogPage() {
             </thead>
             <tbody>
               {entries.map((e) => (
-                <tr key={e.id} className="border-b border-white/[0.04] last:border-0 align-top">
-                  <td className="whitespace-nowrap px-5 py-3 text-white/45">
+                <tr key={e.id} className="border-b border-fg/[0.04] last:border-0 align-top">
+                  <td className="whitespace-nowrap px-5 py-3 text-fg/45">
                     {e.createdAt.toLocaleString("en-GB", {
                       day: "2-digit",
                       month: "short",
@@ -78,11 +78,11 @@ export default async function AuditLogPage() {
                       minute: "2-digit",
                     })}
                   </td>
-                  <td className="px-5 py-3 text-white/85">
+                  <td className="px-5 py-3 text-fg/85">
                     {ACTION_LABELS[e.action] ?? e.action}
                   </td>
-                  <td className="px-5 py-3 text-white/60">{e.actorEmail ?? "—"}</td>
-                  <td className="px-5 py-3 text-white/50">
+                  <td className="px-5 py-3 text-fg/60">{e.actorEmail ?? "—"}</td>
+                  <td className="px-5 py-3 text-fg/50">
                     {summarize(e.before, e.after)}
                   </td>
                 </tr>

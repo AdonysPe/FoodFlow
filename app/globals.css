@@ -28,6 +28,18 @@
 
   --color-mint: #3ddc97;
 
+  /* Status tones. `violet` is the purple from the FoodFlow Sites glow;
+     `ok` is the availability green on the menu switches and the paid chip;
+     `wa` is WhatsApp's own green, used where we point at WhatsApp. Each
+     pigment is the fill and is the same in both themes; the -ink half is
+     the readable text version and flips. */
+  --color-violet: #7c5cff;
+  --color-violet-ink: #c3b4ff;
+  --color-ok: #30d158;
+  --color-ok-ink: #57de85;
+  --color-wa: #25d366;
+  --color-wa-ink: #8af0b4;
+
   /* ---------------------------------------------------------------
      Semantic tokens. Everything above is a fixed pigment; everything
      here is "what this role looks like on the current surface", and it
@@ -101,6 +113,9 @@
   from { background-position: 220% 0; }
   to { background-position: -120% 0; }
 }
+@keyframes theme-dissolve {
+  from { opacity: 0; }
+}
 
 @layer base {
   /* ------------------------------------------------------------------
@@ -136,6 +151,9 @@
     --color-accent-icon: #ff5a33;
     --color-mint-ink: #3ddc97;
     --color-chat-ink: #6fe3cd;
+    --color-violet-ink: #c3b4ff;
+    --color-ok-ink: #57de85;
+    --color-wa-ink: #8af0b4;
 
     /* materials */
     --line: rgb(243 239 230 / 0.08);
@@ -154,6 +172,24 @@
     /* Full-bleed band under the hero. Inverting the ink ladder would make it
        a white strip on paper, i.e. invisible, so it is its own tint. */
     --band: rgb(19 15 13 / 0.6);
+    /* The founder artwork is a dark figure on transparency. On warm black it
+       is inverted to read as light on dark; on paper it is left as drawn. */
+    --art-invert: 1;
+    --art-bright: 1.06;
+    --art-shadow: rgb(0 0 0 / 0.45);
+
+    /* Materials the dashboard draws inline rather than through a utility:
+       chart rules and ticks, the floor-plan paper, the specular edge on a
+       raised knob, and the two drop-shadow weights. */
+    --spec: rgb(255 255 255 / 0.09);
+    --drop-soft: rgb(0 0 0 / 0.45);
+    --drop-hard: rgb(0 0 0 / 0.66);
+    --chart-grid: rgb(255 255 255 / 0.05);
+    --chart-axis: rgb(255 255 255 / 0.06);
+    --chart-tick: rgb(255 255 255 / 0.25);
+    --plan-ground: rgb(255 255 255 / 0.012);
+    --plan-sheen: rgb(255 255 255 / 0.045);
+    --plan-dot: rgb(255 255 255 / 0.05);
     /* A modal scrim is dark in both themes — a pale one over a pale page
        stops separating the dialog from what is behind it. */
     --scrim: rgb(12 9 8 / 0.75);
@@ -206,8 +242,11 @@
     --color-accent-label: #a82b0e;
     --color-accent-ink: #b32f10;
     --color-accent-icon: #c23414;
-    --color-mint-ink: #0f8f5a;
-    --color-chat-ink: #06776c;
+    --color-mint-ink: #076e48;
+    --color-chat-ink: #066b60;
+    --color-violet-ink: #5433c7;
+    --color-ok-ink: #0b6f30;
+    --color-wa-ink: #0c6e35;
 
     --line: rgb(28 20 18 / 0.1);
     --rule: rgb(28 20 18 / 0.14);
@@ -223,6 +262,19 @@
     --thumb-hover: rgb(28 20 18 / 0.28);
     --thumb-face: #ffffff;
     --band: rgb(28 20 18 / 0.035);
+    --art-invert: 0;
+    --art-bright: 1;
+    --art-shadow: rgb(28 20 18 / 0.3);
+
+    --spec: rgb(255 255 255 / 0.9);
+    --drop-soft: rgb(28 20 18 / 0.16);
+    --drop-hard: rgb(28 20 18 / 0.24);
+    --chart-grid: rgb(28 20 18 / 0.09);
+    --chart-axis: rgb(28 20 18 / 0.11);
+    --chart-tick: rgb(28 20 18 / 0.5);
+    --plan-ground: rgb(28 20 18 / 0.022);
+    --plan-sheen: rgb(28 20 18 / 0.03);
+    --plan-dot: rgb(28 20 18 / 0.12);
     --scrim: rgb(28 20 18 / 0.45);
 
     /* On paper the frosted panes are white-on-warm rather than
@@ -268,7 +320,6 @@
   body {
     background-color: var(--color-ink-950);
     color: color-mix(in oklab, var(--color-cream) 86%, transparent);
-    transition: background-color 0.5s ease, color 0.5s ease;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -289,8 +340,33 @@
   }
   ::-webkit-scrollbar-thumb:hover { background: var(--thumb-hover); }
 
+  /* Theme swap. Flipping data-theme restyles and repaints the whole
+     document — every frosted panel re-runs its backdrop blur — so the swap is
+     wrapped in a view transition: the browser snapshots the page, changes the
+     theme in a single frame, and cross-fades two flat images on the
+     compositor instead of animating live colour on every element.
+
+     The outgoing snapshot is held still and the incoming one dissolves over
+     it. Cross-fading both would wash the page through a grey midpoint on the
+     way, which is exactly the frame a theme swap should not have. Browsers
+     without the API (Firefox today) swap instantly, which is also correct. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+  }
+  ::view-transition-old(root) {
+    animation: none;
+  }
+  ::view-transition-new(root) {
+    animation: theme-dissolve 0.26s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none !important;
+    }
     *, *::before, *::after {
       animation-duration: 0.001ms !important;
       animation-iteration-count: 1 !important;
@@ -532,67 +608,273 @@
    out roughly one step fainter than the design it is copying.
 
    So each rung is re-pitched to the opacity that reproduces its own
-   dark-theme contrast ratio exactly — measured, not guessed. The
-   hierarchy is unchanged (a /40 label is still quieter than a /55
-   line); only the ink needed to hold each position changes.
+   dark-theme contrast — measured, not guessed, and measured on the
+   raised card rather than the page ground. The card is the surface
+   closest to the ink on paper and closest to the light text on warm
+   black, so solving the hard case there covers the ground for free.
+   The hierarchy is unchanged (a /40 label is still quieter than a /55
+   line); only the ink needed to hold each position changes. `cream`
+   (the marketing site) and `fg` (the dashboard, which was written
+   against white) are solved separately because their dark pigments
+   differ.
 
-   The :not() keeps this off the product mockups, which stay dark
-   inside a light page and therefore still want the original rungs.
+   Then the same rungs are restated under [data-theme="dark"], which
+   comes second and so wins inside the product mockups — the subtrees
+   that stay dark on a lit page. Two plain descendant selectors rather
+   than one :not(<complex>): same result, and measurably less work per
+   element on the full-document restyle a theme swap already costs.
 ------------------------------------------------------------------ */
-:root[data-theme="light"] .text-cream\/30:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 37%, transparent);
+:root[data-theme="light"] .text-cream\/15 {
+  color: color-mix(in oklab, var(--color-cream) 18%, transparent);
 }
-:root[data-theme="light"] .text-cream\/35:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 43%, transparent);
+:root[data-theme="light"] .text-cream\/20 {
+  color: color-mix(in oklab, var(--color-cream) 26%, transparent);
 }
-:root[data-theme="light"] .text-cream\/40:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 50%, transparent);
+:root[data-theme="light"] .text-cream\/25 {
+  color: color-mix(in oklab, var(--color-cream) 32%, transparent);
 }
-:root[data-theme="light"] .text-cream\/45:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 55%, transparent);
+:root[data-theme="light"] .text-cream\/30 {
+  color: color-mix(in oklab, var(--color-cream) 40%, transparent);
 }
-:root[data-theme="light"] .text-cream\/50:not([data-theme="dark"] *) {
+:root[data-theme="light"] .text-cream\/35 {
+  color: color-mix(in oklab, var(--color-cream) 45%, transparent);
+}
+:root[data-theme="light"] .text-cream\/40 {
+  color: color-mix(in oklab, var(--color-cream) 51%, transparent);
+}
+:root[data-theme="light"] .text-cream\/45 {
+  color: color-mix(in oklab, var(--color-cream) 57%, transparent);
+}
+:root[data-theme="light"] .text-cream\/50 {
   color: color-mix(in oklab, var(--color-cream) 61%, transparent);
 }
-:root[data-theme="light"] .text-cream\/55:not([data-theme="dark"] *) {
+:root[data-theme="light"] .text-cream\/55 {
   color: color-mix(in oklab, var(--color-cream) 65%, transparent);
 }
-:root[data-theme="light"] .text-cream\/58:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 68%, transparent);
-}
-:root[data-theme="light"] .text-cream\/60:not([data-theme="dark"] *) {
+:root[data-theme="light"] .text-cream\/58 {
   color: color-mix(in oklab, var(--color-cream) 69%, transparent);
 }
-:root[data-theme="light"] .text-cream\/62:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 71%, transparent);
+:root[data-theme="light"] .text-cream\/60 {
+  color: color-mix(in oklab, var(--color-cream) 70%, transparent);
 }
-:root[data-theme="light"] .text-cream\/65:not([data-theme="dark"] *) {
+:root[data-theme="light"] .text-cream\/62 {
+  color: color-mix(in oklab, var(--color-cream) 72%, transparent);
+}
+:root[data-theme="light"] .text-cream\/65 {
   color: color-mix(in oklab, var(--color-cream) 74%, transparent);
 }
-:root[data-theme="light"] .text-cream\/66:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 74%, transparent);
+:root[data-theme="light"] .text-cream\/66 {
+  color: color-mix(in oklab, var(--color-cream) 75%, transparent);
 }
-:root[data-theme="light"] .text-cream\/70:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 77%, transparent);
+:root[data-theme="light"] .text-cream\/70 {
+  color: color-mix(in oklab, var(--color-cream) 78%, transparent);
 }
-:root[data-theme="light"] .text-cream\/75:not([data-theme="dark"] *) {
+:root[data-theme="light"] .text-cream\/75 {
   color: color-mix(in oklab, var(--color-cream) 81%, transparent);
 }
-:root[data-theme="light"] .text-cream\/80:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 84%, transparent);
+:root[data-theme="light"] .text-cream\/80 {
+  color: color-mix(in oklab, var(--color-cream) 85%, transparent);
 }
-:root[data-theme="light"] .text-cream\/85:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 88%, transparent);
+:root[data-theme="light"] .text-cream\/85 {
+  color: color-mix(in oklab, var(--color-cream) 89%, transparent);
 }
-:root[data-theme="light"] .text-cream\/90:not([data-theme="dark"] *) {
-  color: color-mix(in oklab, var(--color-cream) 92%, transparent);
+:root[data-theme="light"] .text-cream\/90 {
+  color: color-mix(in oklab, var(--color-cream) 93%, transparent);
 }
-:root[data-theme="light"] .placeholder\:text-cream\/30:not([data-theme="dark"] *)::placeholder {
-  color: color-mix(in oklab, var(--color-cream) 37%, transparent);
+:root[data-theme="light"] .placeholder\:text-cream\/30::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 40%, transparent);
 }
-:root[data-theme="light"] .placeholder\:text-cream\/35:not([data-theme="dark"] *)::placeholder {
-  color: color-mix(in oklab, var(--color-cream) 43%, transparent);
+:root[data-theme="light"] .placeholder\:text-cream\/35::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 45%, transparent);
 }
-:root[data-theme="light"] .placeholder\:text-cream\/55:not([data-theme="dark"] *)::placeholder {
+:root[data-theme="light"] .placeholder\:text-cream\/55::placeholder {
   color: color-mix(in oklab, var(--color-cream) 65%, transparent);
+}
+:root[data-theme="light"] .text-fg\/15 {
+  color: color-mix(in oklab, var(--color-fg) 20%, transparent);
+}
+:root[data-theme="light"] .text-fg\/20 {
+  color: color-mix(in oklab, var(--color-fg) 28%, transparent);
+}
+:root[data-theme="light"] .text-fg\/25 {
+  color: color-mix(in oklab, var(--color-fg) 35%, transparent);
+}
+:root[data-theme="light"] .text-fg\/30 {
+  color: color-mix(in oklab, var(--color-fg) 42%, transparent);
+}
+:root[data-theme="light"] .text-fg\/35 {
+  color: color-mix(in oklab, var(--color-fg) 49%, transparent);
+}
+:root[data-theme="light"] .text-fg\/40 {
+  color: color-mix(in oklab, var(--color-fg) 54%, transparent);
+}
+:root[data-theme="light"] .text-fg\/45 {
+  color: color-mix(in oklab, var(--color-fg) 60%, transparent);
+}
+:root[data-theme="light"] .text-fg\/50 {
+  color: color-mix(in oklab, var(--color-fg) 65%, transparent);
+}
+:root[data-theme="light"] .text-fg\/55 {
+  color: color-mix(in oklab, var(--color-fg) 70%, transparent);
+}
+:root[data-theme="light"] .text-fg\/58 {
+  color: color-mix(in oklab, var(--color-fg) 72%, transparent);
+}
+:root[data-theme="light"] .text-fg\/60 {
+  color: color-mix(in oklab, var(--color-fg) 73%, transparent);
+}
+:root[data-theme="light"] .text-fg\/62 {
+  color: color-mix(in oklab, var(--color-fg) 76%, transparent);
+}
+:root[data-theme="light"] .text-fg\/65 {
+  color: color-mix(in oklab, var(--color-fg) 78%, transparent);
+}
+:root[data-theme="light"] .text-fg\/66 {
+  color: color-mix(in oklab, var(--color-fg) 78%, transparent);
+}
+:root[data-theme="light"] .text-fg\/70 {
+  color: color-mix(in oklab, var(--color-fg) 82%, transparent);
+}
+:root[data-theme="light"] .text-fg\/75 {
+  color: color-mix(in oklab, var(--color-fg) 86%, transparent);
+}
+:root[data-theme="light"] .text-fg\/80 {
+  color: color-mix(in oklab, var(--color-fg) 89%, transparent);
+}
+:root[data-theme="light"] .text-fg\/85 {
+  color: color-mix(in oklab, var(--color-fg) 94%, transparent);
+}
+:root[data-theme="light"] .text-fg\/90 {
+  color: color-mix(in oklab, var(--color-fg) 96%, transparent);
+}
+:root[data-theme="light"] .placeholder\:text-fg\/30::placeholder {
+  color: color-mix(in oklab, var(--color-fg) 42%, transparent);
+}
+
+/* Back to the original rungs inside anything pinned to the dark theme. */
+[data-theme="dark"] .text-cream\/15 {
+  color: color-mix(in oklab, var(--color-cream) 15%, transparent);
+}
+[data-theme="dark"] .text-cream\/20 {
+  color: color-mix(in oklab, var(--color-cream) 20%, transparent);
+}
+[data-theme="dark"] .text-cream\/25 {
+  color: color-mix(in oklab, var(--color-cream) 25%, transparent);
+}
+[data-theme="dark"] .text-cream\/30 {
+  color: color-mix(in oklab, var(--color-cream) 30%, transparent);
+}
+[data-theme="dark"] .text-cream\/35 {
+  color: color-mix(in oklab, var(--color-cream) 35%, transparent);
+}
+[data-theme="dark"] .text-cream\/40 {
+  color: color-mix(in oklab, var(--color-cream) 40%, transparent);
+}
+[data-theme="dark"] .text-cream\/45 {
+  color: color-mix(in oklab, var(--color-cream) 45%, transparent);
+}
+[data-theme="dark"] .text-cream\/50 {
+  color: color-mix(in oklab, var(--color-cream) 50%, transparent);
+}
+[data-theme="dark"] .text-cream\/55 {
+  color: color-mix(in oklab, var(--color-cream) 55%, transparent);
+}
+[data-theme="dark"] .text-cream\/58 {
+  color: color-mix(in oklab, var(--color-cream) 58%, transparent);
+}
+[data-theme="dark"] .text-cream\/60 {
+  color: color-mix(in oklab, var(--color-cream) 60%, transparent);
+}
+[data-theme="dark"] .text-cream\/62 {
+  color: color-mix(in oklab, var(--color-cream) 62%, transparent);
+}
+[data-theme="dark"] .text-cream\/65 {
+  color: color-mix(in oklab, var(--color-cream) 65%, transparent);
+}
+[data-theme="dark"] .text-cream\/66 {
+  color: color-mix(in oklab, var(--color-cream) 66%, transparent);
+}
+[data-theme="dark"] .text-cream\/70 {
+  color: color-mix(in oklab, var(--color-cream) 70%, transparent);
+}
+[data-theme="dark"] .text-cream\/75 {
+  color: color-mix(in oklab, var(--color-cream) 75%, transparent);
+}
+[data-theme="dark"] .text-cream\/80 {
+  color: color-mix(in oklab, var(--color-cream) 80%, transparent);
+}
+[data-theme="dark"] .text-cream\/85 {
+  color: color-mix(in oklab, var(--color-cream) 85%, transparent);
+}
+[data-theme="dark"] .text-cream\/90 {
+  color: color-mix(in oklab, var(--color-cream) 90%, transparent);
+}
+[data-theme="dark"] .placeholder\:text-cream\/30::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 30%, transparent);
+}
+[data-theme="dark"] .placeholder\:text-cream\/35::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 35%, transparent);
+}
+[data-theme="dark"] .placeholder\:text-cream\/55::placeholder {
+  color: color-mix(in oklab, var(--color-cream) 55%, transparent);
+}
+[data-theme="dark"] .text-fg\/15 {
+  color: color-mix(in oklab, var(--color-fg) 15%, transparent);
+}
+[data-theme="dark"] .text-fg\/20 {
+  color: color-mix(in oklab, var(--color-fg) 20%, transparent);
+}
+[data-theme="dark"] .text-fg\/25 {
+  color: color-mix(in oklab, var(--color-fg) 25%, transparent);
+}
+[data-theme="dark"] .text-fg\/30 {
+  color: color-mix(in oklab, var(--color-fg) 30%, transparent);
+}
+[data-theme="dark"] .text-fg\/35 {
+  color: color-mix(in oklab, var(--color-fg) 35%, transparent);
+}
+[data-theme="dark"] .text-fg\/40 {
+  color: color-mix(in oklab, var(--color-fg) 40%, transparent);
+}
+[data-theme="dark"] .text-fg\/45 {
+  color: color-mix(in oklab, var(--color-fg) 45%, transparent);
+}
+[data-theme="dark"] .text-fg\/50 {
+  color: color-mix(in oklab, var(--color-fg) 50%, transparent);
+}
+[data-theme="dark"] .text-fg\/55 {
+  color: color-mix(in oklab, var(--color-fg) 55%, transparent);
+}
+[data-theme="dark"] .text-fg\/58 {
+  color: color-mix(in oklab, var(--color-fg) 58%, transparent);
+}
+[data-theme="dark"] .text-fg\/60 {
+  color: color-mix(in oklab, var(--color-fg) 60%, transparent);
+}
+[data-theme="dark"] .text-fg\/62 {
+  color: color-mix(in oklab, var(--color-fg) 62%, transparent);
+}
+[data-theme="dark"] .text-fg\/65 {
+  color: color-mix(in oklab, var(--color-fg) 65%, transparent);
+}
+[data-theme="dark"] .text-fg\/66 {
+  color: color-mix(in oklab, var(--color-fg) 66%, transparent);
+}
+[data-theme="dark"] .text-fg\/70 {
+  color: color-mix(in oklab, var(--color-fg) 70%, transparent);
+}
+[data-theme="dark"] .text-fg\/75 {
+  color: color-mix(in oklab, var(--color-fg) 75%, transparent);
+}
+[data-theme="dark"] .text-fg\/80 {
+  color: color-mix(in oklab, var(--color-fg) 80%, transparent);
+}
+[data-theme="dark"] .text-fg\/85 {
+  color: color-mix(in oklab, var(--color-fg) 85%, transparent);
+}
+[data-theme="dark"] .text-fg\/90 {
+  color: color-mix(in oklab, var(--color-fg) 90%, transparent);
+}
+[data-theme="dark"] .placeholder\:text-fg\/30::placeholder {
+  color: color-mix(in oklab, var(--color-fg) 30%, transparent);
 }

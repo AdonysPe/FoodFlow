@@ -123,7 +123,7 @@ export default function ClaimsBookForm() {
       </p>
 
       <fieldset className="mt-7">
-        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-accent-300">
+        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-accent-ink">
           1. Identificación del consumidor
         </legend>
 
@@ -185,7 +185,7 @@ export default function ClaimsBookForm() {
       </fieldset>
 
       <fieldset className="mt-8">
-        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-accent-300">
+        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-accent-ink">
           2. Tipo de solicitud
         </legend>
 
@@ -212,7 +212,7 @@ export default function ClaimsBookForm() {
       </fieldset>
 
       <fieldset className="mt-8">
-        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-accent-300">
+        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-accent-ink">
           3. Detalle
         </legend>
 
@@ -253,7 +253,7 @@ export default function ClaimsBookForm() {
       {formError && (
         <p
           role="alert"
-          className="mt-6 rounded-xl border border-accent-400/30 bg-accent-400/[0.07] px-3.5 py-3 text-[13.5px] leading-relaxed text-accent-200"
+          className="mt-6 rounded-xl border border-accent-400/30 bg-accent-400/[0.07] px-3.5 py-3 text-[13.5px] leading-relaxed text-accent-label"
         >
           {formError}
         </p>
@@ -303,10 +303,10 @@ function Receipt({ receipt }) {
       className="rounded-2xl border border-cream/10 bg-ink-800/70 p-6 shadow-card sm:p-8"
     >
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-mint/12 ring-1 ring-inset ring-mint/30">
-        <IconCheck className="h-5 w-5 text-mint" />
+        <IconCheck className="h-5 w-5 text-mint-ink" />
       </span>
 
-      <h2 className="mt-5 font-display text-[22px] font-extrabold leading-snug text-white">
+      <h2 className="mt-5 font-display text-[22px] font-extrabold leading-snug text-fg">
         Tu {receipt.values.kind === "queja" ? "queja" : "reclamo"} quedó registrado.
       </h2>
 
@@ -314,7 +314,7 @@ function Receipt({ receipt }) {
         <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/55">
           Número de registro
         </p>
-        <p className="mt-1 font-mono text-[26px] font-bold tracking-wide text-accent-200">
+        <p className="mt-1 font-mono text-[26px] font-bold tracking-wide text-accent-label">
           {receipt.code}
         </p>
         <p className="mt-1 text-[13px] text-cream/55">Registrado el {date}</p>
@@ -322,7 +322,7 @@ function Receipt({ receipt }) {
 
       <p className="mt-5 text-[15px] leading-relaxed text-cream/70">
         Guarda este número: es tu constancia. Te responderemos a{" "}
-        <span className="font-medium text-white">{receipt.values.email}</span> en un plazo
+        <span className="font-medium text-fg">{receipt.values.email}</span> en un plazo
         máximo de {CLAIM_RESPONSE_DAYS} días hábiles.
       </p>
 
@@ -372,7 +372,7 @@ function KindOption({ name, value, checked, onChange, title, copy }) {
         className="mt-0.5 h-4 w-4 shrink-0 accent-[#ff5a33]"
       />
       <span>
-        <span className="block text-[14.5px] font-semibold text-white">{title}</span>
+        <span className="block text-[14.5px] font-semibold text-fg">{title}</span>
         <span className="mt-1 block text-[12.5px] leading-relaxed text-cream/55">{copy}</span>
       </span>
     </label>
@@ -412,7 +412,7 @@ function Field({
         {...rest}
       />
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-1.5 text-[12.5px] font-medium text-accent-300">
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-[12.5px] font-medium text-accent-ink">
           {error}
         </p>
       ) : (
@@ -466,7 +466,7 @@ function TextArea({
         {...rest}
       />
       {error && (
-        <p id={`${id}-error`} role="alert" className="mt-1.5 text-[12.5px] font-medium text-accent-300">
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-[12.5px] font-medium text-accent-ink">
           {error}
         </p>
       )}

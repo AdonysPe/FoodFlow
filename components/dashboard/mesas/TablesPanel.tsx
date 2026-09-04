@@ -53,7 +53,7 @@ function TableRow({ table }: { table: TableDTO }) {
   }
 
   return (
-    <li className="border-b border-white/[0.05] px-5 py-4 last:border-0">
+    <li className="border-b border-fg/[0.05] px-5 py-4 last:border-0">
       {editing ? (
         <div className="flex flex-col gap-4">
           <TableFormFields value={form} onChange={setForm} idPrefix={`edit-${table.id}`} />
@@ -77,8 +77,8 @@ function TableRow({ table }: { table: TableDTO }) {
       ) : (
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="truncate text-[14px] font-medium text-white/85">{table.name}</p>
-            <p className="mt-0.5 text-[12.5px] text-white/45">
+            <p className="truncate text-[14px] font-medium text-fg/85">{table.name}</p>
+            <p className="mt-0.5 text-[12.5px] text-fg/45">
               {table.capacity} personas · {SHAPE_LABELS[table.shape]} · {ZONE_LABELS[table.zone]}
             </p>
           </div>
@@ -93,7 +93,7 @@ function TableRow({ table }: { table: TableDTO }) {
               onBlur={() => setConfirmingDelete(false)}
               className={
                 confirmingDelete
-                  ? "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-accent-600 disabled:opacity-40"
+                  ? "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-fg transition-colors hover:bg-accent-600 disabled:opacity-40"
                   : ghostButtonClass
               }
             >
@@ -135,8 +135,8 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-[15px] font-semibold text-white/90">Mesas del local</h2>
-          <p className="mt-0.5 text-[12.5px] text-white/40">
+          <h2 className="text-[15px] font-semibold text-fg/90">Mesas del local</h2>
+          <p className="mt-0.5 text-[12.5px] text-fg/40">
             {tables.length} {tables.length === 1 ? "mesa" : "mesas"} en el plano
           </p>
         </div>
@@ -175,7 +175,7 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
 
       {tables.length === 0 ? (
         <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-white/45">Aún no hay mesas. Crea tu plano para empezar.</p>
+          <p className="text-[14px] text-fg/45">Aún no hay mesas. Crea tu plano para empezar.</p>
         </GlassCard>
       ) : (
         <GlassCard className="overflow-hidden p-0" hoverLift={false}>

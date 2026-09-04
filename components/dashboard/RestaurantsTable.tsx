@@ -26,12 +26,12 @@ export type RestaurantRow = {
 };
 
 const inputClass =
-  "h-9 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 text-[13.5px] text-white outline-none focus:border-accent-400/50";
+  "h-9 w-full rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 text-[13.5px] text-fg outline-none focus:border-accent-400/50";
 
 const PLAN_TONE: Record<PlanValue, string> = {
-  carta: "bg-white/[0.06] text-white/60 ring-white/15",
-  servicio: "bg-accent-400/10 text-accent-300 ring-accent-400/25",
-  negocio: "bg-mint/10 text-mint ring-mint/25",
+  carta: "bg-fg/[0.06] text-fg/60 ring-fg/15",
+  servicio: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
+  negocio: "bg-mint/10 text-mint-ink ring-mint/25",
 };
 
 // Changing the plan is the one thing an admin does most on this screen, so it
@@ -68,7 +68,7 @@ function PlanPicker({ restaurant }: { restaurant: RestaurantRow }) {
       className={`rounded-full px-2.5 py-1 text-[12px] font-medium ring-1 ring-inset outline-none disabled:opacity-40 ${PLAN_TONE[restaurant.plan]}`}
     >
       {PLANS.map((p) => (
-        <option key={p} value={p} className="bg-ink-900 text-white">
+        <option key={p} value={p} className="bg-ink-900 text-fg">
           {PLAN_LABELS[p]} · {PLAN_PRICES[p]}
         </option>
       ))}
@@ -114,7 +114,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
 
   if (editing) {
     return (
-      <tr className="border-b border-white/[0.04] last:border-0">
+      <tr className="border-b border-fg/[0.04] last:border-0">
         <td className="px-5 py-3">
           <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
         </td>
@@ -139,14 +139,14 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
             ))}
           </select>
         </td>
-        <td className="px-5 py-3 text-white/45">{restaurant.createdAtLabel}</td>
+        <td className="px-5 py-3 text-fg/45">{restaurant.createdAtLabel}</td>
         <td className="px-5 py-3">
           <div className="flex gap-2">
             <button
               type="button"
               disabled={isPending}
               onClick={handleSave}
-              className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 disabled:opacity-40"
+              className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent disabled:opacity-40"
             >
               Save
             </button>
@@ -159,7 +159,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
                 setPlan(restaurant.plan);
                 setEditing(false);
               }}
-              className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-white/70 hover:bg-white/[0.08]"
+              className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 hover:bg-fg/[0.08]"
             >
               Cancel
             </button>
@@ -170,11 +170,11 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
   }
 
   return (
-    <tr className="border-b border-white/[0.04] last:border-0">
-      <td className="px-5 py-3.5 font-medium text-white/85">{restaurant.name}</td>
-      <td className="px-5 py-3.5 text-white/55">
+    <tr className="border-b border-fg/[0.04] last:border-0">
+      <td className="px-5 py-3.5 font-medium text-fg/85">{restaurant.name}</td>
+      <td className="px-5 py-3.5 text-fg/55">
         <p>{restaurant.ownerEmail}</p>
-        <p className="text-[12px] text-white/35">
+        <p className="text-[12px] text-fg/35">
           {restaurant.staffCount + 1}{" "}
           {PLAN_MAX_USERS[restaurant.plan] === Infinity
             ? "usuarios"
@@ -184,13 +184,13 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
       <td className="px-5 py-3.5">
         <PlanPicker restaurant={restaurant} />
       </td>
-      <td className="px-5 py-3.5 text-white/45">{restaurant.createdAtLabel}</td>
+      <td className="px-5 py-3.5 text-fg/45">{restaurant.createdAtLabel}</td>
       <td className="px-5 py-3.5">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white"
+            className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg"
           >
             Edit
           </button>
@@ -201,8 +201,8 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
             onBlur={() => setConfirmingDelete(false)}
             className={`rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors disabled:opacity-40 ${
               confirmingDelete
-                ? "bg-accent-500 text-white hover:bg-accent-600"
-                : "border border-white/[0.1] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                ? "bg-accent-500 text-fg hover:bg-accent-600"
+                : "border border-fg/[0.1] bg-fg/[0.04] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
             }`}
           >
             {confirmingDelete ? "Confirm delete?" : "Delete"}
@@ -216,7 +216,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
 export default function RestaurantsTable({ restaurants }: { restaurants: RestaurantRow[] }) {
   if (restaurants.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-white/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
         No restaurants yet. Create the first one to get started.
       </GlassCard>
     );
@@ -227,7 +227,7 @@ export default function RestaurantsTable({ restaurants }: { restaurants: Restaur
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-white/[0.07] text-[12px] uppercase tracking-wide text-white/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
               <th className="px-5 py-3.5 font-medium">Name</th>
               <th className="px-5 py-3.5 font-medium">Owner</th>
               <th className="px-5 py-3.5 font-medium">Plan</th>

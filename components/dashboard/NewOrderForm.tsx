@@ -75,18 +75,18 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
   return (
     <GlassCard className="p-5 sm:p-6" hoverLift={false}>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-[15px] font-semibold text-white/90">Registrar pedido</h2>
+        <h2 className="text-[15px] font-semibold text-fg/90">Registrar pedido</h2>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-[13px] text-white/40 hover:text-white/70"
+          className="text-[13px] text-fg/40 hover:text-fg/70"
         >
           Cancelar
         </button>
       </div>
 
       {menuItems.length === 0 ? (
-        <p className="text-[14px] text-white/40">
+        <p className="text-[14px] text-fg/40">
           Primero agrega platos disponibles a la carta para registrar pedidos.
         </p>
       ) : (
@@ -97,18 +97,18 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Nombre del cliente"
-              className="h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
+              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
             />
             <input
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="Teléfono (opcional)"
-              className="h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
+              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
             />
             <select
               value={channel}
               onChange={(e) => setChannel(e.target.value as OrderChannel)}
-              className="h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 text-[14px] text-white outline-none focus:border-accent-400/50 focus:bg-white/[0.06] focus:ring-4 focus:ring-accent-400/10"
+              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
             >
               {(Object.keys(CHANNEL_LABELS) as OrderChannel[]).map((c) => (
                 <option key={c} value={c} className="bg-ink-900">
@@ -122,27 +122,27 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
             {menuItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-2.5"
+                className="flex items-center justify-between gap-3 rounded-xl border border-fg/[0.07] bg-fg/[0.02] px-4 py-2.5"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[13.5px] text-white/85">{item.name}</p>
-                  <p className="text-[12px] text-white/40">{formatCurrency(item.price)}</p>
+                  <p className="truncate text-[13.5px] text-fg/85">{item.name}</p>
+                  <p className="text-[12px] text-fg/40">{formatCurrency(item.price)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2.5">
                   <button
                     type="button"
                     onClick={() => setQty(item.id, (quantities[item.id] ?? 0) - 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.1] text-white/60 hover:bg-white/[0.06]"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-fg/60 hover:bg-fg/[0.06]"
                   >
                     −
                   </button>
-                  <span className="w-5 text-center text-[13.5px] text-white/85">
+                  <span className="w-5 text-center text-[13.5px] text-fg/85">
                     {quantities[item.id] ?? 0}
                   </span>
                   <button
                     type="button"
                     onClick={() => setQty(item.id, (quantities[item.id] ?? 0) + 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.1] text-white/60 hover:bg-white/[0.06]"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-fg/60 hover:bg-fg/[0.06]"
                   >
                     +
                   </button>
@@ -151,9 +151,9 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
             ))}
           </div>
 
-          <div className="flex items-center justify-between border-t border-white/[0.07] pt-4">
-            <span className="text-[14px] text-white/60">
-              Total: <span className="font-semibold text-white/90">{formatCurrency(total)}</span>
+          <div className="flex items-center justify-between border-t border-fg/[0.07] pt-4">
+            <span className="text-[14px] text-fg/60">
+              Total: <span className="font-semibold text-fg/90">{formatCurrency(total)}</span>
             </span>
             <Button type="submit" size="md" disabled={isPending}>
               {isPending ? "Registrando…" : "Registrar pedido"}
@@ -162,7 +162,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
         </form>
       )}
 
-      {error && <p className="mt-2.5 text-[13px] text-accent-400">{error}</p>}
+      {error && <p className="mt-2.5 text-[13px] text-accent-icon">{error}</p>}
     </GlassCard>
   );
 }

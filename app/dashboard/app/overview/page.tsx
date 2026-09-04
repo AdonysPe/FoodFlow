@@ -132,43 +132,43 @@ export default async function OverviewPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <GlassCard className="p-5 sm:p-6 lg:col-span-2" hoverLift={false}>
-          <h2 className="mb-1 text-[15px] font-semibold text-white/90">Ventas en el tiempo</h2>
-          <p className="mb-4 text-[12.5px] text-white/40">Últimos 7 días</p>
+          <h2 className="mb-1 text-[15px] font-semibold text-fg/90">Ventas en el tiempo</h2>
+          <p className="mb-4 text-[12.5px] text-fg/40">Últimos 7 días</p>
           <AreaChart data={dayBuckets.map((d) => d.total)} labels={dayBuckets.map((d) => d.label)} />
         </GlassCard>
 
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <h2 className="mb-4 text-[15px] font-semibold text-white/90">Pedidos por canal</h2>
+          <h2 className="mb-4 text-[15px] font-semibold text-fg/90">Pedidos por canal</h2>
           <ChannelBars data={channelData} />
         </GlassCard>
       </div>
 
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-white/90">Pedidos recientes</h2>
+          <h2 className="text-[15px] font-semibold text-fg/90">Pedidos recientes</h2>
           <Link
             href="/dashboard/app/orders"
-            className="text-[13px] font-medium text-accent-400 hover:text-accent-300"
+            className="text-[13px] font-medium text-accent-icon hover:text-accent-ink"
           >
             Ver todos
           </Link>
         </div>
         {recentOrders.length === 0 ? (
-          <p className="py-6 text-center text-[14px] text-white/40">
+          <p className="py-6 text-center text-[14px] text-fg/40">
             Aún no hay pedidos. Los nuevos pedidos aparecerán aquí.
           </p>
         ) : (
-          <ul className="flex flex-col divide-y divide-white/[0.05]">
+          <ul className="flex flex-col divide-y divide-fg/[0.05]">
             {recentOrders.map((order) => (
               <li key={order.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] text-white/80">{order.customerName}</p>
-                  <p className="text-[12px] text-white/40">
+                  <p className="truncate text-[14px] text-fg/80">{order.customerName}</p>
+                  <p className="text-[12px] text-fg/40">
                     {CHANNEL_LABELS[order.channel]} · {formatTimeLabel(order.createdAt)}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  <span className="text-[13.5px] font-medium text-white/85">
+                  <span className="text-[13.5px] font-medium text-fg/85">
                     {formatCurrency(order.total)}
                   </span>
                   <StatusPill status={order.status} />

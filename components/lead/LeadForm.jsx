@@ -374,7 +374,7 @@ function Success({ copy, lead, loss, className = "" }) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2.5 rounded-xl border border-[#25D366]/35 bg-[#25D366]/12 px-5 text-[14.5px] font-semibold text-[#8af0b4] transition-colors duration-200 hover:bg-[#25D366]/20 hover:text-fg"
+          className="mt-6 inline-flex h-12 items-center justify-center gap-2.5 rounded-xl border border-wa/35 bg-wa/12 px-5 text-[14.5px] font-semibold text-wa-ink transition-colors duration-200 hover:bg-wa/20 hover:text-fg"
         >
           <IconWhatsApp className="h-5 w-5" />
           {copy.success.whatsapp}
