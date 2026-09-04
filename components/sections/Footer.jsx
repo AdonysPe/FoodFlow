@@ -118,21 +118,17 @@ export default function Footer() {
               ))}
             </ul>
 
-            {/* Required to be visible on the site, so it is a button and not
-                one more line in a list of links. */}
+            {/* Required to be visible on the site — a symbol, not a text
+                link: the icon alone is the affordance, with the label kept
+                for screen readers and as a hover tooltip. */}
             <Link
               href="/libro-de-reclamaciones"
-              className="mt-5 inline-flex items-center gap-3 rounded-xl border border-cream/15 bg-cream/[0.04] px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-400/40 hover:bg-accent-400/[0.06]"
+              aria-label="Libro de Reclamaciones Virtual"
+              title="Libro de Reclamaciones Virtual"
+              className="mt-5 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-cream/15 bg-cream/[0.04] text-accent-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-400/40 hover:bg-accent-400/[0.06]"
             >
-              <IconClaimsBook className="h-6 w-6 shrink-0 text-accent-300" />
-              <span>
-                <span className="block text-[13px] font-semibold text-cream/90">
-                  Libro de Reclamaciones
-                </span>
-                <span className="block text-[11.5px] text-cream/45">
-                  Registra un reclamo o queja
-                </span>
-              </span>
+              <IconClaimsBook className="h-6 w-6" />
+              <span className="sr-only">Libro de Reclamaciones Virtual</span>
             </Link>
           </div>
         </div>
