@@ -329,3 +329,13 @@ export function IconMoon({ className = "h-4 w-4" }) {
     </svg>
   );
 }
+
+export function IconPrinter({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M7 9V3.5h10V9" />
+      <path d="M5 9h14a2 2 0 0 1 2 2v5h-4v4.5H7V16H3v-5a2 2 0 0 1 2-2Z" />
+      <path d="M17.5 12.5h.01" />
+    </svg>
+  );
+}

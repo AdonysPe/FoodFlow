@@ -16,6 +16,8 @@ const CLIENT_TITLES: Record<string, string> = {
   // The QR sheet is a page under /mesas; the topbar keys off the last
   // segment, so it needs its own entry or it falls back to "Dashboard".
   qr: "QR de mesas",
+  // Same reason as the QR sheet: a settings page nested one level deeper.
+  facturacion: "Facturación electrónica",
   menu: "Menú",
   customers: "Clientes",
   equipo: "Equipo",

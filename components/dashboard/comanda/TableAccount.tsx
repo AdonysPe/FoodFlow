@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { voidOrder } from "@/lib/actions/comanda";
 import { formatPrice } from "@/components/dashboard/menu/ui";
@@ -225,12 +226,22 @@ export default function TableAccount({
           </footer>
         </article>
 
+        {/* Precuenta: the same paper, printed before anyone pays, for the
+            table that asks to check the bill first. It has no number and no
+            payment on it, and says so. */}
+        <Link
+          href={`/dashboard/boleta/${tab.orderId}`}
+          className="mt-4 flex w-full items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.04] px-4 py-2.5 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.07] hover:text-fg"
+        >
+          Imprimir precuenta
+        </Link>
+
         <button
           type="button"
           onClick={handleVoid}
           onBlur={() => setConfirmingVoid(false)}
           disabled={isPending}
-          className={`mt-4 w-full rounded-xl px-4 py-2.5 text-[12.5px] font-medium transition-colors disabled:opacity-40 ${
+          className={`mt-2 w-full rounded-xl px-4 py-2.5 text-[12.5px] font-medium transition-colors disabled:opacity-40 ${
             confirmingVoid
               ? "bg-accent-500 text-fg hover:bg-accent-600"
               : "border border-fg/[0.1] bg-fg/[0.03] text-fg/45 hover:text-fg/70"

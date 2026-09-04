@@ -1,8 +1,10 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
+import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import StatusPill from "@/components/dashboard/StatusPill";
+import { IconPrinter } from "@/components/ui/Icons";
 import { updateOrderStatus } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import {
@@ -120,18 +122,32 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                     <PaymentCell row={order} />
                   </td>
                   <td className="px-5 py-3.5">
-                    {upcoming ? (
-                      <button
-                        type="button"
-                        disabled={isPending}
-                        onClick={() => handleAdvance(order.id, upcoming)}
-                        className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
-                      >
-                        Marcar {ORDER_STATUS_LABELS[upcoming].toLowerCase()}
-                      </button>
-                    ) : (
-                      <span className="text-[12px] text-fg/30">—</span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {upcoming ? (
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleAdvance(order.id, upcoming)}
+                          className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
+                        >
+                          Marcar {ORDER_STATUS_LABELS[upcoming].toLowerCase()}
+                        </button>
+                      ) : null}
+                      {/* Reprint: the copy a diner asks for after leaving the table. */}
+                      {order.paid ? (
+                        <Link
+                          href={`/dashboard/boleta/${order.id}?from=orders`}
+                          title="Ver boleta"
+                          aria-label={`Ver boleta de ${order.customerName}`}
+                          className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] p-1.5 text-fg/45 transition-colors hover:bg-fg/[0.08] hover:text-fg"
+                        >
+                          <IconPrinter className="h-[15px] w-[15px]" />
+                        </Link>
+                      ) : null}
+                      {!upcoming && !order.paid ? (
+                        <span className="text-[12px] text-fg/30">—</span>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               );

@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { EASE } from "@/lib/motion";
 import { sendComanda } from "@/lib/actions/comanda";
+import type { ReceiptSettingsDTO } from "@/lib/receipt";
+import type { TillBillingState } from "@/lib/db/billing";
 import type {
   ComandaTableDTO,
   ComandaCategoryDTO,
@@ -18,6 +20,7 @@ import ItemPicker from "./ItemPicker";
 import CartBar from "./CartBar";
 import TableAccount from "./TableAccount";
 import PaymentSheet from "./PaymentSheet";
+import PaymentDone, { type SettledTab } from "./PaymentDone";
 
 export type CartLine = { qty: number; note: string };
 export type Cart = Record<string, CartLine>;
@@ -27,7 +30,7 @@ export type Target =
   | { kind: "pickup" }
   | { kind: "delivery" };
 
-type Step = "target" | "items" | "account" | "pay";
+type Step = "target" | "items" | "account" | "pay" | "done";
 
 export default function ComandaFlow({
   tables,
@@ -35,12 +38,20 @@ export default function ComandaFlow({
   items,
   frequent,
   openTabs,
+  venueName,
+  receiptSettings,
+  billing,
 }: {
   tables: ComandaTableDTO[];
   categories: ComandaCategoryDTO[];
   items: ComandaItemDTO[];
   frequent: FrequentItemDTO[];
   openTabs: OpenTabDTO[];
+  venueName: string;
+  // Everything the cobro screen needs to preview the paper and decide whether
+  // a boleta is even on the table. Read once by the page, not per charge.
+  receiptSettings: ReceiptSettingsDTO;
+  billing: TillBillingState;
 }) {
   const router = useRouter();
   const pushToast = useDashboardStore((s) => s.pushToast);
@@ -50,6 +61,8 @@ export default function ComandaFlow({
   // Only asked when the order is being opened; a table that already has
   // an open tab keeps the name it was opened with.
   const [customerName, setCustomerName] = useState("");
+  // Survives the refresh that follows a charge, which is the point of it.
+  const [settled, setSettled] = useState<SettledTab | null>(null);
   const [isSending, startSending] = useTransition();
 
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
@@ -93,6 +106,7 @@ export default function ComandaFlow({
     setTarget(null);
     setCart({});
     setCustomerName("");
+    setSettled(null);
   }
 
   function setQty(itemId: string, qty: number) {
@@ -208,11 +222,37 @@ export default function ComandaFlow({
           >
             <PaymentSheet
               tab={activeTab}
+              venueName={venueName}
+              autoPrint={receiptSettings.autoPrint}
+              receiptSettings={receiptSettings}
+              billing={billing}
               onBack={() => setStep("account")}
-              onPaid={(method) => {
-                pushToast(`Cobrado · ${method} · ${activeTab.tableName}`, "success");
-                resetToTarget();
+              onPaid={(paid) => {
+                setSettled(paid);
+                setStep("done");
                 router.refresh();
+              }}
+            />
+          </motion.div>
+        )}
+
+        {step === "done" && settled && (
+          <motion.div
+            key="done"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 12 }}
+            transition={{ duration: 0.22, ease: EASE }}
+            className="flex flex-1 flex-col"
+          >
+            <PaymentDone
+              settled={settled}
+              onDone={() => {
+                pushToast(
+                  `Cobrado · ${settled.methodLabel} · ${settled.tableName}`,
+                  "success"
+                );
+                resetToTarget();
               }}
             />
           </motion.div>

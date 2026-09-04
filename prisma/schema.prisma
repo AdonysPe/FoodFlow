@@ -42,8 +42,26 @@ enum OrderChannel {
 
 enum PaymentMethod {
   efectivo
+  // `tarjeta` predates the split into credit/debit and is kept so orders
+  // charged before it stay readable. New charges pick one of the two below.
   tarjeta
+  tarjeta_credito
+  tarjeta_debito
   yape
+  transferencia
+  mixto
+}
+
+/// What the diner is handed when the table is charged.
+///
+/// `nota_venta` is the internal control document FoodFlow has always printed.
+/// The other two are SUNAT comprobantes and only earn their name once the OSE
+/// answers: an order asking for a boleta whose emission failed still prints a
+/// nota de venta (see `Order.sunatStatus`).
+enum DocumentType {
+  nota_venta
+  boleta
+  factura
 }
 
 // The commercial plan a restaurant is on. Set by a FoodFlow admin when the
@@ -120,8 +138,111 @@ model Restaurant {
   tables       RestaurantTable[]
   reservations Reservation[]
   staff        StaffMembership[]
+  receipt      ReceiptSettings?
+  billing      BillingCredentials?
 
   @@index([ownerId])
+}
+
+/// What the venue prints when a waiter charges a table, plus the running
+/// correlative for those documents.
+///
+/// Kept out of `Restaurant` on purpose: the restaurant row is read on every
+/// dashboard request by the session guard, while these columns are only
+/// needed on the receipt itself and on its settings page.
+model ReceiptSettings {
+  id           String     @id @default(cuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  // Printed header. All optional — a venue with none of it still gets a
+  // usable ticket with its trade name on top.
+  legalName  String?
+  ruc        String?
+  address    String?
+  phone      String?
+  footerNote String?
+
+  // 58 or 80, the two thermal roll widths sold in Peru.
+  paperWidth Int     @default(80)
+  // Off by default: a venue not registered for IGV must not print a tax
+  // breakdown, and we cannot know its regime.
+  showIgv    Boolean @default(false)
+  igvRate    Float   @default(0.18)
+  // Send the ticket straight to the print dialog after charging.
+  autoPrint  Boolean @default(true)
+
+  // Prefix and running number of the internal nota de venta.
+  series  String @default("NV01")
+  counter Int    @default(0)
+
+  // ---------------------------------------------------- facturación electrónica
+  // Everything below is what an OSE needs to emit on this venue's behalf. It
+  // is the venue's own SUNAT identity: FoodFlow neither owns nor pays for it,
+  // it only stores what the owner typed in Configuración > Facturación.
+
+  /// Nombre comercial. Defaults to the restaurant name when blank.
+  tradeName  String?
+  /// Where SUNAT and the OSE send notices about this taxpayer.
+  sunatEmail String?
+
+  /// Series and correlatives, one running counter per document type. Kept
+  /// apart from the nota de venta counter because SUNAT numbers each series
+  /// independently and a gap in either one has to be explainable.
+  boletaSeries   String @default("B001")
+  boletaCounter  Int    @default(0)
+  facturaSeries  String @default("F001")
+  facturaCounter Int    @default(0)
+  creditSeries   String @default("FC01")
+  creditCounter  Int    @default(0)
+
+  /// Which OSE/PSE this venue contracted. Non-secret, so it lives here next
+  /// to the rest of the configuration; the key and secret do not.
+  oseProvider String?
+  /// The account's own API endpoint. Nubefact hands each taxpayer a distinct
+  /// URL, so this cannot be a constant baked into the provider catalogue.
+  oseEndpoint String?
+
+  /// Ticket look. The logo is stored as a data URL already downscaled to
+  /// thermal-printer size in the browser, so it never grows past a few KB.
+  logoDataUrl     String?
+  showQr          Boolean @default(true)
+  showCustomerRuc Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// The two things a venue must hand FoodFlow for an OSE to sign on its behalf:
+/// the digital certificate and the API credentials. Both are stored encrypted
+/// (AES-256-GCM, see lib/billing/crypto.ts) and live in their own table so no
+/// other query can pull them in by accident — the receipt path, the comanda
+/// and the settings form all read `ReceiptSettings` and never touch this.
+model BillingCredentials {
+  id           String     @id @default(cuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  /// Credentials of the venue's own OSE account. The venue pays the OSE
+  /// directly; FoodFlow only presents these when emitting on its behalf.
+  oseApiKeyEnc    String?
+  oseApiSecretEnc String?
+  lastTestAt      DateTime?
+  lastTestOk      Boolean?
+  lastTestMessage String?
+
+  /// The .pfx/.p12 itself, encrypted, plus what could be read out of it when
+  /// it was uploaded. Subject and expiry are cached because opening the
+  /// container costs a decryption and the settings page shows them on load.
+  certFileName    String?
+  certDataEnc     String?
+  certPasswordEnc String?
+  certSubject     String?
+  certExpiresAt   DateTime?
+  certUploadedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // `items` is a JSON snapshot of the order lines (name/price/quantity) taken
@@ -155,9 +276,38 @@ model Order {
   paymentMethod  PaymentMethod?
   amountReceived Float?
   changeGiven    Float?
+  // The number printed on the receipt, assigned once when the order is
+  // charged. Series and number are copied onto the order rather than read
+  // back from settings, so reprinting a ticket years later reproduces the
+  // paper the diner was handed, not today's configuration.
+  receiptSeries  String?
+  receiptNumber  Int?
+
+  // What the diner asked for at the till and who it is made out to. Stored on
+  // the order rather than looked up later for the same reason as the series:
+  // the paper handed over has to be reproducible years afterwards.
+  documentType   DocumentType?
+  // Series and correlative of the ELECTRONIC comprobante, drawn from its own
+  // counter. Separate from receiptSeries/receiptNumber above, which number the
+  // internal nota de venta: a boleta that SUNAT rejected has both — the number
+  // it was sent under, and the internal document actually handed over.
+  docSeries      String?
+  docNumber      Int?
+  billingDocType String? // "dni" | "ruc"
+  billingDocId   String?
+  billingName    String?
+  billingAddress String?
+  billingEmail   String?
+  // Result of the emission attempt. Null on every order charged as an
+  // internal nota de venta; "aceptado" is the ONLY value that lets the ticket
+  // call itself a boleta or factura electrónica.
+  sunatStatus    String?
+  sunatHash      String?
+  sunatMessage   String?
+  sunatLink      String?
   voidedAt       DateTime?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([restaurantId])
   @@index([restaurantId, status])

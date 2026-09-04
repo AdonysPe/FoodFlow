@@ -36,6 +36,39 @@ no requiere Supabase).
 
 ---
 
+## Facturación electrónica · datos sensibles del cliente
+
+Desde el módulo de facturación, cada restaurante guarda en FoodFlow su
+**certificado digital `.pfx`**, la **contraseña** de ese certificado y la
+**credencial de su OSE**. Son los datos más sensibles que maneja el producto:
+quien los tenga puede emitir comprobantes a nombre de ese contribuyente.
+
+Cómo se protegen hoy:
+
+- **Cifrado en reposo.** Los cuatro valores se guardan cifrados con AES-256-GCM
+  (`lib/billing/crypto.ts`), cada uno con su propio IV aleatorio y su tag de
+  autenticación. Nunca se escriben en claro en la base de datos.
+- **Tabla aparte.** Viven en `BillingCredentials`, separada de
+  `ReceiptSettings`. Ninguna consulta del ticket, la comanda o el panel la
+  toca; solo `lib/db/billing.ts` y la ruta de emisión.
+- **Nunca vuelven al navegador.** El formulario recibe una pista enmascarada
+  (`••••••••1234`) generada en el servidor, jamás el valor. Un campo vacío
+  significa «deja el guardado como está».
+- **Aislamiento por tenant.** Todas las lecturas y escrituras van con
+  `restaurantId` del `requireClientRestaurant()` de la sesión, el mismo patrón
+  verificado en F2 (`scripts/security-check.mjs`).
+- **SSRF.** «Probar conexión» resuelve el host de la URL que escribió el dueño
+  y rechaza cualquier dirección privada, loopback o link-local (169.254.x.x,
+  metadata de la nube) antes de abrir el socket, y exige `https`
+  (`lib/billing/http.ts`). No envía la credencial en esa prueba.
+
+Pendiente: `BILLING_ENCRYPTION_KEY` debe estar seteada en Vercel (Production y
+Preview con valores distintos) **antes** de que un restaurante real suba su
+certificado. Si falta, la clave se deriva de `AUTH_SECRET` vía HKDF: funciona,
+pero rotar `AUTH_SECRET` dejaría ilegibles los certificados guardados.
+
+---
+
 ## F1 · Variables de entorno
 
 ### Inventario y clasificación
@@ -49,6 +82,7 @@ no requiere Supabase).
 | `SMTP_HOST/PORT/USER`   | Servidor         | No        | `lib/email/mailer.ts`                    |
 | `SMTP_PASS`             | Servidor         | **Sí**    | `lib/email/mailer.ts`                    |
 | `SMTP_FROM`             | Servidor         | No        | `lib/email/mailer.ts`                    |
+| `BILLING_ENCRYPTION_KEY` | Servidor        | **Sí**    | `lib/billing/crypto.ts`                  |
 | `NEXT_PUBLIC_SITE_URL`  | **Cliente** + servidor | No  | `app/layout.jsx` (metadata)             |
 
 Auditoría de fugas al cliente (F1): se revisaron todos los componentes

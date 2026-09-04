@@ -60,6 +60,11 @@ const nextConfig = {
     // statement of intent so nobody loosens it by accident.
     serverActions: {
       allowedOrigins: [],
+      // A digital certificate travels through a Server Action as base64, and
+      // the default 1 MB cap would reject it. Real .pfx files are a few KB —
+      // the action itself refuses anything over 5 MB — so this is headroom for
+      // the encoding, not an invitation to upload large files.
+      bodySizeLimit: "8mb",
     },
   },
 

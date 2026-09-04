@@ -14,6 +14,8 @@ import type {
   OpenTabLine,
 } from "@/lib/comandaMeta";
 import { planAllows, PLAN_LABELS, firstPlanWith, type PlanValue } from "@/lib/plans";
+import { readReceiptSettings } from "@/lib/db/receiptSettings";
+import { readTillBillingState } from "@/lib/db/billing";
 import ComandaFlow from "@/components/dashboard/comanda/ComandaFlow";
 
 export const metadata = { title: "Comanda" };
@@ -66,7 +68,16 @@ export default async function ComandaPage() {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const [tables, categories, items, openOrders, todayReservations, recentOrders] = await Promise.all([
+  const [
+    tables,
+    categories,
+    items,
+    openOrders,
+    todayReservations,
+    recentOrders,
+    receiptSettings,
+    billing,
+  ] = await Promise.all([
     prisma.restaurantTable.findMany({
       where: { restaurantId: restaurant.id, active: true },
       orderBy: [{ zone: "asc" }, { createdAt: "asc" }],
@@ -101,6 +112,11 @@ export default async function ComandaPage() {
       select: { items: true },
       take: 500,
     }),
+    // What the ticket says and how it is laid out, so the cobro screen can
+    // preview the exact paper before the waiter commits.
+    readReceiptSettings(restaurant.id),
+    // And whether this venue can emit a comprobante at all (Componente 8).
+    readTillBillingState(restaurant.id),
   ]);
 
   const openByTable = new Map<string, (typeof openOrders)[number]>();
@@ -181,6 +197,9 @@ export default async function ComandaPage() {
       items={itemDTOs}
       frequent={frequent}
       openTabs={openTabs}
+      venueName={restaurant.name}
+      receiptSettings={receiptSettings}
+      billing={billing}
     />
   );
 }

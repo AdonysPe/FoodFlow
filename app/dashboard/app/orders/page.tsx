@@ -71,7 +71,7 @@ export default async function OrdersPage({
       <AutoRefresh intervalMs={8000} />
       <NewOrderForm menuItems={menuItems} />
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {RANGES.map((r) => (
           <Link
             key={r.key}
@@ -85,6 +85,12 @@ export default async function OrdersPage({
             {r.label}
           </Link>
         ))}
+        <Link
+          href="/dashboard/app/configuracion/facturacion"
+          className="ml-auto rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-fg/60 transition-colors hover:bg-fg/[0.08] hover:text-fg"
+        >
+          Configurar facturación
+        </Link>
       </div>
 
       <OrdersTable orders={rows} />

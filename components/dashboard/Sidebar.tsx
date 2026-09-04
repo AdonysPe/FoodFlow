@@ -16,6 +16,7 @@ import {
   IconTables,
   IconStaff,
   IconReceipt,
+  IconPrinter,
   IconShield,
   IconLock,
   IconLogout,
@@ -63,6 +64,12 @@ const CLIENT_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers, feature: "customers" },
   { href: "/dashboard/app/equipo", label: "Equipo", icon: IconStaff, feature: "staff" },
   { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics, feature: "analytics" },
+  {
+    href: "/dashboard/app/configuracion/facturacion",
+    label: "Facturación",
+    icon: IconPrinter,
+    feature: "orders",
+  },
 ];
 
 function NavList({
