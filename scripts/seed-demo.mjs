@@ -77,6 +77,37 @@ const MENU = {
   ],
 };
 
+// Fotos de la carta demo. Están en public/demo/carta/ (descargadas de
+// Wikimedia Commons por scripts/fetch-demo-photos.mjs, créditos en
+// public/demo/carta/CREDITOS.md). Dos platos van sin foto a propósito: una
+// carta real casi nunca las tiene todas, y así se ve cómo queda ese caso.
+const PHOTOS = {
+  "Causa limeña": "causa-limena",
+  "Tiradito nikkei": "tiradito",
+  "Papa a la huancaína": "papa-huancaina",
+  "Anticuchos de corazón": "anticuchos",
+  "Ceviche clásico": "ceviche",
+  "Lomo Saltado": "lomo-saltado",
+  "Ají de gallina": "aji-de-gallina",
+  "Arroz con mariscos": "arroz-con-mariscos",
+  "Tacu tacu con lomo": "tacu-tacu",
+  "Chaufa de mariscos": "chaufa",
+  "Pollo a la brasa (1/4)": "pollo-a-la-brasa",
+  "Yuca frita": "yuca-frita",
+  "Ensalada criolla": "ensalada-criolla",
+  "Arroz blanco": "arroz-blanco",
+  "Chicha morada": "chicha-morada",
+  "Limonada frozen": "limonada",
+  "Inca Kola 500 ml": "inca-kola",
+  "Pisco sour": "pisco-sour",
+  "Cerveza artesanal": "cerveza",
+  "Suspiro a la limeña": "suspiro-limeno",
+  Picarones: "picarones",
+  "Torta de chocolate": "torta-chocolate",
+};
+
+const photoFor = (name) => (PHOTOS[name] ? `/demo/carta/${PHOTOS[name]}.webp` : null);
+
 // ------------------------------------------------------------- el salón
 const TABLES = [
   { name: "Mesa 1", capacity: 2, shape: "round", zone: "salon", x: 18, y: 22 },
@@ -177,6 +208,7 @@ async function main() {
         description,
         sortOrder,
         available: true,
+        photoUrl: photoFor(name),
       };
       const item = existing
         ? await prisma.menuItem.update({ where: { id: existing.id }, data })
@@ -195,6 +227,37 @@ async function main() {
     `  carta: ${dishes.length} platos en ${categories.size} categorías` +
       (stale.count > 0 ? ` (${stale.count} plato(s) antiguo(s) retirado(s))` : "")
   );
+
+  // ------------------------------------------------------------ carta pública
+  // Address, header and opening hours for /carta/tanta. Published, because the
+  // whole point of the demo account is that every screen already works.
+  await prisma.restaurant.update({
+    where: { id: R },
+    data: { slug: "tanta", cartaVersion: { increment: 1 } },
+  });
+  const cartaData = {
+    published: true,
+    tagline: "Cocina peruana de siempre, en San Isidro",
+    address: "Av. Pardo y Aliaga 202, San Isidro",
+    whatsapp: "950360685",
+    mapsUrl: null,
+    logoUrl: null,
+    hours: [
+      { day: 0, closed: false, open: "12:00", close: "17:00" },
+      { day: 1, closed: true, open: "12:00", close: "23:00" },
+      { day: 2, closed: false, open: "12:30", close: "23:00" },
+      { day: 3, closed: false, open: "12:30", close: "23:00" },
+      { day: 4, closed: false, open: "12:30", close: "23:00" },
+      { day: 5, closed: false, open: "12:30", close: "00:30" },
+      { day: 6, closed: false, open: "12:00", close: "00:30" },
+    ],
+  };
+  await prisma.cartaSettings.upsert({
+    where: { restaurantId: R },
+    create: { restaurantId: R, ...cartaData },
+    update: cartaData,
+  });
+  console.log("  carta pública: /carta/tanta (publicada)");
 
   // ------------------------------------------------------------------ salón
   const tables = [];

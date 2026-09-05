@@ -13,10 +13,15 @@ export type MenuItemFormValue = {
   price: string;
   prepMin: string;
   description: string;
+  photoUrl: string;
 };
 
+// 1x1 transparent GIF: the placeholder tile before anything is pasted.
+const TRANSPARENT_PIXEL =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
 export function blankItem(categoryId = ""): MenuItemFormValue {
-  return { name: "", categoryId, price: "", prepMin: "", description: "" };
+  return { name: "", categoryId, price: "", prepMin: "", description: "", photoUrl: "" };
 }
 
 export function itemToForm(item: MenuItemDTO): MenuItemFormValue {
@@ -26,6 +31,7 @@ export function itemToForm(item: MenuItemDTO): MenuItemFormValue {
     price: String(item.price),
     prepMin: item.prepMin != null ? String(item.prepMin) : "",
     description: item.description ?? "",
+    photoUrl: item.photoUrl ?? "",
   };
 }
 
@@ -46,6 +52,12 @@ export default function MenuItemForm({
 }) {
   const [value, setValue] = useState<MenuItemFormValue>(initial);
   const [error, setError] = useState("");
+  const [photoBroken, setPhotoBroken] = useState(false);
+  // Same two shapes the server accepts. Anything half-typed previews as the
+  // empty tile rather than flashing an error on every keystroke.
+  const typed = value.photoUrl.trim();
+  const photoPreview =
+    /^https:\/\/\S+$/.test(typed) || /^\/[^\s/][^\s]*$/.test(typed) ? typed : "";
   const [isPending, startTransition] = useTransition();
 
   function set<K extends keyof MenuItemFormValue>(key: K, v: MenuItemFormValue[K]) {
@@ -66,6 +78,7 @@ export default function MenuItemForm({
         price,
         prepMin: value.prepMin ? Number(value.prepMin) : undefined,
         description: value.description,
+        photoUrl: value.photoUrl.trim(),
       });
       if (!result.ok) setError(result.error);
     });
@@ -139,6 +152,44 @@ export default function MenuItemForm({
             className={fieldClass}
           />
         </div>
+        <div className={compact ? "sm:col-span-4" : "sm:col-span-6"}>
+          <label htmlFor="mi-photo" className={labelClass}>
+            Foto <span className="text-fg/25">· opcional, se muestra en tu carta pública</span>
+          </label>
+          <div className="flex items-start gap-3">
+            {/* Plain <img>, not next/image: this previews whatever the owner
+                just pasted, including a URL that turns out not to be an image,
+                and the optimiser would only add a failing round trip. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photoPreview || TRANSPARENT_PIXEL}
+              alt=""
+              onError={() => setPhotoBroken(true)}
+              onLoad={() => setPhotoBroken(false)}
+              className={`h-11 w-11 shrink-0 rounded-lg border object-cover ${
+                photoBroken && photoPreview
+                  ? "border-accent-400/50 bg-accent-400/10"
+                  : "border-fg/[0.1] bg-fg/[0.05]"
+              }`}
+            />
+            <div className="min-w-0 flex-1">
+              <input
+                id="mi-photo"
+                inputMode="url"
+                value={value.photoUrl}
+                onChange={(e) => set("photoUrl", e.target.value)}
+                placeholder="https://…/lomo-saltado.jpg"
+                className={fieldClass}
+              />
+              {photoBroken && photoPreview && (
+                <p className="mt-1 text-[11.5px] text-accent-ink">
+                  No se pudo cargar esa imagen. Revisa el enlace.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className={compact ? "sm:col-span-4" : "sm:col-span-6"}>
           <label htmlFor="mi-desc" className={labelClass}>
             Descripción <span className="text-fg/25">· opcional</span>

@@ -129,6 +129,14 @@ model Restaurant {
   // Defaults to the smallest plan on purpose: a restaurant never gets paid
   // modules by accident, the admin has to grant them.
   plan      Plan     @default(carta)
+  // Public address of this venue's carta: /carta/<slug>, and the host that
+  // <slug>.foodflow.site rewrites to. Nullable because a venue exists before
+  // anyone has published its menu.
+  slug      String?  @unique
+  // Bumped by every write that changes what a diner sees. Lives here rather
+  // than on CartaSettings so bumping is one guaranteed update with no upsert,
+  // and so the live-update watcher reads a single row by primary key.
+  cartaVersion Int   @default(0)
   createdAt DateTime @default(now())
 
   orders       Order[]
@@ -139,6 +147,7 @@ model Restaurant {
   reservations Reservation[]
   staff        StaffMembership[]
   receipt      ReceiptSettings?
+  carta        CartaSettings?
   billing      BillingCredentials?
   cdrs         Cdr[]
 
@@ -697,4 +706,35 @@ model Claim {
   @@index([status])
   @@index([createdAt])
   @@map("claims")
+}
+
+/// How the public carta presents this venue: the header a diner sees above the
+/// menu, and whether the menu is visible at all.
+///
+/// Separate from `Restaurant` for the same reason as ReceiptSettings — the
+/// restaurant row is read on every dashboard request by the session guard,
+/// while these fields are only needed on the public page and its editor.
+model CartaSettings {
+  id           String     @id @default(cuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  // Off until the owner says so: an unfinished menu should not be reachable
+  // by guessing the slug.
+  published Boolean @default(false)
+
+  logoUrl  String?
+  tagline  String?
+  address  String?
+  mapsUrl  String?
+  // Nine digits, Peru mobile. The floating button builds a wa.me link from it.
+  whatsapp String?
+
+  /// Weekly opening hours, as seven entries keyed by weekday (0 = Sunday):
+  /// `[{ "day": 0, "closed": true }, { "day": 1, "open": "12:00", "close": "23:00" }]`.
+  /// Shape validated in lib/carta.ts, not by Postgres.
+  hours Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -5,11 +5,16 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { logAudit } from "@/lib/audit/log";
+import { bumpCarta } from "@/lib/db/carta";
 import type { ActionResult } from "@/lib/actions/auth";
 
-function revalidateMenuPaths() {
+// Every menu write ends here: the dashboard's own caches, plus the counter
+// the public carta's live stream watches. Bumping in one place is why a price
+// edit reaches a diner's phone without each action having to remember to say so.
+async function revalidateMenuPaths(restaurantId: string) {
   revalidatePath("/dashboard/app/menu");
   revalidatePath("/dashboard/app/orders");
+  await bumpCarta(restaurantId);
 }
 
 const menuItemSchema = z.object({
@@ -18,7 +23,19 @@ const menuItemSchema = z.object({
   price: z.coerce.number().positive("El precio debe ser mayor que 0"),
   categoryId: z.string().trim().optional().or(z.literal("")),
   prepMin: z.coerce.number().int().min(0).max(240).optional(),
-  photoUrl: z.string().trim().url("Enlace de foto no válido").max(500).optional().or(z.literal("")),
+  // Two shapes are legitimate: a full https link the owner pasted, and a path
+  // served from this site (the demo carta's own files, and anything uploaded
+  // here later). Requiring an absolute URL made every dish with a local photo
+  // impossible to save — the form rejected a value it had itself loaded.
+  photoUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => v === "" || /^https:\/\/\S+$/.test(v) || /^\/[^\s/][^\s]*$/.test(v), {
+      message: "La foto debe ser un enlace https:// o una ruta de este sitio.",
+    })
+    .optional()
+    .or(z.literal("")),
 });
 
 export type MenuItemInput = z.input<typeof menuItemSchema>;
@@ -69,7 +86,7 @@ export async function createMenuItem(input: MenuItemInput): Promise<ActionResult
     },
   });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: { id: created.id } };
 }
 
@@ -109,7 +126,7 @@ export async function updateMenuItem(id: string, input: MenuItemInput): Promise<
     },
   });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: undefined };
 }
 
@@ -127,7 +144,7 @@ export async function toggleMenuItemAvailable(id: string): Promise<ActionResult<
     select: { available: true },
   });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: { available: updated.available } };
 }
 
@@ -158,7 +175,7 @@ export async function duplicateMenuItem(id: string): Promise<ActionResult<{ id: 
     },
   });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: { id: copy.id } };
 }
 
@@ -180,7 +197,7 @@ export async function deleteMenuItem(id: string): Promise<ActionResult> {
     before: { name: existing.name, price: existing.price, categoryId: existing.categoryId },
   });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: undefined };
 }
 
@@ -209,6 +226,6 @@ export async function reorderMenuItems(
     parsed.data.map((id, i) => prisma.menuItem.update({ where: { id }, data: { sortOrder: i } }))
   );
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: undefined };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { IconGrip, IconMenuBook } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import {
@@ -117,12 +118,27 @@ export default function MenuItemCard({
         </span>
       )}
 
-      <div
-        aria-hidden
-        className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-fg/[0.06] bg-fg/[0.03] text-fg/20"
-      >
-        <IconMenuBook className="h-6 w-6" />
-      </div>
+      {/* The same tile either way, so a carta with some photos and some gaps
+          still lines up. The book icon is what a diner would see missing. */}
+      {item.photoUrl ? (
+        <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-fg/[0.06] bg-fg/[0.03]">
+          <Image
+            src={item.photoUrl}
+            alt=""
+            fill
+            sizes="56px"
+            className={`object-cover ${dimmed ? "grayscale opacity-70" : ""}`}
+          />
+        </span>
+      ) : (
+        <div
+          aria-hidden
+          title="Sin foto: no aparecerá con imagen en tu carta pública"
+          className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-dashed border-fg/[0.12] bg-fg/[0.03] text-fg/20"
+        >
+          <IconMenuBook className="h-6 w-6" />
+        </div>
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">

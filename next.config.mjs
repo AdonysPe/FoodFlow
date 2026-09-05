@@ -53,6 +53,23 @@ const nextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
 
+  images: {
+    // A venue pastes its own photo links into the Menú module, so the host is
+    // whatever their photographer or CDN uses — there is no list to allow in
+    // advance. Next fetches each one once and serves the optimised copy from
+    // our own origin, so a diner never touches the third party and the third
+    // party never sees the diner. Only https, so a pasted http:// link cannot
+    // downgrade the page.
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
+    // The carta uses one fixed thumbnail size and one full-bleed size; these
+    // keep Next from generating widths nothing on the page ever asks for.
+    imageSizes: [86, 172, 256],
+    deviceSizes: [360, 640, 828, 1080],
+    formats: ["image/webp"],
+    // A dish photo changes when the dish does, which is rare.
+    minimumCacheTTL: 60 * 60 * 24 * 7,
+  },
+
   experimental: {
     // Server Actions already reject any request whose Origin doesn't match the
     // Host (built-in CSRF protection). This list would ADD trusted origins that

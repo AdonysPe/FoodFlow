@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { seedDefaultCategories } from "@/lib/menu/seedCategories";
@@ -16,7 +17,7 @@ export default async function MenuPage() {
   // set the first time the owner opens this page.
   await seedDefaultCategories(prisma, restaurant.id);
 
-  const [categories, items] = await Promise.all([
+  const [categories, items, carta] = await Promise.all([
     prisma.menuCategory.findMany({
       where: { restaurantId: restaurant.id },
       orderBy: { sortOrder: "asc" },
@@ -26,6 +27,10 @@ export default async function MenuPage() {
       where: { restaurantId: restaurant.id },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       include: { category: { select: { name: true } } },
+    }),
+    prisma.cartaSettings.findUnique({
+      where: { restaurantId: restaurant.id },
+      select: { published: true },
     }),
   ]);
 
@@ -50,5 +55,47 @@ export default async function MenuPage() {
     sortOrder: i.sortOrder,
   }));
 
-  return <MenuWorkspace categories={categoryDTOs} items={itemDTOs} />;
+  const published = Boolean(restaurant.slug && carta?.published);
+
+  return (
+    <div className="flex flex-col gap-5">
+      {/* The bridge between the two halves of the module: what the venue keeps
+          here, and what the diner sees. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-fg/[0.08] bg-fg/[0.02] px-5 py-3.5">
+        <p className="flex items-center gap-2 text-[13px] text-fg/55">
+          <span
+            className={`h-2 w-2 shrink-0 rounded-full ${published ? "bg-mint" : "bg-fg/25"}`}
+            aria-hidden
+          />
+          {published ? (
+            <>
+              Tu carta está en línea en{" "}
+              <span className="font-mono text-fg/75">/carta/{restaurant.slug}</span>
+            </>
+          ) : (
+            "Tu carta pública todavía no está publicada."
+          )}
+        </p>
+        <div className="flex items-center gap-2">
+          {published && (
+            <Link
+              href={`/carta/${restaurant.slug}`}
+              target="_blank"
+              className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
+            >
+              Ver carta
+            </Link>
+          )}
+          <Link
+            href="/dashboard/app/menu/carta"
+            className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
+          >
+            {published ? "Configurar carta" : "Publicar mi carta"}
+          </Link>
+        </div>
+      </div>
+
+      <MenuWorkspace categories={categoryDTOs} items={itemDTOs} />
+    </div>
+  );
 }

@@ -4,13 +4,17 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { bumpCarta } from "@/lib/db/carta";
 import type { ActionResult } from "@/lib/actions/auth";
 
 const MENU_PATH = "/dashboard/app/menu";
 
-function revalidateMenuPaths() {
+// Same choke point as lib/actions/menu.ts — hiding a category changes what a
+// diner sees just as much as changing a price does.
+async function revalidateMenuPaths(restaurantId: string) {
   revalidatePath(MENU_PATH);
   revalidatePath("/dashboard/app/orders");
+  await bumpCarta(restaurantId);
 }
 
 const nameSchema = z.object({
@@ -42,7 +46,7 @@ export async function createCategory(input: { name: string }): Promise<ActionRes
     },
   });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: { id: created.id } };
 }
 
@@ -58,7 +62,7 @@ export async function updateCategory(id: string, input: { name: string }): Promi
 
   await prisma.menuCategory.update({ where: { id }, data: { name: parsed.data.name } });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: undefined };
 }
 
@@ -71,7 +75,7 @@ export async function toggleCategoryActive(id: string): Promise<ActionResult> {
 
   await prisma.menuCategory.update({ where: { id }, data: { active: !existing.active } });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: undefined };
 }
 
@@ -103,7 +107,7 @@ export async function reorderCategories(orderedIds: string[]): Promise<ActionRes
     )
   );
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: undefined };
 }
 
@@ -120,6 +124,6 @@ export async function deleteCategory(id: string): Promise<ActionResult<{ orphane
   const orphaned = await prisma.menuItem.count({ where: { categoryId: id } });
   await prisma.menuCategory.delete({ where: { id } });
 
-  revalidateMenuPaths();
+  await revalidateMenuPaths(restaurant.id);
   return { ok: true, data: { orphaned } };
 }
