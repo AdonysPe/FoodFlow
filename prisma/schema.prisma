@@ -140,6 +140,7 @@ model Restaurant {
   staff        StaffMembership[]
   receipt      ReceiptSettings?
   billing      BillingCredentials?
+  cdrs         Cdr[]
 
   @@index([ownerId])
 }
@@ -245,6 +246,100 @@ model BillingCredentials {
   updatedAt DateTime @updatedAt
 }
 
+/// The answer SUNAT gave about one comprobante, kept as its own archive.
+///
+/// WHY A SEPARATE TABLE. `Order` already carries `sunatStatus` and the number
+/// the till printed, and that is what the receipt reads. But the CDR is a tax
+/// record, not an order field: SUNAT expects the issuer to keep the XML it
+/// sent and the response it got for five years, the row has to survive an
+/// order being edited or a menu item being renamed, and "list what I issued in
+/// March" must never turn into a scan of every order ever charged.
+///
+/// One row is created the moment a correlative is drawn — `PENDIENTE`, before
+/// the OSE has answered — so a number can never be burned without a trace of
+/// what it was burned on. It then moves to ACEPTADO or RECHAZADO exactly once.
+enum CdrEstado {
+  /// Number drawn and XML built; the OSE has not answered yet, or the call
+  /// failed for a reason worth retrying (timeout, 5xx, no network).
+  PENDIENTE
+  /// SUNAT took it. The ONLY state that lets a ticket call itself a boleta.
+  ACEPTADO
+  /// SUNAT refused it. Terminal: the correlative is spent and the fix is a
+  /// new document, never a retry of this one.
+  RECHAZADO
+}
+
+model Cdr {
+  id           String     @id @default(cuid())
+  restaurantId String     @map("restaurant_id")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  /// The charge this comprobante was issued for. Nullable only so a document
+  /// emitted outside the till (a manual re-issue) still has somewhere to live.
+  orderId      String?    @map("order_id")
+  order        Order?     @relation(fields: [orderId], references: [id])
+
+  /// Catálogo 01 de SUNAT: "01" factura, "03" boleta, "07" nota de crédito.
+  tipoDocumento   String @map("tipo_documento") @db.VarChar(2)
+  serie           String @map("serie") @db.VarChar(10)
+  /// Zero-padded to 8, the way it is printed: "00000123".
+  correlativo     String @map("correlativo") @db.VarChar(10)
+  /// "B001-00000123". Denormalized because it is what a human searches for.
+  numeroDocumento String @map("numero_documento") @db.VarChar(20)
+
+  /// Catálogo 06: "1" DNI, "6" RUC, "0" when the diner gave nothing.
+  clienteTipoDocumento   String? @map("cliente_tipo_documento") @db.VarChar(2)
+  clienteNumeroDocumento String? @map("cliente_numero_documento") @db.VarChar(20)
+  clienteDenominacion    String? @map("cliente_denominacion") @db.VarChar(255)
+  /// Where the PDF/XML gets sent. Copied off the order so a later edit to the
+  /// customer record cannot change who a past comprobante was mailed to.
+  clienteEmail           String? @map("cliente_email") @db.VarChar(255)
+
+  /// Digest of the signed XML, from the OSE. Goes inside the QR square.
+  hash       String? @db.VarChar(255)
+  /// The signed XML itself when the provider returns it inline; otherwise the
+  /// link below is the copy of record and this stays null.
+  xmlContent String? @map("xml_content") @db.Text
+  xmlUrl     String? @map("xml_url") @db.VarChar(500)
+  pdfUrl     String? @map("pdf_url") @db.VarChar(500)
+  /// Where `backupCDRs` parked the archive. Null until the job has run.
+  backupUrl  String? @map("backup_url") @db.VarChar(500)
+
+  estado       CdrEstado @default(PENDIENTE)
+  /// Verbatim from the OSE, in Spanish. This sentence is what the waiter reads
+  /// on the till and what the owner reads in the CDR list, so it is never
+  /// rewritten into a code.
+  mensajeSunat String?   @map("mensaje_sunat") @db.Text
+  /// SUNAT's own response code (e.g. "0", "2335"). 4-digit codes in the 2000s
+  /// are rejections, the 4000s are observations.
+  codigoSunat  String?   @map("codigo_sunat") @db.VarChar(10)
+
+  fechaEmision DateTime @map("fecha_emision")
+  /// Money as sent. Decimal, not Float: a comprobante that says 45.29 must
+  /// still say 45.29 after a round trip through the database.
+  total        Decimal  @db.Decimal(10, 2)
+  gravada      Decimal? @db.Decimal(10, 2)
+  igv          Decimal? @db.Decimal(10, 2)
+
+  /// Retry bookkeeping for `retryFailedEmissions`. `attempts` is why a row
+  /// stops being retried instead of being hammered forever.
+  attempts      Int       @default(0)
+  lastAttemptAt DateTime? @map("last_attempt_at")
+  /// When the PDF/XML actually left for the customer.
+  emailedAt     DateTime? @map("emailed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// A correlative belongs to exactly one document, forever. This constraint is
+  /// the last line of defence against the one error SUNAT does not forgive:
+  /// two comprobantes sent under the same number.
+  @@unique([restaurantId, serie, correlativo])
+  @@index([restaurantId, createdAt])
+  @@index([restaurantId, estado])
+  @@index([orderId])
+  @@map("cdrs")
+}
+
 // `items` is a JSON snapshot of the order lines (name/price/quantity) taken
 // at order time, so later menu price edits never rewrite historical orders.
 model Order {
@@ -308,6 +403,7 @@ model Order {
   voidedAt       DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  cdrs           Cdr[]
 
   @@index([restaurantId])
   @@index([restaurantId, status])

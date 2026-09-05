@@ -40,6 +40,53 @@ function isPrivateAddress(address: string, family: number): boolean {
   return false;
 }
 
+export type UrlCheck =
+  | { ok: true; url: URL }
+  | { ok: false; message: string };
+
+/**
+ * The guard every outbound call to an owner-typed URL goes through.
+ *
+ * Https only (a token over http is a token leaked), a name that resolves, and
+ * nothing resolving inside the network — "https://169.254.169.254/…" is a
+ * perfectly valid URL and would have the server fetch its own cloud metadata.
+ *
+ * Note what this cannot promise: DNS is resolved here and again by `fetch`, so
+ * a name that answers differently the second time (DNS rebinding) slips past.
+ * Closing that needs a pinned-IP agent; for a URL the venue's own owner typed
+ * and that only ever receives their own credentials, this is the proportionate
+ * check, and it is the one that stops the metadata endpoint.
+ */
+export async function assertPublicHttpsUrl(rawUrl: string): Promise<UrlCheck> {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return { ok: false, message: "Esa URL no es válida." };
+  }
+  if (url.protocol !== "https:") {
+    return { ok: false, message: "La URL de tu OSE debe usar https." };
+  }
+
+  try {
+    const resolved = await lookup(url.hostname, { all: true });
+    if (resolved.length === 0) {
+      return { ok: false, message: "No pudimos resolver ese dominio." };
+    }
+    if (resolved.some((r) => isPrivateAddress(r.address, r.family))) {
+      return {
+        ok: false,
+        message:
+          "Esa URL apunta a una dirección interna. Usa la URL pública que te dio tu OSE.",
+      };
+    }
+  } catch {
+    return { ok: false, message: "Ese dominio no existe o no responde a DNS. Revisa la URL." };
+  }
+
+  return { ok: true, url };
+}
+
 /**
  * Reaches the OSE endpoint just far enough to say whether it is there.
  *
@@ -49,35 +96,9 @@ function isPrivateAddress(address: string, family: number): boolean {
  * owners get wrong.
  */
 export async function probeEndpoint(rawUrl: string): Promise<ProbeResult> {
-  let url: URL;
-  try {
-    url = new URL(rawUrl);
-  } catch {
-    return { ok: false, status: null, message: "Esa URL no es válida." };
-  }
-  if (url.protocol !== "https:") {
-    return { ok: false, status: null, message: "La URL de tu OSE debe usar https." };
-  }
-
-  try {
-    const resolved = await lookup(url.hostname, { all: true });
-    if (resolved.length === 0) {
-      return { ok: false, status: null, message: "No pudimos resolver ese dominio." };
-    }
-    if (resolved.some((r) => isPrivateAddress(r.address, r.family))) {
-      return {
-        ok: false,
-        status: null,
-        message: "Esa URL apunta a una dirección interna. Usa la URL pública que te dio tu OSE.",
-      };
-    }
-  } catch {
-    return {
-      ok: false,
-      status: null,
-      message: "Ese dominio no existe o no responde a DNS. Revisa la URL.",
-    };
-  }
+  const checked = await assertPublicHttpsUrl(rawUrl);
+  if (!checked.ok) return { ok: false, status: null, message: checked.message };
+  const url = checked.url;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);

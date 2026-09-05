@@ -6,9 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { requireComandaRestaurant } from "@/lib/auth/restaurant";
 import { PAYMENT_METHODS, needsCashSplit } from "@/lib/paymentMeta";
 import { nextReceiptNumber } from "@/lib/db/receiptSettings";
-import { nextElectronicNumber, readOseCredentials } from "@/lib/db/billing";
-import { emitComprobante, type EmissionFailureCode } from "@/lib/billing/emit";
-import { isOseProvider } from "@/lib/billing/providers";
+import { emitForOrder, type EmissionOutcome } from "@/lib/billing/emission";
 import { checkDni, checkEmail, checkRuc } from "@/lib/billing/validation";
 import { SUNAT_ACCEPTED } from "@/lib/receipt";
 import type { ActionResult } from "@/lib/actions/auth";
@@ -185,10 +183,7 @@ const paySchema = z.object({
 
 export type PayOrderInput = z.input<typeof paySchema>;
 
-export type EmissionOutcome =
-  | { status: "none" }
-  | { status: "accepted"; documentNo: string; hash: string | null; message: string }
-  | { status: "failed"; code: EmissionFailureCode; message: string };
+export type { EmissionOutcome };
 
 export type PayOrderResult = {
   change: number;
@@ -308,7 +303,7 @@ export async function payOrder(
   const emission =
     documentType === "nota_venta"
       ? ({ status: "none" } as EmissionOutcome)
-      : await attemptEmission(restaurant.id, order.id, documentType);
+      : await emitForOrder(restaurant.id, order.id, documentType);
 
   revalidateComandaPaths();
   return { ok: true, data: { change, orderId: order.id, emission } };
@@ -340,163 +335,10 @@ export async function retryEmission(
     return { ok: false, error: "Ese comprobante ya fue aceptado por SUNAT." };
   }
 
-  const emission = await attemptEmission(restaurant.id, order.id, order.documentType);
+  const emission = await emitForOrder(restaurant.id, order.id, order.documentType);
   revalidateComandaPaths();
   return { ok: true, data: emission };
 }
-
-/**
- * Everything between a charged order and the OSE.
- *
- * Never throws: whatever goes wrong ends up written on the order as a status
- * plus a sentence in Spanish, because that sentence is what the waiter reads
- * on the till with the diner still at the table.
- */
-async function attemptEmission(
-  restaurantId: string,
-  orderId: string,
-  documentType: "boleta" | "factura"
-): Promise<EmissionOutcome> {
-  const [order, settings] = await Promise.all([
-    prisma.order.findUnique({
-      where: { id: orderId },
-      select: {
-        items: true,
-        total: true,
-        docSeries: true,
-        docNumber: true,
-        billingDocType: true,
-        billingDocId: true,
-        billingName: true,
-        billingAddress: true,
-        billingEmail: true,
-      },
-    }),
-    prisma.receiptSettings.findUnique({
-      where: { restaurantId },
-      select: {
-        ruc: true,
-        legalName: true,
-        tradeName: true,
-        address: true,
-        showIgv: true,
-        igvRate: true,
-        oseProvider: true,
-        oseEndpoint: true,
-        boletaSeries: true,
-        facturaSeries: true,
-      },
-    }),
-  ]);
-
-  if (!order) return { status: "failed", code: "not_configured", message: "Pedido no encontrado." };
-
-  const provider = isOseProvider(settings?.oseProvider) ? settings.oseProvider : null;
-  const missing: string[] = [];
-  if (!settings?.ruc) missing.push("tu RUC");
-  if (!settings?.legalName) missing.push("tu razón social");
-  if (!provider) missing.push("tu proveedor OSE");
-
-  const credentials = provider ? await readOseCredentials(restaurantId) : null;
-  if (provider && !credentials) missing.push("la credencial del OSE");
-  if (provider && credentials && !credentials.certificate) missing.push("tu certificado digital");
-
-  if (missing.length > 0) {
-    const message = `Falta ${missing.join(", ")} en Configuración › Facturación. El cobro quedó registrado; entrega la nota de venta.`;
-    await recordEmission(orderId, { status: "no_emitido", message });
-    return { status: "failed", code: "not_configured", message };
-  }
-
-  // Reuse the correlative of a previous attempt; only a first attempt draws.
-  const drawn =
-    order.docNumber != null && order.docSeries
-      ? { series: order.docSeries, number: order.docNumber }
-      : await nextElectronicNumber(restaurantId, documentType);
-
-  if (order.docNumber == null) {
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { docSeries: drawn.series, docNumber: drawn.number },
-    });
-  }
-
-  const lines = (Array.isArray(order.items) ? order.items : []) as {
-    name: string;
-    price: number;
-    quantity: number;
-  }[];
-
-  const result = await emitComprobante(provider, {
-    documentType,
-    series: drawn.series,
-    number: drawn.number,
-    issuedAt: new Date(),
-    issuer: {
-      ruc: settings!.ruc!,
-      legalName: settings!.legalName!,
-      tradeName: settings!.tradeName,
-      address: settings!.address,
-    },
-    customer: order.billingDocId
-      ? {
-          docType: order.billingDocType === "ruc" ? "ruc" : "dni",
-          docId: order.billingDocId,
-          name: order.billingName,
-          address: order.billingAddress,
-          email: order.billingEmail,
-        }
-      : null,
-    lines: lines.map((l) => ({
-      description: l.name,
-      quantity: l.quantity,
-      unitPrice: l.price,
-    })),
-    total: order.total,
-    igvRate: settings!.igvRate,
-    taxed: settings!.showIgv,
-    credentials: {
-      apiKey: credentials!.apiKey,
-      apiSecret: credentials!.apiSecret,
-      endpoint: settings!.oseEndpoint,
-      certificate: credentials!.certificate,
-      certificatePassword: credentials!.certificatePassword,
-    },
-  });
-
-  if (result.ok) {
-    await recordEmission(orderId, {
-      status: SUNAT_ACCEPTED,
-      message: result.message,
-      hash: result.hash,
-      link: result.link,
-    });
-    return {
-      status: "accepted",
-      documentNo: result.documentNo,
-      hash: result.hash,
-      message: result.message,
-    };
-  }
-
-  await recordEmission(orderId, { status: result.code, message: result.message });
-  return { status: "failed", code: result.code, message: result.message };
-}
-
-async function recordEmission(
-  orderId: string,
-  patch: { status: string; message: string; hash?: string | null; link?: string | null }
-) {
-  await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      sunatStatus: patch.status,
-      sunatMessage: patch.message.slice(0, 400),
-      sunatHash: patch.hash ?? null,
-      sunatLink: patch.link ?? null,
-    },
-  });
-}
-
 
 // Anular: close an open order without charging (mistake, comp, walkout). Frees
 // the table. Kept out of revenue in the dashboard sums.

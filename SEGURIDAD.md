@@ -67,6 +67,47 @@ Preview con valores distintos) **antes** de que un restaurante real suba su
 certificado. Si falta, la clave se deriva de `AUTH_SECRET` vía HKDF: funciona,
 pero rotar `AUTH_SECRET` dejaría ilegibles los certificados guardados.
 
+### La API de facturación (`/api/billing/*`, `/api/restaurants/:id/billing-config`)
+
+El middleware de `middleware.ts` solo cubre `/dashboard/:path*`, así que estas
+rutas se defienden solas con `withApi()` (`lib/api/guard.ts`). Cuatro capas, en
+este orden: sesión → inquilino → cuota → configuración.
+
+- **El `:id` de la URL nunca elige el inquilino.** Sale de la sesión; el del
+  path solo se compara y, si difiere, responde **404 y no 403** — un 403
+  confirmaría que ese restaurante existe. Lo mismo con un `orderId` o un `cdrId`
+  ajeno: se busca dentro del restaurante de la sesión, así que no existe.
+- **El rol se relee de la base**, no se toma del JWT: un rol revocado hace diez
+  minutos seguiría viajando dentro de un token todavía válido.
+- **Cuotas por restaurante**, no por IP: emitir 100/h, configurar 60/h, probar
+  conexión 20/h, reenviar correo 30/h. Un local ruidoso no consume la cuota de
+  otro. Backed por la tabla `RateLimit`, igual que F3.
+- **`ownerOnly`** en configuración, prueba de conexión y reenvío de correo: un
+  mozo cobra mesas, no cambia el RUC del negocio ni manda correos.
+- **Nada sensible sale ni se registra.** Las respuestas llevan pistas
+  enmascaradas, nunca secretos; los logs llevan `requestId` + `restaurantId` e
+  identificadores, nunca credenciales, XML completo ni el documento del cliente.
+  Un error inesperado devuelve una frase y el `requestId`; el stack se queda en
+  el servidor.
+- **El reenvío de correo** es el endpoint con más superficie de abuso (manda a
+  una dirección arbitraria). Está limitado a 30/h, solo al dueño, solo sobre
+  comprobantes **aceptados** de su propio local.
+
+### Trabajos de fondo (`/api/cron/billing/*`)
+
+Un cron de Vercel es un GET público. Estas rutas exigen `CRON_SECRET` por
+`Authorization: Bearer`, comparado en tiempo constante, y **fallan cerrado**: sin
+la variable configurada responden 503 y no ejecutan nada. Un despliegue con los
+jobs abiertos al mundo es peor que uno con los jobs apagados.
+
+### Respaldo en S3 (opcional)
+
+`S3_BUCKET_CDRS` debe apuntar a un bucket **privado**: dentro van comprobantes
+con el DNI o el RUC de personas reales. Los objetos se suben con
+`x-amz-server-side-encryption: AES256` y la referencia guardada es una URL
+`s3://`, nunca una pública. La firma SigV4 está escrita a mano
+(`lib/storage/s3.ts`) para no cargar el SDK de AWS por una operación al día.
+
 ---
 
 ## F1 · Variables de entorno
@@ -239,6 +280,12 @@ Siembra 2 restaurantes + 1 mozo y prueba, contra la BD real, que el patrón
 `{ where: { id, restaurantId } }` bloquea lecturas cross-tenant, que el guard de
 `reorder*` rechaza ids ajenos, y que un mozo no resuelve como `client`. Limpia
 sus datos al terminar.
+
+Desde el backend de facturación cubre además el archivo de comprobantes: que un
+local no puede leer ni listar el CDR de otro, que la base rechaza un correlativo
+repetido dentro de la misma serie, que el mismo número **sí** se acepta en otro
+contribuyente (las series son por RUC, no globales), y que `ReceiptSettings` no
+expone ninguna columna cifrada. 16/16 en verde el 2026-09-04.
 
 Checks end-to-end hechos a mano (dev server) el 2026-08-30:
 

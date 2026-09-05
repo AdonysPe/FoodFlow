@@ -131,8 +131,78 @@ async function main() {
     }
     check("audit rows insert cleanly", auditThrew === false);
     await prisma.auditLog.deleteMany({ where: { action: `${TAG}.probe` } });
+
+    // ---- 7. facturación: el archivo de CDRs (F6) ---------------------
+    // Un CDR es un documento tributario ajeno. Las tres cosas que se prueban:
+    // que el filtro por restaurante lo aísla, que el correlativo es único por
+    // serie, y que la tabla no es alcanzable desde la del otro local.
+    const cdrB = await prisma.cdr.create({
+      data: {
+        restaurantId: rB.id,
+        tipoDocumento: "03",
+        serie: "B001",
+        correlativo: "00000001",
+        numeroDocumento: "B001-00000001",
+        estado: "PENDIENTE",
+        fechaEmision: new Date(),
+        total: "10.00",
+      },
+    });
+
+    const cdrScoped = await prisma.cdr.findFirst({ where: { id: cdrB.id, restaurantId: rA.id } });
+    check("A cannot load B's CDR via { id, restaurantId }", cdrScoped === null);
+
+    const cdrList = await prisma.cdr.findMany({ where: { restaurantId: rA.id } });
+    check("A's CDR list never contains B's comprobante", cdrList.every((c) => c.id !== cdrB.id));
+
+    // El mismo número en el MISMO local tiene que rebotar: dos comprobantes
+    // bajo un correlativo es el error que SUNAT no perdona.
+    let duplicateRejected = false;
+    try {
+      await prisma.cdr.create({
+        data: {
+          restaurantId: rB.id,
+          tipoDocumento: "03",
+          serie: "B001",
+          correlativo: "00000001",
+          numeroDocumento: "B001-00000001",
+          estado: "PENDIENTE",
+          fechaEmision: new Date(),
+          total: "99.00",
+        },
+      });
+    } catch {
+      duplicateRejected = true;
+    }
+    check("un correlativo repetido en la misma serie es rechazado por la base", duplicateRejected);
+
+    // …y el MISMO número en otro local sí se acepta: las series son por
+    // contribuyente, no globales.
+    const cdrA = await prisma.cdr.create({
+      data: {
+        restaurantId: rA.id,
+        tipoDocumento: "03",
+        serie: "B001",
+        correlativo: "00000001",
+        numeroDocumento: "B001-00000001",
+        estado: "PENDIENTE",
+        fechaEmision: new Date(),
+        total: "10.00",
+      },
+    });
+    check("el mismo correlativo en otro restaurante sí se acepta", Boolean(cdrA.id));
+
+    // Las credenciales del OSE viven en su propia tabla, sin relación desde
+    // ReceiptSettings: ningún include de la configuración puede arrastrarlas.
+    const receiptFields = Object.keys(prisma.receiptSettings.fields);
+    check(
+      "ReceiptSettings no expone las credenciales cifradas",
+      !receiptFields.some((f) => /Enc$/.test(f)),
+      `fields: ${receiptFields.length}`,
+    );
   } finally {
     // ---- teardown ------------------------------------------------------
+    await prisma.cdr.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
     await prisma.order.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
     await prisma.menuItem.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
     await prisma.staffMembership.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });

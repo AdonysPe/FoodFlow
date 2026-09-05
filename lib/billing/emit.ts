@@ -1,10 +1,10 @@
 // The seam where a comprobante leaves FoodFlow for the venue's own OSE.
 //
-// STATE OF PLAY. Fases 1 y 2 built the configuration and the till screen; no
-// provider adapter is wired yet, so `emitComprobante` always comes back with a
-// failure and the cobro falls through to the internal nota de venta. That is
-// deliberate: the alternative — stamping "aceptado" on a document SUNAT never
-// received — is the one outcome that can actually fine a restaurant.
+// STATE OF PLAY. Nubefact is wired (see ./adapters/nubefact.ts). Every other
+// provider in the catalogue still resolves to no adapter, and a venue on one of
+// those gets a failure that falls through to the internal nota de venta. That
+// is deliberate: the alternative — stamping "aceptado" on a document SUNAT
+// never received — is the one outcome that can actually fine a restaurant.
 //
 // Adding a provider is implementing `OseAdapter` and registering it in
 // ADAPTERS below. Everything around it (credentials, correlatives, the states
@@ -12,6 +12,7 @@
 
 import { formatElectronicNo } from "@/lib/billing/validation";
 import type { OseProvider } from "@/lib/billing/providers";
+import { nubefactAdapter } from "@/lib/billing/adapters/nubefact";
 
 export type EmissionLine = {
   description: string;
@@ -55,8 +56,19 @@ export type EmissionRequest = {
 export type EmissionSuccess = {
   ok: true;
   documentNo: string;
+  /** Digest of the signed XML. Goes inside the QR square on the ticket. */
   hash: string | null;
+  /** Where the customer can download the PDF, from the provider. */
   link: string | null;
+  xmlLink: string | null;
+  /**
+   * The QR line as the OSE built it. Preferred over the one FoodFlow composes
+   * in lib/billing/qr.ts when the provider hands one over: theirs is what they
+   * actually signed.
+   */
+  qrPayload: string | null;
+  /** SUNAT's own response code, kept for the CDR archive. */
+  sunatCode: string | null;
   message: string;
 };
 
@@ -82,15 +94,21 @@ export interface OseAdapter {
   test(credentials: EmissionRequest["credentials"]): Promise<EmissionResult>;
 }
 
-// No adapter ships yet. See the note at the top of this file.
-const ADAPTERS: Partial<Record<OseProvider, OseAdapter>> = {};
+const ADAPTERS: Partial<Record<OseProvider, OseAdapter>> = {
+  nubefact: nubefactAdapter,
+};
 
 export function adapterFor(provider: OseProvider | null): OseAdapter | null {
   return provider ? ADAPTERS[provider] ?? null : null;
 }
 
 export const NOT_IMPLEMENTED_MESSAGE =
-  "La conexión con el OSE todavía no está activa en FoodFlow. El cobro quedó registrado; entrega la nota de venta y emite el comprobante por el medio que usas hoy.";
+  "FoodFlow todavía no habla con ese proveedor OSE. El cobro quedó registrado; entrega la nota de venta y emite el comprobante por el medio que usas hoy.";
+
+/** Which providers can actually emit today. Read by the settings screen. */
+export function implementedProviders(): OseProvider[] {
+  return Object.keys(ADAPTERS) as OseProvider[];
+}
 
 export async function emitComprobante(
   provider: OseProvider | null,

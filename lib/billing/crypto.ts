@@ -109,6 +109,13 @@ export function maskSecret(plain: string | null): string | null {
   return `${"•".repeat(8)}${plain.slice(-4)}`;
 }
 
+/**
+ * Plain aliases. The encryption service is this file; these two names exist so
+ * the emission pipeline and the API layer can read `encrypt`/`decrypt` without
+ * anyone being tempted to write a second implementation next to it.
+ */
+export { encryptSecret as encrypt, decryptSecret as decrypt };
+
 /** Constant-time compare, for the rare case we check a value against a stored one. */
 export function secretsMatch(a: string, b: string): boolean {
   const ba = Buffer.from(a, "utf8");

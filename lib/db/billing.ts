@@ -7,6 +7,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { maskSecret, tryDecryptSecret } from "@/lib/billing/crypto";
 import { isOseProvider } from "@/lib/billing/providers";
+import { drawCorrelative, type SeriesKind } from "@/lib/billing/correlatives";
 import type {
   BillingSettingsDTO,
   CertificateStatusDTO,
@@ -143,37 +144,21 @@ export async function readOseCredentials(restaurantId: string) {
   };
 }
 
-export type ElectronicSeriesKind = "boleta" | "factura" | "credit";
-
-const COUNTER_FIELD = {
-  boleta: { series: "boletaSeries", counter: "boletaCounter" },
-  factura: { series: "facturaSeries", counter: "facturaCounter" },
-  credit: { series: "creditSeries", counter: "creditCounter" },
-} as const;
+export type { SeriesKind as ElectronicSeriesKind } from "@/lib/billing/correlatives";
 
 /**
  * Draws the next correlative for an electronic document type.
  *
- * Same shape as `nextReceiptNumber`: Postgres does the increment so two tills
- * charging at the same second cannot both take the number. SUNAT rejects a
- * repeated correlative outright, so this is not a nicety.
+ * Thin alias kept for the callers that already import it from here; the rule
+ * (one draw per document, Postgres does the increment, a retry reuses its own
+ * number) lives in lib/billing/correlatives.ts.
  */
 export async function nextElectronicNumber(
   restaurantId: string,
-  kind: ElectronicSeriesKind
+  kind: SeriesKind
 ): Promise<{ series: string; number: number }> {
-  const field = COUNTER_FIELD[kind];
-  const bumped = await prisma.receiptSettings.upsert({
-    where: { restaurantId },
-    create: { restaurantId, [field.counter]: 1 },
-    update: { [field.counter]: { increment: 1 } },
-    select: { [field.series]: true, [field.counter]: true },
-  });
-  const row = bumped as unknown as Record<string, string | number>;
-  return {
-    series: String(row[field.series]),
-    number: Number(row[field.counter]),
-  };
+  const drawn = await drawCorrelative(restaurantId, kind);
+  return { series: drawn.series, number: drawn.number };
 }
 
 /**

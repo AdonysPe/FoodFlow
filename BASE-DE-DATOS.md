@@ -143,6 +143,41 @@ migraciones (`npx prisma migrate deploy`).
 
 ---
 
+## 3.bis Las tablas de facturación electrónica
+
+Tres tablas se reparten lo que hace falta para emitir una boleta o una factura,
+y la repartición es deliberada:
+
+| Tabla | Qué guarda | Quién la lee |
+| --- | --- | --- |
+| `ReceiptSettings` | RUC, razón social, series, correlativos, proveedor OSE, aspecto del ticket | El ticket, la caja y la pantalla de Configuración |
+| `BillingCredentials` | Certificado .pfx, su contraseña y el token del OSE — **todo cifrado** (AES-256-GCM) | Solo la ruta de emisión |
+| `cdrs` | El comprobante enviado y la respuesta de SUNAT | El listado de comprobantes y los jobs |
+
+`BillingCredentials` está aparte de `ReceiptSettings` para que ningún `include`
+de la configuración pueda arrastrar un secreto por accidente: la comanda y la
+ruta del ticket leen la primera y no tienen forma de tocar la segunda.
+
+`cdrs` está aparte de `Order` porque un CDR es un **registro tributario** que
+SUNAT obliga a conservar cinco años: tiene que sobrevivir a que se edite el
+pedido o se renombre un plato, y "lista lo que emití en marzo" no puede
+convertirse en un recorrido por todos los pedidos jamás cobrados.
+
+La restricción que más importa de todo el esquema:
+
+```sql
+UNIQUE (restaurant_id, serie, correlativo)
+```
+
+Dos comprobantes bajo el mismo número es el único error que SUNAT no perdona.
+Esta es la última línea de defensa contra él, por debajo del `increment` atómico
+que reparte los correlativos.
+
+El detalle completo — endpoints, servicios, jobs y estados — está en
+[FACTURACION-API.md](FACTURACION-API.md).
+
+---
+
 ## 4. Trabajar con el esquema
 
 | Necesito… | Comando |
