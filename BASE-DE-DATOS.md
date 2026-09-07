@@ -1,5 +1,7 @@
 # BASE DE DATOS
 
+Esto debe estar solo local.
+
 Todo lo relacionado con la base de datos de FoodFlow: cómo está montada, a
 dónde van los datos que deja un visitante, cómo verla, y el procedimiento para
 dejarla lista y protegida en producción.
