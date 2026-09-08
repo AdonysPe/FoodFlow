@@ -72,7 +72,7 @@ export default function AreaChart({
         />
       </svg>
       {labels && (
-        <div className="mt-2 flex justify-between text-[10px] text-fg/25">
+        <div className="mt-2 flex justify-between text-[10px] text-faint">
           {labels.map((lbl, i) => (
             <span key={`${lbl}-${i}`}>{lbl}</span>
           ))}

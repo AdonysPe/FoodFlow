@@ -236,7 +236,7 @@ export default async function AnalyticsPage() {
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <div>
             <h2 className="text-[15px] font-semibold text-fg/90">Tendencia de ventas</h2>
-            <p className="text-[12.5px] text-fg/40">
+            <p className="text-[12.5px] text-faint">
               Últimos 30 días · toca la línea para ver el monto del día
             </p>
           </div>
@@ -249,7 +249,7 @@ export default async function AnalyticsPage() {
 
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
         <h2 className="text-[15px] font-semibold text-fg/90">Ganancia por semana</h2>
-        <p className="mb-5 text-[12.5px] text-fg/40">
+        <p className="mb-5 text-[12.5px] text-faint">
           Últimas {WEEKS} semanas, de lunes a domingo
         </p>
         <WeeklyEarnings
@@ -263,7 +263,7 @@ export default async function AnalyticsPage() {
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
           <h2 className="mb-4 text-[15px] font-semibold text-fg/90">Platos más vendidos</h2>
           {dishes.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-fg/40">
+            <p className="py-6 text-center text-[14px] text-faint">
               Aún no hay datos de ventas.
             </p>
           ) : (
@@ -272,7 +272,7 @@ export default async function AnalyticsPage() {
                 <li key={p.name}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-fg/[0.06] text-[11px] font-semibold tabular-nums text-fg/50">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-fg/[0.06] text-[11px] font-semibold tabular-nums text-muted">
                         {i + 1}
                       </span>
                       <span className="truncate text-[14px] text-fg/85">{p.name}</span>
@@ -289,7 +289,7 @@ export default async function AnalyticsPage() {
                         style={{ width: `${(p.revenue / topRevenue) * 100}%` }}
                       />
                     </div>
-                    <span className="shrink-0 text-[11.5px] tabular-nums text-fg/35">
+                    <span className="shrink-0 text-[11.5px] tabular-nums text-faint">
                       {p.quantity} vend.
                     </span>
                   </div>
@@ -301,9 +301,9 @@ export default async function AnalyticsPage() {
 
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
           <h2 className="mb-1 text-[15px] font-semibold text-fg/90">Horas pico</h2>
-          <p className="mb-4 text-[12.5px] text-fg/40">Pedidos por hora, últimos 30 días</p>
+          <p className="mb-4 text-[12.5px] text-faint">Pedidos por hora, últimos 30 días</p>
           {peakHours.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-fg/40">
+            <p className="py-6 text-center text-[14px] text-faint">
               Aún no hay pedidos en este periodo.
             </p>
           ) : (
@@ -316,19 +316,19 @@ export default async function AnalyticsPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-fg/50">Clientes registrados</p>
+          <p className="text-[13px] text-muted">Clientes registrados</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
             {customerCount}
           </p>
         </GlassCard>
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-fg/50">Comensales que repiten</p>
+          <p className="text-[13px] text-muted">Comensales que repiten</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
             {repeatCustomers}
           </p>
         </GlassCard>
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-fg/50">Tasa de recurrencia</p>
+          <p className="text-[13px] text-muted">Tasa de recurrencia</p>
           <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
             {repeatRate.toFixed(1)}%
           </p>

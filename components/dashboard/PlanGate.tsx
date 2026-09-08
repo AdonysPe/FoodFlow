@@ -33,14 +33,14 @@ export default function PlanGate({
 
   return (
     <div className="mx-auto flex max-w-lg flex-col items-center py-10 text-center sm:py-16">
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-fg/[0.1] bg-fg/[0.04] text-fg/35">
+      <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-fg/[0.1] bg-fg/[0.04] text-faint">
         <IconShield className="h-5 w-5" />
       </span>
 
       <h1 className="mt-5 font-display text-[22px] font-bold tracking-[-0.02em] text-fg">
         {label} viene con el plan {PLAN_LABELS[needed]}
       </h1>
-      <p className="mt-2.5 text-[14px] leading-relaxed text-fg/50">
+      <p className="mt-2.5 text-[14px] leading-relaxed text-muted">
         {FEATURE_PITCHES[feature]}
       </p>
 
@@ -50,17 +50,17 @@ export default function PlanGate({
             <p className="text-[15px] font-semibold text-fg/90">
               Plan {PLAN_LABELS[needed]}
             </p>
-            <p className="mt-0.5 text-[12.5px] text-fg/40">{PLAN_TAGLINES[needed]}</p>
+            <p className="mt-0.5 text-[12.5px] text-faint">{PLAN_TAGLINES[needed]}</p>
           </div>
           <p className="shrink-0 font-display text-[20px] font-extrabold text-fg">
             {PLAN_PRICES[needed]}
-            <span className="text-[13px] font-medium text-fg/40">/mes</span>
+            <span className="text-[13px] font-medium text-faint">/mes</span>
           </p>
         </div>
 
         {alsoUnlocks.length > 0 && (
           <>
-            <p className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-fg/35">
+            <p className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-faint">
               También se abre
             </p>
             <ul className="mt-2 flex flex-col gap-1.5">
@@ -92,7 +92,7 @@ export default function PlanGate({
         </Link>
       </div>
 
-      <p className="mt-5 text-[12px] text-fg/30">
+      <p className="mt-5 text-[12px] text-faint">
         Tu plan actual es {PLAN_LABELS[plan]}.
       </p>
     </div>

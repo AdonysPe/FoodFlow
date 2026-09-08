@@ -41,7 +41,7 @@ export default function CartBar({
             autoComplete="off"
             enterKeyHint="done"
             placeholder="¿A nombre de quién? (opcional)"
-            className="h-10 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-3.5 text-[13.5px] text-fg placeholder:text-fg/30 outline-none transition-colors focus:border-accent-400/50 focus:bg-fg/[0.06]"
+            className="h-10 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-3.5 text-[13.5px] text-fg placeholder:text-faint outline-none transition-colors focus:border-accent-400/50 focus:bg-fg/[0.06]"
           />
         </div>
       )}
@@ -51,7 +51,7 @@ export default function CartBar({
           <p className="text-[13px] font-medium text-fg/85">
             {count === 0 ? "Sin platos" : `${count} ${count === 1 ? "plato" : "platos"}`}
           </p>
-          <p className="text-[12px] text-fg/45">{formatPrice(total)}</p>
+          <p className="text-[12px] text-faint">{formatPrice(total)}</p>
         </div>
         <button
           type="button"

@@ -73,7 +73,7 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
     <div>
       <div className="flex gap-3">
         {/* value axis — the amounts the shape is measured against */}
-        <div className="flex w-14 shrink-0 flex-col justify-between py-[10px] text-right text-[10.5px] tabular-nums text-fg/30">
+        <div className="flex w-14 shrink-0 flex-col justify-between py-[10px] text-right text-[10.5px] tabular-nums text-faint">
           <span>{shortMoney(max)}</span>
           <span>{shortMoney(max / 2)}</span>
           <span>S/ 0</span>
@@ -167,14 +167,14 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
                 left: `${(hover! / Math.max(1, points.length - 1)) * 100}%`,
               }}
             >
-              <p className="whitespace-nowrap text-[10.5px] text-fg/45">{active.label}</p>
+              <p className="whitespace-nowrap text-[10.5px] text-faint">{active.label}</p>
               <p className="whitespace-nowrap text-[13px] font-semibold tabular-nums text-fg">
                 {formatCurrency(active.value)}
               </p>
             </div>
           )}
 
-          <div className="mt-2 flex justify-between text-[10.5px] text-fg/30">
+          <div className="mt-2 flex justify-between text-[10.5px] text-faint">
             {tickIdx.map((i) => (
               <span key={i}>{points[i]?.label}</span>
             ))}
@@ -183,7 +183,7 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
       </div>
 
       {!hasSales && (
-        <p className="mt-3 text-center text-[13px] text-fg/35">
+        <p className="mt-3 text-center text-[13px] text-faint">
           Todavía no hay ventas en este periodo.
         </p>
       )}

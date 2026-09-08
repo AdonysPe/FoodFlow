@@ -148,14 +148,14 @@ export default function ReservationsPanel({
 
       {pending.length > 0 && (
         <div>
-          <h2 className="mb-2 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-amber-200/80">
+          <h2 className="mb-2 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-warn-ink/80">
             Por confirmar
-            <span className="rounded-full bg-amber-300/15 px-1.5 py-0.5 text-[11px] font-bold text-amber-200">
+            <span className="rounded-full bg-warn/15 px-1.5 py-0.5 text-[11px] font-bold text-warn-ink">
               {pending.length}
             </span>
           </h2>
           <GlassCard
-            className="overflow-hidden p-0 ring-1 ring-inset ring-amber-300/15"
+            className="overflow-hidden p-0 ring-1 ring-inset ring-warn/15"
             hoverLift={false}
           >
             <ul className="flex flex-col">
@@ -176,10 +176,10 @@ export default function ReservationsPanel({
       {view === "hoy" ? (
         <div>
           <h2 className="text-[15px] font-semibold text-fg/90">Agenda de hoy</h2>
-          <p className="mt-0.5 mb-2 text-[12.5px] capitalize text-fg/40">{formatDayLabel(today)}</p>
+          <p className="mt-0.5 mb-2 text-[12.5px] capitalize text-faint">{formatDayLabel(today)}</p>
           {todays.length === 0 ? (
             <GlassCard className="p-10 text-center" hoverLift={false}>
-              <p className="text-[14px] text-fg/45">
+              <p className="text-[14px] text-faint">
                 Aún no hay reservas para hoy. Crea una con “+ Nueva reserva”.
               </p>
             </GlassCard>
@@ -211,7 +211,7 @@ export default function ReservationsPanel({
               >
                 ‹
               </button>
-              <span className="min-w-[120px] text-center text-[12.5px] text-fg/55">
+              <span className="min-w-[120px] text-center text-[12.5px] text-muted">
                 {weekLabel}
               </span>
               <button

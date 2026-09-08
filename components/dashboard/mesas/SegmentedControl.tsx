@@ -32,7 +32,7 @@ export default function SegmentedControl<T extends string>({
             type="button"
             onClick={() => onChange(o.id)}
             className={`relative rounded-lg font-medium transition-colors duration-200 ${pad} ${
-              active ? "text-fg" : "text-fg/45 hover:text-fg/75"
+              active ? "text-fg" : "text-faint hover:text-fg/75"
             }`}
           >
             {active && (

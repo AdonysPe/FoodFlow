@@ -133,7 +133,7 @@ export default async function OverviewPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <GlassCard className="p-5 sm:p-6 lg:col-span-2" hoverLift={false}>
           <h2 className="mb-1 text-[15px] font-semibold text-fg/90">Ventas en el tiempo</h2>
-          <p className="mb-4 text-[12.5px] text-fg/40">Últimos 7 días</p>
+          <p className="mb-4 text-[12.5px] text-faint">Últimos 7 días</p>
           <AreaChart data={dayBuckets.map((d) => d.total)} labels={dayBuckets.map((d) => d.label)} />
         </GlassCard>
 
@@ -154,7 +154,7 @@ export default async function OverviewPage() {
           </Link>
         </div>
         {recentOrders.length === 0 ? (
-          <p className="py-6 text-center text-[14px] text-fg/40">
+          <p className="py-6 text-center text-[14px] text-faint">
             Aún no hay pedidos. Los nuevos pedidos aparecerán aquí.
           </p>
         ) : (
@@ -163,7 +163,7 @@ export default async function OverviewPage() {
               <li key={order.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-[14px] text-fg/80">{order.customerName}</p>
-                  <p className="text-[12px] text-fg/40">
+                  <p className="text-[12px] text-faint">
                     {CHANNEL_LABELS[order.channel]} · {formatTimeLabel(order.createdAt)}
                   </p>
                 </div>

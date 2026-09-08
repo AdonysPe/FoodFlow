@@ -13,7 +13,7 @@ export type CustomerRow = {
 export default function CustomersTable({ customers }: { customers: CustomerRow[] }) {
   if (customers.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-faint" hoverLift={false}>
         Aún no hay clientes. Aparecerán aquí cuando registres pedidos con teléfono o correo.
       </GlassCard>
     );
@@ -24,7 +24,7 @@ export default function CustomersTable({ customers }: { customers: CustomerRow[]
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-faint">
               <th className="px-5 py-3.5 font-medium">Nombre</th>
               <th className="px-5 py-3.5 font-medium">Contacto</th>
               <th className="px-5 py-3.5 font-medium">Pedidos</th>
@@ -35,7 +35,7 @@ export default function CustomersTable({ customers }: { customers: CustomerRow[]
             {customers.map((c) => (
               <tr key={c.id} className="border-b border-fg/[0.04] last:border-0">
                 <td className="px-5 py-3.5 font-medium text-fg/85">{c.name}</td>
-                <td className="px-5 py-3.5 text-fg/55">{c.email || c.phone || "—"}</td>
+                <td className="px-5 py-3.5 text-muted">{c.email || c.phone || "—"}</td>
                 <td className="px-5 py-3.5 text-fg/70">{c.ordersCount}</td>
                 <td className="px-5 py-3.5 font-medium text-fg/85">
                   {formatCurrency(c.totalSpent)}

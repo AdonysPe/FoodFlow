@@ -9,6 +9,7 @@ import {
   IconOrders,
   IconKitchen,
   IconMenuBook,
+  IconGlobe,
   IconUsers,
   IconMail,
   IconStore,
@@ -42,91 +43,190 @@ export type NavItem = {
   feature?: FeatureValue;
 };
 
+export type NavSection = {
+  /** Null on the opening group, which is the home and needs no heading. */
+  title: string | null;
+  items: NavItem[];
+};
+
 // Icon components can't cross the server→client boundary as props (RSC
 // can't serialize function references), so each variant's nav items —
 // icons included — are defined here, inside the client module.
-const ADMIN_NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard/admin/overview", label: "Overview", icon: IconDashboard },
-  { href: "/dashboard/admin/leads", label: "Leads", icon: IconUsers },
-  { href: "/dashboard/admin/contactos", label: "Contactos", icon: IconMail },
-  { href: "/dashboard/admin/restaurants", label: "Restaurants", icon: IconStore },
-  { href: "/dashboard/admin/analytics", label: "Analytics", icon: IconAnalytics },
-  { href: "/dashboard/admin/audit", label: "Audit log", icon: IconShield },
-];
-
-const CLIENT_NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard/app/overview", label: "Resumen", icon: IconDashboard, feature: "overview" },
-  { href: "/dashboard/comanda", label: "Comanda", icon: IconReceipt, feature: "comanda" },
-  { href: "/dashboard/app/orders", label: "Pedidos", icon: IconOrders, feature: "orders" },
-  { href: "/dashboard/app/kitchen", label: "Cocina", icon: IconKitchen, feature: "kitchen" },
-  { href: "/dashboard/app/mesas", label: "Mesas", icon: IconTables, feature: "tables" },
-  { href: "/dashboard/app/menu", label: "Menú", icon: IconMenuBook, feature: "menu" },
-  { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers, feature: "customers" },
-  { href: "/dashboard/app/equipo", label: "Equipo", icon: IconStaff, feature: "staff" },
-  { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics, feature: "analytics" },
+const ADMIN_NAV: NavSection[] = [
   {
-    href: "/dashboard/app/configuracion/facturacion",
-    label: "Facturación",
-    icon: IconPrinter,
-    feature: "orders",
+    title: null,
+    items: [
+      { href: "/dashboard/admin/overview", label: "Overview", icon: IconDashboard },
+      { href: "/dashboard/admin/leads", label: "Leads", icon: IconUsers },
+      { href: "/dashboard/admin/contactos", label: "Contactos", icon: IconMail },
+      { href: "/dashboard/admin/restaurants", label: "Restaurants", icon: IconStore },
+      { href: "/dashboard/admin/analytics", label: "Analytics", icon: IconAnalytics },
+      { href: "/dashboard/admin/audit", label: "Audit log", icon: IconShield },
+    ],
   },
 ];
 
+/**
+ * The client nav, grouped the way a restaurant actually thinks about its day.
+ *
+ * Order inside each group follows the shift, not the alphabet: a waiter opens
+ * the comanda, seats people on the floor plan, the kitchen cooks, and the
+ * orders list is where it all ends up. "Configuración" is last because it is
+ * set up once and then left alone — a flat list put Facturación next to Cocina
+ * and gave a nightly screen the same weight as a yearly one.
+ */
+const CLIENT_NAV: NavSection[] = [
+  {
+    title: null,
+    items: [
+      { href: "/dashboard/app/overview", label: "Resumen", icon: IconDashboard, feature: "overview" },
+    ],
+  },
+  {
+    title: "Servicio",
+    items: [
+      { href: "/dashboard/comanda", label: "Comanda", icon: IconReceipt, feature: "comanda" },
+      { href: "/dashboard/app/mesas", label: "Mesas", icon: IconTables, feature: "tables" },
+      { href: "/dashboard/app/kitchen", label: "Cocina", icon: IconKitchen, feature: "kitchen" },
+      { href: "/dashboard/app/orders", label: "Pedidos", icon: IconOrders, feature: "orders" },
+    ],
+  },
+  {
+    title: "Carta",
+    items: [
+      { href: "/dashboard/app/menu", label: "Menú", icon: IconMenuBook, feature: "menu" },
+      // The one screen the Carta plan is named after; it was reachable only
+      // from inside Menú, which hid the plan's whole point.
+      { href: "/dashboard/app/menu/carta", label: "Carta pública", icon: IconGlobe, feature: "menu" },
+    ],
+  },
+  {
+    title: "Negocio",
+    items: [
+      { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers, feature: "customers" },
+      { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics, feature: "analytics" },
+    ],
+  },
+  {
+    title: "Configuración",
+    items: [
+      { href: "/dashboard/app/equipo", label: "Equipo", icon: IconStaff, feature: "staff" },
+      {
+        href: "/dashboard/app/configuracion/facturacion",
+        label: "Facturación",
+        icon: IconPrinter,
+        feature: "orders",
+      },
+    ],
+  },
+];
+
+/**
+ * Which item owns the current URL.
+ *
+ * Longest match wins, because the nav now contains nested routes: on
+ * /dashboard/app/menu/carta a plain "startsWith" lights up both Menú and
+ * Carta pública, and two active items read as a bug.
+ */
+function activeHref(sections: NavSection[], pathname: string): string | null {
+  let best: string | null = null;
+  for (const section of sections) {
+    for (const item of section.items) {
+      const owns = pathname === item.href || pathname.startsWith(`${item.href}/`);
+      if (owns && (best === null || item.href.length > best.length)) best = item.href;
+    }
+  }
+  return best;
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-3.5 pb-1.5 pt-5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+      {children}
+    </p>
+  );
+}
+
 function NavList({
   pathname,
-  navItems,
+  sections,
   plan,
   onNavigate,
 }: {
   pathname: string;
-  navItems: NavItem[];
+  sections: NavSection[];
   // Undefined for the admin sidebar, which has no plan gating.
   plan?: PlanValue;
   onNavigate?: () => void;
 }) {
-  const included = plan
-    ? navItems.filter((i) => !i.feature || PLAN_FEATURES[plan].includes(i.feature))
-    : navItems;
+  const allowed = (item: NavItem) =>
+    !plan || !item.feature || PLAN_FEATURES[plan].includes(item.feature);
+
+  // A section whose every item is locked disappears entirely rather than
+  // leaving a heading with nothing under it.
+  const open = sections
+    .map((section) => ({ ...section, items: section.items.filter(allowed) }))
+    .filter((section) => section.items.length > 0);
+
   // Locked modules stay visible but muted, grouped under the plan that opens
   // each one — so "Análisis" never sits under a "Servicio" heading.
   const locked = plan
-    ? navItems.filter((i) => i.feature && !PLAN_FEATURES[plan].includes(i.feature))
+    ? sections.flatMap((section) => section.items).filter((item) => !allowed(item))
     : [];
   const lockedByPlan = PLANS.map(
     (p) => [p, locked.filter((i) => firstPlanWith(i.feature!) === p)] as const
   ).filter(([, items]) => items.length > 0);
 
+  const current = activeHref(sections, pathname);
+
   return (
-    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3">
-      {included.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] font-medium transition-colors duration-200 ${
-              active
-                ? "bg-fg/[0.07] text-fg"
-                : "text-fg/45 hover:bg-fg/[0.04] hover:text-fg/80"
-            }`}
-          >
-            <Icon
-              className={`h-[18px] w-[18px] shrink-0 transition-colors duration-200 ${
-                active ? "text-accent-icon" : "text-fg/35 group-hover:text-fg/60"
-              }`}
-            />
-            {item.label}
-          </Link>
-        );
-      })}
+    <nav className="flex flex-1 flex-col overflow-y-auto px-3 pb-4">
+      {open.map((section, index) => (
+        <div key={section.title ?? "inicio"} className="flex flex-col gap-1">
+          {/* The first group opens the list, so it gets no heading and no
+              leading gap; the rest are separated by their own label. */}
+          {section.title && <SectionLabel>{section.title}</SectionLabel>}
+          {!section.title && index > 0 && <span className="h-2" aria-hidden />}
+
+          {section.items.map((item) => {
+            const active = current === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
+                className={`group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] font-medium transition-colors duration-200 ${
+                  active
+                    ? "bg-fg/[0.07] text-fg"
+                    : "text-fg/70 hover:bg-fg/[0.05] hover:text-fg"
+                }`}
+              >
+                {/* A rail on the active row. On paper the tinted fill alone is
+                    a very light grey and reads as barely-there, so the accent
+                    does the work of saying "you are here". */}
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent-400"
+                  />
+                )}
+                <Icon
+                  className={`h-[18px] w-[18px] shrink-0 transition-colors duration-200 ${
+                    active ? "text-accent-icon" : "text-faint group-hover:text-fg/80"
+                  }`}
+                />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
 
       {lockedByPlan.map(([neededPlan, items]) => (
-        <div key={neededPlan}>
-          <p className="mt-5 px-3.5 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-fg/25">
-            Con el plan {PLAN_LABELS[neededPlan]}
-          </p>
+        <div key={neededPlan} className="flex flex-col gap-1">
+          <SectionLabel>Con el plan {PLAN_LABELS[neededPlan]}</SectionLabel>
           {items.map((item) => {
             const Icon = item.icon;
             return (
@@ -134,11 +234,11 @@ function NavList({
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
-                className="group flex items-center gap-3 rounded-xl px-3.5 py-2 text-[13.5px] font-medium text-fg/25 transition-colors duration-200 hover:bg-fg/[0.03] hover:text-fg/45"
+                className="group flex items-center gap-3 rounded-xl px-3.5 py-2 text-[13.5px] font-medium text-faint transition-colors duration-200 hover:bg-fg/[0.04] hover:text-fg/80"
               >
-                <Icon className="h-[17px] w-[17px] shrink-0 text-fg/20" />
+                <Icon className="h-[17px] w-[17px] shrink-0 text-faint" />
                 {item.label}
-                <IconLock className="ml-auto h-3.5 w-3.5 shrink-0 text-fg/20" />
+                <IconLock className="ml-auto h-3.5 w-3.5 shrink-0 text-faint" />
               </Link>
             );
           })}
@@ -159,7 +259,7 @@ export default function Sidebar({
   badgeLabel?: string;
   plan?: PlanValue;
 }) {
-  const navItems = variant === "client" ? CLIENT_NAV_ITEMS : ADMIN_NAV_ITEMS;
+  const sections = variant === "client" ? CLIENT_NAV : ADMIN_NAV;
   const navPlan = variant === "client" ? plan : undefined;
   const pathname = usePathname();
   const router = useRouter();
@@ -177,7 +277,7 @@ export default function Sidebar({
       <span className="font-display text-[17px] font-extrabold tracking-[-0.02em] text-gradient-accent">
         FoodFlow
       </span>
-      <span className="truncate rounded-full border border-fg/[0.1] bg-fg/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-fg/45">
+      <span className="truncate rounded-full border border-fg/[0.1] bg-fg/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
         {badgeLabel}
       </span>
     </div>
@@ -196,7 +296,7 @@ export default function Sidebar({
           type="button"
           onClick={handleLogout}
           aria-label="Log out"
-          className="shrink-0 rounded-lg p-2 text-fg/40 transition-colors hover:bg-fg/[0.06] hover:text-fg/80"
+          className="shrink-0 rounded-lg p-2 text-muted transition-colors hover:bg-fg/[0.06] hover:text-fg"
         >
           <IconLogout className="h-[17px] w-[17px]" />
         </button>
@@ -209,7 +309,7 @@ export default function Sidebar({
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-fg/[0.07] bg-ink-950/70 backdrop-blur-xl lg:flex">
         {brand}
-        <NavList pathname={pathname} navItems={navItems} plan={navPlan} />
+        <NavList pathname={pathname} sections={sections} plan={navPlan} />
         {footer}
       </aside>
 
@@ -241,14 +341,14 @@ export default function Sidebar({
                   type="button"
                   onClick={closeSidebar}
                   aria-label="Close menu"
-                  className="mr-4 rounded-lg p-2 text-fg/50 hover:bg-fg/[0.06] hover:text-fg"
+                  className="mr-4 rounded-lg p-2 text-muted hover:bg-fg/[0.06] hover:text-fg"
                 >
                   <IconX className="h-5 w-5" />
                 </button>
               </div>
               <NavList
                 pathname={pathname}
-                navItems={navItems}
+                sections={sections}
                 plan={navPlan}
                 onNavigate={closeSidebar}
               />

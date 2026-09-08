@@ -2,7 +2,7 @@ export default function ChannelBars({ data }: { data: { label: string; count: nu
   const max = Math.max(1, ...data.map((d) => d.count));
 
   if (data.every((d) => d.count === 0)) {
-    return <p className="py-6 text-center text-[14px] text-fg/40">Aún no hay pedidos.</p>;
+    return <p className="py-6 text-center text-[14px] text-faint">Aún no hay pedidos.</p>;
   }
 
   return (

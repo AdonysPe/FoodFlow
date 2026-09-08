@@ -60,7 +60,7 @@ export default function ConfirmModal({
             <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-fg">
               {title}
             </h2>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-fg/55">{message}</p>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{message}</p>
             <div className="mt-6 flex justify-end gap-2.5">
               <button
                 type="button"

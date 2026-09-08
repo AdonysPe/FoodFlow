@@ -29,7 +29,7 @@ const inputClass =
   "h-9 w-full rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 text-[13.5px] text-fg outline-none focus:border-accent-400/50";
 
 const PLAN_TONE: Record<PlanValue, string> = {
-  carta: "bg-fg/[0.06] text-fg/60 ring-fg/15",
+  carta: "bg-fg/[0.06] text-muted ring-fg/15",
   servicio: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
   negocio: "bg-mint/10 text-mint-ink ring-mint/25",
 };
@@ -139,7 +139,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
             ))}
           </select>
         </td>
-        <td className="px-5 py-3 text-fg/45">{restaurant.createdAtLabel}</td>
+        <td className="px-5 py-3 text-faint">{restaurant.createdAtLabel}</td>
         <td className="px-5 py-3">
           <div className="flex gap-2">
             <button
@@ -172,9 +172,9 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
   return (
     <tr className="border-b border-fg/[0.04] last:border-0">
       <td className="px-5 py-3.5 font-medium text-fg/85">{restaurant.name}</td>
-      <td className="px-5 py-3.5 text-fg/55">
+      <td className="px-5 py-3.5 text-muted">
         <p>{restaurant.ownerEmail}</p>
-        <p className="text-[12px] text-fg/35">
+        <p className="text-[12px] text-faint">
           {restaurant.staffCount + 1}{" "}
           {PLAN_MAX_USERS[restaurant.plan] === Infinity
             ? "usuarios"
@@ -184,7 +184,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
       <td className="px-5 py-3.5">
         <PlanPicker restaurant={restaurant} />
       </td>
-      <td className="px-5 py-3.5 text-fg/45">{restaurant.createdAtLabel}</td>
+      <td className="px-5 py-3.5 text-faint">{restaurant.createdAtLabel}</td>
       <td className="px-5 py-3.5">
         <div className="flex flex-wrap gap-2">
           <button
@@ -216,7 +216,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
 export default function RestaurantsTable({ restaurants }: { restaurants: RestaurantRow[] }) {
   if (restaurants.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-faint" hoverLift={false}>
         No restaurants yet. Create the first one to get started.
       </GlassCard>
     );
@@ -227,7 +227,7 @@ export default function RestaurantsTable({ restaurants }: { restaurants: Restaur
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-faint">
               <th className="px-5 py-3.5 font-medium">Name</th>
               <th className="px-5 py-3.5 font-medium">Owner</th>
               <th className="px-5 py-3.5 font-medium">Plan</th>

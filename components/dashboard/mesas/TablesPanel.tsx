@@ -78,7 +78,7 @@ function TableRow({ table }: { table: TableDTO }) {
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="truncate text-[14px] font-medium text-fg/85">{table.name}</p>
-            <p className="mt-0.5 text-[12.5px] text-fg/45">
+            <p className="mt-0.5 text-[12.5px] text-faint">
               {table.capacity} personas · {SHAPE_LABELS[table.shape]} · {ZONE_LABELS[table.zone]}
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-[15px] font-semibold text-fg/90">Mesas del local</h2>
-          <p className="mt-0.5 text-[12.5px] text-fg/40">
+          <p className="mt-0.5 text-[12.5px] text-faint">
             {tables.length} {tables.length === 1 ? "mesa" : "mesas"} en el plano
           </p>
         </div>
@@ -175,7 +175,7 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
 
       {tables.length === 0 ? (
         <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-fg/45">Aún no hay mesas. Crea tu plano para empezar.</p>
+          <p className="text-[14px] text-faint">Aún no hay mesas. Crea tu plano para empezar.</p>
         </GlassCard>
       ) : (
         <GlassCard className="overflow-hidden p-0" hoverLift={false}>

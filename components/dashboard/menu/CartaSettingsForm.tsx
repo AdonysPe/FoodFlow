@@ -93,7 +93,7 @@ export default function CartaSettingsForm({
       {/* ------------------------------------------------------- the address */}
       <section className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5">
         <h3 className="text-[14px] font-semibold text-fg">Dirección de tu carta</h3>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-fg/45">
+        <p className="mt-1 text-[12.5px] leading-relaxed text-faint">
           Este es el enlace que pones en el QR, en tu Instagram y en tu ficha de Google.
           Si lo cambias, los QR ya impresos dejan de funcionar.
         </p>
@@ -104,7 +104,7 @@ export default function CartaSettingsForm({
               Dirección
             </label>
             <div className="flex items-center gap-0">
-              <span className="hidden h-11 items-center rounded-l-xl border border-r-0 border-fg/[0.1] bg-fg/[0.06] px-3 text-[13px] text-fg/40 sm:flex">
+              <span className="hidden h-11 items-center rounded-l-xl border border-r-0 border-fg/[0.1] bg-fg/[0.06] px-3 text-[13px] text-faint sm:flex">
                 foodflow.site/carta/
               </span>
               <input
@@ -139,7 +139,7 @@ export default function CartaSettingsForm({
             <span className="block text-[13.5px] font-medium text-fg/85">
               Carta visible para el público
             </span>
-            <span className="mt-0.5 block text-[12px] leading-relaxed text-fg/40">
+            <span className="mt-0.5 block text-[12px] leading-relaxed text-faint">
               Desmárcala para bajarla al instante sin perder nada de lo que configuraste.
             </span>
           </span>
@@ -149,14 +149,14 @@ export default function CartaSettingsForm({
       {/* -------------------------------------------------------- the header */}
       <section className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5">
         <h3 className="text-[14px] font-semibold text-fg">Encabezado</h3>
-        <p className="mt-1 text-[12.5px] text-fg/45">
+        <p className="mt-1 text-[12.5px] text-faint">
           Lo primero que ve el comensal al escanear, encima de los platos.
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label htmlFor="carta-tagline" className={labelClass}>
-              Frase corta <span className="text-fg/25">· opcional</span>
+              Frase corta <span className="text-faint">· opcional</span>
             </label>
             <input
               id="carta-tagline"
@@ -169,7 +169,7 @@ export default function CartaSettingsForm({
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="carta-logo" className={labelClass}>
-              Logo <span className="text-fg/25">· enlace https</span>
+              Logo <span className="text-faint">· enlace https</span>
             </label>
             <input
               id="carta-logo"
@@ -194,7 +194,7 @@ export default function CartaSettingsForm({
               placeholder="987654321"
               className={fieldClass}
             />
-            <p className="mt-1.5 text-[11.5px] text-fg/35">
+            <p className="mt-1.5 text-[11.5px] text-faint">
               Sin el +51. Vacío quita el botón flotante de la carta.
             </p>
           </div>
@@ -213,7 +213,7 @@ export default function CartaSettingsForm({
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="carta-maps" className={labelClass}>
-              Enlace de Google Maps <span className="text-fg/25">· opcional</span>
+              Enlace de Google Maps <span className="text-faint">· opcional</span>
             </label>
             <input
               id="carta-maps"
@@ -235,12 +235,12 @@ export default function CartaSettingsForm({
           <button
             type="button"
             onClick={() => applyToAll(1)}
-            className="text-[12px] font-medium text-fg/45 underline decoration-fg/20 underline-offset-2 hover:text-fg/75"
+            className="text-[12px] font-medium text-faint underline decoration-fg/20 underline-offset-2 hover:text-fg/75"
           >
             Copiar el lunes a todos los días
           </button>
         </div>
-        <p className="mt-1 text-[12.5px] text-fg/45">
+        <p className="mt-1 text-[12.5px] text-faint">
           La carta muestra “Abierto ahora” o “Cerrado” según esta tabla. Un cierre
           anterior a la apertura significa que sigues hasta la madrugada.
         </p>
@@ -255,7 +255,7 @@ export default function CartaSettingsForm({
                 {CARTA_DAYS[h.day]}
               </span>
 
-              <label className="flex shrink-0 cursor-pointer items-center gap-2 text-[12.5px] text-fg/50">
+              <label className="flex shrink-0 cursor-pointer items-center gap-2 text-[12.5px] text-muted">
                 <input
                   type="checkbox"
                   checked={!h.closed}
@@ -275,7 +275,7 @@ export default function CartaSettingsForm({
                   onChange={(e) => setDay(h.day, { open: e.target.value })}
                   className="h-9 rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 text-[13px] text-fg outline-none focus:border-accent-400/50"
                 />
-                <span className="text-fg/30">–</span>
+                <span className="text-faint">–</span>
                 <input
                   type="time"
                   value={h.close}

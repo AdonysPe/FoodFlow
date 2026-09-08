@@ -64,7 +64,7 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
 
   if (leads.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-faint" hoverLift={false}>
         Aún no hay contactos. Cuando alguien complete el formulario de la landing
         (nombre, restaurante y WhatsApp) aparecerá aquí.
       </GlassCard>
@@ -76,7 +76,7 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[860px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-faint">
               <th className="px-5 py-3.5 font-medium">Contacto</th>
               <th className="px-5 py-3.5 font-medium">WhatsApp</th>
               <th className="px-5 py-3.5 font-medium">Origen</th>
@@ -92,9 +92,9 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
               <tr key={lead.id} className="border-b border-fg/[0.04] last:border-0 align-top">
                 <td className="px-5 py-3.5">
                   <div className="font-medium text-fg/85">{lead.nombre}</div>
-                  <div className="text-[12.5px] text-fg/45">{lead.restaurante}</div>
+                  <div className="text-[12.5px] text-faint">{lead.restaurante}</div>
                   {lead.email && (
-                    <div className="text-[12.5px] text-fg/35">{lead.email}</div>
+                    <div className="text-[12.5px] text-faint">{lead.email}</div>
                   )}
                 </td>
                 <td className="px-5 py-3.5">
@@ -108,10 +108,10 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
                     +51 {lead.whatsapp}
                   </a>
                 </td>
-                <td className="px-5 py-3.5 text-fg/60">{SOURCE_LABEL[lead.source]}</td>
-                <td className="px-5 py-3.5 text-fg/60">{lead.perdidaAnualLabel ?? "—"}</td>
-                <td className="px-5 py-3.5 text-fg/60">{lead.score > 0 ? lead.score : "—"}</td>
-                <td className="px-5 py-3.5 text-fg/45">{lead.createdAtLabel}</td>
+                <td className="px-5 py-3.5 text-muted">{SOURCE_LABEL[lead.source]}</td>
+                <td className="px-5 py-3.5 text-muted">{lead.perdidaAnualLabel ?? "—"}</td>
+                <td className="px-5 py-3.5 text-muted">{lead.score > 0 ? lead.score : "—"}</td>
+                <td className="px-5 py-3.5 text-faint">{lead.createdAtLabel}</td>
                 <td className="px-5 py-3.5">
                   <StatusPill status={lead.status} />
                 </td>
@@ -137,7 +137,7 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
                         type="button"
                         disabled={isPending}
                         onClick={() => handleUpdate(lead.id, "archivado")}
-                        className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/50 transition-colors hover:bg-fg/[0.08] hover:text-fg/80 disabled:opacity-40"
+                        className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-muted transition-colors hover:bg-fg/[0.08] hover:text-fg/80 disabled:opacity-40"
                       >
                         Archivar
                       </button>

@@ -33,7 +33,7 @@ export type OrderRow = {
 function PaymentCell({ row }: { row: OrderRow }) {
   if (row.voided) {
     return (
-      <span className="inline-flex items-center rounded-full bg-fg/[0.06] px-2.5 py-1 text-[12px] font-medium text-fg/45 ring-1 ring-inset ring-fg/15">
+      <span className="inline-flex items-center rounded-full bg-fg/[0.06] px-2.5 py-1 text-[12px] font-medium text-faint ring-1 ring-inset ring-fg/15">
         Anulado
       </span>
     );
@@ -74,7 +74,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
 
   if (orders.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-faint" hoverLift={false}>
         No hay pedidos en este rango.
       </GlassCard>
     );
@@ -85,7 +85,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-faint">
               <th className="px-5 py-3.5 font-medium">Pedido</th>
               <th className="px-5 py-3.5 font-medium">Cliente</th>
               <th className="px-5 py-3.5 font-medium">Platos</th>
@@ -100,16 +100,16 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
               const upcoming = nextStatus(order.status);
               return (
                 <tr key={order.id} className="border-b border-fg/[0.04] align-top last:border-0">
-                  <td className="px-5 py-3.5 font-mono text-[12.5px] text-fg/45">
+                  <td className="px-5 py-3.5 font-mono text-[12.5px] text-faint">
                     #{order.id.slice(-6).toUpperCase()}
                   </td>
                   <td className="px-5 py-3.5 text-fg/85">
                     <p>{order.customerName}</p>
-                    <p className="text-[12px] text-fg/40">
+                    <p className="text-[12px] text-faint">
                       {CHANNEL_LABELS[order.channel]} · {order.createdAtLabel}
                     </p>
                   </td>
-                  <td className="max-w-[220px] px-5 py-3.5 text-fg/55">
+                  <td className="max-w-[220px] px-5 py-3.5 text-muted">
                     {order.items.map((it) => `${it.quantity}× ${it.name}`).join(", ")}
                   </td>
                   <td className="px-5 py-3.5 font-medium text-fg/85">
@@ -139,13 +139,13 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                           href={`/dashboard/boleta/${order.id}?from=orders`}
                           title="Ver boleta"
                           aria-label={`Ver boleta de ${order.customerName}`}
-                          className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] p-1.5 text-fg/45 transition-colors hover:bg-fg/[0.08] hover:text-fg"
+                          className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] p-1.5 text-faint transition-colors hover:bg-fg/[0.08] hover:text-fg"
                         >
                           <IconPrinter className="h-[15px] w-[15px]" />
                         </Link>
                       ) : null}
                       {!upcoming && !order.paid ? (
-                        <span className="text-[12px] text-fg/30">—</span>
+                        <span className="text-[12px] text-faint">—</span>
                       ) : null}
                     </div>
                   </td>

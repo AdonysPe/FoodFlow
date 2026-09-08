@@ -36,7 +36,7 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
 
   if (leads.length === 0) {
     return (
-      <GlassCard className="p-10 text-center text-[14px] text-fg/40" hoverLift={false}>
+      <GlassCard className="p-10 text-center text-[14px] text-faint" hoverLift={false}>
         No leads yet. New leads from the landing page will show up here.
       </GlassCard>
     );
@@ -47,7 +47,7 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-fg/35">
+            <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-faint">
               <th className="px-5 py-3.5 font-medium">Email</th>
               <th className="px-5 py-3.5 font-medium">Status</th>
               <th className="px-5 py-3.5 font-medium">Date</th>
@@ -61,7 +61,7 @@ export default function LeadsTable({ leads }: { leads: Lead[] }) {
                 <td className="px-5 py-3.5">
                   <StatusPill status={lead.status} />
                 </td>
-                <td className="px-5 py-3.5 text-fg/45">{lead.createdAtLabel}</td>
+                <td className="px-5 py-3.5 text-faint">{lead.createdAtLabel}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex flex-wrap gap-2">
                     {lead.status === "new" && (

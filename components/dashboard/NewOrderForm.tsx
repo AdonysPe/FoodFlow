@@ -79,14 +79,14 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-[13px] text-fg/40 hover:text-fg/70"
+          className="text-[13px] text-faint hover:text-fg/70"
         >
           Cancelar
         </button>
       </div>
 
       {menuItems.length === 0 ? (
-        <p className="text-[14px] text-fg/40">
+        <p className="text-[14px] text-faint">
           Primero agrega platos disponibles a la carta para registrar pedidos.
         </p>
       ) : (
@@ -97,13 +97,13 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Nombre del cliente"
-              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
+              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
             />
             <input
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="Teléfono (opcional)"
-              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
+              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
             />
             <select
               value={channel}
@@ -126,13 +126,13 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
               >
                 <div className="min-w-0">
                   <p className="truncate text-[13.5px] text-fg/85">{item.name}</p>
-                  <p className="text-[12px] text-fg/40">{formatCurrency(item.price)}</p>
+                  <p className="text-[12px] text-faint">{formatCurrency(item.price)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2.5">
                   <button
                     type="button"
                     onClick={() => setQty(item.id, (quantities[item.id] ?? 0) - 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-fg/60 hover:bg-fg/[0.06]"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-muted hover:bg-fg/[0.06]"
                   >
                     −
                   </button>
@@ -142,7 +142,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
                   <button
                     type="button"
                     onClick={() => setQty(item.id, (quantities[item.id] ?? 0) + 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-fg/60 hover:bg-fg/[0.06]"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-muted hover:bg-fg/[0.06]"
                   >
                     +
                   </button>
@@ -152,7 +152,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
           </div>
 
           <div className="flex items-center justify-between border-t border-fg/[0.07] pt-4">
-            <span className="text-[14px] text-fg/60">
+            <span className="text-[14px] text-muted">
               Total: <span className="font-semibold text-fg/90">{formatCurrency(total)}</span>
             </span>
             <Button type="submit" size="md" disabled={isPending}>

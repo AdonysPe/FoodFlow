@@ -339,3 +339,13 @@ export function IconPrinter({ className = "h-5 w-5" }) {
     </svg>
   );
 }
+
+export function IconGlobe({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3.5 9.5h17M3.5 14.5h17" />
+      <path d="M12 3c-2.2 2.4-3.3 5.4-3.3 9s1.1 6.6 3.3 9c2.2-2.4 3.3-5.4 3.3-9S14.2 5.4 12 3Z" />
+    </svg>
+  );
+}

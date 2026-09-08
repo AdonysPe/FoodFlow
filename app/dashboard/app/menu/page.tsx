@@ -62,7 +62,7 @@ export default async function MenuPage() {
       {/* The bridge between the two halves of the module: what the venue keeps
           here, and what the diner sees. */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-fg/[0.08] bg-fg/[0.02] px-5 py-3.5">
-        <p className="flex items-center gap-2 text-[13px] text-fg/55">
+        <p className="flex items-center gap-2 text-[13px] text-muted">
           <span
             className={`h-2 w-2 shrink-0 rounded-full ${published ? "bg-mint" : "bg-fg/25"}`}
             aria-hidden

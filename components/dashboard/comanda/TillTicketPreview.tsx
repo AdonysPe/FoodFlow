@@ -101,7 +101,7 @@ export default function TillTicketPreview({
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-[15px] font-semibold text-fg">Vista previa</h2>
-            <p className="mt-0.5 text-[12px] text-fg/45">
+            <p className="mt-0.5 text-[12px] text-faint">
               {documentNo
                 ? `Se emitirá como ${documentNo}.`
                 : "Ticket interno, sin numeración de SUNAT."}
@@ -111,14 +111,14 @@ export default function TillTicketPreview({
             ref={closeRef}
             type="button"
             onClick={onClose}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-fg/45 hover:bg-fg/[0.06] hover:text-fg/80"
+            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
           >
             Cerrar
           </button>
         </div>
 
         {method && (
-          <p className="mt-2 text-[12px] text-fg/40">
+          <p className="mt-2 text-[12px] text-faint">
             Pago: {PAYMENT_METHOD_LONG_LABELS[method]}
           </p>
         )}

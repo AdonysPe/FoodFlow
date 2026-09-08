@@ -26,7 +26,7 @@ export default function Topbar({ titles = DEFAULT_TITLES }: { titles?: Record<st
         type="button"
         onClick={openSidebar}
         aria-label="Open menu"
-        className="rounded-lg p-2 text-fg/60 hover:bg-fg/[0.06] hover:text-fg lg:hidden"
+        className="rounded-lg p-2 text-muted hover:bg-fg/[0.06] hover:text-fg lg:hidden"
       >
         <IconMenu className="h-5 w-5" />
       </button>

@@ -114,7 +114,7 @@ export default function TableDrawer({
                 <h2 className="font-display text-[18px] font-bold tracking-[-0.01em] text-fg">
                   {table.name} · {table.capacity}
                 </h2>
-                <p className="mt-0.5 text-[12.5px] text-fg/45">
+                <p className="mt-0.5 text-[12.5px] text-faint">
                   {SHAPE_LABELS[table.shape]} · {ZONE_LABELS[table.zone]}
                 </p>
               </div>
@@ -122,7 +122,7 @@ export default function TableDrawer({
                 type="button"
                 onClick={onClose}
                 aria-label="Cerrar"
-                className="rounded-lg p-2 text-fg/40 hover:bg-fg/[0.06] hover:text-fg/80"
+                className="rounded-lg p-2 text-faint hover:bg-fg/[0.06] hover:text-fg/80"
               >
                 <IconX className="h-5 w-5" />
               </button>
@@ -130,7 +130,7 @@ export default function TableDrawer({
 
             <div className="flex-1 overflow-y-auto px-5 py-5">
               <section>
-                <p className="text-[12px] font-medium uppercase tracking-wide text-fg/35">
+                <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
                   Estado actual
                 </p>
                 <span
@@ -147,11 +147,11 @@ export default function TableDrawer({
               </section>
 
               <section className="mt-6">
-                <p className="text-[12px] font-medium uppercase tracking-wide text-fg/35">
+                <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
                   Comanda activa
                 </p>
                 {linkedOrders.length === 0 ? (
-                  <p className="mt-2 text-[13.5px] text-fg/40">
+                  <p className="mt-2 text-[13.5px] text-faint">
                     {occupied
                       ? "Ocupada manualmente, sin comanda vinculada."
                       : "Sin comanda abierta."}
@@ -167,11 +167,11 @@ export default function TableDrawer({
                           <span className="text-[13.5px] font-medium text-fg/85">
                             {o.customerName}
                           </span>
-                          <span className="rounded-md bg-fg/[0.06] px-2 py-0.5 text-[11.5px] text-fg/55">
+                          <span className="rounded-md bg-fg/[0.06] px-2 py-0.5 text-[11.5px] text-muted">
                             {ORDER_STATUS_LABELS[o.status]}
                           </span>
                         </div>
-                        <ul className="mt-2 flex flex-col gap-0.5 text-[12.5px] text-fg/55">
+                        <ul className="mt-2 flex flex-col gap-0.5 text-[12.5px] text-muted">
                           {o.items.map((it, i) => (
                             <li key={i}>
                               {it.quantity}× {it.name}
@@ -191,7 +191,7 @@ export default function TableDrawer({
                   own next round. */}
               {table.publicCode && (
                 <section className="mt-6">
-                  <p className="text-[12px] font-medium uppercase tracking-wide text-fg/35">
+                  <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
                     QR de la mesa
                   </p>
                   <div className="mt-2 flex items-center gap-4 rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-3.5">
@@ -210,7 +210,7 @@ export default function TableDrawer({
                       <p className="font-mono text-[13px] tracking-wide text-fg/70">
                         {table.publicCode}
                       </p>
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-fg/45">
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-faint">
                         El comensal lo escanea y pide su ronda desde la mesa.
                       </p>
                       <a
@@ -225,11 +225,11 @@ export default function TableDrawer({
               )}
 
               <section className="mt-6">
-                <p className="text-[12px] font-medium uppercase tracking-wide text-fg/35">
+                <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
                   Reservas de hoy
                 </p>
                 {dayReservations.length === 0 ? (
-                  <p className="mt-2 text-[13.5px] text-fg/40">Sin reservas para esta mesa hoy.</p>
+                  <p className="mt-2 text-[13.5px] text-faint">Sin reservas para esta mesa hoy.</p>
                 ) : (
                   <ul className="mt-2 flex flex-col gap-2">
                     {dayReservations.map((r) => (
@@ -242,11 +242,11 @@ export default function TableDrawer({
                             <span className="font-mono text-accent-ink">
                               {formatClock(r.startTime)}
                             </span>{" "}
-                            <span className="text-fg/30">
+                            <span className="text-faint">
                               – {endTimeLabel(r.startTime, r.durationMin)}
                             </span>
                           </p>
-                          <p className="mt-0.5 truncate text-[12px] text-fg/50">
+                          <p className="mt-0.5 truncate text-[12px] text-muted">
                             {r.customerName} · {r.partySize} pers.
                           </p>
                         </div>

@@ -71,19 +71,22 @@ export const TABLE_STATE_TONE: Record<
     solid: "#30D158",
     fill: "rgb(48 209 88 / 0.13)",
     stroke: "rgb(48 209 88 / 0.5)",
-    text: "#57DE85",
+    // The fills are one pigment in both themes, but the label is read, so it
+    // takes the theme's own ink. Hardcoded, these three were dark-theme values
+    // baked into JavaScript: "Libre" measured 1.4:1 on the light comanda.
+    text: "var(--color-ok-ink)",
   },
   reservada: {
     solid: "#FFD426",
     fill: "rgb(255 212 38 / 0.12)",
     stroke: "rgb(255 212 38 / 0.5)",
-    text: "#F3CE43",
+    text: "var(--color-warn-ink)",
   },
   ocupada: {
     solid: "#FF5A3C",
     fill: "rgb(255 90 51 / 0.17)",
     stroke: "rgb(255 90 51 / 0.62)",
-    text: "#FF8A6B",
+    text: "var(--color-accent-ink)",
   },
 };
 

@@ -109,14 +109,14 @@ export default function CertificateCard({
           state === "valid"
             ? "border-ok/30 bg-ok/[0.07]"
             : state === "expiring"
-              ? "border-amber-400/30 bg-amber-400/[0.07]"
+              ? "border-warn/30 bg-warn/[0.07]"
               : state === "expired"
                 ? "border-accent-400/35 bg-accent-400/[0.08]"
                 : "border-fg/[0.1] bg-fg/[0.03]"
         }`}
       >
         {state === "none" ? (
-          <p className="text-[13px] font-medium text-fg/60">
+          <p className="text-[13px] font-medium text-muted">
             No has subido tu certificado.
           </p>
         ) : (
@@ -128,12 +128,12 @@ export default function CertificateCard({
                   ? "Certificado guardado"
                   : `Certificado válido hasta ${formatBillingDate(cert.expiresAt)}`}
             </p>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-fg/45">
+            <p className="mt-0.5 text-[12px] leading-relaxed text-faint">
               {[cert.fileName, cert.subject].filter(Boolean).join(" · ")}
               {state === "expiring" && remaining != null && (
                 <>
                   {" · "}
-                  <span className="text-amber-200">
+                  <span className="text-warn-ink">
                     vence en {remaining} {remaining === 1 ? "día" : "días"}
                   </span>
                 </>
@@ -145,7 +145,7 @@ export default function CertificateCard({
               type="button"
               onClick={drop}
               disabled={isPending}
-              className="mt-2 text-[12px] font-medium text-fg/40 underline underline-offset-2 hover:text-accent-label disabled:opacity-40"
+              className="mt-2 text-[12px] font-medium text-faint underline underline-offset-2 hover:text-accent-label disabled:opacity-40"
             >
               Eliminar certificado
             </button>
@@ -175,7 +175,7 @@ export default function CertificateCard({
             type="file"
             accept=".pfx,.p12,application/x-pkcs12"
             onChange={(e) => pick(e.target.files?.[0] ?? null)}
-            className="block w-full cursor-pointer rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-3 py-2.5 text-[12.5px] text-fg/60 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-fg/[0.08] file:px-3 file:py-1.5 file:text-[12.5px] file:font-medium file:text-fg/80"
+            className="block w-full cursor-pointer rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-3 py-2.5 text-[12.5px] text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-fg/[0.08] file:px-3 file:py-1.5 file:text-[12.5px] file:font-medium file:text-fg/80"
           />
         </Field>
 
@@ -197,12 +197,12 @@ export default function CertificateCard({
               type="button"
               onClick={() => setVisible((v) => !v)}
               aria-pressed={visible}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[11.5px] font-medium text-fg/40 hover:bg-fg/[0.08] hover:text-fg/70"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[11.5px] font-medium text-faint hover:bg-fg/[0.08] hover:text-fg/70"
             >
               {visible ? "Ocultar" : "Mostrar"}
             </button>
           </div>
-          <p className="mt-1.5 text-[11.5px] text-fg/35">
+          <p className="mt-1.5 text-[11.5px] text-faint">
             Se guarda cifrada junto al certificado.
           </p>
         </div>
@@ -217,7 +217,7 @@ export default function CertificateCard({
         >
           {isPending ? "Subiendo…" : "Subir certificado"}
         </button>
-        <p className="text-[12px] text-fg/35">
+        <p className="text-[12px] text-faint">
           Obtén tu certificado digital en SUNAT con tu RUC. Es gratuito.
         </p>
       </div>

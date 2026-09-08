@@ -37,7 +37,7 @@ export default function CartaOverview({
         <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
           {restaurantName}
         </h1>
-        <p className="mt-0.5 text-[12.5px] text-fg/45">
+        <p className="mt-0.5 text-[12.5px] text-faint">
           Plan {PLAN_LABELS[plan]} · tu carta digital
         </p>
       </div>
@@ -72,11 +72,11 @@ export default function CartaOverview({
             </Link>
           </div>
           {itemCount === 0 ? (
-            <p className="py-6 text-center text-[14px] text-fg/40">
+            <p className="py-6 text-center text-[14px] text-faint">
               Tu carta está vacía. Agrega tu primer plato.
             </p>
           ) : soldOut.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-fg/40">
+            <p className="py-6 text-center text-[14px] text-faint">
               Todo disponible. Nada marcado como agotado.
             </p>
           ) : (
@@ -84,7 +84,7 @@ export default function CartaOverview({
               {soldOut.slice(0, 6).map((item) => (
                 <li key={item.id} className="flex items-center justify-between gap-3 py-2.5">
                   <span className="truncate text-[14px] text-fg/70">{item.name}</span>
-                  <span className="shrink-0 rounded-full bg-fg/[0.06] px-2.5 py-1 text-[12px] font-medium text-fg/50 ring-1 ring-inset ring-fg/15">
+                  <span className="shrink-0 rounded-full bg-fg/[0.06] px-2.5 py-1 text-[12px] font-medium text-muted ring-1 ring-inset ring-fg/15">
                     Agotado
                   </span>
                 </li>
@@ -97,7 +97,7 @@ export default function CartaOverview({
           <h2 className="text-[15px] font-semibold text-fg/90">
             Con el plan {PLAN_LABELS[next]}
           </h2>
-          <p className="mt-1 text-[12.5px] text-fg/40">
+          <p className="mt-1 text-[12.5px] text-faint">
             {PLAN_PRICES[next]}/mes · lo que se abre en este panel
           </p>
           <ul className="mt-4 flex flex-col gap-2">

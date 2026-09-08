@@ -38,7 +38,7 @@ export default function CategoryTabs({
               type="button"
               onClick={() => onChange(t.id)}
               className={`relative shrink-0 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors duration-200 ${
-                active ? "text-fg" : "text-fg/45 hover:text-fg/75"
+                active ? "text-fg" : "text-faint hover:text-fg/75"
               }`}
             >
               {active && (
@@ -53,7 +53,7 @@ export default function CategoryTabs({
                 {t.count != null && (
                   <span
                     className={`rounded-full px-1.5 text-[10.5px] tabular-nums ${
-                      active ? "bg-fg/15 text-fg/70" : "bg-fg/[0.06] text-fg/35"
+                      active ? "bg-fg/15 text-fg/70" : "bg-fg/[0.06] text-faint"
                     }`}
                   >
                     {t.count}

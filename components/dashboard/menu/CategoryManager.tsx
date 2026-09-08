@@ -72,7 +72,7 @@ function CategoryRow({ category }: { category: MenuCategoryDTO }) {
 
   return (
     <div className="flex items-center gap-2.5 px-4 py-2.5">
-      <span aria-hidden className="shrink-0 text-fg/25">
+      <span aria-hidden className="shrink-0 text-faint">
         <IconGrip className="h-4 w-4" />
       </span>
 
@@ -95,16 +95,16 @@ function CategoryRow({ category }: { category: MenuCategoryDTO }) {
         <span className="flex min-w-0 items-center gap-2">
           <span
             className={`truncate text-[14px] font-medium ${
-              category.active ? "text-fg/85" : "text-fg/40 line-through"
+              category.active ? "text-fg/85" : "text-faint line-through"
             }`}
           >
             {category.name}
           </span>
-          <span className="shrink-0 rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
+          <span className="shrink-0 rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
             {category.itemCount}
           </span>
           {!category.active && (
-            <span className="shrink-0 rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
+            <span className="shrink-0 rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
               oculta
             </span>
           )}
@@ -191,7 +191,7 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
       <div className="flex items-center justify-between border-b border-fg/[0.07] px-4 py-3">
         <div>
           <h2 className="text-[14px] font-semibold text-fg/90">Categorías</h2>
-          <p className="mt-0.5 text-[12px] text-fg/40">
+          <p className="mt-0.5 text-[12px] text-faint">
             Arrástralas para cambiar el orden de las pestañas.
           </p>
         </div>
@@ -234,7 +234,7 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
       </AnimatePresence>
 
       {ordered.length === 0 ? (
-        <p className="px-4 py-6 text-center text-[13.5px] text-fg/40">Aún no hay categorías.</p>
+        <p className="px-4 py-6 text-center text-[13.5px] text-faint">Aún no hay categorías.</p>
       ) : (
         <SortableList
           items={ordered}

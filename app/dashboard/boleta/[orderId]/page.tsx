@@ -101,7 +101,7 @@ export default async function ReceiptPage({
         </p>
       )}
       {!order.paidAt && !order.voidedAt && (
-        <p className="no-print w-full max-w-[380px] rounded-xl border border-fg/[0.12] bg-fg/[0.05] px-4 py-3 text-center text-[13px] text-fg/60">
+        <p className="no-print w-full max-w-[380px] rounded-xl border border-fg/[0.12] bg-fg/[0.05] px-4 py-3 text-center text-[13px] text-muted">
           Cuenta todavía abierta. Esto es una precuenta para que la mesa revise su
           consumo; el número de documento se asigna al cobrar.
         </p>

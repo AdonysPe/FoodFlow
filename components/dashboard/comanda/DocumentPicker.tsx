@@ -59,7 +59,7 @@ export default function DocumentPicker({
 
   return (
     <div>
-      <p className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-fg/35">
+      <p className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-faint">
         Tipo de comprobante
       </p>
 
@@ -82,14 +82,14 @@ export default function DocumentPicker({
               }`}
             >
               {opt.label}
-              <span className="mt-0.5 text-[11px] font-normal text-fg/40">{opt.sub}</span>
+              <span className="mt-0.5 text-[11px] font-normal text-faint">{opt.sub}</span>
             </button>
           );
         })}
       </div>
 
       {type === "nota_venta" && (
-        <p className="mt-3 rounded-xl border border-fg/[0.08] bg-fg/[0.03] px-4 py-3 text-[12.5px] leading-relaxed text-fg/45">
+        <p className="mt-3 rounded-xl border border-fg/[0.08] bg-fg/[0.03] px-4 py-3 text-[12.5px] leading-relaxed text-faint">
           Se imprime a nombre de <span className="font-medium text-fg/70">CONSUMIDOR FINAL</span>,
           sin pedirle documento al comensal.
         </p>
@@ -216,7 +216,7 @@ function TillField({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-[12px] font-medium text-fg/45">
+      <label htmlFor={id} className="mb-1.5 block text-[12px] font-medium text-faint">
         {label}
         {required && <span className="ml-1 text-accent-label">*</span>}
       </label>
@@ -229,7 +229,7 @@ function TillField({
         inputMode={inputMode}
         placeholder={placeholder}
         aria-invalid={error ? true : undefined}
-        className={`h-12 w-full rounded-xl border bg-fg/[0.05] px-4 text-[15px] text-fg placeholder:text-fg/25 outline-none transition-colors focus:border-accent-400/50 ${
+        className={`h-12 w-full rounded-xl border bg-fg/[0.05] px-4 text-[15px] text-fg placeholder:text-faint outline-none transition-colors focus:border-accent-400/50 ${
           error ? "border-accent-400/60" : "border-fg/[0.12]"
         }`}
       />
@@ -238,7 +238,7 @@ function TillField({
           {error}
         </p>
       ) : hint ? (
-        <p className="mt-1 text-[11.5px] text-fg/30">{hint}</p>
+        <p className="mt-1 text-[11.5px] text-faint">{hint}</p>
       ) : null}
     </div>
   );

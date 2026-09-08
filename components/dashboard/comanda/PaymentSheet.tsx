@@ -228,7 +228,7 @@ export default function PaymentSheet({
           <button
             type="button"
             onClick={onBack}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-fg/45 hover:bg-fg/[0.06] hover:text-fg/80"
+            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
           >
             Atrás
           </button>
@@ -237,7 +237,7 @@ export default function PaymentSheet({
 
       <div className="flex-1 px-4 py-5">
         <div className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5 text-center">
-          <p className="text-[12.5px] uppercase tracking-wide text-fg/40">Total a cobrar</p>
+          <p className="text-[12.5px] uppercase tracking-wide text-faint">Total a cobrar</p>
           <p className="mt-1 font-display text-[2rem] font-extrabold text-fg">
             {formatPrice(tab.total)}
           </p>
@@ -245,17 +245,17 @@ export default function PaymentSheet({
 
         {/* ------------------------------------------------------ componente 8 */}
         {!billing.ready && (
-          <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] px-4 py-3">
-            <p className="text-[12.5px] font-semibold text-amber-200">
+          <div className="mt-4 rounded-xl border border-warn/25 bg-warn/[0.07] px-4 py-3">
+            <p className="text-[12.5px] font-semibold text-warn-ink">
               Aún no puedes emitir boletas ni facturas
             </p>
-            <p className="mt-1 text-[12px] leading-relaxed text-fg/50">
+            <p className="mt-1 text-[12px] leading-relaxed text-muted">
               Falta {billing.missing.join(", ")}. Este cobro se imprime como nota de venta
               interna, sin valor tributario.
             </p>
             <Link
               href="/dashboard/app/configuracion/facturacion"
-              className="mt-2 inline-block text-[12px] font-medium text-amber-200 underline underline-offset-2"
+              className="mt-2 inline-block text-[12px] font-medium text-warn-ink underline underline-offset-2"
             >
               Configurar facturación electrónica
             </Link>
@@ -273,7 +273,7 @@ export default function PaymentSheet({
         </div>
 
         {/* ----------------------------------------------------- forma de pago */}
-        <p className="mb-2 mt-6 text-[12px] font-semibold uppercase tracking-wide text-fg/35">
+        <p className="mb-2 mt-6 text-[12px] font-semibold uppercase tracking-wide text-faint">
           Forma de pago
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -304,12 +304,12 @@ export default function PaymentSheet({
           <div className="mt-5">
             <label
               htmlFor="pay-received"
-              className="mb-1.5 block text-[12px] font-medium text-fg/45"
+              className="mb-1.5 block text-[12px] font-medium text-faint"
             >
               {needsCashSplit(method) ? "Parte pagada en efectivo" : "Monto recibido"}
             </label>
             <div className="relative">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-fg/40">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-faint">
                 S/
               </span>
               <input
@@ -347,7 +347,7 @@ export default function PaymentSheet({
                   ? "bg-accent-500/10 text-accent-label"
                   : hasReceived
                     ? "bg-ok/10 text-ok-ink"
-                    : "bg-fg/[0.03] text-fg/40"
+                    : "bg-fg/[0.03] text-faint"
               }`}
             >
               <span>

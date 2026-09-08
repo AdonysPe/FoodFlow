@@ -52,7 +52,7 @@ export default function CreateRestaurantForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Restaurant name"
-            className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
+            className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
           />
         </div>
         <div className="flex-1">
@@ -66,7 +66,7 @@ export default function CreateRestaurantForm() {
             value={ownerEmail}
             onChange={(e) => setOwnerEmail(e.target.value)}
             placeholder="Owner email"
-            className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
+            className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
           />
         </div>
         <div className="sm:w-44">
@@ -90,7 +90,7 @@ export default function CreateRestaurantForm() {
           {isPending ? "Creating…" : "Create"}
         </Button>
       </form>
-      <p className="mt-2.5 text-[12.5px] text-fg/40">{PLAN_SUMMARIES[plan]}</p>
+      <p className="mt-2.5 text-[12.5px] text-faint">{PLAN_SUMMARIES[plan]}</p>
       {error && <p className="mt-2.5 text-[13px] text-accent-icon">{error}</p>}
     </GlassCard>
   );

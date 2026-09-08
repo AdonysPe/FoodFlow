@@ -356,12 +356,12 @@ export default function BillingWorkspace({
                   ))}
                 </select>
                 {providerMeta?.site && (
-                  <p className="mt-1.5 text-[11.5px] text-fg/35">
+                  <p className="mt-1.5 text-[11.5px] text-faint">
                     <a
                       href={providerMeta.site}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="underline underline-offset-2 hover:text-fg/60"
+                      className="underline underline-offset-2 hover:text-muted"
                     >
                       Abrir {providerMeta.label}
                     </a>
@@ -431,7 +431,7 @@ export default function BillingWorkspace({
                 {isTesting ? "Probando…" : "Probar conexión"}
               </button>
               {dirty && (
-                <p className="text-[12px] text-fg/35">
+                <p className="text-[12px] text-faint">
                   Guarda los cambios antes de probar.
                 </p>
               )}
@@ -527,7 +527,7 @@ export default function BillingWorkspace({
                       />
                     </span>
                   ) : (
-                    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-fg/[0.15] text-[10px] text-fg/30">
+                    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-fg/[0.15] text-[10px] text-faint">
                       sin logo
                     </span>
                   )}
@@ -537,20 +537,20 @@ export default function BillingWorkspace({
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
                       onChange={(e) => void pickLogo(e.target.files?.[0] ?? null)}
-                      className="block w-full cursor-pointer rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 py-2 text-[12px] text-fg/60 file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-fg/[0.08] file:px-2 file:py-1 file:text-[12px] file:font-medium file:text-fg/80"
+                      className="block w-full cursor-pointer rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 py-2 text-[12px] text-muted file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-fg/[0.08] file:px-2 file:py-1 file:text-[12px] file:font-medium file:text-fg/80"
                     />
                     {value.logoDataUrl && (
                       <button
                         type="button"
                         onClick={() => set("logoDataUrl", null)}
-                        className="mt-1.5 text-[11.5px] font-medium text-fg/40 underline underline-offset-2 hover:text-accent-label"
+                        className="mt-1.5 text-[11.5px] font-medium text-faint underline underline-offset-2 hover:text-accent-label"
                       >
                         Quitar logo
                       </button>
                     )}
                   </div>
                 </div>
-                <p className="mt-1.5 text-[11.5px] leading-snug text-fg/35">
+                <p className="mt-1.5 text-[11.5px] leading-snug text-faint">
                   PNG o JPG, máx. 2 MB. Lo reducimos a {LOGO_MAX_PX} px y se imprime en
                   blanco y negro: un logo simple sale mucho mejor que uno con degradados.
                 </p>
@@ -611,14 +611,14 @@ export default function BillingWorkspace({
                     className={`h-11 rounded-xl border text-[13px] font-semibold transition-colors ${
                       value.paperWidth === w
                         ? "border-accent-400/60 bg-accent-400/15 text-accent-label"
-                        : "border-fg/[0.1] bg-fg/[0.04] text-fg/60 hover:text-fg/85"
+                        : "border-fg/[0.1] bg-fg/[0.04] text-muted hover:text-fg/85"
                     }`}
                   >
                     {w} mm
                   </button>
                 ))}
               </div>
-              <p className="mt-1.5 text-[11.5px] text-fg/35">{PAPER_LABELS[value.paperWidth]}</p>
+              <p className="mt-1.5 text-[11.5px] text-faint">{PAPER_LABELS[value.paperWidth]}</p>
             </div>
           </div>
         </Section>
@@ -659,7 +659,7 @@ export default function BillingWorkspace({
           Vista previa del ticket
         </button>
         {dirty && (
-          <span className="text-[12px] text-fg/35">Tienes cambios sin guardar.</span>
+          <span className="text-[12px] text-faint">Tienes cambios sin guardar.</span>
         )}
       </div>
 
@@ -718,7 +718,7 @@ function SeriesPair({
           maxLength={8}
         />
       </div>
-      <p className="mt-2.5 rounded-lg bg-fg/[0.04] px-2.5 py-1.5 text-center font-mono text-[12px] text-fg/60">
+      <p className="mt-2.5 rounded-lg bg-fg/[0.04] px-2.5 py-1.5 text-center font-mono text-[12px] text-muted">
         {formatElectronicNo(series, next)}
       </p>
     </div>

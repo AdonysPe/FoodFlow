@@ -33,7 +33,7 @@ function Stepper({
       <button
         type="button"
         onClick={() => onChange(qty - 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-[19px] font-bold text-fg/60 active:scale-95"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-[19px] font-bold text-muted active:scale-95"
         aria-label="Quitar uno"
       >
         −
@@ -61,7 +61,7 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-2 rounded-lg border border-dashed border-fg/[0.14] px-2.5 py-1 text-[12px] font-medium text-fg/45 transition-colors hover:border-accent-400/40 hover:text-accent-ink"
+        className="mt-2 rounded-lg border border-dashed border-fg/[0.14] px-2.5 py-1 text-[12px] font-medium text-faint transition-colors hover:border-accent-400/40 hover:text-accent-ink"
       >
         + Nota para cocina
       </button>
@@ -75,7 +75,7 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
         value={note}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Nota para cocina…"
-        className="h-10 w-full rounded-lg border border-fg/[0.12] bg-ink-950/60 px-3 text-[13.5px] text-fg placeholder:text-fg/30 outline-none focus:border-accent-400/50"
+        className="h-10 w-full rounded-lg border border-fg/[0.12] bg-ink-950/60 px-3 text-[13.5px] text-fg placeholder:text-faint outline-none focus:border-accent-400/50"
       />
       <div className="flex flex-wrap gap-1.5">
         {NOTE_CHIPS.map((chip) => {
@@ -92,7 +92,7 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
               className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
                 active
                   ? "bg-accent-400/20 text-accent-label ring-1 ring-inset ring-accent-400/30"
-                  : "border border-fg/[0.1] bg-fg/[0.03] text-fg/50 hover:text-fg/80"
+                  : "border border-fg/[0.1] bg-fg/[0.03] text-muted hover:text-fg/80"
               }`}
             >
               {chip}
@@ -172,7 +172,7 @@ export default function ItemPicker({
           <button
             type="button"
             onClick={onBack}
-            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-fg/45 hover:bg-fg/[0.06] hover:text-fg/80"
+            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
           >
             Cambiar
           </button>
@@ -181,7 +181,7 @@ export default function ItemPicker({
         {frequent.length > 0 && (
           <div className="-mx-4 mt-3 overflow-x-auto px-4">
             <div className="flex w-max items-center gap-2">
-              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-fg/30">
+              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-faint">
                 Frecuentes
               </span>
               {frequent.map((f) => {
@@ -217,7 +217,7 @@ export default function ItemPicker({
                   type="button"
                   onClick={() => setActiveTab(t.id)}
                   className={`relative shrink-0 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-                    active ? "text-fg" : "text-fg/45"
+                    active ? "text-fg" : "text-faint"
                   }`}
                 >
                   {active && (
@@ -244,7 +244,7 @@ export default function ItemPicker({
 
       <div className="flex-1 px-4 py-3">
         {shown.length === 0 ? (
-          <p className="py-10 text-center text-[13.5px] text-fg/40">
+          <p className="py-10 text-center text-[13.5px] text-faint">
             No hay platos disponibles en esta categoría.
           </p>
         ) : (
@@ -286,7 +286,7 @@ export default function ItemPicker({
                           {formatPrice(item.price)}
                         </span>
                         {item.prepMin != null && (
-                          <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
+                          <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
                             {item.prepMin} min
                           </span>
                         )}

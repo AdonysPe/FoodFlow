@@ -41,7 +41,7 @@ export default async function BillingSettingsPage() {
           <h2 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
             Facturación electrónica
           </h2>
-          <p className="mt-0.5 max-w-2xl text-[13px] leading-relaxed text-fg/45">
+          <p className="mt-0.5 max-w-2xl text-[13px] leading-relaxed text-faint">
             Tu conexión con SUNAT y lo que se imprime al cobrar una mesa. Se configura una
             vez y sale igual en cada cobro, en efectivo, tarjeta o Yape.
           </p>
@@ -55,11 +55,11 @@ export default async function BillingSettingsPage() {
       </div>
 
       {/* The one thing an owner must not misunderstand about this screen. */}
-      <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.07] p-5">
-        <h3 className="text-[13.5px] font-semibold text-amber-200">
+      <div className="rounded-2xl border border-warn/25 bg-warn/[0.07] p-5">
+        <h3 className="text-[13.5px] font-semibold text-warn-ink">
           Tu cuenta con el OSE es tuya, y hoy el ticket es una nota de venta
         </h3>
-        <div className="mt-1.5 flex max-w-3xl flex-col gap-2 text-[12.5px] leading-relaxed text-fg/55">
+        <div className="mt-1.5 flex max-w-3xl flex-col gap-2 text-[12.5px] leading-relaxed text-muted">
           <p>
             FoodFlow guarda tu configuración y arma el comprobante, pero la cuenta con el
             OSE la contratas y la pagas tú directamente con el proveedor. Nadie más en
@@ -88,21 +88,21 @@ export default async function BillingSettingsPage() {
 
       <section className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5">
         <h3 className="text-[14px] font-semibold text-fg">Conectar tu ticketera</h3>
-        <p className="mt-1 text-[12.5px] text-fg/45">
+        <p className="mt-1 text-[12.5px] text-faint">
           FoodFlow imprime por el navegador, así que sirve cualquier ticketera térmica que
           ya esté instalada en la caja. No hace falta comprar hardware nuevo.
         </p>
         <ol className="mt-4 flex flex-col gap-3">
           {PRINTER_STEPS.map((step, i) => (
             <li key={step.title} className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-fg/[0.12] bg-fg/[0.04] text-[12px] font-semibold text-fg/60">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-fg/[0.12] bg-fg/[0.04] text-[12px] font-semibold text-muted">
                 {i + 1}
               </span>
               <span className="min-w-0">
                 <span className="block text-[13.5px] font-medium text-fg/85">
                   {step.title}
                 </span>
-                <span className="mt-0.5 block text-[12.5px] leading-relaxed text-fg/45">
+                <span className="mt-0.5 block text-[12.5px] leading-relaxed text-faint">
                   {step.body}
                 </span>
               </span>

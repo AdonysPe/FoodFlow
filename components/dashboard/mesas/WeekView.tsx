@@ -7,7 +7,7 @@ import type { ReservationDTO } from "./types";
 import { formatClock } from "./ui";
 
 const DOT: Record<ReservationStatusValue, string> = {
-  pendiente: "bg-amber-300",
+  pendiente: "bg-warn",
   confirmada: "bg-mint",
   sentada: "bg-accent-400",
   cancelada: "bg-fg/25",
@@ -55,7 +55,7 @@ export default function WeekView({
                     isToday ? "bg-accent-400/[0.06]" : ""
                   }`}
                 >
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-fg/40">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-faint">
                     {d.toLocaleDateString("es-PE", { weekday: "short" })}
                   </p>
                   <p
@@ -87,7 +87,7 @@ export default function WeekView({
                           } ${muted ? "opacity-45" : ""}`}
                         >
                           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${DOT[r.status]}`} />
-                          <span className="shrink-0 font-mono text-[10.5px] text-fg/60">
+                          <span className="shrink-0 font-mono text-[10.5px] text-muted">
                             {r.startTime}
                           </span>
                           <span className="min-w-0 flex-1 truncate text-[11.5px] text-fg/80">

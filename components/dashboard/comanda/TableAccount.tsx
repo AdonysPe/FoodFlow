@@ -17,10 +17,10 @@ const KITCHEN_LABELS: Record<OpenTabDTO["kitchenStatus"], string> = {
 // The kitchen state is the one thing a server checks at a glance, so it gets
 // a colour rather than another grey chip.
 const KITCHEN_TONE: Record<OpenTabDTO["kitchenStatus"], string> = {
-  pending: "border-fg/15 bg-fg/[0.06] text-fg/60",
-  preparing: "border-amber-400/35 bg-amber-400/10 text-amber-200",
+  pending: "border-fg/15 bg-fg/[0.06] text-muted",
+  preparing: "border-warn/35 bg-warn/10 text-warn-ink",
   ready: "border-mint/40 bg-mint/10 text-mint-ink",
-  delivered: "border-fg/10 bg-fg/[0.04] text-fg/40",
+  delivered: "border-fg/10 bg-fg/[0.04] text-faint",
 };
 
 /** Short, sayable ticket number — what a server reads out loud on the phone. */
@@ -103,7 +103,7 @@ export default function TableAccount({
           <button
             type="button"
             onClick={onBack}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-fg/45 hover:bg-fg/[0.06] hover:text-fg/80"
+            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
           >
             Mesas
           </button>
@@ -123,34 +123,34 @@ export default function TableAccount({
                 <h2 className="mt-1 truncate font-display text-[22px] font-extrabold tracking-[-0.02em] text-fg">
                   {tab.tableName}
                 </h2>
-                {zone && <p className="text-[12px] text-fg/40">{zone}</p>}
+                {zone && <p className="text-[12px] text-faint">{zone}</p>}
               </div>
-              <span className="shrink-0 rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2 py-1 font-mono text-[12px] tracking-wide text-fg/55">
+              <span className="shrink-0 rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2 py-1 font-mono text-[12px] tracking-wide text-muted">
                 #{ticketNumber(tab.orderId)}
               </span>
             </div>
 
             <dl className="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-2 text-[12px]">
               <div>
-                <dt className="text-fg/35">Abierta</dt>
+                <dt className="text-faint">Abierta</dt>
                 <dd className="mt-0.5 font-medium tabular-nums text-fg/75">
                   {openedAtLabel(tab.openedAt)}
                 </dd>
               </div>
               <div>
-                <dt className="text-fg/35">Mozo</dt>
+                <dt className="text-faint">Mozo</dt>
                 <dd className="mt-0.5 truncate font-medium text-fg/75">
                   {tab.serverName ?? "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-fg/35">A nombre de</dt>
+                <dt className="text-faint">A nombre de</dt>
                 <dd className="mt-0.5 truncate font-medium text-fg/75">
                   {namedFor ?? "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-fg/35">Rondas</dt>
+                <dt className="text-faint">Rondas</dt>
                 <dd className="mt-0.5 font-medium tabular-nums text-fg/75">
                   {tab.roundNumber}
                 </dd>
@@ -171,7 +171,7 @@ export default function TableAccount({
               <section key={round} className={roundIndex > 0 ? "mt-4" : ""}>
                 {multi && (
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-fg/30">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-faint">
                       Ronda {round}
                     </span>
                     <span className="h-px flex-1 bg-fg/[0.07]" />
@@ -190,7 +190,7 @@ export default function TableAccount({
                           {l.name}
                         </span>
                         {/* unit price, so a corrected line can be checked */}
-                        <span className="mt-0.5 block text-[11.5px] tabular-nums text-fg/35">
+                        <span className="mt-0.5 block text-[11.5px] tabular-nums text-faint">
                           {formatPrice(l.price)} c/u
                         </span>
                         {l.note && (
@@ -215,7 +215,7 @@ export default function TableAccount({
             <div className="flex items-baseline justify-between">
               <span className="text-[13px] font-semibold uppercase tracking-wide text-fg/70">
                 Total
-                <span className="ml-2 font-normal normal-case tracking-normal text-fg/35">
+                <span className="ml-2 font-normal normal-case tracking-normal text-faint">
                   {dishCount} {dishCount === 1 ? "plato" : "platos"}
                 </span>
               </span>
@@ -244,7 +244,7 @@ export default function TableAccount({
           className={`mt-2 w-full rounded-xl px-4 py-2.5 text-[12.5px] font-medium transition-colors disabled:opacity-40 ${
             confirmingVoid
               ? "bg-accent-500 text-fg hover:bg-accent-600"
-              : "border border-fg/[0.1] bg-fg/[0.03] text-fg/45 hover:text-fg/70"
+              : "border border-fg/[0.1] bg-fg/[0.03] text-faint hover:text-fg/70"
           }`}
         >
           {confirmingVoid ? "¿Anular la cuenta y liberar la mesa?" : "Anular cuenta"}

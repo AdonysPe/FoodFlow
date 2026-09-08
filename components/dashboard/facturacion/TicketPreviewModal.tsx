@@ -104,7 +104,7 @@ export default function TicketPreviewModal({
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-[15px] font-semibold text-fg">Vista previa del ticket</h2>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-fg/45">
+            <p className="mt-0.5 text-[12px] leading-relaxed text-faint">
               Datos de ejemplo, al ancho real del rollo de {settings.paperWidth} mm.
             </p>
           </div>
@@ -112,7 +112,7 @@ export default function TicketPreviewModal({
             ref={closeRef}
             type="button"
             onClick={onClose}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-fg/45 hover:bg-fg/[0.06] hover:text-fg/80"
+            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
           >
             Cerrar
           </button>

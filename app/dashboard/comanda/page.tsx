@@ -26,7 +26,7 @@ export default async function ComandaPage() {
   if (!restaurant) {
     return (
       <div className="mx-auto max-w-md px-5 py-20 text-center">
-        <p className="text-[15px] text-fg/60">
+        <p className="text-[15px] text-muted">
           Tu cuenta todavía no está vinculada a un restaurante. Pídele al dueño que te agregue al
           equipo.
         </p>
@@ -43,7 +43,7 @@ export default async function ComandaPage() {
         <h1 className="font-display text-[20px] font-bold tracking-[-0.02em] text-fg">
           La comanda viene con el plan {PLAN_LABELS[firstPlanWith("comanda")]}
         </h1>
-        <p className="mt-2.5 text-[14px] leading-relaxed text-fg/50">
+        <p className="mt-2.5 text-[14px] leading-relaxed text-muted">
           {isOwner
             ? `Tu plan actual es ${PLAN_LABELS[plan]}. Escríbenos para activarla y que tus mozos tomen pedidos desde el teléfono.`
             : "Este restaurante todavía no tiene la comanda activa. Avísale al dueño."}

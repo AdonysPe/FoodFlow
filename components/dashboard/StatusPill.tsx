@@ -5,13 +5,13 @@ const TONE: Record<string, string> = {
   pending: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
   preparing: "bg-violet/10 text-violet-ink ring-violet/25",
   ready: "bg-mint/10 text-mint-ink ring-mint/25",
-  delivered: "bg-fg/[0.06] text-fg/60 ring-fg/15",
+  delivered: "bg-fg/[0.06] text-muted ring-fg/15",
   // Form-lead pipeline (Lead model): nuevo → contactado → cita → cliente.
   nuevo: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
   contactado: "bg-fg/[0.06] text-fg/70 ring-fg/15",
   cita: "bg-violet/10 text-violet-ink ring-violet/25",
   cliente: "bg-mint/10 text-mint-ink ring-mint/25",
-  archivado: "bg-fg/[0.04] text-fg/40 ring-fg/10",
+  archivado: "bg-fg/[0.04] text-faint ring-fg/10",
 };
 
 const LABEL: Record<string, string> = {

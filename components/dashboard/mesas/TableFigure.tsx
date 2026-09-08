@@ -81,7 +81,7 @@ const TableFigure = forwardRef<
       <span className="px-1 text-center text-[clamp(9.5px,3cqi,13px)] font-semibold leading-tight tracking-[-0.01em] text-fg">
         {table.name}
       </span>
-      <span className="mt-0.5 flex items-center gap-0.5 text-[clamp(7.5px,2.2cqi,10px)] font-medium tabular-nums text-fg/55">
+      <span className="mt-0.5 flex items-center gap-0.5 text-[clamp(7.5px,2.2cqi,10px)] font-medium tabular-nums text-muted">
         <svg viewBox="0 0 24 24" className="h-[1em] w-[1em]" fill="currentColor" aria-hidden>
           <circle cx="12" cy="8" r="4" />
           <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7z" />

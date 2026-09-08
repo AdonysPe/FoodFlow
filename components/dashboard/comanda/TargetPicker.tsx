@@ -15,7 +15,7 @@ const KITCHEN_FLAG: Partial<
 > = {
   preparing: {
     label: "En cocina",
-    className: "bg-amber-400/15 text-amber-200 ring-amber-400/25",
+    className: "bg-warn/15 text-warn-ink ring-warn/25",
   },
   ready: {
     label: "Lista",
@@ -58,7 +58,7 @@ export default function TargetPicker({
         <h1 className="font-display text-[21px] font-bold tracking-[-0.01em] text-fg">
           ¿Para dónde es?
         </h1>
-        <p className="mt-0.5 text-[13px] text-fg/45">
+        <p className="mt-0.5 text-[13px] text-faint">
           Toca una mesa para abrir, añadir o cobrar.
         </p>
       </div>
@@ -68,12 +68,12 @@ export default function TargetPicker({
       {openCount > 0 && (
         <div className="flex items-center gap-4 rounded-2xl border border-fg/[0.08] bg-fg/[0.03] px-4 py-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-fg/35">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">
               Cuentas abiertas
             </p>
             <p className="mt-0.5 font-display text-[19px] font-bold tabular-nums text-fg">
               {openCount}
-              <span className="ml-2 text-[14px] font-medium text-fg/50">
+              <span className="ml-2 text-[14px] font-medium text-muted">
                 {formatPrice(openTotal)}
               </span>
             </p>
@@ -102,7 +102,7 @@ export default function TargetPicker({
       </div>
 
       {tables.length === 0 ? (
-        <p className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-8 text-center text-[13.5px] text-fg/40">
+        <p className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-8 text-center text-[13.5px] text-faint">
           Aún no hay mesas. Créalas en el módulo Mesas para tomar comandas de salón.
         </p>
       ) : (
@@ -111,10 +111,10 @@ export default function TargetPicker({
           return (
             <div key={zone}>
               <div className="mb-2.5 flex items-center gap-2.5">
-                <h2 className="text-[12px] font-semibold uppercase tracking-wide text-fg/40">
+                <h2 className="text-[12px] font-semibold uppercase tracking-wide text-faint">
                   {ZONE_LABELS_ES[zone] ?? zone}
                 </h2>
-                <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[10.5px] font-medium tabular-nums text-fg/45">
+                <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[10.5px] font-medium tabular-nums text-faint">
                   {busy}/{zoneTables.length}
                 </span>
                 <span className="h-px flex-1 bg-fg/[0.06]" />
@@ -146,7 +146,7 @@ export default function TargetPicker({
                         <span className="font-display text-[17px] font-bold leading-none text-fg">
                           {t.name}
                         </span>
-                        <span className="flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-fg/45">
+                        <span className="flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-faint">
                           <IconUsers className="h-3 w-3" />
                           {t.capacity}
                         </span>
@@ -161,7 +161,7 @@ export default function TargetPicker({
                               the kitchen flag keep a line to themselves, even
                               on a four-figure total */}
                           {tab && tab.roundNumber > 1 && (
-                            <span className="text-fg/40">· R{tab.roundNumber}</span>
+                            <span className="text-faint">· R{tab.roundNumber}</span>
                           )}
                         </span>
 
@@ -210,12 +210,12 @@ function ChannelButton({
       onClick={onClick}
       className="flex min-h-[76px] items-center gap-3 rounded-2xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-left transition-colors hover:bg-fg/[0.07] active:scale-[0.98]"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-fg/[0.06] text-fg/60">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-fg/[0.06] text-muted">
         {icon}
       </span>
       <span className="min-w-0">
         <span className="block truncate text-[15px] font-semibold text-fg/90">{label}</span>
-        <span className="block truncate text-[12px] text-fg/40">{hint}</span>
+        <span className="block truncate text-[12px] text-faint">{hint}</span>
       </span>
     </button>
   );

@@ -11,12 +11,12 @@ const HEADLINE: Record<BillingReadiness, { icon: string; title: string; skin: st
   incomplete: {
     icon: "!",
     title: "Configuración incompleta · faltan campos",
-    skin: "border-amber-400/30 bg-amber-400/[0.07] text-amber-200",
+    skin: "border-warn/30 bg-warn/[0.07] text-warn-ink",
   },
   unset: {
     icon: "×",
     title: "Sin configurar",
-    skin: "border-fg/[0.1] bg-fg/[0.03] text-fg/50",
+    skin: "border-fg/[0.1] bg-fg/[0.03] text-muted",
   },
 };
 
@@ -68,7 +68,7 @@ export default function StatusCard({
               <span
                 aria-hidden
                 className={`mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                  item.done ? "bg-ok/20 text-ok-ink" : "bg-fg/[0.08] text-fg/40"
+                  item.done ? "bg-ok/20 text-ok-ink" : "bg-fg/[0.08] text-faint"
                 }`}
               >
                 {item.done ? "✓" : "×"}
@@ -81,7 +81,7 @@ export default function StatusCard({
                 >
                   {item.label}
                 </span>
-                <span className="mt-0.5 block text-[11.5px] leading-snug text-fg/40">
+                <span className="mt-0.5 block text-[11.5px] leading-snug text-faint">
                   {item.detail}
                 </span>
               </span>
@@ -92,18 +92,18 @@ export default function StatusCard({
 
       <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-fg/[0.07] pt-3.5 text-[11.5px]">
         <div>
-          <dt className="text-fg/35">Última actualización</dt>
-          <dd className="mt-0.5 font-medium text-fg/65">
+          <dt className="text-faint">Última actualización</dt>
+          <dd className="mt-0.5 font-medium text-muted">
             {updatedAt ? formatBillingDate(updatedAt) : "Nunca"}
           </dd>
         </div>
         <div>
-          <dt className="text-fg/35">Cobros este mes</dt>
-          <dd className="mt-0.5 font-medium text-fg/65 tabular-nums">{issuedThisMonth}</dd>
+          <dt className="text-faint">Cobros este mes</dt>
+          <dd className="mt-0.5 font-medium text-muted tabular-nums">{issuedThisMonth}</dd>
         </div>
         <div>
-          <dt className="text-fg/35">Próximo correlativo</dt>
-          <dd className="mt-0.5 font-mono font-medium text-fg/65">{nextDocument}</dd>
+          <dt className="text-faint">Próximo correlativo</dt>
+          <dd className="mt-0.5 font-mono font-medium text-muted">{nextDocument}</dd>
         </div>
       </dl>
     </section>

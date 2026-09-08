@@ -38,7 +38,7 @@ export default async function TableQrSheetPage() {
           <h2 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
             QR de mesas
           </h2>
-          <p className="mt-0.5 text-[13px] text-fg/45">
+          <p className="mt-0.5 text-[13px] text-faint">
             Imprime esta hoja, recorta y pega un código en cada mesa. El comensal lo escanea
             y pide desde su sitio.
           </p>
@@ -55,7 +55,7 @@ export default async function TableQrSheetPage() {
       </div>
 
       {printable.length === 0 ? (
-        <p className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center text-[14px] text-fg/40 print:hidden">
+        <p className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center text-[14px] text-faint print:hidden">
           Aún no hay mesas activas que imprimir.
         </p>
       ) : (

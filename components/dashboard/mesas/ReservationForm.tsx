@@ -240,13 +240,13 @@ export default function ReservationForm({
               );
             })}
           </select>
-          <p className="mt-1.5 text-[12px] text-fg/40">
+          <p className="mt-1.5 text-[12px] text-faint">
             {freeCount === 0
               ? "Ninguna mesa libre para esa fecha y hora."
               : `${freeCount} ${freeCount === 1 ? "mesa disponible" : "mesas disponibles"} a esa hora · cada reserva bloquea la mesa 3 h.`}
           </p>
           {selectedBusy && (
-            <p className="mt-1 text-[12px] text-amber-200">
+            <p className="mt-1 text-[12px] text-warn-ink">
               La mesa elegida ya tiene una reserva cerca de esa hora. Cámbiala o ajusta el horario.
             </p>
           )}

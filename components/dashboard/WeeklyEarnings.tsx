@@ -57,7 +57,7 @@ export default function WeeklyEarnings({
               <div key={week.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
                 <span
                   className={`text-[11px] font-semibold tabular-nums ${
-                    week.isCurrent ? "text-accent-ink" : "text-fg/55"
+                    week.isCurrent ? "text-accent-ink" : "text-muted"
                   }`}
                 >
                   {week.value > 0 ? shortMoney(week.value) : "—"}
@@ -79,7 +79,7 @@ export default function WeeklyEarnings({
 
                 <span
                   className={`w-full truncate text-center text-[10.5px] ${
-                    week.isCurrent ? "font-medium text-fg/70" : "text-fg/35"
+                    week.isCurrent ? "font-medium text-fg/70" : "text-faint"
                   }`}
                 >
                   {week.label}
@@ -91,10 +91,10 @@ export default function WeeklyEarnings({
       </div>
 
       <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-fg/[0.06] pt-4">
-        <span className="text-[12.5px] text-fg/45">
+        <span className="text-[12.5px] text-faint">
           Esta semana
           {partial && (
-            <span className="ml-1.5 text-fg/30">· día {daysElapsed} de 7</span>
+            <span className="ml-1.5 text-faint">· día {daysElapsed} de 7</span>
           )}
         </span>
         <span className="font-display text-[19px] font-bold tabular-nums text-fg">
@@ -111,7 +111,7 @@ export default function WeeklyEarnings({
           </span>
         )}
         {!hasSales && (
-          <span className="text-[12.5px] text-fg/35">
+          <span className="text-[12.5px] text-faint">
             Aún sin ventas registradas en estas semanas.
           </span>
         )}

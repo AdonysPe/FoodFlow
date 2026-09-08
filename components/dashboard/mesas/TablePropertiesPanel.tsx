@@ -90,7 +90,7 @@ export default function TablePropertiesPanel({
                 type="button"
                 onClick={onClose}
                 aria-label="Cerrar"
-                className="rounded-lg p-2 text-fg/40 hover:bg-fg/[0.06] hover:text-fg/80"
+                className="rounded-lg p-2 text-faint hover:bg-fg/[0.06] hover:text-fg/80"
               >
                 <IconX className="h-5 w-5" />
               </button>
@@ -98,7 +98,7 @@ export default function TablePropertiesPanel({
 
             <div className="flex-1 overflow-y-auto px-5 py-5">
               <TableFormFields value={form} onChange={setForm} idPrefix={`props-${table.id}`} />
-              <p className="mt-4 text-[12px] text-fg/35">
+              <p className="mt-4 text-[12px] text-faint">
                 Arrastra la mesa en el plano para moverla. La posición se guarda sola.
               </p>
             </div>

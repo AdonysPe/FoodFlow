@@ -81,27 +81,27 @@ export default function ReservationCard({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             {showDate && (
-              <span className="rounded-md bg-fg/[0.05] px-1.5 py-0.5 text-[11px] capitalize text-fg/50">
+              <span className="rounded-md bg-fg/[0.05] px-1.5 py-0.5 text-[11px] capitalize text-muted">
                 {dateLabel}
               </span>
             )}
             <span className="font-mono text-[13px] text-accent-ink">
               {formatClock(reservation.startTime)}
             </span>
-            <span className="text-[12px] text-fg/30">
+            <span className="text-[12px] text-faint">
               – {endTimeLabel(reservation.startTime, reservation.durationMin)}
             </span>
           </div>
           <p className="mt-1 truncate text-[14px] font-medium text-fg/85">
             {reservation.customerName}
           </p>
-          <p className="mt-0.5 text-[12.5px] text-fg/45">
+          <p className="mt-0.5 text-[12.5px] text-faint">
             {reservation.partySize} personas
             {tableName ? ` · ${tableName}` : " · sin mesa"}
             {reservation.customerPhone ? ` · ${reservation.customerPhone}` : ""}
           </p>
           {reservation.notes && (
-            <p className="mt-1 text-[12.5px] italic text-fg/40">“{reservation.notes}”</p>
+            <p className="mt-1 text-[12.5px] italic text-faint">“{reservation.notes}”</p>
           )}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">

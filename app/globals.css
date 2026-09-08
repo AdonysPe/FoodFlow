@@ -39,6 +39,12 @@
   --color-ok-ink: #57de85;
   --color-wa: #25d366;
   --color-wa-ink: #8af0b4;
+  /* `warn` is "in progress or needs your attention": a ticket running late,
+     a reservation not yet confirmed, a setup with fields still missing. It
+     used to be written as raw amber-* utilities, which are fixed pigments —
+     amber-200 as text measures 1.15:1 on paper, i.e. invisible. */
+  --color-warn: #fbbf24;
+  --color-warn-ink: #fde68a;
 
   /* ---------------------------------------------------------------
      Semantic tokens. Everything above is a fixed pigment; everything
@@ -63,6 +69,18 @@
   --color-on-accent: #0c0908;
   --color-mint-ink: #3ddc97;
   --color-chat-ink: #6fe3cd;
+
+  /* Muted copy, as two solid roles rather than opacities of `fg`.
+     An opacity ladder cannot serve both themes: white at 40% on warm black
+     reads at 3.8:1, but ink at 40% on paper is 2.6:1, and no alpha below 60%
+     clears AA on paper even with pure black. Measured across the dashboard,
+     that single fact accounted for ~150 unreadable labels in the light theme.
+     `muted` is secondary copy, `faint` is the tier under it; both are pinned
+     per theme so each one gets values that actually work there.
+       muted -> light 6.3:1 / dark 6.9:1
+       faint -> light 5.2:1 / dark 5.6:1 */
+  --color-muted: #9d9892;
+  --color-faint: #8b8783;
 
   /* Conversation teal: the chat launcher and everything inside the chat that
      is about talking. Kept apart from the vermilion (which means "act") and
@@ -154,6 +172,9 @@
     --color-violet-ink: #c3b4ff;
     --color-ok-ink: #57de85;
     --color-wa-ink: #8af0b4;
+    --color-warn-ink: #fde68a;
+    --color-muted: #9d9892;
+    --color-faint: #8b8783;
 
     /* materials */
     --line: rgb(243 239 230 / 0.08);
@@ -244,11 +265,14 @@
     --color-accent-label: #a82b0e;
     --color-accent-ink: #b32f10;
     --color-accent-icon: #c23414;
-    --color-mint-ink: #076e48;
+    --color-mint-ink: #066341;
     --color-chat-ink: #066b60;
     --color-violet-ink: #5433c7;
     --color-ok-ink: #0b6f30;
     --color-wa-ink: #0c6e35;
+    --color-warn-ink: #7d5200;
+    --color-muted: #575049;
+    --color-faint: #665f59;
 
     --line: rgb(28 20 18 / 0.1);
     --rule: rgb(28 20 18 / 0.14);
@@ -276,7 +300,7 @@
     --drop-hard: rgb(28 20 18 / 0.24);
     --chart-grid: rgb(28 20 18 / 0.09);
     --chart-axis: rgb(28 20 18 / 0.11);
-    --chart-tick: rgb(28 20 18 / 0.5);
+    --chart-tick: rgb(28 20 18 / 0.72);
     --plan-ground: rgb(28 20 18 / 0.022);
     --plan-sheen: rgb(28 20 18 / 0.03);
     --plan-dot: rgb(28 20 18 / 0.12);

@@ -75,7 +75,7 @@ export default async function OverviewPage() {
             </Link>
           </div>
           {recentContacts.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-fg/40">
+            <p className="py-6 text-center text-[14px] text-faint">
               Sin contactos del formulario todavía.
             </p>
           ) : (
@@ -84,7 +84,7 @@ export default async function OverviewPage() {
                 <li key={lead.id} className="flex items-center justify-between gap-3 py-3">
                   <span className="min-w-0 text-[14px] text-fg/80">
                     <span className="font-medium">{lead.nombre}</span>
-                    <span className="text-fg/40"> · {lead.restaurante}</span>
+                    <span className="text-faint"> · {lead.restaurante}</span>
                   </span>
                   <StatusPill status={lead.status} />
                 </li>
@@ -104,7 +104,7 @@ export default async function OverviewPage() {
             </Link>
           </div>
           {recentLeads.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-fg/40">Sin leads todavía.</p>
+            <p className="py-6 text-center text-[14px] text-faint">Sin leads todavía.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-fg/[0.05]">
               {recentLeads.map((lead) => (

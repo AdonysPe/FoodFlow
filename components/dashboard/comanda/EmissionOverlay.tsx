@@ -60,11 +60,11 @@ export default function EmissionOverlay({
           <h2 className="mt-5 font-display text-[19px] font-bold tracking-[-0.02em] text-fg">
             Enviando comprobante a SUNAT…
           </h2>
-          <p className="mt-1.5 text-[13px] text-fg/45">
+          <p className="mt-1.5 text-[13px] text-faint">
             Esto puede tomar unos segundos. No cierres la comanda.
           </p>
           {view.documentNo && (
-            <p className="mt-3 font-mono text-[13px] text-fg/35">{view.documentNo}</p>
+            <p className="mt-3 font-mono text-[13px] text-faint">{view.documentNo}</p>
           )}
         </>
       )}
@@ -80,7 +80,7 @@ export default function EmissionOverlay({
           <h2 className="mt-4 font-display text-[20px] font-extrabold tracking-[-0.02em] text-fg">
             {view.documentNo} emitida correctamente
           </h2>
-          <p className="mt-1 text-[13.5px] text-fg/55">
+          <p className="mt-1 text-[13.5px] text-muted">
             {tableName} · {formatPrice(total)}
           </p>
           {change > 0 && (
@@ -89,12 +89,12 @@ export default function EmissionOverlay({
             </p>
           )}
           {view.hash && (
-            <p className="mt-3 font-mono text-[12px] text-fg/35">
+            <p className="mt-3 font-mono text-[12px] text-faint">
               Hash {view.hash.slice(0, 12)}…
             </p>
           )}
           {view.customerEmail && (
-            <p className="mt-2 max-w-[300px] text-[12px] leading-relaxed text-fg/35">
+            <p className="mt-2 max-w-[300px] text-[12px] leading-relaxed text-faint">
               Tu OSE envía el XML y el PDF a {view.customerEmail}.
             </p>
           )}
@@ -128,7 +128,7 @@ export default function EmissionOverlay({
           <h2 className="mt-4 font-display text-[20px] font-extrabold tracking-[-0.02em] text-fg">
             No se pudo emitir el comprobante
           </h2>
-          <p className="mt-2 max-w-[340px] text-[13px] leading-relaxed text-fg/55">
+          <p className="mt-2 max-w-[340px] text-[13px] leading-relaxed text-muted">
             {view.message}
           </p>
           <p className="mt-3 rounded-xl border border-ok/25 bg-ok/[0.07] px-4 py-2 text-[12.5px] font-medium text-ok-ink">
@@ -153,7 +153,7 @@ export default function EmissionOverlay({
             {view.configurable && (
               <Link
                 href="/dashboard/app/configuracion/facturacion"
-                className="flex h-10 w-full items-center justify-center text-[13px] font-medium text-fg/45 underline underline-offset-2 hover:text-fg/70"
+                className="flex h-10 w-full items-center justify-center text-[13px] font-medium text-faint underline underline-offset-2 hover:text-fg/70"
               >
                 Ir a Configuración › Facturación
               </Link>
@@ -161,7 +161,7 @@ export default function EmissionOverlay({
             <button
               type="button"
               onClick={onClose}
-              className="h-10 w-full text-[13px] font-medium text-fg/40 hover:text-fg/70"
+              className="h-10 w-full text-[13px] font-medium text-faint hover:text-fg/70"
             >
               Cerrar
             </button>

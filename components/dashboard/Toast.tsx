@@ -42,7 +42,7 @@ function ToastItem({
       <button
         type="button"
         onClick={() => onDismiss(id)}
-        className="ml-0.5 shrink-0 rounded-md p-0.5 text-fg/25 transition-colors hover:text-fg/60"
+        className="ml-0.5 shrink-0 rounded-md p-0.5 text-faint transition-colors hover:text-muted"
         aria-label="Descartar"
       >
         <IconX className="h-3 w-3" />

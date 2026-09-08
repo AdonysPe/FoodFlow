@@ -34,7 +34,7 @@ export default function PaymentDone({
       <h2 className="mt-4 font-display text-[22px] font-extrabold tracking-[-0.02em] text-fg">
         Cobrado
       </h2>
-      <p className="mt-1 text-[14px] text-fg/55">
+      <p className="mt-1 text-[14px] text-muted">
         {settled.tableName} · {settled.methodLabel} · {formatPrice(settled.total)}
       </p>
       {settled.change > 0 && (

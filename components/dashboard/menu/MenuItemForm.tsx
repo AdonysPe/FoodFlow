@@ -154,7 +154,7 @@ export default function MenuItemForm({
         </div>
         <div className={compact ? "sm:col-span-4" : "sm:col-span-6"}>
           <label htmlFor="mi-photo" className={labelClass}>
-            Foto <span className="text-fg/25">· opcional, se muestra en tu carta pública</span>
+            Foto <span className="text-faint">· opcional, se muestra en tu carta pública</span>
           </label>
           <div className="flex items-start gap-3">
             {/* Plain <img>, not next/image: this previews whatever the owner
@@ -192,7 +192,7 @@ export default function MenuItemForm({
 
         <div className={compact ? "sm:col-span-4" : "sm:col-span-6"}>
           <label htmlFor="mi-desc" className={labelClass}>
-            Descripción <span className="text-fg/25">· opcional</span>
+            Descripción <span className="text-faint">· opcional</span>
           </label>
           <textarea
             id="mi-desc"

@@ -36,7 +36,7 @@ function MemberRow({ member }: { member: StaffMemberDTO }) {
         </div>
         <div className="min-w-0">
           <p className="truncate text-[13.5px] font-medium text-fg/85">{member.email}</p>
-          <p className="text-[12px] text-fg/40">
+          <p className="text-[12px] text-faint">
             {member.active ? "Mozo · ya inició sesión" : "Mozo · pendiente de primer inicio"}
           </p>
         </div>
@@ -89,7 +89,7 @@ export default function EquipoManager({
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">Equipo</h1>
-        <p className="mt-1 max-w-prose text-[13px] leading-relaxed text-fg/45">
+        <p className="mt-1 max-w-prose text-[13px] leading-relaxed text-faint">
           Agrega a tus mozos por correo. Cada uno inicia sesión con su propio correo y un código —
           solo verán la pantalla de comanda, nunca la administración de la carta ni los reportes.
         </p>
@@ -99,7 +99,7 @@ export default function EquipoManager({
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-[15px] font-semibold text-fg/90">Agregar mozo</h2>
           {maxUsers != null && (
-            <span className="text-[12.5px] text-fg/40">
+            <span className="text-[12.5px] text-faint">
               {members.length + 1} de {maxUsers} usuarios
               {seatsLeft != null && seatsLeft > 0
                 ? ` · quedan ${seatsLeft}`
@@ -115,14 +115,14 @@ export default function EquipoManager({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="mozo@correo.com"
-            className="h-11 w-full flex-1 rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-40"
+            className="h-11 w-full flex-1 rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-40"
           />
           <Button type="submit" size="md" className="shrink-0" disabled={isPending || full}>
             {isPending ? "Agregando…" : "Agregar"}
           </Button>
         </form>
         {full && (
-          <p className="mt-2.5 text-[13px] text-amber-200">
+          <p className="mt-2.5 text-[13px] text-warn-ink">
             Tu plan llegó al tope de usuarios. Quita a alguien o sube de plan para agregar más.
           </p>
         )}
@@ -131,7 +131,7 @@ export default function EquipoManager({
 
       {members.length === 0 ? (
         <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-fg/45">
+          <p className="text-[14px] text-faint">
             Aún no hay mozos en el equipo. Agrega el primero arriba.
           </p>
         </GlassCard>

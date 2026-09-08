@@ -106,7 +106,7 @@ export default function MenuWorkspace({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">Carta</h1>
-          <p className="mt-0.5 text-[12.5px] text-fg/45">
+          <p className="mt-0.5 text-[12.5px] text-faint">
             {items.length} plato(s) · {available} disponible(s) · {categories.length} categoría(s)
           </p>
         </div>
@@ -144,7 +144,7 @@ export default function MenuWorkspace({
 
       <div className="flex flex-col gap-3">
         <div className="relative max-w-sm">
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg/30">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-faint">
             <IconSearch className="h-[18px] w-[18px]" />
           </span>
           <input
@@ -167,7 +167,7 @@ export default function MenuWorkspace({
 
       {emptyAll ? (
         <div className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center">
-          <p className="text-[14px] text-fg/45">Tu carta está vacía. Agrega tu primer plato.</p>
+          <p className="text-[14px] text-faint">Tu carta está vacía. Agrega tu primer plato.</p>
           <Button
             type="button"
             size="md"
@@ -178,14 +178,14 @@ export default function MenuWorkspace({
           </Button>
         </div>
       ) : visible.length === 0 ? (
-        <div className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center text-[13.5px] text-fg/40">
+        <div className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center text-[13.5px] text-faint">
           {trimmedQuery
             ? "Ningún plato coincide con la búsqueda."
             : "No hay platos en esta categoría todavía."}
         </div>
       ) : sortable ? (
         <div>
-          <p className="mb-2 px-1 text-[12px] text-fg/35">
+          <p className="mb-2 px-1 text-[12px] text-faint">
             Arrastra los platos para ordenarlos dentro de la categoría.
           </p>
           <SortableList
@@ -209,13 +209,13 @@ export default function MenuWorkspace({
         <div className="flex flex-col gap-5">
           {groups.map((g) => (
             <div key={g.id ?? "none"}>
-              <h3 className="mb-2 flex items-center gap-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-fg/40">
+              <h3 className="mb-2 flex items-center gap-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-faint">
                 {g.name}
-                <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-fg/40">
+                <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-faint">
                   {g.items.length}
                 </span>
                 {!g.active && (
-                  <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-fg/40">
+                  <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[11px] font-normal text-faint">
                     oculta
                   </span>
                 )}

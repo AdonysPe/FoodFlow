@@ -66,7 +66,7 @@ export default function MenuItemModal({
                 type="button"
                 onClick={onClose}
                 aria-label="Cerrar"
-                className="rounded-lg p-1.5 text-fg/40 hover:bg-fg/[0.06] hover:text-fg/80"
+                className="rounded-lg p-1.5 text-faint hover:bg-fg/[0.06] hover:text-fg/80"
               >
                 <IconX className="h-5 w-5" />
               </button>

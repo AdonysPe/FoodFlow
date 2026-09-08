@@ -47,7 +47,7 @@ export default async function CartaSettingsPage() {
           <h2 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
             Carta pública
           </h2>
-          <p className="mt-0.5 max-w-2xl text-[13px] leading-relaxed text-fg/45">
+          <p className="mt-0.5 max-w-2xl text-[13px] leading-relaxed text-faint">
             La carta que ve tu comensal al escanear el QR. Toma los platos, precios y
             fotos del módulo Menú: lo que cambies allí aparece aquí al instante, sin que
             nadie recargue nada.
@@ -78,7 +78,7 @@ export default async function CartaSettingsPage() {
             />
             {live ? "Tu carta está en línea" : "Tu carta todavía no está publicada"}
           </p>
-          <p className="mt-1 break-all font-mono text-[12.5px] text-fg/50">
+          <p className="mt-1 break-all font-mono text-[12.5px] text-muted">
             {SITE_URL.replace(/^https?:\/\//, "")}
             {publicPath}
           </p>
@@ -135,7 +135,7 @@ export default async function CartaSettingsPage() {
 
       <section className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5">
         <h3 className="text-[14px] font-semibold text-fg">Cómo se actualiza</h3>
-        <ul className="mt-3 flex flex-col gap-2.5 text-[12.5px] leading-relaxed text-fg/50">
+        <ul className="mt-3 flex flex-col gap-2.5 text-[12.5px] leading-relaxed text-muted">
           <li>
             <span className="font-medium text-fg/75">Al instante.</span> Cambias un precio
             o marcas un plato como agotado en Menú y el teléfono del comensal se actualiza

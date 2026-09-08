@@ -110,7 +110,7 @@ export default function LoginFlow() {
             <h1 className="font-display text-[1.4rem] font-bold tracking-[-0.02em] text-fg">
               Entra a FoodFlow
             </h1>
-            <p className="mt-2 text-[14px] text-fg/50">
+            <p className="mt-2 text-[14px] text-muted">
               Escribe tu correo y te enviamos un código de un solo uso.
             </p>
 
@@ -127,7 +127,7 @@ export default function LoginFlow() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@restaurante.com"
-                className="h-12 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[15px] text-fg placeholder:text-fg/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
+                className="h-12 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[15px] text-fg placeholder:text-faint outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
               />
               <Button
                 type="submit"
@@ -153,7 +153,7 @@ export default function LoginFlow() {
             <h1 className="text-center font-display text-[1.4rem] font-bold tracking-[-0.02em] text-fg">
               Revisa tu correo
             </h1>
-            <p className="mt-2 text-center text-[14px] text-fg/50">
+            <p className="mt-2 text-center text-[14px] text-muted">
               Escribe el código de 6 dígitos que enviamos a <span className="text-fg/75">{email}</span>
             </p>
 
@@ -168,7 +168,7 @@ export default function LoginFlow() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2, ease: EASE }}
-                  className="mt-5 flex items-center justify-center gap-2.5 text-[13px] text-fg/55"
+                  className="mt-5 flex items-center justify-center gap-2.5 text-[13px] text-muted"
                 >
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-fg/15 border-t-accent-400" />
                   Verificando tu código…
@@ -184,7 +184,7 @@ export default function LoginFlow() {
                   setError("");
                 }}
                 disabled={verifying}
-                className="text-fg/40 hover:text-fg/70 disabled:opacity-40"
+                className="text-faint hover:text-fg/70 disabled:opacity-40"
               >
                 Cambiar correo
               </button>
@@ -193,7 +193,7 @@ export default function LoginFlow() {
                 type="button"
                 onClick={() => handleRequestOtp()}
                 disabled={cooldown > 0 || isPending || verifying}
-                className="text-accent-icon hover:text-accent-ink disabled:text-fg/25"
+                className="text-accent-icon hover:text-accent-ink disabled:text-faint"
               >
                 {cooldown > 0 ? `Reenviar en ${cooldown}s` : "Reenviar código"}
               </button>

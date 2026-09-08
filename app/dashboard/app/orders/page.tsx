@@ -79,7 +79,7 @@ export default async function OrdersPage({
             className={`rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
               range === r.key
                 ? "bg-fg/[0.09] text-fg"
-                : "text-fg/50 hover:bg-fg/[0.05] hover:text-fg/80"
+                : "text-muted hover:bg-fg/[0.05] hover:text-fg/80"
             }`}
           >
             {r.label}
@@ -87,7 +87,7 @@ export default async function OrdersPage({
         ))}
         <Link
           href="/dashboard/app/configuracion/facturacion"
-          className="ml-auto rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-fg/60 transition-colors hover:bg-fg/[0.08] hover:text-fg"
+          className="ml-auto rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-muted transition-colors hover:bg-fg/[0.08] hover:text-fg"
         >
           Configurar facturación
         </Link>

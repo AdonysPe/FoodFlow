@@ -56,7 +56,7 @@ export function Section({
           />
           <span className="min-w-0 flex-1">
             <span className="block text-[14px] font-semibold text-fg">{title}</span>
-            <span className="mt-0.5 block text-[12.5px] leading-relaxed text-fg/45">
+            <span className="mt-0.5 block text-[12.5px] leading-relaxed text-faint">
               {summary}
             </span>
           </span>
@@ -67,7 +67,7 @@ export function Section({
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
-            className={`h-4 w-4 shrink-0 text-fg/35 transition-transform duration-200 ${
+            className={`h-4 w-4 shrink-0 text-faint transition-transform duration-200 ${
               open ? "rotate-180" : ""
             }`}
           >
@@ -113,7 +113,7 @@ export function Field({
           {error}
         </p>
       ) : hint ? (
-        <p className="mt-1.5 text-[11.5px] leading-snug text-fg/35">{hint}</p>
+        <p className="mt-1.5 text-[11.5px] leading-snug text-faint">{hint}</p>
       ) : null}
     </div>
   );
@@ -244,7 +244,7 @@ export function SecretField({
             <button
               type="button"
               onClick={onClear}
-              className="rounded-md px-2 py-1 text-[11.5px] font-medium text-fg/40 hover:bg-fg/[0.08] hover:text-fg/70"
+              className="rounded-md px-2 py-1 text-[11.5px] font-medium text-faint hover:bg-fg/[0.08] hover:text-fg/70"
             >
               Quitar
             </button>
@@ -254,7 +254,7 @@ export function SecretField({
             onClick={() => setVisible((v) => !v)}
             aria-label={visible ? "Ocultar" : "Mostrar"}
             aria-pressed={visible}
-            className="rounded-md px-2 py-1 text-[11.5px] font-medium text-fg/40 hover:bg-fg/[0.08] hover:text-fg/70"
+            className="rounded-md px-2 py-1 text-[11.5px] font-medium text-faint hover:bg-fg/[0.08] hover:text-fg/70"
           >
             {visible ? "Ocultar" : "Mostrar"}
           </button>
@@ -292,7 +292,7 @@ export function Toggle({
       />
       <span className="min-w-0">
         <span className="block text-[13.5px] font-medium text-fg/85">{title}</span>
-        <span className="mt-0.5 block text-[12px] leading-relaxed text-fg/40">{hint}</span>
+        <span className="mt-0.5 block text-[12px] leading-relaxed text-faint">{hint}</span>
       </span>
     </label>
   );
@@ -309,7 +309,7 @@ export function Help({ text }: { text: string }) {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         onBlur={() => setOpen(false)}
-        className="ml-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-fg/20 text-[9px] font-bold text-fg/45 hover:border-fg/40 hover:text-fg/70"
+        className="ml-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-fg/20 text-[9px] font-bold text-faint hover:border-fg/40 hover:text-fg/70"
       >
         ?
       </button>
@@ -335,7 +335,7 @@ export function Callout({
   children: ReactNode;
 }) {
   const skin = {
-    warn: "border-amber-400/25 bg-amber-400/[0.07] text-amber-200",
+    warn: "border-warn/25 bg-warn/[0.07] text-warn-ink",
     info: "border-fg/[0.1] bg-fg/[0.03] text-fg/70",
     ok: "border-ok/30 bg-ok/[0.08] text-ok-ink",
     danger: "border-accent-400/30 bg-accent-400/10 text-accent-label",
@@ -344,7 +344,7 @@ export function Callout({
   return (
     <div className={`rounded-xl border p-4 ${skin}`}>
       {title && <p className="text-[13px] font-semibold">{title}</p>}
-      <div className={`text-[12.5px] leading-relaxed ${title ? "mt-1 text-fg/55" : ""}`}>
+      <div className={`text-[12.5px] leading-relaxed ${title ? "mt-1 text-muted" : ""}`}>
         {children}
       </div>
     </div>

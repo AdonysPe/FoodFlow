@@ -22,7 +22,7 @@ import type { OrderMiniDTO, ReservationDTO, TableDTO } from "./types";
 
 /** Only the two states a server has to act on get a colour. */
 const KITCHEN_TONE: Partial<Record<OrderMiniDTO["status"], { label: string; dot: string }>> = {
-  preparing: { label: "En cocina", dot: "bg-amber-400" },
+  preparing: { label: "En cocina", dot: "bg-warn" },
   ready: { label: "Lista", dot: "bg-mint" },
 };
 
@@ -110,16 +110,16 @@ export default function ServicePanel({
       {/* ------------------------------------------------------ en servicio */}
       <section>
         <header className="flex items-baseline justify-between gap-2">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg/40">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
             En servicio
           </h3>
-          <span className="text-[11.5px] tabular-nums text-fg/35">
+          <span className="text-[11.5px] tabular-nums text-faint">
             {running.length > 0 ? formatPrice(totalOpen) : "—"}
           </span>
         </header>
 
         {running.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-dashed border-fg/[0.1] px-3 py-4 text-center text-[12.5px] text-fg/35">
+          <p className="mt-3 rounded-xl border border-dashed border-fg/[0.1] px-3 py-4 text-center text-[12.5px] text-faint">
             Ninguna mesa con cuenta abierta.
           </p>
         ) : (
@@ -150,7 +150,7 @@ export default function ServicePanel({
                         {table.name}
                       </span>
                       {tone && (
-                        <span className="flex items-center gap-1 text-[11px] text-fg/45">
+                        <span className="flex items-center gap-1 text-[11px] text-faint">
                           <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
                           {tone.label}
                         </span>
@@ -160,7 +160,7 @@ export default function ServicePanel({
                       </span>
                     </span>
 
-                    <span className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-fg/35">
+                    <span className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-faint">
                       {named && <span className="truncate">{named}</span>}
                       {named && <span aria-hidden>·</span>}
                       <span className="tabular-nums">
@@ -178,14 +178,14 @@ export default function ServicePanel({
       {/* -------------------------------------------------------- disponibles */}
       <section className="border-t border-fg/[0.07] pt-4">
         <header className="flex items-baseline justify-between gap-2">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg/40">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
             Libres
           </h3>
-          <span className="text-[11.5px] tabular-nums text-fg/35">{freeTables.length}</span>
+          <span className="text-[11.5px] tabular-nums text-faint">{freeTables.length}</span>
         </header>
 
         {freeTables.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-dashed border-fg/[0.1] px-3 py-4 text-center text-[12.5px] text-fg/35">
+          <p className="mt-3 rounded-xl border border-dashed border-fg/[0.1] px-3 py-4 text-center text-[12.5px] text-faint">
             Salón lleno. No hay mesas libres.
           </p>
         ) : (
@@ -206,11 +206,11 @@ export default function ServicePanel({
                     <span className="truncate text-[13.5px] font-medium text-fg/80">
                       {table.name}
                     </span>
-                    <span className="shrink-0 text-[11.5px] tabular-nums text-fg/35">
+                    <span className="shrink-0 text-[11.5px] tabular-nums text-faint">
                       {table.capacity}p
                     </span>
                     {booking && (
-                      <span className="ml-auto shrink-0 rounded-md bg-fg/[0.05] px-1.5 py-0.5 text-[10.5px] tabular-nums text-fg/45">
+                      <span className="ml-auto shrink-0 rounded-md bg-fg/[0.05] px-1.5 py-0.5 text-[10.5px] tabular-nums text-faint">
                         reserva {formatClock(booking)}
                       </span>
                     )}

@@ -204,7 +204,7 @@ export default function FloorPlan({
           </button>
         </div>
         <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-fg/45">Aún no hay mesas. Crea tu plano para empezar.</p>
+          <p className="text-[14px] text-faint">Aún no hay mesas. Crea tu plano para empezar.</p>
         </GlassCard>
       </div>
     );
@@ -217,7 +217,7 @@ export default function FloorPlan({
           {TABLE_STATES.map((s) => (
             <span
               key={s}
-              className="inline-flex items-center gap-2 rounded-full border border-fg/[0.07] bg-fg/[0.03] px-2.5 py-1 text-[12px] text-fg/60"
+              className="inline-flex items-center gap-2 rounded-full border border-fg/[0.07] bg-fg/[0.03] px-2.5 py-1 text-[12px] text-muted"
             >
               <span
                 className="h-2 w-2 rounded-full"
@@ -227,7 +227,7 @@ export default function FloorPlan({
                 }}
               />
               {TABLE_STATE_LABELS[s]}
-              <span className="tabular-nums font-semibold text-fg/35">{counts[s]}</span>
+              <span className="tabular-nums font-semibold text-faint">{counts[s]}</span>
             </span>
           ))}
         </div>
@@ -272,7 +272,7 @@ export default function FloorPlan({
       </div>
 
       {editing && (
-        <p className="text-[12.5px] text-fg/40">
+        <p className="text-[12.5px] text-faint">
           Arrastra las mesas para colocarlas. Toca una mesa para editar sus datos o eliminarla.
         </p>
       )}

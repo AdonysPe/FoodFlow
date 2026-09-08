@@ -44,7 +44,7 @@ function AvailabilityToggle({
       </span>
       <span
         className={`shrink-0 text-[12.5px] font-medium ${
-          available ? "text-ok-ink" : "text-fg/45"
+          available ? "text-ok-ink" : "text-faint"
         }`}
       >
         {available ? "Disponible" : "Agotado"}
@@ -111,7 +111,7 @@ export default function MenuItemCard({
       {showGrip && (
         <span
           aria-hidden
-          className="mt-0.5 shrink-0 self-start text-fg/25"
+          className="mt-0.5 shrink-0 self-start text-faint"
           title="Arrastra para reordenar"
         >
           <IconGrip className="h-4 w-4" />
@@ -143,22 +143,22 @@ export default function MenuItemCard({
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className={`truncate text-[14px] font-medium ${dimmed ? "text-fg/45" : "text-fg/85"}`}>
+            <p className={`truncate text-[14px] font-medium ${dimmed ? "text-faint" : "text-fg/85"}`}>
               {item.name}
             </p>
-            <p className="mt-0.5 text-[12.5px] text-fg/40">
+            <p className="mt-0.5 text-[12.5px] text-faint">
               {formatPrice(item.price)}
               {item.prepMin != null ? ` · ${item.prepMin} min` : ""}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-1">
             {showCategory && (
-              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
+              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
                 {item.categoryName ?? "Sin categoría"}
               </span>
             )}
             {hiddenByCategory && (
-              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-fg/45">
+              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
                 categoría oculta
               </span>
             )}
@@ -166,7 +166,7 @@ export default function MenuItemCard({
         </div>
 
         {item.description && (
-          <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-fg/45">
+          <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-faint">
             {item.description}
           </p>
         )}
