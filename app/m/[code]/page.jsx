@@ -46,6 +46,7 @@ export default async function TableOrderPage({ params }) {
         name: true,
         description: true,
         price: true,
+        photoUrl: true,
         categoryId: true,
         prepMin: true,
       },

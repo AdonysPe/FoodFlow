@@ -4,6 +4,7 @@ import { requirePlanFeature } from "@/lib/auth/plan";
 import PlanGate from "@/components/dashboard/PlanGate";
 import PrintButton from "@/components/dashboard/mesas/PrintButton";
 import { ZONE_LABELS } from "@/lib/tableMeta";
+import { SITE_URL } from "@/lib/seo";
 import type { TableZoneValue } from "@/lib/tableMeta";
 
 export const metadata = {
@@ -31,6 +32,13 @@ export default async function TableQrSheetPage() {
 
   const printable = tables.filter((t) => t.publicCode);
 
+  // What the codes on this sheet actually point at. It comes from
+  // NEXT_PUBLIC_SITE_URL, so a sheet printed from a laptop encodes
+  // http://localhost and the stickers work on nobody's phone — a mistake you
+  // only discover after cutting them out and taping them to the tables.
+  const origin = SITE_URL.replace(/\/$/, "");
+  const printSafe = origin.startsWith("https://");
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
@@ -53,6 +61,15 @@ export default async function TableQrSheetPage() {
           <PrintButton />
         </div>
       </div>
+
+      {!printSafe && (
+        <p className="rounded-2xl border border-warn/30 bg-warn/[0.07] px-5 py-4 text-[13px] leading-relaxed text-warn-ink print:hidden">
+          <strong className="font-semibold">No imprimas todavía.</strong> Estos códigos
+          apuntan a <span className="font-mono">{origin}</span>, que solo existe en esta
+          computadora. Abre esta hoja desde foodflow.site para que los QR lleven a tu
+          carta de verdad.
+        </p>
+      )}
 
       {printable.length === 0 ? (
         <p className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-10 text-center text-[14px] text-faint print:hidden">
@@ -88,7 +105,7 @@ export default async function TableQrSheetPage() {
                 Escanea y pide desde tu mesa
               </p>
               <p className="mt-0.5 font-mono text-[11.5px] tracking-wide text-black/40">
-                {table.publicCode}
+                {origin.replace(/^https?:\/\//, "")}/m/{table.publicCode}
               </p>
             </article>
           ))}

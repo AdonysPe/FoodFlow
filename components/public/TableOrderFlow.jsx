@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Image from "next/image";
 import { submitTableOrder } from "@/lib/actions/publicOrder";
 import { NOTE_CHIPS, ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency } from "@/lib/format";
@@ -274,6 +275,26 @@ export default function TableOrderFlow({
                 )}
 
                 <div className={`flex items-start justify-between gap-3 ${picked ? "pl-2" : ""}`}>
+                  {/* Same 4:3 thumbnail as the public carta. A diner who read
+                      the menu on the wall and then scanned the table should be
+                      looking at the same dish, not a plainer list of names. */}
+                  {item.photoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setQty(item.id, qty + 1)}
+                      aria-label={`Añadir ${item.name}`}
+                      className="relative h-[68px] w-[68px] shrink-0 overflow-hidden rounded-xl border border-fg/[0.08] bg-fg/[0.04] active:scale-[0.97]"
+                    >
+                      <Image
+                        src={item.photoUrl}
+                        alt=""
+                        fill
+                        sizes="68px"
+                        className="object-cover"
+                        loading="lazy"
+                      />
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setQty(item.id, qty + 1)}
