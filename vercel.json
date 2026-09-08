@@ -3,11 +3,11 @@
   "crons": [
     {
       "path": "/api/cron/billing/retry-emissions",
-      "schedule": "*/10 * * * *"
+      "schedule": "10 7 * * *"
     },
     {
       "path": "/api/cron/billing/send-emails",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 7 * * *"
     },
     {
       "path": "/api/cron/billing/backup-cdrs",
