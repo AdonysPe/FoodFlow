@@ -14,3 +14,10 @@ out
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Internal docs that describe security posture, the DB schema and the billing
+# encryption model in detail. Kept locally, out of git — a private repo isn't
+# a reason to hand an attacker a map if it ever changes hands or goes public.
+/SEGURIDAD.md
+/BASE-DE-DATOS.md
+/FACTURACION-API.md
