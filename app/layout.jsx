@@ -7,6 +7,7 @@ import {
   SITE_TITLE,
   SITE_URL,
   SOCIAL_DESCRIPTION,
+  SOCIAL_TITLE,
 } from "@/lib/seo";
 
 const archivo = Archivo({
@@ -29,25 +30,63 @@ export const metadata = {
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // Google ignores this tag for ranking. It is kept because Bing still reads
+  // it and because it documents, in one place, the queries the copy is aimed
+  // at — if a phrase here is nowhere in the page text, the page is the thing
+  // that needs fixing.
   keywords: [
-    "software para restaurantes Lima",
-    "sistema de pedidos restaurante",
-    "carta QR",
-    "pantalla de cocina",
-    "gestión de restaurantes Perú",
+    "sistema para restaurantes Lima",
+    "software para restaurantes Perú",
+    "carta digital QR restaurante",
+    "sistema de pedidos para restaurantes",
+    "pantalla de cocina restaurante",
+    "web de pedidos sin comisión",
+    "alternativa a Rappi para restaurantes",
+    "punto de venta para restaurantes Lima",
   ],
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: "technology",
+  // Stops iOS Safari turning stray digits in the copy (prices, "48 horas")
+  // into tappable phone links.
+  formatDetection: { telephone: false, address: false, email: false },
+  // The canonical is declared per page, not here: this object is inherited by
+  // /login and /dashboard too, and a canonical of "/" on those would tell
+  // Google every private route is a duplicate of the home page.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      // Let Google use the full snippet and a large image in the result —
+      // the defaults are conservative and cost clicks.
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
-    title: SITE_TITLE,
+    title: SOCIAL_TITLE,
     description: SOCIAL_DESCRIPTION,
     type: "website",
     url: "/",
     siteName: SITE_NAME,
     locale: "es_PE",
+    // `images` is deliberately absent: app/opengraph-image.jsx is a file
+    // convention and Next appends it here. Naming one would override it.
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_TITLE,
+    title: SOCIAL_TITLE,
     description: SOCIAL_DESCRIPTION,
+  },
+  // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel to claim the property
+  // in Search Console without shipping an HTML file. Undefined renders no tag.
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
 };
 

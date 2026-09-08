@@ -1,6 +1,12 @@
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { CONTACT_EMAIL, WHATSAPP_NUMBER } from "@/lib/contact";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
+import {
+  ORG_DESCRIPTION,
+  REVIEWS,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/seo";
 
 /**
  * Structured data, in one place.
@@ -12,9 +18,11 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
  * a price or a question can never say one thing on the page and another in
  * the markup — which is exactly the mismatch Google penalises.
  *
- * Note what is deliberately absent: `aggregateRating` and `review`. FoodFlow
- * has no customers yet, and inventing stars is both a policy violation and
- * the fastest way to lose a restaurant owner who checks.
+ * `aggregateRating` and `review` are wired up but gated on lib/seo.js's
+ * REVIEWS array, which is empty while the pilot has no customers. Nothing is
+ * emitted until real reviews are added there — inventing stars is both a
+ * structured-data policy violation and the fastest way to lose a restaurant
+ * owner who checks.
  */
 
 const BASE = SITE_URL;
@@ -23,6 +31,10 @@ const es = dictionaries.es;
 const ORG_ID = `${BASE}/#organization`;
 const SITE_ID = `${BASE}/#website`;
 const APP_ID = `${BASE}/#software`;
+const BUSINESS_ID = `${BASE}/#business`;
+
+/** Plaza Mayor. Only used to centre the service radius, never as an address. */
+const LIMA = { lat: -12.0464, lng: -77.0428 };
 
 function Script({ schema }) {
   return (
@@ -37,6 +49,59 @@ function Script({ schema }) {
   );
 }
 
+/**
+ * The star rating, or nothing at all.
+ *
+ * Returns null while REVIEWS is empty, and every block that would carry a
+ * rating spreads the result conditionally — so an empty list means no
+ * `aggregateRating` property exists anywhere in the output, which is the only
+ * correct state until real restaurants have said something on the record.
+ *
+ * `ratingValue` is computed from the reviews rather than written down, so the
+ * number in the markup can never disagree with the testimonials on the page.
+ */
+function aggregateRating() {
+  if (!REVIEWS.length) return null;
+
+  const total = REVIEWS.reduce((sum, r) => sum + r.ratingValue, 0);
+
+  return {
+    "@type": "AggregateRating",
+    // One decimal is what Google renders; more just gets rounded away.
+    ratingValue: Number((total / REVIEWS.length).toFixed(1)),
+    reviewCount: REVIEWS.length,
+    bestRating: 5,
+    worstRating: 1,
+  };
+}
+
+/** The individual reviews behind that average. Empty until REVIEWS is filled. */
+function reviewList() {
+  return REVIEWS.map((r) => ({
+    "@type": "Review",
+    author: { "@type": "Person", name: r.author },
+    ...(r.business
+      ? { publisher: { "@type": "Organization", name: r.business } }
+      : {}),
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: r.ratingValue,
+      bestRating: 5,
+      worstRating: 1,
+    },
+    reviewBody: r.body,
+    datePublished: r.datePublished,
+    itemReviewed: { "@id": APP_ID },
+  }));
+}
+
+/** Spreads `{ aggregateRating, review }` in, or spreads nothing. */
+function ratingProps() {
+  const rating = aggregateRating();
+  if (!rating) return {};
+  return { aggregateRating: rating, review: reviewList() };
+}
+
 /** Who we are. Referenced by @id from every other block, so it is stated once. */
 const organization = {
   "@type": "Organization",
@@ -48,7 +113,7 @@ const organization = {
     "@type": "ImageObject",
     url: `${BASE}/icon.svg`,
   },
-  description: SITE_DESCRIPTION,
+  description: ORG_DESCRIPTION,
   areaServed: {
     "@type": "City",
     name: "Lima",
@@ -75,6 +140,68 @@ const website = {
   name: SITE_NAME,
   inLanguage: "es-PE",
   publisher: { "@id": ORG_ID },
+};
+
+/**
+ * The same business, said the way Google Business Profile understands it.
+ *
+ * A service-area business, not a shop: FoodFlow is run remotely from Lima and
+ * no restaurant owner is going to walk in, so there is `areaServed` and a
+ * `serviceArea` radius but deliberately NO street address. Inventing one to
+ * chase a map pin is the single fastest way to get a Business Profile
+ * suspended, and the suspension is what kills local rankings.
+ *
+ * `priceRange` is the coarse "$$" band Google expects here — the actual
+ * figures live in the Offer blocks, where they can be exact.
+ *
+ * Not stated, because it would be invented: `openingHoursSpecification`.
+ * Add it here the day the hours in the Business Profile are decided, and use
+ * the same hours in both places.
+ */
+const localBusiness = {
+  // A LocalBusiness by Google's reading, a ProfessionalService by what it
+  // actually sells. Both are valid; the Wikidata link pins "software company"
+  // for the engines that resolve it.
+  "@type": ["LocalBusiness", "ProfessionalService"],
+  "@id": BUSINESS_ID,
+  additionalType: "https://www.wikidata.org/wiki/Q1058914",
+  name: SITE_NAME,
+  url: BASE,
+  description: ORG_DESCRIPTION,
+  email: CONTACT_EMAIL,
+  telephone: `+${WHATSAPP_NUMBER}`,
+  image: `${BASE}/opengraph-image`,
+  logo: `${BASE}/icon.svg`,
+  priceRange: "$$",
+  currenciesAccepted: "PEN",
+  paymentAccepted: "Transferencia bancaria, Yape, Plin, tarjeta",
+  // City and country only. Google accepts a locality-level address on a
+  // service-area business; a street it cannot verify is what triggers review.
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Lima",
+    addressRegion: "Lima",
+    addressCountry: "PE",
+  },
+  areaServed: [
+    { "@type": "City", name: "Lima" },
+    { "@type": "Country", name: "Perú" },
+  ],
+  // ~30 km from the historic centre reaches Miraflores, San Isidro, Surco,
+  // Barranco, La Molina, San Miguel and Callao — the whole serviceable metro.
+  serviceArea: {
+    "@type": "GeoCircle",
+    geoMidpoint: {
+      "@type": "GeoCoordinates",
+      latitude: LIMA.lat,
+      longitude: LIMA.lng,
+    },
+    geoRadius: 30000,
+  },
+  knowsLanguage: ["es-PE", "en"],
+  parentOrganization: { "@id": ORG_ID },
+  makesOffer: { "@id": APP_ID },
+  ...ratingProps(),
 };
 
 /**
@@ -115,6 +242,7 @@ function softwareApplication() {
         eligibleRegion: { "@type": "Country", name: "PE" },
       })),
     },
+    ...ratingProps(),
   };
 }
 
@@ -124,7 +252,7 @@ export function HomeJsonLd() {
     <Script
       schema={{
         "@context": "https://schema.org",
-        "@graph": [organization, website, softwareApplication()],
+        "@graph": [organization, localBusiness, website, softwareApplication()],
       }}
     />
   );
@@ -140,15 +268,22 @@ export function FaqJsonLd() {
     <Script
       schema={{
         "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "@id": `${BASE}/preguntas#faq`,
-        inLanguage: "es-PE",
-        publisher: { "@id": ORG_ID },
-        mainEntity: es.faq.items.map((item) => ({
-          "@type": "Question",
-          name: item.q,
-          acceptedAnswer: { "@type": "Answer", text: item.a },
-        })),
+        // The Organization travels with the FAQ so `publisher` resolves to a
+        // node that is actually in the document, not a dangling @id.
+        "@graph": [
+          organization,
+          {
+            "@type": "FAQPage",
+            "@id": `${BASE}/preguntas#faq`,
+            inLanguage: "es-PE",
+            publisher: { "@id": ORG_ID },
+            mainEntity: es.faq.items.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          },
+        ],
       }}
     />
   );
@@ -160,7 +295,7 @@ export function PricingJsonLd() {
     <Script
       schema={{
         "@context": "https://schema.org",
-        "@graph": [organization, softwareApplication()],
+        "@graph": [organization, localBusiness, softwareApplication()],
       }}
     />
   );
