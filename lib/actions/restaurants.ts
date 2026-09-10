@@ -56,28 +56,36 @@ export async function selectActiveRestaurant(
   return { ok: true, data: undefined };
 }
 
-export async function getPlanManagementLinks(
-  targetPlan: PlanValue
-): Promise<ActionResult<{ change: string; cancel: string }>> {
-  const parsed = z.enum(PLANS).safeParse(targetPlan);
-  if (!parsed.success) return { ok: false, error: "Plan no válido." };
-
+export async function getPlanManagementLinks(): Promise<
+  ActionResult<{ changeByPlan: Record<PlanValue, string>; cancel: string }>
+> {
   const { user, restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado." };
 
   const identity = `${restaurant.name} (${user.email})`;
-  const change = buildWhatsAppUrl(
-    `Hola, quiero cambiar el plan de ${identity}. Plan actual: ${restaurant.plan}. Plan solicitado: ${parsed.data}.`
-  );
+  const changeByPlan = Object.fromEntries(
+    PLANS.map((targetPlan) => [
+      targetPlan,
+      buildWhatsAppUrl(
+        `Hola, quiero cambiar el plan de ${identity}. Plan actual: ${restaurant.plan}. Plan solicitado: ${targetPlan}.`
+      ),
+    ])
+  ) as Record<PlanValue, string | null>;
   const cancel = buildWhatsAppUrl(
     `Hola, quiero cancelar el plan de ${identity}. Plan actual: ${restaurant.plan}.`
   );
 
-  if (!change || !cancel) {
+  if (!cancel || PLANS.some((plan) => !changeByPlan[plan])) {
     return { ok: false, error: "El WhatsApp de administración no está configurado." };
   }
 
-  return { ok: true, data: { change, cancel } };
+  return {
+    ok: true,
+    data: {
+      changeByPlan: changeByPlan as Record<PlanValue, string>,
+      cancel,
+    },
+  };
 }
 
 export async function createRestaurant(input: {

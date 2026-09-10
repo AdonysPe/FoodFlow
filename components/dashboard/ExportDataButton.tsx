@@ -2,11 +2,11 @@
 
 import { useDataExport } from "@/lib/hooks/useDataExport";
 
-export default function ExportDataButton() {
+export default function ExportDataButton({ className = "mb-2 px-2.5" }: { className?: string }) {
   const { download, isExporting, error } = useDataExport();
 
   return (
-    <div className="mb-2 px-2.5">
+    <div className={className}>
       <button
         type="button"
         onClick={() => void download()}

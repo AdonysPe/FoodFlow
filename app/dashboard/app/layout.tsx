@@ -24,6 +24,7 @@ const CLIENT_TITLES: Record<string, string> = {
   customers: "Clientes",
   equipo: "Equipo",
   analytics: "Análisis",
+  configuracion: "Configuración",
 };
 
 export default async function ClientAppLayout({ children }: { children: ReactNode }) {
@@ -66,7 +67,6 @@ export default async function ClientAppLayout({ children }: { children: ReactNod
           plan={restaurant.plan as PlanValue}
           restaurants={restaurants.map((item) => ({ id: item.id, name: item.name }))}
           activeRestaurantId={restaurant.id}
-          billingStatus={restaurant.billingStatus}
         />
         <div className="flex min-h-screen flex-col lg:pl-64">
           <Topbar titles={CLIENT_TITLES} />

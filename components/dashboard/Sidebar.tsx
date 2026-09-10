@@ -29,10 +29,6 @@ import { EASE } from "@/lib/motion";
 import RestaurantSwitcher, {
   type RestaurantOption,
 } from "@/components/dashboard/RestaurantSwitcher";
-import ExportDataButton from "@/components/dashboard/ExportDataButton";
-import BillingStatusBadge, {
-  type BillingStatusValue,
-} from "@/components/dashboard/BillingStatusBadge";
 import {
   PLANS,
   PLAN_FEATURES,
@@ -118,6 +114,11 @@ const CLIENT_NAV: NavSection[] = [
     title: "Configuración",
     items: [
       { href: "/dashboard/app/equipo", label: "Equipo", icon: IconStaff, feature: "staff" },
+      {
+        href: "/dashboard/app/configuracion",
+        label: "Configuración",
+        icon: IconStore,
+      },
       {
         href: "/dashboard/app/configuracion/facturacion",
         label: "Facturación",
@@ -262,7 +263,6 @@ export default function Sidebar({
   plan,
   restaurants = [],
   activeRestaurantId,
-  billingStatus,
 }: {
   userEmail: string;
   variant?: "admin" | "client";
@@ -270,7 +270,6 @@ export default function Sidebar({
   plan?: PlanValue;
   restaurants?: RestaurantOption[];
   activeRestaurantId?: string;
-  billingStatus?: BillingStatusValue;
 }) {
   const sections = variant === "client" ? CLIENT_NAV : ADMIN_NAV;
   const navPlan = variant === "client" ? plan : undefined;
@@ -305,12 +304,6 @@ export default function Sidebar({
 
   const footer = (
     <div className="mt-auto border-t border-fg/[0.07] p-3">
-      {variant === "client" && billingStatus && (
-        <div className="mb-2 px-2.5">
-          <BillingStatusBadge status={billingStatus} />
-        </div>
-      )}
-      {variant === "client" && <ExportDataButton />}
       <div className="flex items-center gap-2 rounded-xl px-2.5 py-2">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-accent-400 to-accent-600 text-[13px] font-bold text-on-accent">
           {userEmail.charAt(0).toUpperCase()}
