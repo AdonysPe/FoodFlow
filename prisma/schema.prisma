@@ -72,6 +72,12 @@ enum Plan {
   negocio
 }
 
+enum BillingStatus {
+  pending
+  active
+  cancelled
+}
+
 enum TableShape {
   round
   square
@@ -122,22 +128,23 @@ model StaffMembership {
 }
 
 model Restaurant {
-  id        String   @id @default(cuid())
-  name      String
-  ownerId   String
-  owner     User     @relation(fields: [ownerId], references: [id])
+  id            String        @id @default(cuid())
+  name          String
+  ownerId       String
+  owner         User          @relation(fields: [ownerId], references: [id])
   // Defaults to the smallest plan on purpose: a restaurant never gets paid
   // modules by accident, the admin has to grant them.
-  plan      Plan     @default(carta)
+  plan          Plan          @default(carta)
+  billingStatus BillingStatus @default(pending) @map("billing_status")
   // Public address of this venue's carta: /carta/<slug>, and the host that
   // <slug>.foodflow.site rewrites to. Nullable because a venue exists before
   // anyone has published its menu.
-  slug      String?  @unique
+  slug          String?       @unique
   // Bumped by every write that changes what a diner sees. Lives here rather
   // than on CartaSettings so bumping is one guaranteed update with no upsert,
   // and so the live-update watcher reads a single row by primary key.
-  cartaVersion Int   @default(0)
-  createdAt DateTime @default(now())
+  cartaVersion  Int           @default(0)
+  createdAt     DateTime      @default(now())
 
   orders       Order[]
   menuItems    MenuItem[]

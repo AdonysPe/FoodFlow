@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 
 /**
- * The signed-in user together with the venue they can reach.
+ * The signed-in user together with every venue they can reach and the active one.
  *
  * Resolving these one after the other cost two sequential round trips to a
  * hosted Postgres before a dashboard page could start its own queries. The
@@ -28,31 +28,46 @@ const sessionContext = cache(async () => {
   const payload = await verifySessionToken(token);
   if (!payload) return null;
 
-  const [user, ownedRestaurant, membership] = await Promise.all([
+  const [user, ownedRestaurants, memberships] = await Promise.all([
     prisma.user.findUnique({ where: { id: payload.sub } }),
-    prisma.restaurant.findFirst({
+    prisma.restaurant.findMany({
       where: { ownerId: payload.sub },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.staffMembership.findFirst({
+    prisma.staffMembership.findMany({
       where: { userId: payload.sub },
       include: { restaurant: true },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
 
   if (!user) return null;
-  return { user, ownedRestaurant, membership };
+
+  const availableRestaurants =
+    user.role === "client"
+      ? ownedRestaurants
+      : memberships.map((membership) => membership.restaurant);
+  const activeRestaurant =
+    availableRestaurants.find((restaurant) => restaurant.id === payload.restaurantId) ??
+    availableRestaurants.at(0) ??
+    null;
+
+  return { user, availableRestaurants, activeRestaurant };
 });
 
 export const requireClientRestaurant = cache(async () => {
   const ctx = await sessionContext();
   if (!ctx || ctx.user.role !== "client") redirect("/login");
 
-  return { user: ctx.user, restaurant: ctx.ownedRestaurant };
+  return {
+    user: ctx.user,
+    restaurant: ctx.activeRestaurant,
+    restaurants: ctx.availableRestaurants,
+  };
 });
 
 // The comanda screen is shared by the owner (role "client") and their waiters
-// (role "mozo"). Resolves the one restaurant either of them belongs to.
+// (role "mozo"). Resolves the restaurant selected in the current session.
 // `isOwner` lets the UI hide owner-only affordances from a mozo.
 export const requireComandaRestaurant = cache(async () => {
   const ctx = await sessionContext();
@@ -60,10 +75,10 @@ export const requireComandaRestaurant = cache(async () => {
     redirect("/login");
   }
 
-  const restaurant =
-    ctx.user.role === "client"
-      ? ctx.ownedRestaurant
-      : (ctx.membership?.restaurant ?? null);
-
-  return { user: ctx.user, restaurant, isOwner: ctx.user.role === "client" };
+  return {
+    user: ctx.user,
+    restaurant: ctx.activeRestaurant,
+    restaurants: ctx.availableRestaurants,
+    isOwner: ctx.user.role === "client",
+  };
 });

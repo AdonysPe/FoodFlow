@@ -85,23 +85,26 @@ async function resolveActor(): Promise<
   const payload = await verifySessionToken(token);
   if (!payload) return { ok: false, reason: "no_session" };
 
-  const [user, owned, membership] = await Promise.all([
+  const [user, owned, memberships] = await Promise.all([
     prisma.user.findUnique({ where: { id: payload.sub } }),
-    prisma.restaurant.findFirst({
+    prisma.restaurant.findMany({
       where: { ownerId: payload.sub },
       orderBy: { createdAt: "asc" },
       select: { id: true, name: true },
     }),
-    prisma.staffMembership.findFirst({
+    prisma.staffMembership.findMany({
       where: { userId: payload.sub },
       select: { restaurant: { select: { id: true, name: true } } },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
 
   if (!user) return { ok: false, reason: "no_session" };
 
   const actor: ApiActor = { userId: user.id, email: user.email, role: user.role };
-  const venue = user.role === "client" ? owned : (membership?.restaurant ?? null);
+  const venues = user.role === "client" ? owned : memberships.map((item) => item.restaurant);
+  const venue =
+    venues.find((restaurant) => restaurant.id === payload.restaurantId) ?? venues.at(0) ?? null;
   if (!venue) return { ok: false, reason: "no_restaurant" };
 
   return {

@@ -27,7 +27,7 @@ const CLIENT_TITLES: Record<string, string> = {
 };
 
 export default async function ClientAppLayout({ children }: { children: ReactNode }) {
-  const { user, restaurant } = await requireClientRestaurant();
+  const { user, restaurant, restaurants } = await requireClientRestaurant();
 
   if (!restaurant) {
     return (
@@ -64,6 +64,9 @@ export default async function ClientAppLayout({ children }: { children: ReactNod
           variant="client"
           badgeLabel={restaurant.name}
           plan={restaurant.plan as PlanValue}
+          restaurants={restaurants.map((item) => ({ id: item.id, name: item.name }))}
+          activeRestaurantId={restaurant.id}
+          billingStatus={restaurant.billingStatus}
         />
         <div className="flex min-h-screen flex-col lg:pl-64">
           <Topbar titles={CLIENT_TITLES} />

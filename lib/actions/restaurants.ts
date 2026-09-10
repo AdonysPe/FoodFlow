@@ -8,6 +8,10 @@ import { seedDefaultCategories } from "@/lib/menu/seedCategories";
 import { logAudit } from "@/lib/audit/log";
 import { PLANS, type PlanValue } from "@/lib/plans";
 import type { ActionResult } from "@/lib/actions/auth";
+import { getCurrentUser } from "@/lib/auth/current-user";
+import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { createSessionToken, setSessionCookie } from "@/lib/auth/session";
+import { buildWhatsAppUrl } from "@/lib/contact";
 
 const createRestaurantSchema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(80),
@@ -15,6 +19,66 @@ const createRestaurantSchema = z.object({
   // Which plan the client bought — this decides the modules they can open.
   plan: z.enum(PLANS),
 });
+
+export async function selectActiveRestaurant(
+  restaurantId: string
+): Promise<ActionResult> {
+  const parsed = z.string().cuid().safeParse(restaurantId);
+  if (!parsed.success) return { ok: false, error: "Restaurante no válido." };
+
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "client" && user.role !== "mozo")) {
+    return { ok: false, error: "Sesión no válida." };
+  }
+
+  const allowed =
+    user.role === "client"
+      ? await prisma.restaurant.findFirst({
+          where: { id: parsed.data, ownerId: user.id },
+          select: { id: true },
+        })
+      : await prisma.staffMembership.findFirst({
+          where: { restaurantId: parsed.data, userId: user.id },
+          select: { restaurantId: true },
+        });
+
+  if (!allowed) return { ok: false, error: "No tienes acceso a ese restaurante." };
+
+  const token = await createSessionToken({
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+    restaurantId: parsed.data,
+  });
+  await setSessionCookie(token);
+  revalidatePath("/dashboard", "layout");
+
+  return { ok: true, data: undefined };
+}
+
+export async function getPlanManagementLinks(
+  targetPlan: PlanValue
+): Promise<ActionResult<{ change: string; cancel: string }>> {
+  const parsed = z.enum(PLANS).safeParse(targetPlan);
+  if (!parsed.success) return { ok: false, error: "Plan no válido." };
+
+  const { user, restaurant } = await requireClientRestaurant();
+  if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado." };
+
+  const identity = `${restaurant.name} (${user.email})`;
+  const change = buildWhatsAppUrl(
+    `Hola, quiero cambiar el plan de ${identity}. Plan actual: ${restaurant.plan}. Plan solicitado: ${parsed.data}.`
+  );
+  const cancel = buildWhatsAppUrl(
+    `Hola, quiero cancelar el plan de ${identity}. Plan actual: ${restaurant.plan}.`
+  );
+
+  if (!change || !cancel) {
+    return { ok: false, error: "El WhatsApp de administración no está configurado." };
+  }
+
+  return { ok: true, data: { change, cancel } };
+}
 
 export async function createRestaurant(input: {
   name: string;

@@ -13,6 +13,7 @@ export type SessionPayload = {
   sub: string;
   email: string;
   role: "admin" | "client" | "mozo";
+  restaurantId?: string;
 };
 
 function secretKey(): Uint8Array {
@@ -24,7 +25,11 @@ function secretKey(): Uint8Array {
 // Uses jose (WebCrypto-based) so this also works unmodified inside
 // middleware, which runs on the Edge runtime.
 export async function createSessionToken(payload: SessionPayload): Promise<string> {
-  return new SignJWT({ email: payload.email, role: payload.role })
+  return new SignJWT({
+    email: payload.email,
+    role: payload.role,
+    ...(payload.restaurantId ? { restaurantId: payload.restaurantId } : {}),
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
     .setIssuedAt()
@@ -40,6 +45,9 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
       sub: payload.sub as string,
       email: payload.email as string,
       role: payload.role as SessionPayload["role"],
+      ...(typeof payload.restaurantId === "string"
+        ? { restaurantId: payload.restaurantId }
+        : {}),
     };
   } catch {
     return null;
