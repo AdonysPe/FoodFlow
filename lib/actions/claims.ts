@@ -39,7 +39,7 @@ const schema = z.object({
     .transform((v) => v.replace(/\D/g, ""))
     .refine((v) => v.length >= 6 && v.length <= 15, "Teléfono no válido"),
   email: z.string().trim().max(120).email(),
-  direccion: z.string().trim().min(5).max(180),
+  distrito: z.string().trim().min(2).max(100),
   kind: z.enum(["reclamo", "queja"]),
   detalle: z.string().trim().min(20).max(3000),
   pedido: z
@@ -94,7 +94,7 @@ export async function submitClaim(input: ClaimInput): Promise<ClaimResult> {
           dni: data.dni.toUpperCase(),
           telefono: data.telefono,
           email: data.email.toLowerCase(),
-          direccion: data.direccion,
+          distrito: data.distrito,
           kind: data.kind,
           detalle: data.detalle,
           pedido: data.pedido ?? null,

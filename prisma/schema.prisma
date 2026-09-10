@@ -693,7 +693,9 @@ model Claim {
   dni       String
   telefono  String
   email     String
-  direccion String
+  // The existing physical column keeps its original name for a zero-loss,
+  // migration-free transition from the former domicilio field.
+  distrito String @map("direccion")
 
   kind    ClaimKind
   // Detalle de la reclamación y, cuando lo indica, lo que el consumidor pide.
@@ -712,7 +714,7 @@ model Claim {
 
   @@index([status])
   @@index([createdAt])
-  @@map("claims")
+  @@map("complaints")
 }
 
 /// How the public carta presents this venue: the header a diner sees above the

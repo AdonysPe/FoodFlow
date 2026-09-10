@@ -52,6 +52,84 @@ function encodeKey(key: string): string {
 }
 
 export type PutResult = { ok: true; url: string } | { ok: false; message: string };
+export type StorageHealthResult =
+  | { ok: true; latencyMs: number }
+  | { ok: false; latencyMs: number; message: string };
+
+/** Verifies credentials and bucket reachability without reading or writing objects. */
+export async function checkBucket(config: S3Config): Promise<StorageHealthResult> {
+  const host = config.endpoint
+    ? new URL(config.endpoint).host
+    : `${config.bucket}.s3.${config.region}.amazonaws.com`;
+  const canonicalPath = config.endpoint ? `/${config.bucket}` : "/";
+  const protocol = config.endpoint ? new URL(config.endpoint).protocol : "https:";
+  const payloadHash = sha256("");
+
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const dateStamp = amzDate.slice(0, 8);
+  const headers: Record<string, string> = {
+    host,
+    "x-amz-content-sha256": payloadHash,
+    "x-amz-date": amzDate,
+  };
+  const signedHeaders = Object.keys(headers).sort().join(";");
+  const canonicalHeaders = Object.keys(headers)
+    .sort()
+    .map((header) => `${header}:${headers[header]}\n`)
+    .join("");
+  const canonicalRequest = [
+    "HEAD",
+    canonicalPath,
+    "",
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+  const scope = `${dateStamp}/${config.region}/s3/aws4_request`;
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    scope,
+    sha256(canonicalRequest),
+  ].join("\n");
+  const signingKey = hmac(
+    hmac(hmac(hmac(`AWS4${config.secretKey}`, dateStamp), config.region), "s3"),
+    "aws4_request"
+  );
+  const signature = createHmac("sha256", signingKey)
+    .update(stringToSign, "utf8")
+    .digest("hex");
+  const authorization =
+    `AWS4-HMAC-SHA256 Credential=${config.accessKey}/${scope}, ` +
+    `SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5_000);
+  try {
+    const response = await fetch(`${protocol}//${host}${canonicalPath}`, {
+      method: "HEAD",
+      headers: { ...headers, authorization },
+      signal: controller.signal,
+    });
+    const latencyMs = Date.now() - startedAt;
+    return response.ok
+      ? { ok: true, latencyMs }
+      : { ok: false, latencyMs, message: `S3 respondió HTTP ${response.status}.` };
+  } catch (error) {
+    return {
+      ok: false,
+      latencyMs: Date.now() - startedAt,
+      message:
+        error instanceof Error && error.name === "AbortError"
+          ? "S3 no respondió en 5 segundos."
+          : "No se pudo conectar con S3.",
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /**
  * Sube un objeto. Devuelve la URL s3:// como referencia — nunca una URL pública:

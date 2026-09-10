@@ -40,12 +40,15 @@ export default function ClaimsBookPage() {
             <div>
               <dt className="text-cream/40">Proveedor</dt>
               <dd className="mt-0.5 font-medium text-cream/85">
-                {LEGAL_HOLDER.name} — {LEGAL_HOLDER.role}
+                {LEGAL_HOLDER.legalName}
+                {LEGAL_HOLDER.taxId ? ` — RUC ${LEGAL_HOLDER.taxId}` : ""}
               </dd>
             </div>
             <div>
-              <dt className="text-cream/40">Domicilio</dt>
-              <dd className="mt-0.5 font-medium text-cream/85">{LEGAL_HOLDER.location}</dd>
+              <dt className="text-cream/40">Dirección fiscal</dt>
+              <dd className="mt-0.5 font-medium text-cream/85">
+                {LEGAL_HOLDER.taxAddress}
+              </dd>
             </div>
             <div>
               <dt className="text-cream/40">Servicio</dt>
@@ -57,10 +60,21 @@ export default function ClaimsBookPage() {
               <dt className="text-cream/40">Correo de contacto</dt>
               <dd className="mt-0.5 font-medium text-cream/85">
                 <a
-                  href={`mailto:${LEGAL_HOLDER.email}`}
+                  href={`mailto:${LEGAL_HOLDER.legalEmail}`}
                   className="text-accent-ink underline-offset-4 hover:underline"
                 >
-                  {LEGAL_HOLDER.email}
+                  {LEGAL_HOLDER.legalEmail}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-cream/40">Teléfono</dt>
+              <dd className="mt-0.5 font-medium text-cream/85">
+                <a
+                  href={`tel:${LEGAL_HOLDER.phone.replace(/\s/g, "")}`}
+                  className="text-accent-ink underline-offset-4 hover:underline"
+                >
+                  {LEGAL_HOLDER.phone}
                 </a>
               </dd>
             </div>

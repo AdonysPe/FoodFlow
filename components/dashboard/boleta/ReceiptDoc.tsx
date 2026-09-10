@@ -4,6 +4,7 @@ import {
   PAPER_PRINTABLE_MM,
   type ReceiptDTO,
 } from "@/lib/receipt";
+import { LEGAL_HOLDER } from "@/lib/legal/holder";
 
 /**
  * The paper itself: black on white, monospace, sized in millimetres so the
@@ -108,6 +109,24 @@ export default function ReceiptDoc({ receipt }: { receipt: ReceiptDTO }) {
             {receipt.kind === "precuenta" ? "Cuenta abierta · aún no pagada" : "Sin numerar"}
           </div>
         )}
+
+        <div
+          style={{
+            marginTop: "7px",
+            paddingTop: "5px",
+            borderTop: "1px dashed #000",
+            fontSize: narrow ? "7px" : "8px",
+            lineHeight: 1.35,
+          }}
+        >
+          <div>Sistema provisto por {LEGAL_HOLDER.brand}</div>
+          <div>{LEGAL_HOLDER.legalName}</div>
+          {LEGAL_HOLDER.taxId && <div>RUC {LEGAL_HOLDER.taxId}</div>}
+          <div>{LEGAL_HOLDER.taxAddress}</div>
+          <div>
+            {LEGAL_HOLDER.legalEmail} · {LEGAL_HOLDER.phone}
+          </div>
+        </div>
       </div>
 
       {rule}

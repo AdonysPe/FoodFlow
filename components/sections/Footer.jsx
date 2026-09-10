@@ -58,23 +58,40 @@ export default function Footer() {
               <div className="flex gap-2">
                 <dt className="sr-only">Titular</dt>
                 <dd className="text-cream/70">
-                  <span className="font-medium text-cream/85">{LEGAL_HOLDER.name}</span>
+                  <span className="font-medium text-cream/85">{LEGAL_HOLDER.legalName}</span>
                   <span className="text-cream/50"> — {LEGAL_HOLDER.role}</span>
                 </dd>
               </div>
               <div>
-                <dt className="sr-only">Ubicación</dt>
-                <dd className="text-cream/55">{LEGAL_HOLDER.location}</dd>
+                <dt className="sr-only">Dirección fiscal</dt>
+                <dd className="text-cream/55">{LEGAL_HOLDER.taxAddress}</dd>
               </div>
+              {LEGAL_HOLDER.taxId && (
+                <div>
+                  <dt className="sr-only">RUC</dt>
+                  <dd className="text-cream/55">RUC {LEGAL_HOLDER.taxId}</dd>
+                </div>
+              )}
               <div>
-                <dt className="sr-only">Correo</dt>
+                <dt className="sr-only">Correo legal</dt>
                 <dd>
                   <a
-                    href={`mailto:${LEGAL_HOLDER.email}`}
+                    href={`mailto:${LEGAL_HOLDER.legalEmail}`}
                     className="inline-flex items-center gap-1.5 text-cream/70 underline-offset-4 transition-colors hover:text-fg hover:underline"
                   >
                     <IconMail className="h-3.5 w-3.5" />
-                    {LEGAL_HOLDER.email}
+                    {LEGAL_HOLDER.legalEmail}
+                  </a>
+                </dd>
+              </div>
+              <div>
+                <dt className="sr-only">Teléfono</dt>
+                <dd>
+                  <a
+                    href={`tel:${LEGAL_HOLDER.phone.replace(/\s/g, "")}`}
+                    className="text-cream/70 underline-offset-4 transition-colors hover:text-fg hover:underline"
+                  >
+                    {LEGAL_HOLDER.phone}
                   </a>
                 </dd>
               </div>
@@ -139,7 +156,7 @@ export default function Footer() {
           </p>
           <p className="text-[12.5px] text-cream/55">
             {t.footer.signaturePrefix}{" "}
-            <span className="font-medium text-cream/62">{LEGAL_HOLDER.name}</span>
+            <span className="font-medium text-cream/62">{LEGAL_HOLDER.legalName}</span>
           </p>
         </div>
       </Container>

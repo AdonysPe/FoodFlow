@@ -13,23 +13,23 @@ const EMPTY = {
   dni: "",
   telefono: "",
   email: "",
-  direccion: "",
+  distrito: "",
   kind: "reclamo",
   detalle: "",
   pedido: "",
 };
 
-const ORDER = ["nombre", "dni", "telefono", "email", "direccion", "detalle"];
+const ORDER = ["nombre", "dni", "telefono", "email", "distrito", "detalle"];
 
 const FORM_ERRORS = {
   invalid: "Revisa los campos marcados y vuelve a intentar.",
   rate_limited:
     "Hemos recibido varios envíos desde esta conexión. Espera un momento o escríbenos a " +
-    LEGAL_HOLDER.email +
+    LEGAL_HOLDER.legalEmail +
     " y registramos tu reclamo igual.",
   server:
     "No pudimos registrar tu reclamo. Escríbenos a " +
-    LEGAL_HOLDER.email +
+    LEGAL_HOLDER.legalEmail +
     " y lo ingresamos nosotros con la fecha de hoy.",
 };
 
@@ -43,7 +43,7 @@ function validate(values) {
   if (phone.length < 6 || phone.length > 15) errors.telefono = "Escribe un teléfono de contacto.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email.trim()))
     errors.email = "Necesitamos un correo válido para responderte.";
-  if (values.direccion.trim().length < 5) errors.direccion = "Escribe tu domicilio.";
+  if (values.distrito.trim().length < 2) errors.distrito = "Escribe tu distrito.";
   if (values.detalle.trim().length < 20)
     errors.detalle = "Cuéntanos qué pasó, con al menos 20 caracteres.";
   return errors;
@@ -172,13 +172,13 @@ export default function ClaimsBookForm() {
             className="sm:col-span-2"
           />
           <Field
-            id={fieldId("direccion")}
-            label="Domicilio"
-            value={values.direccion}
-            onChange={(v) => setField("direccion", v)}
-            onBlur={() => blurField("direccion")}
-            error={errors.direccion}
-            autoComplete="street-address"
+            id={fieldId("distrito")}
+            label="Distrito"
+            value={values.distrito}
+            onChange={(v) => setField("distrito", v)}
+            onBlur={() => blurField("distrito")}
+            error={errors.distrito}
+            autoComplete="address-level2"
             className="sm:col-span-2"
           />
         </div>
@@ -276,7 +276,7 @@ export default function ClaimsBookForm() {
       <p className="mt-4 text-[12.5px] leading-relaxed text-cream/50">
         Tus datos se usan únicamente para atender y responder esta solicitud, y se conservan
         como parte del Libro de Reclamaciones conforme a la normativa vigente. Puedes ejercer
-        tus derechos escribiendo a {LEGAL_HOLDER.email}.
+        tus derechos escribiendo a {LEGAL_HOLDER.legalEmail}.
       </p>
     </form>
   );
@@ -330,7 +330,7 @@ function Receipt({ receipt }) {
         <Row label="Nombre" value={receipt.values.nombre} />
         <Row label="Documento" value={receipt.values.dni.toUpperCase()} />
         <Row label="Teléfono" value={receipt.values.telefono} />
-        <Row label="Domicilio" value={receipt.values.direccion} />
+        <Row label="Distrito" value={receipt.values.distrito} />
         <Row
           label="Tipo"
           value={receipt.values.kind === "queja" ? "Queja" : "Reclamo"}

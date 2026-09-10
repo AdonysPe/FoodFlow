@@ -1,23 +1,26 @@
-/**
- * The one place the legal identity of the service is written down.
- *
- * Every legal surface — footer, terms, privacy policy, cookie policy and the
- * complaints book — reads from here, so a change of name, email or address is
- * a single edit and can never leave one document contradicting another.
- *
- * `taxId` is intentionally null: FoodFlow is run by a natural person and no
- * RUC or DNI has been chosen for publication. Fill it in and every document
- * that identifies the supplier picks it up. INDECOPI's complaints-book rules
- * expect the supplier to be identifiable, so this is worth revisiting.
- */
+/** Single source of truth for every public legal surface. */
 export const LEGAL_HOLDER = {
-  name: "Adonys Pereda",
+  legalName: process.env.NEXT_PUBLIC_LEGAL_NAME?.trim() || "Adonys Pereda",
+  taxAddress:
+    process.env.NEXT_PUBLIC_LEGAL_TAX_ADDRESS?.trim() || "Lima, Lima, Perú",
+  legalEmail:
+    process.env.NEXT_PUBLIC_LEGAL_EMAIL?.trim() || "legal@foodflow.site",
+  phone: process.env.NEXT_PUBLIC_LEGAL_PHONE?.trim() || "+51 950 360 685",
+  taxId: process.env.NEXT_PUBLIC_LEGAL_TAX_ID?.trim() || null,
   role: "Desarrollador de Software",
-  location: "Lima, Perú (Operación Remota)",
-  email: "info@foodflow.site",
   brand: "FoodFlow",
   domain: "foodflow.site",
-  taxId: null as string | null,
+
+  // Compatibility aliases used by the legal document builders.
+  get name() {
+    return this.legalName;
+  },
+  get location() {
+    return this.taxAddress;
+  },
+  get email() {
+    return this.legalEmail;
+  },
 } as const;
 
 /**
@@ -25,7 +28,7 @@ export const LEGAL_HOLDER = {
  * document changes in substance — the date is what tells a user (or an
  * INDECOPI inspector) which version they agreed to.
  */
-export const LEGAL_UPDATED = "3 de septiembre de 2026";
+export const LEGAL_UPDATED = "10 de septiembre de 2026";
 
 /** Working days a claim or complaint takes to be answered. See ClaimsBook. */
 export const CLAIM_RESPONSE_DAYS = 30;
