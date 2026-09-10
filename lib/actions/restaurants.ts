@@ -48,6 +48,7 @@ export async function selectActiveRestaurant(
     sub: user.id,
     email: user.email,
     role: user.role,
+    sessionVersion: user.sessionVersion,
     restaurantId: parsed.data,
   });
   await setSessionCookie(token);
@@ -104,7 +105,7 @@ export async function createRestaurant(input: {
   const owner = await prisma.user.upsert({
     where: { email: ownerEmail },
     update: {},
-    create: { email: ownerEmail, role: "client" },
+    create: { email: ownerEmail, role: "client", requiresPasswordSetup: true },
   });
 
   const restaurant = await prisma.restaurant.create({
@@ -136,7 +137,7 @@ export async function updateRestaurant(
   const owner = await prisma.user.upsert({
     where: { email: ownerEmail },
     update: {},
-    create: { email: ownerEmail, role: "client" },
+    create: { email: ownerEmail, role: "client", requiresPasswordSetup: true },
   });
 
   await prisma.restaurant.update({

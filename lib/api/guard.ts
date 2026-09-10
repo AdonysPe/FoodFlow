@@ -99,7 +99,9 @@ async function resolveActor(): Promise<
     }),
   ]);
 
-  if (!user) return { ok: false, reason: "no_session" };
+  if (!user || user.sessionVersion !== payload.sessionVersion) {
+    return { ok: false, reason: "no_session" };
+  }
 
   const actor: ApiActor = { userId: user.id, email: user.email, role: user.role };
   const venues = user.role === "client" ? owned : memberships.map((item) => item.restaurant);

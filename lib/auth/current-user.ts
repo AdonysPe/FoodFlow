@@ -17,5 +17,6 @@ export const getCurrentUser = cache(async () => {
   if (!payload) return null;
 
   const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+  if (!user || user.sessionVersion !== payload.sessionVersion) return null;
   return user;
 });

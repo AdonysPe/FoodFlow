@@ -13,12 +13,13 @@ export type SessionPayload = {
   sub: string;
   email: string;
   role: "admin" | "client" | "mozo";
+  sessionVersion: number;
   restaurantId?: string;
 };
 
 function secretKey(): Uint8Array {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) throw new Error("AUTH_SECRET env var is not set");
+  const secret = process.env.JWT_SECRET || process.env.AUTH_SECRET;
+  if (!secret) throw new Error("JWT_SECRET env var is not set");
   return new TextEncoder().encode(secret);
 }
 
@@ -28,6 +29,7 @@ export async function createSessionToken(payload: SessionPayload): Promise<strin
   return new SignJWT({
     email: payload.email,
     role: payload.role,
+    sessionVersion: payload.sessionVersion,
     ...(payload.restaurantId ? { restaurantId: payload.restaurantId } : {}),
   })
     .setProtectedHeader({ alg: "HS256" })
@@ -40,11 +42,19 @@ export async function createSessionToken(payload: SessionPayload): Promise<strin
 export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey());
-    if (!payload.sub || !payload.email || !payload.role) return null;
+    if (
+      !payload.sub ||
+      !payload.email ||
+      !payload.role ||
+      typeof payload.sessionVersion !== "number"
+    ) {
+      return null;
+    }
     return {
       sub: payload.sub as string,
       email: payload.email as string,
       role: payload.role as SessionPayload["role"],
+      sessionVersion: payload.sessionVersion,
       ...(typeof payload.restaurantId === "string"
         ? { restaurantId: payload.restaurantId }
         : {}),
@@ -59,7 +69,7 @@ export async function setSessionCookie(token: string): Promise<void> {
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "strict",
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
   });

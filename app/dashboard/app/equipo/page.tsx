@@ -17,27 +17,25 @@ export default async function EquipoPage() {
   const memberships = await prisma.staffMembership.findMany({
     where: { restaurantId: restaurant.id },
     orderBy: { createdAt: "asc" },
-    include: { user: { select: { id: true, email: true, createdAt: true } } },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          createdAt: true,
+          passwordHash: true,
+          requiresPasswordSetup: true,
+        },
+      },
+    },
   });
-
-  // A mozo who has actually signed in at least once has consumed an OTP.
-  const emails = memberships.map((m) => m.user.email);
-  const seenEmails = new Set(
-    (
-      await prisma.oTPCode.findMany({
-        where: { email: { in: emails }, consumedAt: { not: null } },
-        select: { email: true },
-        distinct: ["email"],
-      })
-    ).map((r) => r.email)
-  );
 
   const members: StaffMemberDTO[] = memberships.map((m) => ({
     membershipId: m.id,
     userId: m.user.id,
     email: m.user.email,
     createdAt: m.createdAt.toISOString(),
-    active: seenEmails.has(m.user.email),
+    active: Boolean(m.user.passwordHash) && !m.user.requiresPasswordSetup,
   }));
 
   const seatsLeft = staffSeatsLeft(plan, members.length);

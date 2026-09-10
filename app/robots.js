@@ -11,7 +11,13 @@ export default function robots() {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/dashboard/", "/login"],
+        disallow: [
+          "/dashboard/",
+          "/login",
+          "/register",
+          "/forgot-password",
+          "/reset-password",
+        ],
       },
     ],
     sitemap: `${BASE}/sitemap.xml`,

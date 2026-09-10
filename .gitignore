@@ -7,6 +7,9 @@ out
 .DS_Store
 *.log
 
+# graphify knowledge graph output
+/graphify-out/
+
 # Prisma
 /prisma/dev.db
 /prisma/dev.db-journal

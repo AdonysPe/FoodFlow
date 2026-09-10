@@ -29,8 +29,7 @@ export type StaffMemberDTO = {
   active: boolean; // has ever signed in (the account exists with a session-capable role)
 };
 
-// The owner adds a waiter by email. They then sign in with the normal email
-// code and land straight on the comanda.
+// The owner adds a waiter by email. Their first login starts password setup.
 export async function addStaffMember(input: { email: string }): Promise<ActionResult> {
   const { user, restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
@@ -68,7 +67,9 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
 
   const staffUser =
     existing ??
-    (await prisma.user.create({ data: { email, role: "mozo" } }));
+    (await prisma.user.create({
+      data: { email, role: "mozo", requiresPasswordSetup: true },
+    }));
 
   const already = await prisma.staffMembership.findUnique({
     where: { restaurantId_userId: { restaurantId: restaurant.id, userId: staffUser.id } },

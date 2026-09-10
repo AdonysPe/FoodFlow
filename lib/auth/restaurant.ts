@@ -41,7 +41,7 @@ const sessionContext = cache(async () => {
     }),
   ]);
 
-  if (!user) return null;
+  if (!user || user.sessionVersion !== payload.sessionVersion) return null;
 
   const availableRestaurants =
     user.role === "client"

@@ -104,17 +104,26 @@ enum ReservationSource {
 }
 
 model User {
-  id               String            @id @default(cuid())
-  email            String            @unique
-  role             UserRole          @default(client)
-  createdAt        DateTime          @default(now())
-  restaurants      Restaurant[]
-  staffMemberships StaffMembership[]
+  id                        String            @id @default(cuid())
+  email                     String            @unique
+  role                      UserRole          @default(client)
+  passwordHash              String?           @map("password_hash")
+  verificationCode          String?           @map("verification_code")
+  verificationCodeExpiresAt DateTime?         @map("verification_code_expires_at")
+  passwordResetAt           DateTime?         @map("password_reset_at")
+  passwordResetAttempts     Int               @default(0) @map("password_reset_attempts")
+  requiresPasswordSetup     Boolean           @default(false) @map("requires_password_setup")
+  sessionVersion            Int               @default(0) @map("session_version")
+  failedLoginAttempts       Int               @default(0) @map("failed_login_attempts")
+  loginLockedUntil          DateTime?         @map("login_locked_until")
+  createdAt                 DateTime          @default(now())
+  restaurants               Restaurant[]
+  staffMemberships          StaffMembership[]
 }
 
 // Links a mozo (or, later, other staff roles) to the restaurant they work at.
 // The owner adds a person by email; that person then logs in with the normal
-// email OTP and lands on the comanda.
+// email/password flow and lands on the comanda.
 model StaffMembership {
   id           String     @id @default(cuid())
   restaurantId String
@@ -553,9 +562,8 @@ model ClientLead {
   @@index([ipHash, createdAt])
 }
 
-// One row per requested OTP. The `code` column stores a salted hash, never
-// the plaintext digits. `attempts` guards against brute-forcing a 6-digit
-// code within the 5-minute expiry window.
+// Legacy OTP history kept during the password-auth migration. New reset codes
+// are stored hashed in User.verificationCode and never use this table.
 model OTPCode {
   id         String    @id @default(cuid())
   email      String
