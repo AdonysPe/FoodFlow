@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { IconChat } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, viewportOnce } from "@/lib/motion";
+import OrderFlowDisclaimer from "@/components/public/OrderFlowDisclaimer";
 
 const ITEM_EMOJI = ["🍔", "🥓", "🥗"];
 
@@ -124,6 +125,8 @@ export default function RestaurantSitePreview({ className = "" }) {
               </span>
             </div>
           </div>
+
+          <OrderFlowDisclaimer compact />
 
           {/* order bar */}
           <div className="mt-4 flex items-center justify-between gap-2 border-t border-white/[0.07] bg-ink-950/80 px-4 py-3">

@@ -10,6 +10,7 @@ import {
   todayLabel,
   whatsappLink,
 } from "@/lib/carta";
+import OrderFlowDisclaimer from "@/components/public/OrderFlowDisclaimer";
 
 const POLL_MS = 30_000;
 const cacheKey = (slug) => `foodflow:carta:${slug}`;
@@ -351,7 +352,10 @@ export default function CartaView({ initial }) {
           </section>
         ))}
 
-        <p className="pb-6 pt-10 text-center text-[11.5px] text-fg/25">
+        <div className="pt-10">
+          <OrderFlowDisclaimer />
+        </div>
+        <p className="pb-6 pt-5 text-center text-[11.5px] text-fg/25">
           Carta en línea de {venue.name} · hecha con FoodFlow
         </p>
       </main>

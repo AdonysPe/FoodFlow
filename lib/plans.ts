@@ -3,7 +3,7 @@
 // from here — change a plan's contents in one place.
 //
 // Plan names and prices mirror the public site (lib/i18n/dictionaries.js →
-// chat.plans.items). Those prices are still unconfirmed reference figures.
+// chat.plans.items).
 
 export const PLANS = ["carta", "servicio", "negocio"] as const;
 export type PlanValue = (typeof PLANS)[number];
