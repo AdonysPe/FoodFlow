@@ -2,12 +2,9 @@
 
 const isDev = process.env.NODE_ENV !== "production";
 
-// Content-Security-Policy — shipped as **Report-Only** for now. The app pulls in
-// Three.js, Framer Motion and next/font, all of which inject inline styles (and
-// Next injects inline bootstrap scripts), so a strict enforced CSP without a
-// nonce pipeline would break the landing. Report-Only lets us watch the browser
-// console / reports on the Vercel deploy, tighten the directives, and only then
-// switch the header name to `Content-Security-Policy`. See SEGURIDAD.md (F4).
+// Enforced CSP. Next.js emits inline bootstrap scripts and the UI uses inline
+// styles, so unsafe-inline remains scoped to script/style while every remote
+// origin is explicitly allow-listed.
 const csp = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -16,14 +13,15 @@ const csp = [
   "form-action 'self'",
   // 'unsafe-inline' is required until we wire per-request nonces into Next's
   // script tags. 'unsafe-eval' only in dev (React Refresh / HMR).
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data: https://fonts.gstatic.com",
   // Server Actions POST to same-origin. ws/wss only in dev for HMR.
-  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com${isDev ? " ws: wss:" : ""}`,
   "frame-src 'none'",
   "manifest-src 'self'",
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 const securityHeaders = [
@@ -41,7 +39,7 @@ const securityHeaders = [
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
-  { key: "Content-Security-Policy-Report-Only", value: csp },
+  { key: "Content-Security-Policy", value: csp },
 ];
 
 const nextConfig = {

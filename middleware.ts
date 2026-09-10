@@ -6,6 +6,35 @@ import { RESERVED_SLUGS, SLUG_PATTERN } from "@/lib/carta";
 // Hosts we own. A subdomain of one of these can name a venue; anything else
 // (a Vercel preview URL, a custom domain someone points at us) is served as-is.
 const ROOT_HOSTS = ["foodflow.site", "localhost"];
+const UTM_COOKIE = "foodflow_utm";
+const UTM_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+
+function utmCookieValue(request: NextRequest): string | null {
+  const params = request.nextUrl.searchParams;
+  const value = {
+    source: params.get("utm_source")?.slice(0, 200) ?? null,
+    medium: params.get("utm_medium")?.slice(0, 200) ?? null,
+    campaign: params.get("utm_campaign")?.slice(0, 200) ?? null,
+  };
+  return value.source || value.medium || value.campaign ? JSON.stringify(value) : null;
+}
+
+function withUtmCookie(
+  request: NextRequest,
+  response: NextResponse,
+  value: string | null
+): NextResponse {
+  if (value) {
+    response.cookies.set(UTM_COOKIE, value, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === "https:",
+      sameSite: "lax",
+      path: "/",
+      maxAge: UTM_MAX_AGE_SECONDS,
+    });
+  }
+  return response;
+}
 
 /**
  * `tanta.foodflow.site` → `"tanta"`, everything else → null.
@@ -36,6 +65,7 @@ function venueSlugFromHost(host: string | null): string | null {
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const utm = utmCookieValue(request);
 
   // ------------------------------------------------- the venue's own address
   //
@@ -48,7 +78,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === "/") {
       const url = request.nextUrl.clone();
       url.pathname = `/carta/${venue}`;
-      return NextResponse.rewrite(url);
+      return withUtmCookie(request, NextResponse.rewrite(url), utm);
     }
     // A venue host is for one page. Anything else belongs to the product, and
     // answering it here too would publish every marketing page at every
@@ -57,11 +87,13 @@ export async function middleware(request: NextRequest) {
     apex.host = ROOT_HOSTS[0];
     apex.port = "";
     apex.protocol = "https:";
-    return NextResponse.redirect(apex, 308);
+    return withUtmCookie(request, NextResponse.redirect(apex, 308), utm);
   }
 
   // ------------------------------------------------------------ the dashboard
-  if (!pathname.startsWith("/dashboard")) return NextResponse.next();
+  if (!pathname.startsWith("/dashboard")) {
+    return withUtmCookie(request, NextResponse.next(), utm);
+  }
 
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const session = token ? await verifySessionToken(token) : null;
@@ -69,11 +101,15 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(loginUrl);
+    return withUtmCookie(request, NextResponse.redirect(loginUrl), utm);
   }
 
   if (pathname.startsWith("/dashboard/admin") && session.role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return withUtmCookie(
+      request,
+      NextResponse.redirect(new URL("/dashboard", request.url)),
+      utm
+    );
   }
 
   // The comanda is the one shared screen: owners and their waiters both use it.
@@ -82,16 +118,27 @@ export async function middleware(request: NextRequest) {
     session.role !== "client" &&
     session.role !== "mozo"
   ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (pathname.startsWith("/dashboard/app") && session.role !== "client") {
-    return NextResponse.redirect(
-      new URL(session.role === "mozo" ? "/dashboard/comanda" : "/dashboard/admin/overview", request.url)
+    return withUtmCookie(
+      request,
+      NextResponse.redirect(new URL("/dashboard", request.url)),
+      utm
     );
   }
 
-  return NextResponse.next();
+  if (pathname.startsWith("/dashboard/app") && session.role !== "client") {
+    return withUtmCookie(
+      request,
+      NextResponse.redirect(
+        new URL(
+          session.role === "mozo" ? "/dashboard/comanda" : "/dashboard/admin/overview",
+          request.url
+        )
+      ),
+      utm
+    );
+  }
+
+  return withUtmCookie(request, NextResponse.next(), utm);
 }
 
 export const config = {

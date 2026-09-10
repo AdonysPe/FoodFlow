@@ -1,4 +1,5 @@
 import { Archivo, Bricolage_Grotesque } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { THEME_SCRIPT, ThemeProvider } from "@/components/ThemeContext";
 import {
@@ -9,6 +10,9 @@ import {
   SOCIAL_DESCRIPTION,
   SOCIAL_TITLE,
 } from "@/lib/seo";
+
+const rawGaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "";
+const GA_MEASUREMENT_ID = /^G-[A-Z0-9]+$/.test(rawGaId) ? rawGaId : null;
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -110,6 +114,22 @@ export default function RootLayout({ children }) {
       className={`${archivo.variable} ${bricolage.variable}`}
     >
       <body className="antialiased">
+        {GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', ${JSON.stringify(GA_MEASUREMENT_ID)}, { anonymize_ip: true });
+              `}
+            </Script>
+          </>
+        )}
         {/* Applies the stored theme before the first paint, so a visitor who
             chose light never sees a black frame flash first. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />

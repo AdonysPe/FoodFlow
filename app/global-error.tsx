@@ -1,10 +1,30 @@
 "use client";
 
-/**
- * Last resort: this replaces the root layout, so it cannot rely on the app's
- * stylesheet being there. Everything is inline on purpose.
- */
-export default function GlobalError({ reset }) {
+import { useEffect } from "react";
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    void fetch("/api/logging/client-error", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        digest: error.digest,
+        path: window.location.pathname,
+      }),
+      cache: "no-store",
+      keepalive: true,
+    }).catch(() => {});
+  }, [error]);
+
   return (
     <html lang="es">
       <body
@@ -21,7 +41,7 @@ export default function GlobalError({ reset }) {
           padding: "24px",
         }}
       >
-        <div style={{ maxWidth: "26rem" }}>
+        <main style={{ maxWidth: "26rem" }}>
           <p style={{ margin: 0, fontSize: "48px", fontWeight: 800, color: "#ff5a33" }}>
             500
           </p>
@@ -29,8 +49,7 @@ export default function GlobalError({ reset }) {
             Algo se nos rompió
           </h1>
           <p style={{ margin: "10px 0 0", fontSize: "15px", opacity: 0.7, lineHeight: 1.6 }}>
-            Vuelve a intentarlo. Si sigue igual, escríbenos a adonispereda1@gmail.com y lo
-            revisamos hoy mismo.
+            El error fue registrado. Vuelve a intentarlo.
           </p>
           <button
             type="button"
@@ -49,7 +68,7 @@ export default function GlobalError({ reset }) {
           >
             Reintentar
           </button>
-        </div>
+        </main>
       </body>
     </html>
   );
