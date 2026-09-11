@@ -134,6 +134,34 @@ export function IconLock({ className = "h-4 w-4" }) {
   );
 }
 
+export function IconEye({ className = "h-4 w-4" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M2.8 12s3.2-5.5 9.2-5.5 9.2 5.5 9.2 5.5-3.2 5.5-9.2 5.5S2.8 12 2.8 12Z" />
+      <circle cx="12" cy="12" r="2.4" />
+    </svg>
+  );
+}
+
+export function IconEyeOff({ className = "h-4 w-4" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 4l16 16" />
+      <path d="M9.9 6.8A10.8 10.8 0 0 1 12 6.5c6 0 9.2 5.5 9.2 5.5a14.5 14.5 0 0 1-2.3 3" />
+      <path d="M14.2 14.2a3.1 3.1 0 0 1-4.4-4.4M6.7 8.1A15.1 15.1 0 0 0 2.8 12s3.2 5.5 9.2 5.5a10.8 10.8 0 0 0 2.1-.2" />
+    </svg>
+  );
+}
+
+export function IconBuilding({ className = "h-4 w-4" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4.5 20.5V5.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v15" />
+      <path d="M16.5 9h2a1 1 0 0 1 1 1v10.5M2.5 20.5h19M8 7.5h5M8 11.5h5M8 15.5h2M12.5 20.5v-4h2" />
+    </svg>
+  );
+}
+
 export function IconMail({ className = "h-4 w-4" }) {
   return (
     <svg {...base} className={className}>

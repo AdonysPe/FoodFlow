@@ -524,6 +524,38 @@
   to { transform: scaleX(1); }
 }
 
+/* Auth motion mirrors one order moving from receipt to kitchen to service. */
+.auth-surface { isolation: isolate; }
+.auth-ambient {
+  z-index: -1;
+  background:
+    radial-gradient(55rem 38rem at 20% 38%, rgb(255 90 51 / 0.12), transparent 68%),
+    radial-gradient(34rem 28rem at 86% 78%, rgb(124 92 255 / 0.08), transparent 70%);
+}
+.auth-card {
+  background:
+    radial-gradient(90% 65% at 50% 0%, var(--liquid-spec), transparent 68%),
+    linear-gradient(to bottom, var(--liquid-top), var(--liquid-bot));
+  border: 1px solid var(--liquid-border);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+}
+.auth-flow-step { animation: auth-flow-step 4.8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+.auth-flow-signal {
+  box-shadow: 0 8px 24px rgb(255 90 51 / 0.35);
+  animation: auth-flow-signal 4.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes auth-flow-step {
+  0%, 18%, 100% { background-color: transparent; transform: translateX(0); }
+  5%, 13% { background-color: color-mix(in oklab, var(--color-fg) 4%, transparent); transform: translateX(6px); }
+}
+@keyframes auth-flow-signal {
+  0% { opacity: 0; transform: translate(-50%, -30%); }
+  8% { opacity: 1; }
+  78% { opacity: 1; }
+  92%, 100% { opacity: 0; transform: translate(-50%, 265px); }
+}
+
 .intro-curtain {
   animation: intro-curtain 1.5s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }

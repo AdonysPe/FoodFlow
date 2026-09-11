@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import GlassCard from "@/components/ui/GlassCard";
 import Button from "@/components/ui/Button";
-import { IconArrowRight } from "@/components/ui/Icons";
+import { IconArrowRight, IconBuilding, IconLock, IconMail } from "@/components/ui/Icons";
+import { AuthAlert, AuthCard, AuthField, LoadingIndicator, PasswordField, PasswordRules } from "@/components/auth/AuthForm";
 import { postAuth } from "@/lib/auth/client";
-
-const inputClass = "h-12 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[15px] text-fg outline-none focus:border-accent-400/50 focus:ring-4 focus:ring-accent-400/10";
 
 export default function RegisterForm() {
   const [restaurantName, setRestaurantName] = useState("");
@@ -19,7 +17,10 @@ export default function RegisterForm() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (password !== confirmation) return setError("Las contraseñas no coinciden.");
+    if (password !== confirmation) {
+      setError("Las contraseñas no coinciden. Revisa la confirmación.");
+      return;
+    }
     setError("");
     setPending(true);
     try {
@@ -30,30 +31,23 @@ export default function RegisterForm() {
       }
       setError(result.error);
     } catch {
-      setError("Problema de conexión. Inténtalo de nuevo.");
+      setError("No pudimos conectar. Revisa tu conexión e inténtalo otra vez.");
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <GlassCard className="w-full max-w-md p-7 sm:p-9" hoverLift={false}>
-      <h1 className="font-display text-[1.4rem] font-bold text-fg">Crea tu restaurante</h1>
-      <p className="mt-2 text-[14px] text-muted">Tu sesión quedará activa al terminar.</p>
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-        <Field label="Nombre del restaurante" id="restaurant-name"><input id="restaurant-name" required minLength={2} maxLength={80} autoComplete="organization" value={restaurantName} onChange={(event) => setRestaurantName(event.target.value)} className={inputClass} /></Field>
-        <Field label="Correo" id="register-email"><input id="register-email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} /></Field>
-        <Field label="Contraseña" id="register-password"><input id="register-password" type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} /></Field>
-        <Field label="Confirmar contraseña" id="register-confirmation"><input id="register-confirmation" type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} className={inputClass} /></Field>
-        <p className="text-[12px] text-faint">Mínimo 8 caracteres, una mayúscula y un número.</p>
-        {error && <p role="alert" className="rounded-lg border border-accent-500/20 bg-accent-500/[0.08] px-3.5 py-2.5 text-center text-[13px] text-accent-ink">{error}</p>}
-        <Button type="submit" size="lg" disabled={pending} icon={<IconArrowRight className="h-4 w-4" />}>{pending ? "Creando…" : "Crear cuenta"}</Button>
+    <AuthCard title="Pon tu restaurante en movimiento" description="Crea tu espacio y empieza a configurar tu carta. Iniciarás sesión automáticamente." footer={<p className="text-center text-[13px] text-muted">¿Ya tienes cuenta?{" "}<Link href="/login" className="font-semibold text-accent-icon underline-offset-4 hover:underline">Ingresa aquí</Link></p>}>
+      <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
+        <AuthField id="restaurant-name" label="Nombre del restaurante" icon={<IconBuilding className="h-[18px] w-[18px]" />} required minLength={2} maxLength={80} autoComplete="organization" value={restaurantName} onChange={(event) => setRestaurantName(event.target.value)} placeholder="Ej. Sazón de Casa" disabled={pending} />
+        <AuthField id="register-email" label="Correo" icon={<IconMail className="h-[18px] w-[18px]" />} type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@restaurante.com" disabled={pending} />
+        <PasswordField id="register-password" label="Contraseña" icon={<IconLock className="h-[18px] w-[18px]" />} required minLength={8} maxLength={72} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} disabled={pending} />
+        <PasswordRules password={password} />
+        <PasswordField id="register-confirmation" label="Confirma tu contraseña" icon={<IconLock className="h-[18px] w-[18px]" />} required minLength={8} maxLength={72} autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={pending} />
+        <AuthAlert message={error} />
+        <Button type="submit" size="lg" className="mt-2 w-full" disabled={pending} icon={pending ? <LoadingIndicator /> : <IconArrowRight className="h-4 w-4" />}>{pending ? "Creando tu espacio" : "Crear mi restaurante"}</Button>
       </form>
-      <p className="mt-6 text-center text-[13px] text-muted">¿Ya tienes cuenta? <Link href="/login" className="font-semibold text-accent-icon hover:text-accent-ink">Ingresa</Link></p>
-    </GlassCard>
+    </AuthCard>
   );
-}
-
-function Field({ label, id, children }: { label: string; id: string; children: React.ReactNode }) {
-  return <div><label htmlFor={id} className="mb-1.5 block text-[13px] font-medium text-fg/70">{label}</label>{children}</div>;
 }
