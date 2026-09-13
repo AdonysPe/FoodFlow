@@ -116,6 +116,13 @@ model User {
   sessionVersion            Int               @default(0) @map("session_version")
   failedLoginAttempts       Int               @default(0) @map("failed_login_attempts")
   loginLockedUntil          DateTime?         @map("login_locked_until")
+  // When the owner ticked the Términos/Privacidad consent box at registration
+  // — includes the international data transfer disclosed in Privacidad §5.
+  // Ley 29733 puts the burden of proving consent on us, so the moment it was
+  // given is stored, same pattern as Lead.consentAt. Null for staff accounts
+  // an owner creates (their data collection is covered by the owner's own
+  // consent, per Términos §5) and for accounts migrated before this existed.
+  consentAt                 DateTime?         @map("consent_at")
   createdAt                 DateTime          @default(now())
   restaurants               Restaurant[]
   staffMemberships          StaffMembership[]

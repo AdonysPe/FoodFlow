@@ -4,7 +4,7 @@ import CookiePolicy from "@/components/sections/CookiePolicy";
 export const metadata = {
   title: "Política de cookies",
   description:
-    "Qué guardamos en tu navegador cuando visitas FoodFlow y para qué. Solo lo necesario: sesión e idioma, sin publicidad ni rastreo de terceros.",
+    "Qué guardamos en tu navegador cuando visitas FoodFlow y para qué: sesión e idioma siempre, medición opcional con Google Analytics solo si la aceptas.",
   alternates: { canonical: "/cookies" },
 };
 

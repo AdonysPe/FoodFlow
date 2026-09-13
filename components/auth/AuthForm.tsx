@@ -49,6 +49,43 @@ export function PasswordRules({ password }: { password: string }) {
   return <ul className="grid grid-cols-2 gap-x-3 gap-y-2" aria-label="Requisitos de contraseña">{rules.map(({ label, valid }) => <li key={label} className={`flex items-center gap-1.5 text-[11.5px] transition-colors ${valid ? "text-mint-ink" : "text-faint"}`}><span className={`grid h-4 w-4 place-items-center rounded-full border ${valid ? "border-mint/35 bg-mint/10" : "border-fg/[0.12]"}`}>{valid ? <IconCheck className="h-2.5 w-2.5" /> : null}</span>{label}</li>)}</ul>;
 }
 
+type ConsentCheckboxProps = {
+  id: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  error?: boolean;
+  errorMessage?: string;
+  children: ReactNode;
+};
+
+// Required, never pre-ticked — Ley 29733 asks for consent that is prior,
+// express and informed. Same UX contract as the lead-capture form's consent
+// box (components/lead/LeadForm.jsx), redrawn with this file's light/dark
+// tokens instead of the landing page's cream/accent-ink set.
+export function ConsentCheckbox({ id, checked, onChange, error, errorMessage, children }: ConsentCheckboxProps) {
+  return (
+    <div>
+      <label htmlFor={id} className="flex cursor-pointer items-start gap-3 text-[13px] leading-relaxed text-muted">
+        <input
+          id={id}
+          type="checkbox"
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-accent-400"
+        />
+        <span>{children}</span>
+      </label>
+      {error ? (
+        <p id={`${id}-error`} role="alert" className="mt-1.5 pl-[30px] text-[12px] font-medium text-warn-ink">
+          {errorMessage ?? "Debes aceptar para continuar."}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function AuthAlert({ message }: { message: string }) {
   return <AnimatePresence initial={false}>{message ? <motion.p role="alert" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="rounded-xl bg-accent-500/[0.09] px-3.5 py-3 text-[13px] leading-5 text-accent-ink ring-1 ring-inset ring-accent-500/20">{message}</motion.p> : null}</AnimatePresence>;
 }

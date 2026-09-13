@@ -17,6 +17,13 @@ const schema = z
     restaurant_name: z.string().trim().min(2).max(80),
     email: z.email().trim().toLowerCase().max(255),
     password: passwordSchema,
+    // Server-side belt-and-suspenders: the checkbox already blocks submit on
+    // the client, but a bypassed client (or a direct API call) must not be
+    // able to create an account without it. Ley 29733 puts the burden of
+    // proving consent on us — see User.consentAt.
+    consent: z
+      .boolean()
+      .refine((v) => v === true, "Debes aceptar los Términos y la Política de Privacidad."),
   })
   .strict();
 
@@ -48,6 +55,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { restaurant_name, email, password } = parsed.data;
+  const consentAt = new Date();
   const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
     return NextResponse.json(
@@ -66,6 +74,7 @@ export async function POST(request: NextRequest) {
           passwordHash,
           requiresPasswordSetup: false,
           sessionVersion: 1,
+          consentAt,
         },
       });
       const restaurant = await tx.restaurant.create({

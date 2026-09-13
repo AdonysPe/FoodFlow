@@ -55,7 +55,7 @@ export const PRIVACY_DOC: LegalDocument = {
       title: "5. No vendemos tus datos",
       body: [
         "No vendemos, alquilamos ni cedemos tus datos personales a terceros para sus propios fines comerciales. Nunca. No es un modelo de negocio que nos interese.",
-        "Sí usamos proveedores de infraestructura que procesan datos por encargo nuestro y bajo nuestras instrucciones: alojamiento de la aplicación y de la base de datos, y envío de correos transaccionales. Estos proveedores pueden almacenar la información en servidores fuera del Perú, lo que constituye un flujo transfronterizo de datos que aceptas al usar el servicio; exigimos de ellos niveles de protección equivalentes a los de la Ley 29733.",
+        "Sí usamos proveedores de infraestructura que procesan datos por encargo nuestro y bajo nuestras instrucciones: alojamiento de la aplicación y de la base de datos, y envío de correos transaccionales. Estos proveedores pueden almacenar la información en servidores fuera del Perú, lo que constituye un flujo transfronterizo de datos. Aceptas expresamente esta transferencia al marcar la casilla correspondiente en el formulario donde nos dejas tus datos, ya sea al registrarte como cliente o al escribirnos desde la web; exigimos de estos proveedores niveles de protección equivalentes a los de la Ley 29733.",
         "Solo entregaríamos datos a una autoridad si media un requerimiento legal válido, y en ese caso te lo comunicaríamos salvo que la ley nos lo impida.",
       ],
     },
@@ -78,7 +78,8 @@ export const PRIVACY_DOC: LegalDocument = {
     {
       title: "8. Cookies",
       body: [
-        "Usamos únicamente lo necesario para que el sitio funcione: la cookie de sesión cuando inicias sesión y algunas preferencias guardadas en el almacenamiento local de tu navegador. No usamos cookies de publicidad ni de rastreo de terceros.",
+        "Usamos lo necesario para que el sitio funcione: la cookie de sesión cuando inicias sesión y algunas preferencias guardadas en el almacenamiento local de tu navegador. No usamos cookies de publicidad.",
+        "Si aceptas el aviso de cookies, activamos además Google Analytics para entender qué páginas se visitan y mejorar el sitio, con la IP anonimizada; si eliges 'Solo las necesarias', esa medición no se activa. Google, como todo proveedor de infraestructura mencionado en la sección 5, puede procesar esos datos fuera del Perú.",
         "El detalle está en nuestra Política de Cookies.",
       ],
     },

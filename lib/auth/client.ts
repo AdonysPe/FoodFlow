@@ -26,7 +26,7 @@ async function csrfToken(): Promise<string> {
 
 export async function postAuth<T>(
   path: string,
-  body: Record<string, string>
+  body: Record<string, string | boolean>
 ): Promise<AuthApiResult<T>> {
   const token = await csrfToken();
   const response = await fetch(path, {

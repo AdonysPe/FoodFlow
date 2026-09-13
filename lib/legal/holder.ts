@@ -28,7 +28,7 @@ export const LEGAL_HOLDER = {
  * document changes in substance — the date is what tells a user (or an
  * INDECOPI inspector) which version they agreed to.
  */
-export const LEGAL_UPDATED = "10 de septiembre de 2026";
+export const LEGAL_UPDATED = "13 de septiembre de 2026";
 
 /** Working days a claim or complaint takes to be answered. See ClaimsBook. */
 export const CLAIM_RESPONSE_DAYS = 30;
