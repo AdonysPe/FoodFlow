@@ -4,7 +4,7 @@ export const LEGAL_HOLDER = {
   taxAddress:
     process.env.NEXT_PUBLIC_LEGAL_TAX_ADDRESS?.trim() || "Lima, Lima, Perú",
   legalEmail:
-    process.env.NEXT_PUBLIC_LEGAL_EMAIL?.trim() || "legal@foodflow.site",
+    process.env.NEXT_PUBLIC_LEGAL_EMAIL?.trim() || "info@foodflow.site",
   phone: process.env.NEXT_PUBLIC_LEGAL_PHONE?.trim() || "+51 950 360 685",
   taxId: process.env.NEXT_PUBLIC_LEGAL_TAX_ID?.trim() || null,
   role: "Desarrollador de Software",
