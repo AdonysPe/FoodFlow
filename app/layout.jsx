@@ -1,4 +1,4 @@
-import { Archivo, Bricolage_Grotesque } from "next/font/google";
+import { Archivo, Fraunces } from "next/font/google";
 import "./globals.css";
 import { THEME_SCRIPT, ThemeProvider } from "@/components/ThemeContext";
 import Analytics from "@/components/Analytics";
@@ -20,9 +20,9 @@ const archivo = Archivo({
   display: "swap",
 });
 
-const bricolage = Bricolage_Grotesque({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["500", "600", "700"],
   variable: "--font-bricolage",
   display: "swap",
 });
@@ -111,7 +111,7 @@ export default function RootLayout({ children }) {
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${archivo.variable} ${bricolage.variable}`}
+      className={`${archivo.variable} ${fraunces.variable}`}
     >
       <body className="antialiased">
         {GA_MEASUREMENT_ID && <Analytics measurementId={GA_MEASUREMENT_ID} />}

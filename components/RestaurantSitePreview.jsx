@@ -1,12 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { IconChat } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, viewportOnce } from "@/lib/motion";
 import OrderFlowDisclaimer from "@/components/public/OrderFlowDisclaimer";
 
-const ITEM_EMOJI = ["🍔", "🥓", "🥗"];
+const ITEM_IMAGES = [
+  "/demo/carta/lomo-saltado.webp",
+  "/demo/carta/ceviche.webp",
+  "/demo/carta/causa-limena.webp",
+];
 
 /**
  * A phone-framed mock of the customer-facing site FoodFlow can build
@@ -14,7 +19,7 @@ const ITEM_EMOJI = ["🍔", "🥓", "🥗"];
  * WhatsApp ordering button. Built from DOM, not a screenshot, so it reads
  * crisply at any size and switches language with the rest of the page.
  *
- * Demo content only — "Burger House" is a placeholder business.
+ * Demo content only — "Fogón Limeño" is a fictional placeholder business.
  */
 export default function RestaurantSitePreview({ className = "" }) {
   const { t } = useLanguage();
@@ -26,6 +31,14 @@ export default function RestaurantSitePreview({ className = "" }) {
     <div data-theme="dark" className={`relative mx-auto w-full max-w-[300px] text-cream/86 ${className}`}>
       {/* phone bezel */}
       <div className="relative overflow-hidden rounded-[2.75rem] border border-white/[0.12] bg-ink-950 p-2.5 shadow-[0_60px_120px_-40px_rgba(0,0,0,0.95)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-7 top-0 z-20 h-px bg-linear-to-r from-transparent via-white/55 to-transparent"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-10 top-px z-20 h-8 rounded-[50%] bg-linear-to-b from-white/[0.055] to-transparent blur-sm"
+        />
         <div className="relative overflow-hidden rounded-[2.1rem] border border-white/[0.08] bg-ink-900">
           {/* notch */}
           <div className="absolute left-1/2 top-2 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-ink-950" />
@@ -47,10 +60,22 @@ export default function RestaurantSitePreview({ className = "" }) {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={viewportOnce}
               transition={{ duration: 0.6, ease: EASE }}
-              className="relative text-[40px] leading-none"
-              aria-hidden
+              className="relative mx-auto h-[72px] w-[72px]"
             >
-              🍔
+              <span
+                aria-hidden
+                className="absolute inset-1 rounded-2xl bg-accent-400/45 blur-xl"
+              />
+              <span className="relative block h-full w-full overflow-hidden rounded-2xl border border-white/15 bg-ink-950 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.9)]">
+                <Image
+                  src="/demo/carta/lomo-saltado.webp"
+                  alt={`${d.brand}: ${d.tagline}`}
+                  fill
+                  sizes="72px"
+                  className="object-cover"
+                  priority={false}
+                />
+              </span>
             </motion.div>
             <p className="relative mt-2 font-display text-[15px] font-bold tracking-[-0.01em] text-white">
               {d.brand}
@@ -58,9 +83,20 @@ export default function RestaurantSitePreview({ className = "" }) {
             <p className="relative mt-1 text-[10.5px] leading-snug text-white/55">
               {d.tagline}
             </p>
-            <p className="relative mt-1.5 text-[9.5px] font-medium text-accent-300">
-              {d.rating}
-            </p>
+            <div className="relative mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+              <span className="flex items-center gap-0.5 text-[#ffbf47]" aria-hidden="true">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <StarIcon key={i} />
+                ))}
+              </span>
+              <span className="flex items-center gap-1.5 text-[9.5px] font-medium text-accent-300">
+                <span className="relative flex h-1.5 w-1.5" aria-hidden>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#44d483] opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#44d483]" />
+                </span>
+                {d.rating}
+              </span>
+            </div>
 
             <div className="relative mt-4 flex gap-2">
               <span className="flex-1 rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-2 py-2 text-[10.5px] font-semibold text-ink-950">
@@ -87,8 +123,14 @@ export default function RestaurantSitePreview({ className = "" }) {
                   transition={{ duration: 0.4, ease: EASE, delay: 0.1 + i * 0.08 }}
                   className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-2.5 py-2"
                 >
-                  <span className="text-lg leading-none" aria-hidden>
-                    {ITEM_EMOJI[i]}
+                  <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-ink-950">
+                    <Image
+                      src={ITEM_IMAGES[i]}
+                      alt=""
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-white/80">
                     {item.name}
@@ -168,6 +210,14 @@ function LockIcon() {
     <svg width="8" height="10" viewBox="0 0 10 12" fill="none" aria-hidden>
       <rect x="1" y="5" width="8" height="6" rx="1.6" stroke="currentColor" strokeWidth="1.1" className="text-white/35" />
       <path d="M3 5V3.5a2 2 0 1 1 4 0V5" stroke="currentColor" strokeWidth="1.1" className="text-white/35" />
+    </svg>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+      <path d="m10 1.7 2.45 4.96 5.47.8-3.96 3.85.94 5.45L10 14.2l-4.9 2.56.94-5.45-3.96-3.86 5.47-.79L10 1.7Z" />
     </svg>
   );
 }
