@@ -28,22 +28,19 @@ export default function About({ as: Heading = "h2" }) {
             <figure className="relative mx-auto max-w-sm">
               <div className="liquid relative aspect-[4/5] overflow-hidden rounded-3xl shadow-lift">
                 {/* warm light behind the figure: the glass needs something to
-                    refract, and it lifts the mark off the near-black panel */}
+                    refract, and it lifts the portrait off the near-black panel */}
                 <div
                   aria-hidden
                   className="absolute inset-0 bg-[radial-gradient(72%_58%_at_50%_26%,rgba(255,90,51,0.20),transparent_72%)]"
                 />
-                {/* The artwork is a dark figure on transparency. On warm
-                    black it would disappear, so it is inverted to read as
-                    light on dark; on paper it is left as drawn. Both the
-                    inversion and the drop shadow come from the theme. */}
                 <Image
-                  src="/founder.png"
+                  src="/Founder.jpg"
                   alt={a.photoAlt}
                   width={968}
                   height={1032}
                   sizes="(min-width: 1024px) 24rem, 20rem"
-                  className="relative h-full w-full object-contain p-7 [filter:invert(var(--art-invert))_brightness(var(--art-bright))_drop-shadow(0_14px_26px_var(--art-shadow))]"
+                  className="relative h-full w-full object-cover"
+                  priority
                 />
               </div>
               <figcaption className="mt-4 text-center">

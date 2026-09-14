@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   CARTA_DAYS,
   CARTA_DAYS_SHORT,
@@ -11,6 +12,7 @@ import {
   whatsappLink,
 } from "@/lib/carta";
 import OrderFlowDisclaimer from "@/components/public/OrderFlowDisclaimer";
+import { EASE, viewportOnce } from "@/lib/motion";
 
 const POLL_MS = 30_000;
 const cacheKey = (slug) => `foodflow:carta:${slug}`;
@@ -163,6 +165,7 @@ function useLiveCarta(slug, initial) {
 export default function CartaView({ initial }) {
   const { payload, status, flash } = useLiveCarta(initial.venue.slug, initial);
   const { venue, categories, items } = payload;
+  const reducedMotion = useReducedMotion();
 
   const [activeCat, setActiveCat] = useState(null);
   const [zoom, setZoom] = useState(null);
@@ -235,65 +238,87 @@ export default function CartaView({ initial }) {
   return (
     <div className="min-h-screen bg-ink-950 pb-28">
       {/* ------------------------------------------------------ the venue */}
-      <header className="border-b border-fg/[0.07] px-5 pb-5 pt-7">
-        <div className="mx-auto flex max-w-2xl items-start gap-4">
+      <header className="border-b border-fg/[0.07] pb-5">
+        <div className="relative isolate h-28 overflow-hidden sm:h-32">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,90,51,0.2),transparent_45%),linear-gradient(145deg,#221411_0%,#130f0d_55%,#0c0908_100%)]" />
           {venue.logoUrl && (
-            <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-fg/[0.1] bg-fg/[0.04]">
-              <Image
-                src={venue.logoUrl}
-                alt=""
-                fill
-                sizes="64px"
-                className="object-cover"
-                priority
-              />
-            </span>
+            <Image
+              src={venue.logoUrl}
+              alt=""
+              fill
+              sizes="100vw"
+              className="scale-110 object-cover opacity-25 blur-xl"
+              priority
+              aria-hidden
+            />
           )}
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-fg">
-              {venue.name}
-            </h1>
-            {venue.tagline && (
-              <p className="mt-0.5 text-[13.5px] leading-snug text-fg/50">{venue.tagline}</p>
-            )}
-
-            <div className="mt-2.5 flex flex-wrap items-center gap-2">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold ${
-                  open
-                    ? "border-mint/35 bg-mint/10 text-mint-ink"
-                    : "border-fg/15 bg-fg/[0.05] text-fg/50"
-                }`}
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${open ? "bg-mint" : "bg-fg/35"}`}
-                  aria-hidden
-                />
-                {open ? "Abierto ahora" : "Cerrado"}
-              </span>
-              <span className="text-[12.5px] text-fg/45">{todayLabel(venue.hours, now)}</span>
-            </div>
-          </div>
+          <div className="absolute inset-0 bg-linear-to-b from-ink-950/10 via-ink-950/45 to-ink-950" />
+          <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-accent-400/25 to-transparent" />
         </div>
 
-        <div className="mx-auto mt-4 max-w-2xl">
-          <HoursTable hours={venue.hours} today={now.getDay()} />
-          {venue.address && (
-            <p className="mt-3 text-[12.5px] text-fg/45">
-              {venue.mapsUrl ? (
-                <a
-                  href={venue.mapsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline decoration-fg/20 underline-offset-2 hover:text-fg/70"
-                >
-                  {venue.address}
-                </a>
+        <div className="relative mx-auto -mt-8 max-w-2xl px-5">
+          <div className="flex items-end gap-4">
+            <span className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-fg/15 bg-ink-800 font-display text-xl font-bold text-accent-label shadow-lift">
+              {venue.logoUrl ? (
+                <Image
+                  src={venue.logoUrl}
+                  alt=""
+                  fill
+                  sizes="72px"
+                  className="object-cover"
+                  priority
+                />
               ) : (
-                venue.address
+                <span aria-hidden>{initialsFor(venue.name)}</span>
               )}
-            </p>
+            </span>
+            <div className="min-w-0 flex-1 pb-1">
+              <h1 className="font-display text-[27px] font-bold leading-tight tracking-[-0.02em] text-fg sm:text-[30px]">
+                {venue.name}
+              </h1>
+            </div>
+          </div>
+
+          {venue.tagline && (
+            <p className="mt-3 max-w-xl text-[13.5px] leading-relaxed text-fg/55">{venue.tagline}</p>
           )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold ${
+                open
+                  ? "border-mint/35 bg-mint/10 text-mint-ink"
+                  : "border-fg/15 bg-fg/[0.05] text-fg/50"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${open ? "bg-mint" : "bg-fg/35"}`}
+                aria-hidden
+              />
+              {open ? "Abierto ahora" : "Cerrado"}
+            </span>
+            <span className="text-[12.5px] text-fg/45">{todayLabel(venue.hours, now)}</span>
+          </div>
+
+          <div className="mt-4">
+            <HoursTable hours={venue.hours} today={now.getDay()} />
+            {venue.address && (
+              <p className="mt-3 text-[12.5px] text-fg/45">
+                {venue.mapsUrl ? (
+                  <a
+                    href={venue.mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-fg/20 underline-offset-2 hover:text-fg/70"
+                  >
+                    {venue.address}
+                  </a>
+                ) : (
+                  venue.address
+                )}
+              </p>
+            )}
+          </div>
         </div>
       </header>
 
@@ -310,13 +335,24 @@ export default function CartaView({ initial }) {
                   type="button"
                   onClick={() => jump(section.id)}
                   aria-current={activeCat === section.id ? "true" : undefined}
-                  className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                  className={`relative isolate overflow-hidden whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors duration-200 ${
                     activeCat === section.id
-                      ? "border-accent-400/55 bg-accent-400/15 text-accent-label"
-                      : "border-fg/[0.1] bg-fg/[0.03] text-fg/55"
+                      ? "border-accent-400/50 text-accent-label"
+                      : "border-fg/[0.1] bg-fg/[0.03] text-fg/55 hover:border-fg/20 hover:text-fg/75"
                   }`}
                 >
-                  {section.name}
+                  {activeCat === section.id && (
+                    <motion.span
+                      layoutId="public-carta-category"
+                      transition={
+                        reducedMotion
+                          ? { duration: 0 }
+                          : { type: "spring", stiffness: 480, damping: 36, mass: 0.55 }
+                      }
+                      className="absolute inset-0 -z-10 rounded-full bg-accent-400/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    />
+                  )}
+                  <span className="relative">{section.name}</span>
                 </button>
               </li>
             ))}
@@ -332,7 +368,7 @@ export default function CartaView({ initial }) {
           </p>
         )}
 
-        {sections.map((section) => (
+        {sections.map((section, sectionIndex) => (
           <section
             key={section.id}
             ref={(node) => {
@@ -344,9 +380,15 @@ export default function CartaView({ initial }) {
             <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-fg">
               {section.name}
             </h2>
-            <ul className="mt-3 flex flex-col">
-              {section.items.map((item) => (
-                <CartaItem key={item.id} item={item} onZoom={setZoom} />
+            <ul className="mt-4 flex flex-col gap-3">
+              {section.items.map((item, itemIndex) => (
+                <CartaItem
+                  key={item.id}
+                  item={item}
+                  onZoom={setZoom}
+                  reducedMotion={reducedMotion}
+                  priority={sectionIndex === 0 && itemIndex === 0}
+                />
               ))}
             </ul>
           </section>
@@ -377,19 +419,31 @@ export default function CartaView({ initial }) {
         </a>
       )}
 
-      {zoom && <PhotoZoom item={zoom} onClose={() => setZoom(null)} />}
+      <AnimatePresence>
+        {zoom && (
+          <PhotoZoom
+            item={zoom}
+            onClose={() => setZoom(null)}
+            reducedMotion={reducedMotion}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 /* --------------------------------------------------------------- one dish */
 
-function CartaItem({ item, onZoom }) {
+function CartaItem({ item, onZoom, reducedMotion, priority }) {
   const sold = !item.available;
 
   return (
-    <li
-      className={`flex gap-3.5 border-b border-fg/[0.06] py-3.5 last:border-b-0 ${
+    <motion.li
+      initial={reducedMotion ? false : { opacity: sold ? 0.35 : 0.55, y: 10 }}
+      whileInView={reducedMotion ? undefined : { opacity: sold ? 0.55 : 1, y: 0 }}
+      viewport={viewportOnce}
+      transition={{ duration: 0.42, ease: EASE }}
+      className={`flex gap-3.5 rounded-2xl bg-fg/[0.035] p-3.5 shadow-card ${
         sold ? "opacity-55" : ""
       }`}
     >
@@ -403,23 +457,23 @@ function CartaItem({ item, onZoom }) {
           )}
         </div>
         {item.description && (
-          <p className="mt-1 text-[13px] leading-relaxed text-fg/45">{item.description}</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-fg/50">{item.description}</p>
         )}
         <p
-          className={`mt-1.5 text-[14.5px] font-bold tabular-nums ${
-            sold ? "text-fg/40" : "text-accent-ink"
+          className={`mt-3 inline-flex rounded-lg px-2.5 py-1 text-[13.5px] font-bold tabular-nums ${
+            sold ? "bg-fg/[0.05] text-fg/40" : "bg-accent-400/10 text-accent-label"
           }`}
         >
           {cartaPrice(item.price)}
         </p>
       </div>
 
-      {item.photoUrl && (
+      {item.photoUrl ? (
         <button
           type="button"
           onClick={() => onZoom(item)}
           aria-label={`Ver foto de ${item.name}`}
-          className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-xl border border-fg/[0.08] bg-fg/[0.04] active:scale-[0.97]"
+          className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-xl bg-fg/[0.04] shadow-card transition-transform active:scale-[0.97]"
         >
           <Image
             src={item.photoUrl}
@@ -428,15 +482,27 @@ function CartaItem({ item, onZoom }) {
             // Fixed-size thumbnail, so one width is all the browser ever needs.
             sizes="86px"
             className={`object-cover ${sold ? "grayscale" : ""}`}
-            loading="lazy"
+            priority={priority}
+            loading={priority ? undefined : "lazy"}
           />
         </button>
+      ) : (
+        <div
+          aria-hidden
+          className="relative flex h-[86px] w-[86px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_28%_18%,rgba(255,162,133,0.22),transparent_38%),linear-gradient(145deg,rgba(255,90,51,0.16),rgba(255,255,255,0.035))] shadow-card"
+        >
+          <span className="absolute inset-3 rounded-full border border-accent-300/15" />
+          <span className="absolute inset-[22px] rounded-full border border-accent-300/10" />
+          <span className="relative font-display text-lg font-bold tracking-[-0.02em] text-accent-label/80">
+            {initialsFor(item.name)}
+          </span>
+        </div>
       )}
-    </li>
+    </motion.li>
   );
 }
 
-function PhotoZoom({ item, onClose }) {
+function PhotoZoom({ item, onClose, reducedMotion }) {
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -444,14 +510,25 @@ function PhotoZoom({ item, onClose }) {
   }, [onClose]);
 
   return (
-    <div
+    <motion.div
+      initial={reducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={reducedMotion ? undefined : { opacity: 0 }}
+      transition={{ duration: 0.2, ease: EASE }}
       role="dialog"
       aria-modal="true"
       aria-label={item.name}
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-5 backdrop-blur-sm"
     >
-      <figure className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+      <motion.figure
+        initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={reducedMotion ? undefined : { opacity: 0, scale: 0.97 }}
+        transition={{ duration: 0.26, ease: EASE }}
+        className="w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
           <Image src={item.photoUrl} alt={item.name} fill sizes="100vw" className="object-cover" />
         </div>
@@ -466,9 +543,19 @@ function PhotoZoom({ item, onClose }) {
         >
           Cerrar
         </button>
-      </figure>
-    </div>
+      </motion.figure>
+    </motion.div>
   );
+}
+
+function initialsFor(name) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toLocaleUpperCase("es-PE");
 }
 
 /* ------------------------------------------------------------- the extras */
