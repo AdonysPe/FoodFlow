@@ -4,7 +4,7 @@ import Hero from "@/components/sections/Hero";
 import Marquee from "@/components/sections/Marquee";
 import Features from "@/components/sections/Features";
 import Showcase from "@/components/sections/Showcase";
-import CustomSite from "@/components/sections/CustomSite";
+import CustomSiteSummary from "@/components/sections/CustomSiteSummary";
 import LeadCapture from "@/components/sections/LeadCapture";
 import CTA from "@/components/sections/CTA";
 
@@ -23,7 +23,7 @@ export default function Page() {
       <Marquee />
       <Features />
       <Showcase />
-      <CustomSite />
+      <CustomSiteSummary />
       <LeadCapture />
       <CTA />
     </SiteShell>

@@ -296,6 +296,17 @@ export default function SellDirect({ as }) {
           </div>
         </Reveal>
 
+        <Reveal delay={0.08}>
+          <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-[14px]">
+            <Link href="/alternativa-a-rappi" className="font-semibold text-accent-ink hover:text-fg">
+              {t.rappiAlternative.eyebrow}
+            </Link>
+            <Link href="/web-de-pedidos" className="font-semibold text-accent-ink hover:text-fg">
+              {t.orderingSite.eyebrow}
+            </Link>
+          </div>
+        </Reveal>
+
         <Reveal delay={0.1}>
           <p className="mt-10 text-[13px] leading-relaxed text-cream/50">
             {c.disclaimer}

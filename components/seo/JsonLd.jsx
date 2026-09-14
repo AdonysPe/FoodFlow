@@ -403,6 +403,62 @@ export function SellDirectJsonLd() {
   );
 }
 
+function ContentArticleJsonLd({ content, path, about }) {
+  const url = `${BASE}${path}`;
+
+  return (
+    <Script
+      schema={{
+        "@context": "https://schema.org",
+        "@graph": [
+          organization,
+          {
+            "@type": "Article",
+            "@id": `${url}#article`,
+            headline: content.title,
+            description: content.description,
+            inLanguage: "es-PE",
+            url,
+            mainEntityOfPage: url,
+            author: { "@id": ORG_ID },
+            publisher: { "@id": ORG_ID },
+            about: about.map((name) => ({ "@type": "Thing", name })),
+            audience: { "@type": "BusinessAudience", name: "Restaurantes en Perú" },
+          },
+          {
+            "@type": "FAQPage",
+            "@id": `${url}#faq`,
+            inLanguage: "es-PE",
+            publisher: { "@id": ORG_ID },
+            mainEntity: content.faq.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          },
+        ],
+      }}
+    />
+  );
+}
+
+export function QrMenuJsonLd() {
+  return <ContentArticleJsonLd content={es.qrMenu} path="/carta-digital-qr" about={["Carta digital con QR", "Pedidos en mesa"]} />;
+}
+
+export function RappiAlternativeJsonLd() {
+  return <ContentArticleJsonLd content={es.rappiAlternative} path="/alternativa-a-rappi" about={["Alternativas a Rappi", "Canales de venta para restaurantes"]} />;
+}
+
+export function OrderingSiteJsonLd() {
+  const content = {
+    ...es.orderingSite,
+    title: es.customSite.title,
+    description: es.customSite.description,
+  };
+  return <ContentArticleJsonLd content={content} path="/web-de-pedidos" about={["Página web de pedidos", "Venta directa para restaurantes"]} />;
+}
+
 /**
  * Breadcrumbs for the inner pages. Two levels is all this site has, and
  * that is exactly what Google renders under the result.

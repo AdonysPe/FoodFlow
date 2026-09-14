@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import Container from "@/components/ui/Container";
 import PointerGlow from "@/components/ui/PointerGlow";
@@ -174,6 +175,13 @@ export default function Pricing({ as }) {
             <p className="mt-6 border-t border-cream/10 pt-5 text-[13px] text-cream/50">
               {t.pricing.note}
             </p>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.16}>
+          <div className="mx-auto mt-8 flex max-w-5xl flex-wrap justify-center gap-x-6 gap-y-3 text-[14px]">
+            <Link href="/carta-digital-qr" className="font-semibold text-accent-ink hover:text-fg">{t.qrMenu.eyebrow}</Link>
+            <Link href="/web-de-pedidos" className="font-semibold text-accent-ink hover:text-fg">{t.orderingSite.eyebrow}</Link>
           </div>
         </Reveal>
       </Container>

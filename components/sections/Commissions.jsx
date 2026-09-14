@@ -269,6 +269,14 @@ export default function Commissions({ as }) {
           </div>
         </Reveal>
 
+        <Reveal delay={0.08}>
+          <p className="mt-8 text-[14px]">
+            <Link href="/alternativa-a-rappi" className="font-semibold text-accent-ink hover:text-fg">
+              {t.rappiAlternative.eyebrow}
+            </Link>
+          </p>
+        </Reveal>
+
         <Reveal delay={0.1}>
           <p className="mt-10 text-[13px] leading-relaxed text-cream/50">
             {c.disclaimer}{" "}

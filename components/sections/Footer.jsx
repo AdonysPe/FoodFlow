@@ -30,6 +30,9 @@ export default function Footer() {
     { href: "/calculadora", label: t.calculator.eyebrow },
     { href: "/comisiones-rappi-pedidosya", label: t.commissions.eyebrow },
     { href: "/vender-sin-comision", label: t.sellDirect.eyebrow },
+    { href: "/carta-digital-qr", label: t.qrMenu.eyebrow },
+    { href: "/alternativa-a-rappi", label: t.rappiAlternative.eyebrow },
+    { href: "/web-de-pedidos", label: t.orderingSite.eyebrow },
     { href: "/preguntas", label: t.faq.eyebrow },
     { href: "/nosotros", label: t.about.eyebrow },
   ];

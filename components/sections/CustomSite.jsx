@@ -10,7 +10,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 // Icon is shared across languages; title/copy come from the dictionary by index.
 const ITEM_META = [{ icon: IconMenuBook }, { icon: IconCart }, { icon: IconChat }];
 
-export default function CustomSite() {
+export default function CustomSite({ as: Heading = "h2" }) {
   const { t } = useLanguage();
   const items = t.customSite.items.map((item, i) => ({ ...item, ...ITEM_META[i] }));
 
@@ -43,9 +43,9 @@ export default function CustomSite() {
               </div>
             </Reveal>
             <Reveal delay={0.06}>
-              <h2 className="mt-5 font-display text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-balance text-gradient sm:text-4xl lg:text-[2.9rem]">
+              <Heading className="mt-5 font-display text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-balance text-gradient sm:text-4xl lg:text-[2.9rem]">
                 {t.customSite.title}
-              </h2>
+              </Heading>
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mt-5 max-w-lg text-pretty text-[15px] leading-relaxed text-cream/66 sm:text-base">

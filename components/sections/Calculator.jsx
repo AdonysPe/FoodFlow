@@ -264,14 +264,17 @@ export default function Calculator({ as }) {
         {/* Someone who just saw their own number is the reader most likely to
             want the breakdown behind it, so the bridge sits right here. */}
         <Reveal delay={0.2}>
-          <p className="mt-4 text-center">
+          <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-3 text-center">
             <Link
               href="/comisiones-rappi-pedidosya"
               className="text-[13.5px] text-accent-ink underline decoration-accent-400/40 underline-offset-4 transition-colors hover:text-fg"
             >
               {copy.guideLink}
             </Link>
-          </p>
+            <Link href="/alternativa-a-rappi" className="text-[13.5px] text-accent-ink underline decoration-accent-400/40 underline-offset-4 transition-colors hover:text-fg">
+              {t.rappiAlternative.eyebrow}
+            </Link>
+          </div>
         </Reveal>
       </Container>
     </section>
