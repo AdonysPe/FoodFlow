@@ -2,12 +2,21 @@
 
 import Reveal from "./Reveal";
 
+/**
+ * `as` exists because the same heading block leads a section on the home page
+ * (where the Hero already owns the h1) and leads a whole route on /precios,
+ * /calculadora and /preguntas — where nothing else would be the h1 and the
+ * page would announce itself starting at level 2. The page decides, since the
+ * page is the only thing that knows what it is; h2 stays the default so every
+ * existing call site keeps the outline it had.
+ */
 export default function SectionHeading({
   eyebrow,
   title,
   description,
   align = "center",
   className = "",
+  as: Heading = "h2",
 }) {
   const centered = align === "center";
 
@@ -24,9 +33,9 @@ export default function SectionHeading({
       )}
 
       <Reveal delay={0.06}>
-        <h2 className="font-display text-balance text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-gradient sm:text-4xl lg:text-[2.9rem]">
+        <Heading className="font-display text-balance text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-gradient sm:text-4xl lg:text-[2.9rem]">
           {title}
-        </h2>
+        </Heading>
       </Reveal>
 
       {description && (

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Container from "@/components/ui/Container";
@@ -33,7 +34,8 @@ function groupDigits(value) {
  * once someone has seen their own figure does the form appear, carrying that
  * figure with it so the first WhatsApp message already has the number in it.
  */
-export default function Calculator() {
+// `as` is forwarded so /calculadora can claim the h1; h2 anywhere else.
+export default function Calculator({ as }) {
   const { t } = useLanguage();
   const copy = t.calculator;
   const { openLeadForm } = useLeadCapture();
@@ -71,6 +73,7 @@ export default function Calculator() {
 
       <Container>
         <SectionHeading
+          as={as}
           eyebrow={copy.eyebrow}
           title={copy.title}
           description={copy.description}
@@ -255,6 +258,19 @@ export default function Calculator() {
         <Reveal delay={0.16}>
           <p className="mx-auto mt-8 max-w-2xl text-center text-[12.5px] leading-relaxed text-cream/55">
             {copy.disclaimer}
+          </p>
+        </Reveal>
+
+        {/* Someone who just saw their own number is the reader most likely to
+            want the breakdown behind it, so the bridge sits right here. */}
+        <Reveal delay={0.2}>
+          <p className="mt-4 text-center">
+            <Link
+              href="/comisiones-rappi-pedidosya"
+              className="text-[13.5px] text-accent-ink underline decoration-accent-400/40 underline-offset-4 transition-colors hover:text-fg"
+            >
+              {copy.guideLink}
+            </Link>
           </p>
         </Reveal>
       </Container>

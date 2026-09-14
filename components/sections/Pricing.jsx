@@ -11,7 +11,8 @@ import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, scaleIn } from "@/lib/motion";
 
-export default function Pricing() {
+// `as` is forwarded so /precios can claim the h1; it stays h2 anywhere else.
+export default function Pricing({ as }) {
   const { t } = useLanguage();
   const { openLeadForm } = useLeadCapture();
   // Same source as the chat and the closing block: prices are written once.
@@ -26,6 +27,7 @@ export default function Pricing() {
 
       <Container>
         <SectionHeading
+          as={as}
           eyebrow={t.pricing.eyebrow}
           title={t.pricing.title}
           description={t.pricing.description}

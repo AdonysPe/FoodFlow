@@ -6,7 +6,8 @@ import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { IconCheck } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-export default function About() {
+// `as` lets /nosotros claim the h1; h2 anywhere else.
+export default function About({ as: Heading = "h2" }) {
   const { t } = useLanguage();
   const a = t.about;
 
@@ -62,9 +63,9 @@ export default function About() {
             </Reveal>
 
             <Reveal delay={0.06}>
-              <h2 className="mt-5 font-display text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-balance text-gradient sm:text-4xl">
+              <Heading className="mt-5 font-display text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-balance text-gradient sm:text-4xl">
                 {a.title}
-              </h2>
+              </Heading>
             </Reveal>
 
             {a.body.map((paragraph, i) => (

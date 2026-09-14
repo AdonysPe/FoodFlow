@@ -14,7 +14,7 @@ export default function AboutPage() {
   return (
     <SiteShell>
       <BreadcrumbJsonLd name="Quiénes somos" path="/nosotros" />
-      <About />
+      <About as="h1" />
       <CTA />
     </SiteShell>
   );

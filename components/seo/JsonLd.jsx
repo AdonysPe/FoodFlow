@@ -302,6 +302,108 @@ export function PricingJsonLd() {
 }
 
 /**
+ * The commissions explainer. Two blocks, because it is two things at once:
+ * an article Google can attribute to us, and a set of questions whose answers
+ * are rendered open on the page — which is the condition for FAQ markup.
+ *
+ * Both read from the same dictionary the page renders, so an edit to the copy
+ * cannot leave the markup quoting an answer that is no longer there.
+ */
+export function CommissionsJsonLd() {
+  const c = es.commissions;
+  const url = `${BASE}/comisiones-rappi-pedidosya`;
+
+  return (
+    <Script
+      schema={{
+        "@context": "https://schema.org",
+        "@graph": [
+          organization,
+          {
+            "@type": "Article",
+            "@id": `${url}#article`,
+            headline: c.title,
+            description: c.description,
+            inLanguage: "es-PE",
+            url,
+            mainEntityOfPage: url,
+            author: { "@id": ORG_ID },
+            publisher: { "@id": ORG_ID },
+            about: [
+              { "@type": "Thing", name: "Rappi" },
+              { "@type": "Thing", name: "PedidosYa" },
+              { "@type": "Thing", name: "Comisiones de delivery" },
+            ],
+            audience: {
+              "@type": "BusinessAudience",
+              name: "Restaurantes en Lima, Perú",
+            },
+          },
+          {
+            "@type": "FAQPage",
+            "@id": `${url}#faq`,
+            inLanguage: "es-PE",
+            publisher: { "@id": ORG_ID },
+            mainEntity: c.faq.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          },
+        ],
+      }}
+    />
+  );
+}
+
+/** The "sell direct" guide. Same two-block shape as the commissions page. */
+export function SellDirectJsonLd() {
+  const c = es.sellDirect;
+  const url = `${BASE}/vender-sin-comision`;
+
+  return (
+    <Script
+      schema={{
+        "@context": "https://schema.org",
+        "@graph": [
+          organization,
+          {
+            "@type": "Article",
+            "@id": `${url}#article`,
+            headline: c.title,
+            description: c.description,
+            inLanguage: "es-PE",
+            url,
+            mainEntityOfPage: url,
+            author: { "@id": ORG_ID },
+            publisher: { "@id": ORG_ID },
+            about: [
+              { "@type": "Thing", name: "Delivery sin comisión" },
+              { "@type": "Thing", name: "Venta directa para restaurantes" },
+            ],
+            audience: {
+              "@type": "BusinessAudience",
+              name: "Restaurantes en Lima, Perú",
+            },
+          },
+          {
+            "@type": "FAQPage",
+            "@id": `${url}#faq`,
+            inLanguage: "es-PE",
+            publisher: { "@id": ORG_ID },
+            mainEntity: c.faq.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          },
+        ],
+      }}
+    />
+  );
+}
+
+/**
  * Breadcrumbs for the inner pages. Two levels is all this site has, and
  * that is exactly what Google renders under the result.
  */

@@ -9,7 +9,8 @@ import { useChat } from "@/components/chat/ChatContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE } from "@/lib/motion";
 
-export default function FAQ() {
+// `as` is forwarded so /preguntas can claim the h1; h2 anywhere else.
+export default function FAQ({ as }) {
   const { t } = useLanguage();
   const { openChat } = useChat();
   const [open, setOpen] = useState(0);
@@ -17,7 +18,12 @@ export default function FAQ() {
   return (
     <section id="faq" className="relative scroll-mt-24 overflow-x-clip py-24 sm:py-28">
       <Container>
-        <SectionHeading eyebrow={t.faq.eyebrow} title={t.faq.title} align="left" />
+        <SectionHeading
+          as={as}
+          eyebrow={t.faq.eyebrow}
+          title={t.faq.title}
+          align="left"
+        />
 
         <div className="mt-10 max-w-3xl divide-y divide-cream/10 border-y border-cream/10">
           {t.faq.items.map((item, i) => {

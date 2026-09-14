@@ -16,7 +16,7 @@ export default function PricingPage() {
     <SiteShell>
       <PricingJsonLd />
       <BreadcrumbJsonLd name="Precios" path="/precios" />
-      <Pricing />
+      <Pricing as="h1" />
       <LeadCapture />
       <CTA />
     </SiteShell>

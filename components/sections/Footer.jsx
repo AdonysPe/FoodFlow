@@ -28,6 +28,8 @@ export default function Footer() {
   const siteLinks = [
     { href: "/precios", label: t.pricing.eyebrow },
     { href: "/calculadora", label: t.calculator.eyebrow },
+    { href: "/comisiones-rappi-pedidosya", label: t.commissions.eyebrow },
+    { href: "/vender-sin-comision", label: t.sellDirect.eyebrow },
     { href: "/preguntas", label: t.faq.eyebrow },
     { href: "/nosotros", label: t.about.eyebrow },
   ];

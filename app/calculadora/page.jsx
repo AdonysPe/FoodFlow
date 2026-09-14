@@ -5,9 +5,11 @@ import CustomSite from "@/components/sections/CustomSite";
 import CTA from "@/components/sections/CTA";
 
 export const metadata = {
-  title: "Calculadora de comisiones",
+  // The brands belong in the title because they are what gets typed: "cuánto
+  // cobra Rappi de comisión" is the lowest-difficulty query this site can win.
+  title: "Calculadora de comisiones de Rappi y PedidosYa",
   description:
-    "Cuánto te cuestan al mes y al año las comisiones de las apps de delivery, con tus propios números. Sin registrarte: el resultado aparece mientras escribes.",
+    "Cuánto te cuestan al mes y al año las comisiones de Rappi, PedidosYa y las demás apps de delivery, con tus propios números. Sin registrarte.",
   alternates: { canonical: "/calculadora" },
 };
 
@@ -15,7 +17,7 @@ export default function CalculatorPage() {
   return (
     <SiteShell>
       <BreadcrumbJsonLd name="Calculadora de comisiones" path="/calculadora" />
-      <Calculator />
+      <Calculator as="h1" />
       {/* the answer to the number they just saw: their own ordering site */}
       <CustomSite />
       <CTA />

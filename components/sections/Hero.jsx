@@ -128,11 +128,25 @@ export default function Hero() {
               </motion.span>
             </h1>
 
+            {/* The h1 above sells the promise ("en 48 horas"); this says what
+                the thing actually is, which is what a search for "sistema para
+                restaurantes Lima" needs to find in a heading. Deliberately one
+                short line, and the paragraph below tightens its top margin to
+                match — the hero is tuned to the fold and must not grow. */}
+            <motion.h2
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: EASE, delay: intro + 0.5 }}
+              className="mt-5 max-w-xl text-pretty font-display text-[17px] font-semibold leading-snug tracking-[-0.015em] text-cream/75 sm:text-[18px]"
+            >
+              {t.hero.tagline}
+            </motion.h2>
+
             <motion.p
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: EASE, delay: intro + 0.58 }}
-              className="mt-6 max-w-xl text-pretty text-[16px] leading-relaxed text-cream/60"
+              className="mt-3.5 max-w-xl text-pretty text-[16px] leading-relaxed text-cream/60"
             >
               {t.hero.subheadline}
             </motion.p>

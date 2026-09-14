@@ -15,7 +15,7 @@ export default function FaqPage() {
     <SiteShell>
       <FaqJsonLd />
       <BreadcrumbJsonLd name="Preguntas frecuentes" path="/preguntas" />
-      <FAQ />
+      <FAQ as="h1" />
       <CTA />
     </SiteShell>
   );
