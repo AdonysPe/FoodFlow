@@ -114,14 +114,35 @@ habitual sin RUC es una situación de informalidad tributaria frente a SUNAT
 (distinto del RUC de cada restaurante para sus propios comprobantes, que ya
 está resuelto). Confírmalo.
 
-### 3.2 Consentimiento para transferencia internacional de datos
-La Política de Privacidad §5 dice que el flujo transfronterizo (Neon en
-EE.UU., SMTP) se acepta "al usar el servicio". Es una divulgación honesta,
-pero una lectura estricta de la Ley 29733 prefiere un acto de consentimiento
-más explícito para la transferencia internacional, no solo implícito por uso.
-Es barato de reforzar (un check adicional al registrarse) si quieres cerrar
-ese margen — no lo hice porque cambia el flujo de registro, y eso es tu
-decisión.
+### 3.2 Consentimiento para transferencia internacional de datos — ✅ Hecho (2026-09-13)
+Antes, la Política de Privacidad §5 decía que el flujo transfronterizo (Neon
+en EE.UU., SMTP) se aceptaba "al usar el servicio" — un consentimiento
+implícito. Ahora es un acto explícito:
+
+- `/register` tiene una casilla **obligatoria, nunca premarcada**
+  (`ConsentCheckbox` en `components/auth/AuthForm.tsx`), que nombra la
+  transferencia internacional de forma explícita: *"He leído y acepto los
+  Términos y Condiciones y la Política de Privacidad, incluida la
+  transferencia internacional de mis datos que ahí se describe."* Enlaza a
+  `/terminos` y `/privacidad` (se abren en pestaña nueva para no perder el
+  formulario).
+- Se valida en el cliente (bloquea el envío, enfoca el error) **y en el
+  servidor** (`app/api/auth/register/route.ts`, `z.boolean().refine(...)`) —
+  un cliente manipulado no puede saltarse la casilla.
+- El momento del consentimiento queda grabado: `User.consentAt` (migración
+  `20260913213436_add_user_consent`), el mismo patrón que ya usaba
+  `Lead.consentAt` en el formulario de leads.
+- El formulario de leads (`components/lead/LeadForm.jsx`) **ya tenía** esta
+  casilla desde antes — no lo toqué. El Libro de Reclamaciones sigue sin
+  casilla a propósito (ese registro existe por obligación legal, no por
+  consentimiento — así lo documenta el propio código).
+- `lib/legal/privacy.ts` §5 actualizado: ya no dice "aceptas al usar el
+  servicio", sino que remite a la casilla del formulario correspondiente
+  (registro o leads).
+
+Verificado en el navegador: enviar el formulario sin marcar → error inline,
+foco en la casilla, sin llamada al servidor. Marcar y enviar → `201`,
+`consentAt` grabado con la hora exacta, sesión iniciada, sin errores.
 
 ### 3.3 Plazos ARCO y registro del banco de datos — verificar con la autoridad o un abogado
 La Política de Privacidad promete 10 días hábiles para acceso y 20 para el
@@ -160,7 +181,7 @@ no como una infracción legal.
 |---|---|---|
 | 1 | Google Analytics sin consentimiento real | ✅ Corregido esta sesión |
 | 2 | RUC de FoodFlow en Vercel Production | ⏳ Confirmar tú |
-| 3 | Consentimiento explícito para transferencia internacional | ⏳ Decisión tuya (opcional, refuerzo) |
+| 3 | Consentimiento explícito para transferencia internacional | ✅ Corregido esta sesión |
 | 4 | Plazos ARCO / registro del banco de datos | ⏳ Verificar con abogado o autoridad |
 | 5 | Consistencia operativa de reembolsos | ⏳ Nota, no requiere código |
 | 6 | `images.remotePatterns` wildcard | ⏳ Nota de seguridad, no legal |
