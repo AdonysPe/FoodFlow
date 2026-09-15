@@ -56,6 +56,10 @@ export default function ComandaFlow({
   const router = useRouter();
   const pushToast = useDashboardStore((s) => s.pushToast);
   const [step, setStep] = useState<Step>("target");
+  // Which side each step slides in from: 1 = advancing deeper (enters from
+  // the right, exits to the left), -1 = returning (enters from the left,
+  // exits to the right) — so a step always leaves the way it arrived.
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [target, setTarget] = useState<Target | null>(null);
   const [cart, setCart] = useState<Cart>({});
   // Only asked when the order is being opened; a table that already has
@@ -87,21 +91,27 @@ export default function ComandaFlow({
     return { count: c, total: t };
   }, [cart, itemById]);
 
+  function goTo(next: Step, dir: 1 | -1) {
+    setDirection(dir);
+    setStep(next);
+  }
+
   function chooseTable(t: ComandaTableDTO) {
     setTarget({ kind: "table", id: t.id, name: t.name });
     setCart({});
     setCustomerName("");
-    setStep(tabByTable.has(t.id) ? "account" : "items");
+    goTo(tabByTable.has(t.id) ? "account" : "items", 1);
   }
 
   function chooseOther(kind: "pickup" | "delivery") {
     setTarget({ kind });
     setCart({});
     setCustomerName("");
-    setStep("items");
+    goTo("items", 1);
   }
 
   function resetToTarget() {
+    setDirection(-1);
     setStep("target");
     setTarget(null);
     setCart({});
@@ -158,7 +168,7 @@ export default function ComandaFlow({
       setCart({});
       setCustomerName("");
       // A table order sticks around to be cobrada; other channels are one-shot.
-      if (target.kind === "table") setStep("account");
+      if (target.kind === "table") goTo("account", 1);
       else resetToTarget();
       router.refresh();
     });
@@ -170,9 +180,9 @@ export default function ComandaFlow({
         {step === "target" && (
           <motion.div
             key="target"
-            initial={{ opacity: 0, x: -12 }}
+            initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
+            exit={{ opacity: 0, x: direction === 1 ? -12 : 12 }}
             transition={{ duration: 0.22, ease: EASE }}
             className="flex-1 px-4 py-5"
           >
@@ -188,9 +198,9 @@ export default function ComandaFlow({
         {step === "account" && activeTab && (
           <motion.div
             key="account"
-            initial={{ opacity: 0, x: 12 }}
+            initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 12 }}
+            exit={{ opacity: 0, x: direction === 1 ? -12 : 12 }}
             transition={{ duration: 0.22, ease: EASE }}
             className="flex-1"
           >
@@ -199,9 +209,9 @@ export default function ComandaFlow({
               onBack={resetToTarget}
               onAddItems={() => {
                 setCart({});
-                setStep("items");
+                goTo("items", 1);
               }}
-              onCharge={() => setStep("pay")}
+              onCharge={() => goTo("pay", 1)}
               onVoided={() => {
                 pushToast("Cuenta anulada. Mesa libre.", "success");
                 resetToTarget();
@@ -214,9 +224,9 @@ export default function ComandaFlow({
         {step === "pay" && activeTab && (
           <motion.div
             key="pay"
-            initial={{ opacity: 0, x: 12 }}
+            initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 12 }}
+            exit={{ opacity: 0, x: direction === 1 ? -12 : 12 }}
             transition={{ duration: 0.22, ease: EASE }}
             className="flex-1"
           >
@@ -226,10 +236,10 @@ export default function ComandaFlow({
               autoPrint={receiptSettings.autoPrint}
               receiptSettings={receiptSettings}
               billing={billing}
-              onBack={() => setStep("account")}
+              onBack={() => goTo("account", -1)}
               onPaid={(paid) => {
                 setSettled(paid);
-                setStep("done");
+                goTo("done", 1);
                 router.refresh();
               }}
             />
@@ -239,9 +249,9 @@ export default function ComandaFlow({
         {step === "done" && settled && (
           <motion.div
             key="done"
-            initial={{ opacity: 0, x: 12 }}
+            initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 12 }}
+            exit={{ opacity: 0, x: direction === 1 ? -12 : 12 }}
             transition={{ duration: 0.22, ease: EASE }}
             className="flex flex-1 flex-col"
           >
@@ -261,9 +271,9 @@ export default function ComandaFlow({
         {step === "items" && (
           <motion.div
             key="items"
-            initial={{ opacity: 0, x: 12 }}
+            initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 12 }}
+            exit={{ opacity: 0, x: direction === 1 ? -12 : 12 }}
             transition={{ duration: 0.22, ease: EASE }}
             className="flex flex-1 flex-col"
           >
@@ -281,7 +291,7 @@ export default function ComandaFlow({
               frequent={frequent}
               cart={cart}
               onBack={() => {
-                if (target?.kind === "table" && activeTab) setStep("account");
+                if (target?.kind === "table" && activeTab) goTo("account", -1);
                 else resetToTarget();
               }}
               onSetQty={setQty}

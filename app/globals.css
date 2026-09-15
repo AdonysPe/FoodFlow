@@ -392,14 +392,95 @@
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
+    /* The theme swap still gets a brief cross-fade rather than a hard cut —
+       an instant light/dark swap is exactly the abrupt brightness jump
+       reduced motion asks apps to avoid; a short opacity dissolve isn't
+       spatial motion, so it stays. */
+    ::view-transition-old(root) {
       animation: none !important;
+    }
+    ::view-transition-new(root) {
+      animation: theme-dissolve 0.12s ease-out both !important;
     }
     *, *::before, *::after {
       animation-duration: 0.001ms !important;
       animation-iteration-count: 1 !important;
-      transition-duration: 0.001ms !important;
+      /* Not zeroed: a 0ms transition-duration also kills opacity/colour
+         crossfades that reduced motion is meant to keep (only slides,
+         springs and parallax should go). A short, fixed duration reads as
+         a calm fade for those and as a snap for anything transform-based. */
+      transition-duration: 150ms !important;
+    }
+  }
+
+  /* Frosted materials lean on blur to soften whatever sits behind them —
+     with transparency reduced that blur goes away, so every surface gets a
+     denser fill instead, per the OS setting's intent (frostier → solid). */
+  @media (prefers-reduced-transparency: reduce) {
+    [class*="backdrop-blur"],
+    .glass,
+    .liquid,
+    .liquid-soft,
+    .auth-card {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    :root,
+    [data-theme="dark"] {
+      --glass-top: rgb(255 255 255 / 0.14);
+      --glass-bot: rgb(255 255 255 / 0.09);
+      --liquid-top: rgb(255 255 255 / 0.12);
+      --liquid-bot: rgb(255 255 255 / 0.07);
+      --soft-top: rgb(255 255 255 / 0.14);
+      --soft-bot: rgb(255 255 255 / 0.09);
+    }
+    [data-theme="light"] {
+      --glass-top: rgb(255 255 255 / 0.96);
+      --glass-bot: rgb(255 255 255 / 0.86);
+      --liquid-top: rgb(255 255 255 / 0.94);
+      --liquid-bot: rgb(255 255 255 / 0.8);
+      --soft-top: rgb(255 255 255 / 0.92);
+      --soft-bot: rgb(255 255 255 / 0.78);
+    }
+  }
+
+  /* Near-solid backgrounds with a defined border, in place of translucency —
+     applied after reduced-transparency so it wins when both are set. */
+  @media (prefers-contrast: more) {
+    [class*="backdrop-blur"],
+    .glass,
+    .liquid,
+    .liquid-soft,
+    .auth-card {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    :root,
+    [data-theme="dark"] {
+      --glass-top: rgb(19 15 13 / 0.97);
+      --glass-bot: rgb(19 15 13 / 0.97);
+      --glass-border: rgb(243 239 230 / 0.4);
+      --liquid-top: rgb(19 15 13 / 0.97);
+      --liquid-bot: rgb(19 15 13 / 0.97);
+      --liquid-border: rgb(243 239 230 / 0.4);
+      --soft-top: rgb(19 15 13 / 0.94);
+      --soft-bot: rgb(19 15 13 / 0.94);
+      --soft-border: rgb(243 239 230 / 0.4);
+      --line: rgb(243 239 230 / 0.28);
+      --rule: rgb(243 239 230 / 0.45);
+    }
+    [data-theme="light"] {
+      --glass-top: rgb(255 255 255 / 0.98);
+      --glass-bot: rgb(255 255 255 / 0.98);
+      --glass-border: rgb(28 20 18 / 0.35);
+      --liquid-top: rgb(255 255 255 / 0.98);
+      --liquid-bot: rgb(255 255 255 / 0.98);
+      --liquid-border: rgb(28 20 18 / 0.35);
+      --soft-top: rgb(255 255 255 / 0.96);
+      --soft-bot: rgb(255 255 255 / 0.96);
+      --soft-border: rgb(28 20 18 / 0.35);
+      --line: rgb(28 20 18 / 0.25);
+      --rule: rgb(28 20 18 / 0.4);
     }
   }
 }

@@ -104,7 +104,7 @@ export default function TableDrawer({
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ duration: 0.32, ease: EASE }}
+            transition={{ type: "spring", bounce: 0, duration: 0.32 }}
             className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-fg/[0.08] bg-ink-950"
             role="dialog"
             aria-label={`Detalle de ${table.name}`}

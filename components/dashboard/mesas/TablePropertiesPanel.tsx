@@ -4,7 +4,6 @@ import { useEffect, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconX } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import { EASE } from "@/lib/motion";
 import { updateTable, deleteTable } from "@/lib/actions/tables";
 import type { TableDTO } from "./types";
 import TableFormFields, { type TableFormValue } from "./TableFormFields";
@@ -77,7 +76,7 @@ export default function TablePropertiesPanel({
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ duration: 0.3, ease: EASE }}
+            transition={{ type: "spring", bounce: 0, duration: 0.3 }}
             className="fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-fg/[0.08] bg-ink-950"
             role="dialog"
             aria-label={`Editar ${table.name}`}

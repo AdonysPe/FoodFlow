@@ -24,8 +24,27 @@ import type { TableDTO, ReservationDTO, OrderMiniDTO } from "./types";
 type ZoneFilter = "all" | TableZoneValue;
 type Pos = { x: number; y: number };
 
-const DRAG_THRESHOLD_PX = 4;
-const clamp = (n: number) => Math.min(98, Math.max(2, n));
+const DRAG_THRESHOLD_PX = 10;
+const BOUND_MIN = 2;
+const BOUND_MAX = 98;
+const clamp = (n: number) => Math.min(BOUND_MAX, Math.max(BOUND_MIN, n));
+
+// Soft resistance past the plan's edge instead of a hard stop — the further
+// you drag past the bound, the less the table follows, so it still tracks
+// the pointer but real things slow down before they run out of room.
+function rubberband(n: number): number {
+  const range = BOUND_MAX - BOUND_MIN;
+  const k = 0.55;
+  if (n < BOUND_MIN) {
+    const overshoot = BOUND_MIN - n;
+    return BOUND_MIN - (overshoot * range * k) / (range + k * overshoot);
+  }
+  if (n > BOUND_MAX) {
+    const overshoot = n - BOUND_MAX;
+    return BOUND_MAX + (overshoot * range * k) / (range + k * overshoot);
+  }
+  return n;
+}
 
 export default function FloorPlan({
   tables,
@@ -50,6 +69,10 @@ export default function FloorPlan({
   const [dragId, setDragId] = useState<string | null>(null);
   const dragMoved = useRef(false);
   const dragStart = useRef<{ px: number; py: number } | null>(null);
+  // Offset between where the pointer grabbed the table and the table's own
+  // position, so the table tracks the finger 1:1 instead of re-centering
+  // under it on the first move.
+  const dragGrabOffset = useRef<Pos>({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const pushToast = useDashboardStore((s) => s.pushToast);
 
@@ -120,12 +143,15 @@ export default function FloorPlan({
     [drafts]
   );
 
+  // Unclamped percentage position of the pointer over the canvas — bounds
+  // are applied later (with rubber-banding while dragging, hard clamp on
+  // commit), not here, so the grab offset below stays accurate at the edges.
   function pointFromEvent(e: React.PointerEvent): Pos | null {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect || rect.width === 0) return null;
     return {
-      x: clamp(((e.clientX - rect.left) / rect.width) * 100),
-      y: clamp(((e.clientY - rect.top) / rect.height) * 100),
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
     };
   }
 
@@ -136,6 +162,8 @@ export default function FloorPlan({
     setDragId(table.id);
     dragMoved.current = false;
     dragStart.current = { px: e.clientX, py: e.clientY };
+    const p = pointFromEvent(e);
+    dragGrabOffset.current = p ? { x: p.x - table.x, y: p.y - table.y } : { x: 0, y: 0 };
   }
 
   function handlePointerMove(e: React.PointerEvent, table: TableDTO) {
@@ -145,7 +173,14 @@ export default function FloorPlan({
     if (!dragMoved.current && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
     dragMoved.current = true;
     const p = pointFromEvent(e);
-    if (p) setDrafts((prev) => ({ ...prev, [table.id]: p }));
+    if (!p) return;
+    setDrafts((prev) => ({
+      ...prev,
+      [table.id]: {
+        x: rubberband(p.x - dragGrabOffset.current.x),
+        y: rubberband(p.y - dragGrabOffset.current.y),
+      },
+    }));
   }
 
   function handlePointerUp(e: React.PointerEvent, table: TableDTO) {
@@ -160,7 +195,7 @@ export default function FloorPlan({
 
     const p = drafts[table.id];
     if (!p) return;
-    const rounded = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
+    const rounded = { x: Math.round(clamp(p.x) * 10) / 10, y: Math.round(clamp(p.y) * 10) / 10 };
     setDrafts((prev) => ({ ...prev, [table.id]: rounded }));
     updateTablePosition(table.id, rounded).then((result) => {
       if (result.ok) {
