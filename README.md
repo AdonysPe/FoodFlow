@@ -32,7 +32,7 @@ app/
   globals.css         design tokens, base styles, custom utilities
 components/
   MotionProvider.jsx  MotionConfig — honours prefers-reduced-motion
-  ThreeBackground.jsx WebGL particle field (custom shader)
+  OrderFlowBackground.jsx SVG order-flow field (Mesa/Web/WhatsApp -> Cocina)
   DashboardPreview.jsx the product shot — pure DOM + SVG, no screenshots
   sections/           Navbar, Hero, SocialProof, Features, Showcase,
                       HowItWorks, Benefits, CTA, Footer

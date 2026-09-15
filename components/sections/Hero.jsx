@@ -18,14 +18,13 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, INTRO_DELAY } from "@/lib/motion";
 
 /**
- * Three.js is ~126 kB gzipped — more than half of everything the home page
- * shipped, for a decorative field that is `aria-hidden` and carries no
- * content. Loaded on demand and client-only: the CSS glow and the grid floor
- * underneath already stand on their own, so nothing is missing while it
- * arrives, and nothing moves when it does — the canvas is absolutely
- * positioned inside an `isolate` section, so it never touches layout.
+ * Plain SVG, loaded on demand and client-only: the CSS glow and the
+ * grid floor underneath already stand on their own, so nothing is missing
+ * while it arrives, and nothing moves when it does — the canvas is
+ * absolutely positioned inside an `isolate` section, so it never touches
+ * layout.
  */
-const ThreeBackground = dynamic(() => import("@/components/ThreeBackground"), {
+const OrderFlowBackground = dynamic(() => import("@/components/OrderFlowBackground"), {
   ssr: false,
 });
 
@@ -56,7 +55,7 @@ export default function Hero() {
       ref={ref}
       className="relative isolate overflow-hidden pt-24 pb-14 sm:pt-28 sm:pb-20 lg:pt-32 lg:[@media(max-height:820px)]:pt-24"
     >
-      <ThreeBackground className="opacity-60" />
+      <OrderFlowBackground className="opacity-55" />
 
       {/* lime core glow behind the headline */}
       <div
