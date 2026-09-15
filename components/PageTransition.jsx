@@ -1,41 +1,33 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-import { EASE } from "@/lib/motion";
 
 /**
- * Route change animation. Keyed on the pathname, so every navigation mounts a
- * fresh tree that rises into place while a hairline of accent sweeps across
- * the top — the same gesture as the load curtain, at a quarter of the length.
+ * Route change animation. Keyed on the pathname so CSS restarts the transition
+ * for each navigation. The content's resting state is fully visible: browser
+ * throttling in a background tab can delay the flourish, never the page.
  *
- * Deliberately entrance-only: an exit animation would make the router wait on
- * a frame that a backgrounded tab never paints.
+ * CSS keeps this off Framer Motion's runtime path and lets the global reduced-
+ * motion rule collapse it without any hydration work.
  */
 export default function PageTransition({ children }) {
   const pathname = usePathname();
 
   return (
     <>
-      <motion.span
+      <span
         key={`sweep-${pathname}`}
         aria-hidden
-        initial={{ scaleX: 0, opacity: 1 }}
-        animate={{ scaleX: 1, opacity: 0 }}
-        transition={{ duration: 0.75, ease: EASE, times: [0, 1] }}
-        className="pointer-events-none fixed inset-x-0 top-0 z-[65] h-0.5 origin-left bg-linear-to-r from-accent-400 via-accent-300 to-transparent"
+        className="page-transition-sweep pointer-events-none fixed inset-x-0 top-0 z-[65] h-0.5 origin-left bg-linear-to-r from-accent-400 via-accent-300 to-transparent"
       />
 
-      <motion.main
+      <main
         key={pathname}
         id="main"
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: EASE }}
-        className="relative"
+        className="page-transition-content relative"
       >
         {children}
-      </motion.main>
+      </main>
     </>
   );
 }

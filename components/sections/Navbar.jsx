@@ -28,13 +28,14 @@ const HREFS = [
   "/nosotros",
 ];
 
-export default function Navbar() {
+export default function Navbar({ intro = false }) {
   const { t } = useLanguage();
   const links = t.nav.links.map((label, i) => ({ label, href: HREFS[i] }));
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollY } = useScroll();
-  const intro = useReducedMotion() ? 0 : INTRO_DELAY;
+  const reduceMotion = useReducedMotion();
+  const introDelay = intro && !reduceMotion ? INTRO_DELAY : 0;
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
 
@@ -48,9 +49,9 @@ export default function Navbar() {
 
   return (
     <motion.header
-      initial={{ y: -80, opacity: 0 }}
+      initial={intro ? { y: -80, opacity: 0 } : false}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: EASE, delay: intro + 0.1 }}
+      transition={{ duration: 0.8, ease: EASE, delay: introDelay + 0.1 }}
       className="fixed inset-x-0 top-0 z-50"
     >
       <div

@@ -35,7 +35,7 @@ export default function SiteShell({ children, intro = false }) {
           <LeadCaptureProvider>
             {intro && <IntroOverlay />}
             <ScrollProgress />
-            <Navbar />
+            <Navbar intro={intro} />
             <PageTransition>{children}</PageTransition>
             <Footer />
             <ChatWidget />

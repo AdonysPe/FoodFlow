@@ -524,6 +524,30 @@
   to { transform: scaleX(1); }
 }
 
+/* Route continuity stays compositor-only and, crucially, starts visible.
+   A background browser tab may throttle the flourish but can never hold the
+   next page at opacity: 0 while it waits for an animation frame. */
+@keyframes page-transition-content {
+  from { opacity: 0.92; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes page-transition-sweep {
+  0% { opacity: 0.9; transform: scaleX(0); }
+  65% { opacity: 0.75; }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+
+.page-transition-content {
+  opacity: 1;
+  transform: none;
+  animation: page-transition-content 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.page-transition-sweep {
+  opacity: 0;
+  transform: scaleX(1);
+  animation: page-transition-sweep 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* Auth motion mirrors one order moving from receipt to kitchen to service. */
 .auth-surface { isolation: isolate; }
 .auth-ambient {
