@@ -12,10 +12,17 @@ import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import PointerGlow from "@/components/ui/PointerGlow";
-import OrderFlowBackground from "@/components/OrderFlowBackground";
+import dynamic from "next/dynamic";
 import { IconArrowRight, IconCheck, IconPlay } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, INTRO_DELAY } from "@/lib/motion";
+
+// Its own chunk, loaded client-only: keeps this purely-decorative field off
+// the critical path for the hero's first paint, and its setup is pushed to
+// requestIdleCallback besides (see ParticleThreads.jsx).
+const ParticleThreads = dynamic(() => import("@/components/ParticleThreads"), {
+  ssr: false,
+});
 
 export default function Hero() {
   const { t } = useLanguage();
@@ -44,7 +51,7 @@ export default function Hero() {
       ref={ref}
       className="relative isolate overflow-hidden pt-24 pb-14 sm:pt-28 sm:pb-20 lg:pt-32 lg:[@media(max-height:820px)]:pt-24"
     >
-      <OrderFlowBackground className="opacity-55" />
+      <ParticleThreads className="opacity-70" />
 
       {/* lime core glow behind the headline */}
       <div

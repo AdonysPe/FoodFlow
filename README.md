@@ -32,7 +32,7 @@ app/
   globals.css         design tokens, base styles, custom utilities
 components/
   MotionProvider.jsx  MotionConfig — honours prefers-reduced-motion
-  OrderFlowBackground.jsx SVG order-flow field (Mesa/Web/WhatsApp -> Cocina)
+  ParticleThreads.jsx Canvas 2D constellation field, setup on requestIdleCallback
   DashboardPreview.jsx the product shot — pure DOM + SVG, no screenshots
   sections/           Navbar, Hero, SocialProof, Features, Showcase,
                       HowItWorks, Benefits, CTA, Footer
