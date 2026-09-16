@@ -17,7 +17,7 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <SiteShell intro>
+    <SiteShell>
       <HomeJsonLd />
       <Hero />
       <Marquee />

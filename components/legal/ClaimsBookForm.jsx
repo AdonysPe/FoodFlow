@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useRef, useState, useTransition } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import Button from "@/components/ui/Button";
 import { IconArrowRight, IconCheck } from "@/components/ui/Icons";
 import { submitClaim } from "@/lib/actions/claims";

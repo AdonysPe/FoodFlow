@@ -2,8 +2,7 @@
 
 import { useRef } from "react";
 import {
-  motion,
-  useReducedMotion,
+  m as motion,
   useScroll,
   useSpring,
   useTransform,
@@ -15,7 +14,7 @@ import PointerGlow from "@/components/ui/PointerGlow";
 import dynamic from "next/dynamic";
 import { IconArrowRight, IconCheck, IconPlay } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { EASE, INTRO_DELAY } from "@/lib/motion";
+import { EASE } from "@/lib/motion";
 
 // Its own chunk, loaded client-only: keeps this purely-decorative field off
 // the critical path for the hero's first paint, and its setup is pushed to
@@ -29,9 +28,6 @@ export default function Hero() {
   const { headlineWords: words, offer } = t.hero;
   const ref = useRef(null);
 
-  // Hold the entrance until the load curtain starts lifting.
-  const intro = useReducedMotion() ? 0 : INTRO_DELAY;
-
   // The offer card drifts up a touch slower than the copy as the hero
   // leaves. Spring-smoothed so it never reads as stepped.
   const { scrollYProgress } = useScroll({
@@ -44,7 +40,6 @@ export default function Hero() {
     restDelta: 0.001,
   });
   const cardY = useTransform(smooth, [0, 1], [0, -48]);
-  const copyY = useTransform(smooth, [0, 1], [0, 40]);
 
   return (
     <section
@@ -73,54 +68,38 @@ export default function Hero() {
       <Container>
         <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-14">
           {/* ---------------------------------------------------------- copy */}
-          <motion.div style={{ y: copyY }} className="lg:col-span-7">
+          <div className="lg:col-span-7">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: EASE, delay: intro + 0.1 }}
+              transition={{ duration: 0.55, ease: EASE, delay: 0.05 }}
             >
               <Badge>{t.hero.badge}</Badge>
             </motion.div>
 
             <h1 className="mt-6 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-balance sm:text-5xl lg:text-[3.85rem] lg:[@media(max-height:820px)]:text-[3.3rem]">
-              {words.map((word, i) => (
+              {words.map((word) => (
                 // whitespace-pre keeps the real space inside the span, so the
                 // accessible name and copy-paste read as words, not one blob.
-                <motion.span
+                <span
                   key={word}
-                  initial={{ opacity: 0, y: 22, filter: "blur(8px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 0.75, ease: EASE, delay: intro + 0.18 + i * 0.06 }}
                   className="inline-block whitespace-pre text-gradient"
                 >
                   {`${word} `}
-                </motion.span>
+                </span>
               ))}
 
-              <motion.span
-                initial={{ opacity: 0, y: 22, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 0.8, ease: EASE, delay: intro + 0.18 + words.length * 0.06 }}
-                className="relative inline-block text-accent-icon"
-              >
+              <span className="relative inline-block text-accent-icon">
                 {t.hero.headlineAccent}
-                <motion.span
+                <span
                   aria-hidden
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.9, ease: EASE, delay: intro + 0.9 }}
                   className="absolute -bottom-1 left-0 h-[3px] w-full origin-left rounded-full bg-linear-to-r from-accent-400/0 via-accent-400 to-accent-400/0"
                 />
-              </motion.span>
+              </span>
 
-              <motion.span
-                initial={{ opacity: 0, y: 22, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 0.8, ease: EASE, delay: intro + 0.3 + words.length * 0.06 }}
-                className="block text-gradient"
-              >
+              <span className="block text-gradient">
                 {t.hero.headlineTail}
-              </motion.span>
+              </span>
             </h1>
 
             {/* The h1 above sells the promise ("en 48 horas"); this says what
@@ -128,28 +107,18 @@ export default function Hero() {
                 restaurantes Lima" needs to find in a heading. Deliberately one
                 short line, and the paragraph below tightens its top margin to
                 match — the hero is tuned to the fold and must not grow. */}
-            <motion.h2
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: intro + 0.5 }}
-              className="mt-5 max-w-xl text-pretty font-display text-[17px] font-semibold leading-snug tracking-[-0.015em] text-cream/75 sm:text-[18px]"
-            >
+            <h2 className="mt-5 max-w-xl text-pretty font-display text-[17px] font-semibold leading-snug tracking-[-0.015em] text-cream/75 sm:text-[18px]">
               {t.hero.tagline}
-            </motion.h2>
+            </h2>
 
-            <motion.p
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: intro + 0.58 }}
-              className="mt-3.5 max-w-xl text-pretty text-[16px] leading-relaxed text-cream/60"
-            >
+            <p className="mt-3.5 max-w-xl text-pretty text-[16px] leading-relaxed text-cream/60">
               {t.hero.subheadline}
-            </motion.p>
+            </p>
 
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: EASE, delay: intro + 0.7 }}
+              transition={{ duration: 0.65, ease: EASE, delay: 0.18 }}
               className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row"
             >
               <Button
@@ -176,7 +145,7 @@ export default function Hero() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, ease: EASE, delay: intro + 0.78 }}
+              transition={{ duration: 0.6, ease: EASE, delay: 0.22 }}
               className="mt-3.5 text-[13px] text-cream/55"
             >
               {t.hero.ctaNote}
@@ -185,7 +154,7 @@ export default function Hero() {
             <motion.ul
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.9, ease: EASE, delay: intro + 0.86 }}
+              transition={{ duration: 0.65, ease: EASE, delay: 0.26 }}
               className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-cream/55"
             >
               {t.hero.proof.map((p) => (
@@ -195,14 +164,14 @@ export default function Hero() {
                 </li>
               ))}
             </motion.ul>
-          </motion.div>
+          </div>
 
           {/* -------------------------------------------------- offer card */}
           <motion.div
             style={{ y: cardY }}
             initial={{ opacity: 0, x: 26 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, ease: EASE, delay: intro + 0.45 }}
+            transition={{ duration: 0.75, ease: EASE, delay: 0.12 }}
             className="lg:col-span-5"
           >
             <div className="group relative overflow-hidden rounded-3xl border border-cream/10 bg-ink-800/80 p-6 shadow-lift backdrop-blur-xl sm:p-7">
@@ -222,7 +191,7 @@ export default function Hero() {
                   aria-hidden
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
-                  transition={{ duration: 1.4, ease: EASE, delay: intro + 0.8 }}
+                  transition={{ duration: 1.1, ease: EASE, delay: 0.32 }}
                   className="absolute left-3.5 top-3 bottom-3 w-px origin-top bg-linear-to-b from-accent-400 to-cream/10"
                 />
 
@@ -233,7 +202,7 @@ export default function Hero() {
                     key={i}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: EASE, delay: intro + 0.9 + i * 0.14 }}
+                    transition={{ duration: 0.55, ease: EASE, delay: 0.38 + i * 0.1 }}
                     className="relative flex items-center gap-3.5"
                   >
                     <span
@@ -260,7 +229,7 @@ export default function Hero() {
                       key={i}
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, ease: EASE, delay: intro + 1.3 + i * 0.1 }}
+                      transition={{ duration: 0.45, ease: EASE, delay: 0.6 + i * 0.08 }}
                       className="flex gap-2.5 text-[13.5px] leading-snug text-cream/80"
                     >
                       <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-icon" />

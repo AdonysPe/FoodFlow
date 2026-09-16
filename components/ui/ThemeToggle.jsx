@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { m as motion, useReducedMotion } from "framer-motion";
 import { useTheme } from "@/components/ThemeContext";
 import { IconMoon, IconSun } from "@/components/ui/Icons";
 import { useOptionalLanguage } from "@/lib/i18n/LanguageContext";

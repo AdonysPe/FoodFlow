@@ -1,6 +1,8 @@
 "use client";
 
-import { MotionConfig } from "framer-motion";
+import { LazyMotion, MotionConfig } from "framer-motion";
+
+const loadFeatures = () => import("@/components/motionFeatures").then((module) => module.default);
 
 /**
  * Framer Motion animates in JS, so the `prefers-reduced-motion` rules in
@@ -9,5 +11,9 @@ import { MotionConfig } from "framer-motion";
  * those users and settle straight on the final state.
  */
 export default function MotionProvider({ children }) {
-  return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
+  return (
+    <LazyMotion features={loadFeatures} strict>
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+    </LazyMotion>
+  );
 }

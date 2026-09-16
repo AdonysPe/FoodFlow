@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useSpring } from "framer-motion";
+import { m as motion, useScroll, useSpring } from "framer-motion";
 
 /** Hairline reading-progress bar pinned under the nav. */
 export default function ScrollProgress() {

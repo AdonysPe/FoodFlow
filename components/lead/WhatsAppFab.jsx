@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m as motion } from "framer-motion";
 import { IconWhatsApp } from "@/components/ui/Icons";
 import { buildWhatsAppUrl } from "@/lib/contact";
 import { useLanguage } from "@/lib/i18n/LanguageContext";

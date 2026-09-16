@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState, useTransition } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import Button from "@/components/ui/Button";
 import { IconArrowRight, IconCheck, IconWhatsApp } from "@/components/ui/Icons";
 import { useLanguage } from "@/lib/i18n/LanguageContext";

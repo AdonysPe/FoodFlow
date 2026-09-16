@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m as motion } from "framer-motion";
 import { LogoMark } from "@/components/ui/Logo";
 import { IconArrowRight, IconChat, IconCheck, IconX } from "@/components/ui/Icons";
 import { useChat } from "@/components/chat/ChatContext";

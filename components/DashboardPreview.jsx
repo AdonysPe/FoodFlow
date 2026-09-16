@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { buildAreaPath } from "@/lib/chart";
 import { LogoMark } from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageContext";

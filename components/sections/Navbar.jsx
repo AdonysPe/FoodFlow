@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import {
-  motion,
+  m as motion,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
 } from "framer-motion";
 import Link from "next/link";
@@ -14,7 +13,7 @@ import LanguageToggle from "@/components/ui/LanguageToggle";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { LogoMark } from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { EASE, INTRO_DELAY } from "@/lib/motion";
+import { EASE } from "@/lib/motion";
 
 // Root-relative so the anchors still work when you are on /precios.
 // Six links plus both buttons need more than a tablet gives, so the full
@@ -28,14 +27,12 @@ const HREFS = [
   "/nosotros",
 ];
 
-export default function Navbar({ intro = false }) {
+export default function Navbar() {
   const { t } = useLanguage();
   const links = t.nav.links.map((label, i) => ({ label, href: HREFS[i] }));
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollY } = useScroll();
-  const reduceMotion = useReducedMotion();
-  const introDelay = intro && !reduceMotion ? INTRO_DELAY : 0;
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
 
@@ -49,9 +46,9 @@ export default function Navbar({ intro = false }) {
 
   return (
     <motion.header
-      initial={intro ? { y: -80, opacity: 0 } : false}
+      initial={false}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: EASE, delay: introDelay + 0.1 }}
+      transition={{ duration: 0.35, ease: EASE }}
       className="fixed inset-x-0 top-0 z-50"
     >
       <div
