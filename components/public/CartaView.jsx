@@ -9,9 +9,7 @@ import {
   cartaPrice,
   isOpenAt,
   todayLabel,
-  whatsappLink,
 } from "@/lib/carta";
-import OrderFlowDisclaimer from "@/components/public/OrderFlowDisclaimer";
 import { EASE, viewportOnce } from "@/lib/motion";
 
 const POLL_MS = 30_000;
@@ -193,9 +191,11 @@ export default function CartaView({ initial }) {
     if (!activeCat && sections.length > 0) setActiveCat(sections[0].id);
   }, [sections, activeCat]);
 
-  // Scroll-spy by measurement rather than IntersectionObserver: the observer
-  // is silently unreliable inside some embedded webviews, and a menu whose
-  // category pills stop tracking looks broken.
+  // Every category sits on the one page now — the bar is an index you jump
+  // from, not a filter — so it tracks scroll position rather than clicks
+  // alone. Measurement rather than IntersectionObserver: the observer is
+  // silently unreliable inside some embedded webviews, and a menu whose
+  // index stops tracking looks broken.
   useEffect(() => {
     let frame = 0;
     const onScroll = () => {
@@ -206,8 +206,8 @@ export default function CartaView({ initial }) {
         for (const section of sections) {
           const node = sectionRefs.current.get(section.id);
           if (!node) continue;
-          // 140px clears the sticky header + the pill rail.
-          if (node.getBoundingClientRect().top <= 140) current = section.id;
+          // 150px clears the sticky header + the category bar.
+          if (node.getBoundingClientRect().top <= 150) current = section.id;
         }
         if (current) setActiveCat(current);
       });
@@ -220,25 +220,51 @@ export default function CartaView({ initial }) {
     };
   }, [sections]);
 
+  // `html` carries `overflow-x: clip` sitewide (it keeps the hero's marquee
+  // and other full-bleed decoration from opening a horizontal scrollbar),
+  // but Chromium won't let a document-scrolled `position: sticky` element
+  // stick while the root has any non-visible overflow-x — clip included.
+  // Every other sticky bar in the app lives inside the dashboard's own
+  // scroll container and never hits this; the carta is the first page that
+  // scrolls the plain document, so it's neutralized here only, for as long
+  // as this page is mounted.
+  useEffect(() => {
+    const root = document.documentElement;
+    const previous = root.style.overflowX;
+    root.style.overflowX = "visible";
+    return () => {
+      root.style.overflowX = previous;
+    };
+  }, []);
+
   const now = useMemo(() => new Date(), []);
   const open = isOpenAt(venue.hours, now);
-  const wa = whatsappLink(
-    venue.whatsapp,
-    `Hola ${venue.name}, vi su carta y quisiera hacer un pedido.`
-  );
 
   const jump = (id) => {
     const node = sectionRefs.current.get(id);
     if (!node) return;
     setActiveCat(id);
-    const top = node.getBoundingClientRect().top + window.scrollY - 118;
+    const top = node.getBoundingClientRect().top + window.scrollY - 128;
     window.scrollTo({ top, behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-ink-950 pb-28">
+    <div className="min-h-screen bg-ink-950 pb-14">
+      {/* Ambient backdrop: two quiet glows plus the same fine grain the floor
+          plan uses, fixed behind everything so the page reads as sitting on
+          a material instead of flat white-on-black web background. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(44rem 32rem at 8% -10%, rgba(255,90,51,0.16), transparent 58%), radial-gradient(38rem 30rem at 98% 20%, rgba(255,90,51,0.09), transparent 60%), radial-gradient(34rem 26rem at 15% 92%, rgba(255,90,51,0.06), transparent 62%), radial-gradient(var(--grid-line) 1px, transparent 1px)",
+          backgroundSize: "auto, auto, auto, 24px 24px",
+        }}
+      />
+
       {/* ------------------------------------------------------ the venue */}
-      <header className="border-b border-fg/[0.07] pb-5">
+      <header className="pb-6">
         <div className="relative isolate h-28 overflow-hidden sm:h-32">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,90,51,0.2),transparent_45%),linear-gradient(145deg,#221411_0%,#130f0d_55%,#0c0908_100%)]" />
           {venue.logoUrl && (
@@ -319,26 +345,32 @@ export default function CartaView({ initial }) {
               </p>
             )}
           </div>
+
+          <div aria-hidden className="mt-6 flex items-center gap-3">
+            <span className="h-px flex-1 bg-linear-to-r from-transparent to-fg/15" />
+            <span className="h-[5px] w-[5px] rotate-45 bg-accent-400/70" />
+            <span className="h-px flex-1 bg-linear-to-l from-transparent to-fg/15" />
+          </div>
         </div>
       </header>
 
-      {/* --------------------------------------------------- the category rail */}
+      {/* --------------------------------------------------- the category bar */}
       {sections.length > 1 && (
         <nav
           aria-label="Categorías"
           className="sticky top-0 z-30 border-b border-fg/[0.07] bg-ink-950/90 backdrop-blur-xl"
         >
-          <ul className="mx-auto flex max-w-2xl gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Three across on a phone, all five on anything wider — every
+              category stays on screen, none of them scroll out of reach. */}
+          <ul className="mx-auto grid max-w-2xl grid-cols-3 gap-1.5 px-4 py-3 sm:grid-cols-5">
             {sections.map((section) => (
-              <li key={section.id}>
+              <li key={section.id} className="contents">
                 <button
                   type="button"
                   onClick={() => jump(section.id)}
                   aria-current={activeCat === section.id ? "true" : undefined}
-                  className={`relative isolate overflow-hidden whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors duration-200 ${
-                    activeCat === section.id
-                      ? "border-accent-400/50 text-accent-label"
-                      : "border-fg/[0.1] bg-fg/[0.03] text-fg/55 hover:border-fg/20 hover:text-fg/75"
+                  className={`relative isolate overflow-hidden rounded-lg px-1.5 py-2 text-center text-[11px] font-bold uppercase tracking-[0.05em] transition-colors duration-200 ${
+                    activeCat === section.id ? "text-accent-label" : "text-fg/50 hover:text-fg/75"
                   }`}
                 >
                   {activeCat === section.id && (
@@ -349,7 +381,7 @@ export default function CartaView({ initial }) {
                           ? { duration: 0 }
                           : { type: "spring", stiffness: 480, damping: 36, mass: 0.55 }
                       }
-                      className="absolute inset-0 -z-10 rounded-full bg-accent-400/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      className="absolute inset-0 -z-10 rounded-lg bg-accent-400/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                     />
                   )}
                   <span className="relative">{section.name}</span>
@@ -375,49 +407,35 @@ export default function CartaView({ initial }) {
               if (node) sectionRefs.current.set(section.id, node);
               else sectionRefs.current.delete(section.id);
             }}
-            className="scroll-mt-32 pt-7"
+            className="scroll-mt-36 pt-9"
           >
-            <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-fg">
-              {section.name}
-            </h2>
-            <ul className="mt-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <h2 className="shrink-0 font-display text-[13px] font-bold uppercase tracking-[0.13em] text-accent-label">
+                {section.name}
+              </h2>
+              <span aria-hidden className="h-px flex-1 bg-fg/[0.09]" />
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3">
               {section.items.map((item, itemIndex) => (
-                <CartaItem
+                <CartaCard
                   key={item.id}
                   item={item}
                   onZoom={setZoom}
                   reducedMotion={reducedMotion}
-                  priority={sectionIndex === 0 && itemIndex === 0}
+                  priority={sectionIndex === 0 && itemIndex < 3}
                 />
               ))}
-            </ul>
+            </div>
           </section>
         ))}
 
-        <div className="pt-10">
-          <OrderFlowDisclaimer />
-        </div>
-        <p className="pb-6 pt-5 text-center text-[11.5px] text-fg/25">
+        <p className="pb-6 pt-12 text-center text-[11.5px] text-fg/25">
           Carta en línea de {venue.name} · hecha con FoodFlow
         </p>
       </main>
 
       {/* -------------------------------------------------------- the extras */}
       <LiveBadge status={status} flash={flash} />
-
-      {wa && (
-        <a
-          href={wa}
-          target="_blank"
-          rel="noreferrer"
-          className="fixed inset-x-5 bottom-5 z-40 mx-auto flex h-13 max-w-sm items-center justify-center gap-2 rounded-2xl bg-linear-to-b from-accent-400 to-accent-600 px-5 py-3.5 text-[15px] font-bold text-on-accent shadow-lift active:scale-[0.98]"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden>
-            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.23 8.23 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.15.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29Z" />
-          </svg>
-          Pedir por WhatsApp
-        </a>
-      )}
 
       <AnimatePresence>
         {zoom && (
@@ -434,71 +452,65 @@ export default function CartaView({ initial }) {
 
 /* --------------------------------------------------------------- one dish */
 
-function CartaItem({ item, onZoom, reducedMotion, priority }) {
+function CartaCard({ item, onZoom, reducedMotion, priority }) {
   const sold = !item.available;
+  const zoomable = Boolean(item.photoUrl);
 
   return (
-    <motion.li
-      initial={reducedMotion ? false : { opacity: sold ? 0.35 : 0.55, y: 10 }}
+    <motion.button
+      type="button"
+      onClick={() => zoomable && onZoom(item)}
+      aria-label={zoomable ? `Ver foto de ${item.name}` : undefined}
+      initial={reducedMotion ? false : { opacity: sold ? 0.35 : 0, y: 10 }}
       whileInView={reducedMotion ? undefined : { opacity: sold ? 0.55 : 1, y: 0 }}
       viewport={viewportOnce}
-      transition={{ duration: 0.42, ease: EASE }}
-      className={`flex gap-3.5 rounded-2xl bg-fg/[0.035] p-3.5 shadow-card ${
+      transition={{ duration: 0.36, ease: EASE }}
+      className={`flex flex-col text-left transition-transform ${zoomable ? "active:scale-[0.98]" : ""} ${
         sold ? "opacity-55" : ""
       }`}
     >
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start gap-2">
-          <h3 className="text-[15px] font-semibold leading-snug text-fg">{item.name}</h3>
-          {sold && (
-            <span className="mt-0.5 shrink-0 rounded-md border border-fg/15 bg-fg/[0.06] px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-fg/55">
-              Agotado
-            </span>
-          )}
-        </div>
-        {item.description && (
-          <p className="mt-1.5 text-[13px] leading-relaxed text-fg/50">{item.description}</p>
-        )}
-        <p
-          className={`mt-3 inline-flex rounded-lg px-2.5 py-1 text-[13.5px] font-bold tabular-nums ${
-            sold ? "bg-fg/[0.05] text-fg/40" : "bg-accent-400/10 text-accent-label"
-          }`}
-        >
-          {cartaPrice(item.price)}
-        </p>
-      </div>
-
-      {item.photoUrl ? (
-        <button
-          type="button"
-          onClick={() => onZoom(item)}
-          aria-label={`Ver foto de ${item.name}`}
-          className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-xl bg-fg/[0.04] shadow-card transition-transform active:scale-[0.97]"
-        >
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-fg/10 bg-fg/[0.04]">
+        {item.photoUrl ? (
           <Image
             src={item.photoUrl}
             alt={item.name}
             fill
-            // Fixed-size thumbnail, so one width is all the browser ever needs.
-            sizes="86px"
+            sizes="(min-width: 640px) 200px, 45vw"
             className={`object-cover ${sold ? "grayscale" : ""}`}
             priority={priority}
             loading={priority ? undefined : "lazy"}
           />
-        </button>
-      ) : (
-        <div
-          aria-hidden
-          className="relative flex h-[86px] w-[86px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_28%_18%,rgba(255,162,133,0.22),transparent_38%),linear-gradient(145deg,rgba(255,90,51,0.16),rgba(255,255,255,0.035))] shadow-card"
-        >
-          <span className="absolute inset-3 rounded-full border border-accent-300/15" />
-          <span className="absolute inset-[22px] rounded-full border border-accent-300/10" />
-          <span className="relative font-display text-lg font-bold tracking-[-0.02em] text-accent-label/80">
-            {initialsFor(item.name)}
+        ) : (
+          <div
+            aria-hidden
+            className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_28%_18%,rgba(255,162,133,0.16),transparent_38%),linear-gradient(145deg,rgba(255,90,51,0.1),rgba(255,255,255,0.02))]"
+          >
+            <span className="font-display text-lg font-bold tracking-[-0.02em] text-accent-label/70">
+              {initialsFor(item.name)}
+            </span>
+          </div>
+        )}
+        {sold && (
+          <span className="absolute left-2 top-2 rounded-md bg-ink-950/85 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-fg/70 backdrop-blur-sm">
+            Agotado
           </span>
-        </div>
+        )}
+      </div>
+
+      <h3 className="mt-2.5 text-[13.5px] font-semibold leading-snug text-fg">{item.name}</h3>
+      {item.description && (
+        <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-fg/45">
+          {item.description}
+        </p>
       )}
-    </motion.li>
+      <p
+        className={`mt-1.5 text-[13px] font-bold tabular-nums ${
+          sold ? "text-fg/35" : "text-accent-label"
+        }`}
+      >
+        {cartaPrice(item.price)}
+      </p>
+    </motion.button>
   );
 }
 
