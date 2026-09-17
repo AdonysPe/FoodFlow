@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { readCarta } from "@/lib/db/carta";
 import { SITE_URL } from "@/lib/seo";
-import { cartaPrice, isOpenAt, todayLabel } from "@/lib/carta";
-import CartaView from "@/components/public/CartaView";
+import { cartaPrice } from "@/lib/carta";
+import PhysicalCartaView from "@/components/public/PhysicalCartaView";
 
 // A price can change while someone is walking to the table; this page is never
 // served from a cache, and the SSE stream keeps it current after that.
@@ -50,7 +50,6 @@ export default async function CartaPage({ params }) {
   const { carta } = await load(params);
   if (!carta) notFound();
 
-  const now = new Date();
   const cheapest = carta.items.length
     ? Math.min(...carta.items.map((item) => item.price))
     : null;
@@ -100,11 +99,10 @@ export default async function CartaPage({ params }) {
       {/* Read by nothing on screen — it is what a screen reader announces
           first, and what a text-only crawler sees before the client mounts. */}
       <p className="sr-only">
-        {carta.venue.name} · {isOpenAt(carta.venue.hours, now) ? "abierto ahora" : "cerrado"} ·{" "}
-        {todayLabel(carta.venue.hours, now)} · {carta.items.length} platos
+        {carta.venue.name} · {carta.items.length} platos
         {cheapest != null ? ` desde ${cartaPrice(cheapest)}` : ""}
       </p>
-      <CartaView initial={carta} />
+      <PhysicalCartaView initial={carta} />
     </>
   );
 }
