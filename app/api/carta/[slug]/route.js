@@ -1,4 +1,6 @@
 import { readCarta, readCartaVersion } from "@/lib/db/carta";
+import { rateLimit } from "@/lib/security/rateLimit";
+import { callerIpHash } from "@/lib/security/clientHash";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +15,17 @@ export const dynamic = "force-dynamic";
  * point of polling being cheap.
  */
 export async function GET(request, { params }) {
+  const limit = await rateLimit("carta-json", await callerIpHash(), {
+    max: 60,
+    windowMs: 60_000,
+  });
+  if (!limit.ok) {
+    return new Response("Demasiadas solicitudes", {
+      status: 429,
+      headers: { "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) },
+    });
+  }
+
   const { slug } = await params;
   const raw = new URL(request.url).searchParams.get("v");
   const known = raw == null ? null : Number(raw);

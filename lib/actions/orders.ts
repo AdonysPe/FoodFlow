@@ -16,6 +16,16 @@ const orderItemSchema = z.object({
   round: z.number().int().positive().optional(),
 });
 
+// What "Registrar pedido" actually sends: a menu item id and a quantity.
+// Name and price are never taken from the client — they are looked up from
+// this restaurant's own menu below, the same way sendComanda resolves them,
+// so a request can't set its own price for a dish.
+const createOrderLineSchema = z.object({
+  menuItemId: z.string().min(1),
+  quantity: z.number().int().positive(),
+  note: z.string().trim().max(200).optional(),
+});
+
 const channelSchema = z.enum(["dine_in", "delivery", "pickup"]);
 const statusSchema = z.enum(["pending", "preparing", "ready", "delivered"]);
 
@@ -24,10 +34,11 @@ const createOrderSchema = z.object({
   customerPhone: z.string().trim().max(40).optional(),
   customerEmail: z.string().trim().toLowerCase().max(120).optional(),
   channel: channelSchema,
-  items: z.array(orderItemSchema).min(1, "Agrega al menos un plato"),
+  items: z.array(createOrderLineSchema).min(1, "Agrega al menos un plato"),
 });
 
 export type OrderItemInput = z.infer<typeof orderItemSchema>;
+export type CreateOrderLineInput = z.infer<typeof createOrderLineSchema>;
 export type OrderChannel = z.infer<typeof channelSchema>;
 export type OrderStatusValue = z.infer<typeof statusSchema>;
 
@@ -48,7 +59,7 @@ export async function createOrder(input: {
   customerPhone?: string;
   customerEmail?: string;
   channel: OrderChannel;
-  items: OrderItemInput[];
+  items: CreateOrderLineInput[];
 }): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
@@ -58,11 +69,33 @@ export async function createOrder(input: {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos." };
   }
   const { customerName, customerPhone, customerEmail, channel, items } = parsed.data;
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // Resolve every line against this restaurant's own menu — the same
+  // control sendComanda applies — so a request can't set its own price.
+  const ids = [...new Set(items.map((i) => i.menuItemId))];
+  const menuItems = await prisma.menuItem.findMany({
+    where: { id: { in: ids }, restaurantId: restaurant.id },
+  });
+  const byId = new Map(menuItems.map((m) => [m.id, m]));
+  for (const line of items) {
+    if (!byId.has(line.menuItemId)) {
+      return { ok: false, error: "Uno de los platos ya no existe en la carta." };
+    }
+  }
+  const resolvedItems: OrderItemInput[] = items.map((line) => {
+    const item = byId.get(line.menuItemId)!;
+    return {
+      name: item.name,
+      price: item.price,
+      quantity: line.quantity,
+      ...(line.note ? { note: line.note } : {}),
+    };
+  });
+  const total = resolvedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   await prisma.$transaction(async (tx) => {
     await tx.order.create({
-      data: { restaurantId: restaurant.id, customerName, items, total, channel },
+      data: { restaurantId: restaurant.id, customerName, items: resolvedItems, total, channel },
     });
 
     if (customerPhone || customerEmail) {

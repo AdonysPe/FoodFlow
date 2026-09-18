@@ -2,6 +2,8 @@ import QRCode from "qrcode";
 import { prisma } from "@/lib/db/prisma";
 import { normalizeTableCode, tableOrderUrl } from "@/lib/tableCode";
 import { SITE_URL } from "@/lib/seo";
+import { rateLimit } from "@/lib/security/rateLimit";
+import { callerIpHash } from "@/lib/security/clientHash";
 
 /**
  * The QR image for one table, as SVG.
@@ -15,6 +17,17 @@ import { SITE_URL } from "@/lib/seo";
  * not an open encoder anyone can point at any string.
  */
 export async function GET(_request, { params }) {
+  const limit = await rateLimit("table-qr", await callerIpHash(), {
+    max: 30,
+    windowMs: 60_000,
+  });
+  if (!limit.ok) {
+    return new Response("Demasiadas solicitudes", {
+      status: 429,
+      headers: { "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) },
+    });
+  }
+
   const { code: raw } = await params;
   const code = normalizeTableCode(raw);
   if (code.length !== 10) {

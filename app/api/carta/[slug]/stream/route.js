@@ -1,5 +1,7 @@
 import { readCarta } from "@/lib/db/carta";
 import { watchCarta } from "@/lib/carta/watcher";
+import { rateLimit } from "@/lib/security/rateLimit";
+import { callerIpHash } from "@/lib/security/clientHash";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +29,19 @@ const frame = (event, data) =>
  * menu immediately instead of waiting for the next edit.
  */
 export async function GET(request, { params }) {
+  // Rate-limited on new connections opened, not on how long one stays open —
+  // a legitimate tab opens one and keeps it, reconnecting only after a drop.
+  const limit = await rateLimit("carta-stream-open", await callerIpHash(), {
+    max: 20,
+    windowMs: 60_000,
+  });
+  if (!limit.ok) {
+    return new Response("Demasiadas conexiones", {
+      status: 429,
+      headers: { "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) },
+    });
+  }
+
   const { slug } = await params;
   const known = Number(new URL(request.url).searchParams.get("v"));
   const knownVersion = Number.isFinite(known) ? known : 0;

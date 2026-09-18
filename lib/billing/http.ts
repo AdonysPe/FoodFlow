@@ -9,6 +9,8 @@
 // Server only.
 
 import { lookup } from "node:dns/promises";
+import { lookup as nodeLookupCallback } from "node:dns";
+import { Agent } from "undici";
 
 export type ProbeResult = {
   ok: boolean;
@@ -40,6 +42,60 @@ function isPrivateAddress(address: string, family: number): boolean {
   return false;
 }
 
+/**
+ * A `dns.lookup`-compatible function that refuses to resolve a hostname to a
+ * private/internal address — passed to `guardedDispatcher` below so the
+ * check below runs again at the moment of every real TCP connect, not only
+ * once in `assertPublicHttpsUrl` before the request is issued. A hostname
+ * whose authoritative DNS answers differently between those two moments
+ * (DNS rebinding) is blocked at each one, which is what actually closes the
+ * gap: the first check alone only proves the name was safe when checked, not
+ * that it stays safe by the time `fetch` itself opens a socket.
+ */
+type GuardedLookupCallback = (
+  err: NodeJS.ErrnoException | null,
+  address: string | { address: string; family: number }[],
+  family?: number
+) => void;
+
+function guardedLookup(hostname: string, options: unknown, callback: unknown): void {
+  const cb = (typeof options === "function" ? options : callback) as GuardedLookupCallback;
+  const opts = (typeof options === "object" && options !== null ? options : {}) as {
+    all?: boolean;
+  };
+  const wantsAll = opts.all === true;
+
+  nodeLookupCallback(hostname, { all: true }, (err, resolved) => {
+    if (err) return cb(err, wantsAll ? [] : "");
+    const list = Array.isArray(resolved) ? resolved : [resolved];
+    if (list.length === 0) {
+      return cb(new Error(`No se pudo resolver ${hostname}.`), wantsAll ? [] : "");
+    }
+    const blocked = list.find((a) => isPrivateAddress(a.address, a.family));
+    if (blocked) {
+      return cb(
+        new Error(`blocked_private_address: ${hostname} -> ${blocked.address}`),
+        wantsAll ? [] : ""
+      );
+    }
+    if (wantsAll) {
+      cb(null, list);
+    } else {
+      cb(null, list[0].address, list[0].family);
+    }
+  });
+}
+
+/**
+ * Fetch dispatcher every outbound call to an owner-typed billing URL must
+ * use, in `probeEndpoint` below and in each OSE adapter's own request. Its
+ * `connect.lookup` is `guardedLookup`, so the private-address check is not
+ * just a pre-flight in `assertPublicHttpsUrl` — it runs again at the exact
+ * moment the socket opens, which is what a TOCTOU / DNS-rebinding bypass
+ * needs to slip past.
+ */
+export const guardedDispatcher = new Agent({ connect: { lookup: guardedLookup } });
+
 export type UrlCheck =
   | { ok: true; url: URL }
   | { ok: false; message: string };
@@ -51,11 +107,11 @@ export type UrlCheck =
  * nothing resolving inside the network — "https://169.254.169.254/…" is a
  * perfectly valid URL and would have the server fetch its own cloud metadata.
  *
- * Note what this cannot promise: DNS is resolved here and again by `fetch`, so
- * a name that answers differently the second time (DNS rebinding) slips past.
- * Closing that needs a pinned-IP agent; for a URL the venue's own owner typed
- * and that only ever receives their own credentials, this is the proportionate
- * check, and it is the one that stops the metadata endpoint.
+ * This is the fast, friendly pre-flight (good Spanish error messages before
+ * any request is attempted). The actual close of the DNS-rebinding gap is
+ * `guardedDispatcher` above, which every real request — here and in each OSE
+ * adapter — must pass as its `dispatcher`, so the same check runs again right
+ * at connect time.
  */
 export async function assertPublicHttpsUrl(rawUrl: string): Promise<UrlCheck> {
   let url: URL;
@@ -108,6 +164,10 @@ export async function probeEndpoint(rawUrl: string): Promise<ProbeResult> {
       redirect: "manual",
       signal: controller.signal,
       headers: { "user-agent": "FoodFlow/1.0 (+https://foodflow.site)" },
+      // @ts-expect-error -- `dispatcher` is undici's fetch extension; Node's
+      // global fetch (also undici-backed) accepts it though it isn't in the
+      // standard lib.dom fetch types.
+      dispatcher: guardedDispatcher,
     });
     // Any answer at all — including 401, 404 or 405 — proves the host is up and
     // speaking HTTPS, which is all this check claims.

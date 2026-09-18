@@ -1,6 +1,8 @@
 import QRCode from "qrcode";
 import { prisma } from "@/lib/db/prisma";
 import { SITE_URL } from "@/lib/seo";
+import { rateLimit } from "@/lib/security/rateLimit";
+import { callerIpHash } from "@/lib/security/clientHash";
 
 export const runtime = "nodejs";
 
@@ -15,6 +17,17 @@ export const runtime = "nodejs";
  * carta and not an encoder pointed at any string a caller likes.
  */
 export async function GET(_request, { params }) {
+  const limit = await rateLimit("carta-qr", await callerIpHash(), {
+    max: 30,
+    windowMs: 60_000,
+  });
+  if (!limit.ok) {
+    return new Response("Demasiadas solicitudes", {
+      status: 429,
+      headers: { "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) },
+    });
+  }
+
   const { slug } = await params;
 
   const restaurant = await prisma.restaurant.findUnique({

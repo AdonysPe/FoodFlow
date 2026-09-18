@@ -77,17 +77,48 @@ export async function POST(request: NextRequest) {
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    const previousFailures =
-      user.loginLockedUntil && user.loginLockedUntil <= now ? 0 : user.failedLoginAttempts;
-    const nextFailures = previousFailures + 1;
-    const shouldLock = nextFailures >= LOCK_AFTER_FAILURES;
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        failedLoginAttempts: shouldLock ? 0 : nextFailures,
-        loginLockedUntil: shouldLock ? new Date(Date.now() + LOCK_MS) : null,
-      },
-    });
+    // A single atomic UPDATE, not a read-then-write: two concurrent wrong
+    // guesses must not both compute "next = 1" from the same stale count and
+    // silently undercount each other, which would let a burst of requests
+    // outrun the 5-attempt lock. Postgres locks the row for the statement's
+    // duration, so a second concurrent UPDATE for the same id waits and then
+    // re-evaluates the CTE against the first one's committed result — the
+    // same guarantee lib/security/rateLimit.ts's INSERT ... ON CONFLICT
+    // already relies on, just expressed as an UPDATE ... FROM here.
+    const rows = await prisma.$queryRaw<
+      { failedLoginAttempts: number; loginLockedUntil: Date | null }[]
+    >`
+      WITH current AS (
+        SELECT
+          id,
+          CASE
+            WHEN "login_locked_until" IS NOT NULL AND "login_locked_until" <= NOW() THEN 0
+            ELSE "failed_login_attempts"
+          END AS prev_failures,
+          ("login_locked_until" IS NOT NULL AND "login_locked_until" > NOW()) AS currently_locked
+        FROM "User"
+        WHERE id = ${user.id}
+      )
+      UPDATE "User" u SET
+        "failed_login_attempts" = CASE
+          WHEN c.currently_locked THEN u."failed_login_attempts"
+          WHEN c.prev_failures + 1 >= ${LOCK_AFTER_FAILURES} THEN 0
+          ELSE c.prev_failures + 1
+        END,
+        "login_locked_until" = CASE
+          WHEN c.currently_locked THEN u."login_locked_until"
+          WHEN c.prev_failures + 1 >= ${LOCK_AFTER_FAILURES} THEN NOW() + (${LOCK_MS} * INTERVAL '1 millisecond')
+          ELSE NULL
+        END
+      FROM current c
+      WHERE u.id = c.id
+      RETURNING
+        u."failed_login_attempts" AS "failedLoginAttempts",
+        u."login_locked_until" AS "loginLockedUntil"
+    `;
+    const updated = rows[0];
+    const shouldLock =
+      updated?.loginLockedUntil != null && updated.loginLockedUntil > new Date();
     return shouldLock
       ? NextResponse.json(
           { ok: false, code: "account_locked", error: "Cuenta bloqueada durante 15 minutos." },

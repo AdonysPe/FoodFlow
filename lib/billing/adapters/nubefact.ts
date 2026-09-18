@@ -19,7 +19,7 @@
 // nota de venta interna — nunca se estampa "aceptado" sin respuesta del OSE.
 
 import { breakdownLine, reconcile, round2 } from "@/lib/billing/igv";
-import { assertPublicHttpsUrl } from "@/lib/billing/http";
+import { assertPublicHttpsUrl, guardedDispatcher } from "@/lib/billing/http";
 import type {
   EmissionRequest,
   EmissionResult,
@@ -150,6 +150,12 @@ async function call(
       },
       body: JSON.stringify(body),
       redirect: "manual",
+      // Re-checks the private-address guard at the exact moment this socket
+      // opens, not only when assertPublicHttpsUrl ran earlier — see
+      // lib/billing/http.ts's guardedDispatcher for why that gap mattered:
+      // this is the call that carries the tenant's real OSE credentials.
+      // @ts-expect-error -- undici's fetch extension, not in lib.dom types.
+      dispatcher: guardedDispatcher,
     });
     const text = await res.text();
     let data: NubefactResponse = {};

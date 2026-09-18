@@ -52,7 +52,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
         customerName,
         customerPhone: customerPhone || undefined,
         channel,
-        items: lineItems.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity })),
+        items: lineItems.map((i) => ({ menuItemId: i.id, quantity: i.quantity })),
       });
       if (result.ok) {
         reset();
