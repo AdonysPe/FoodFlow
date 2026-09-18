@@ -164,11 +164,34 @@ function slug(name) {
     .replace(/^\.|\.$/g, "");
 }
 
-async function main() {
-  const restaurant = await prisma.restaurant.findFirst({ where: { name: DEMO_RESTAURANT } });
-  if (!restaurant) {
+/**
+ * Anyone can self-register a restaurant named "Tanta" — the name has no
+ * unique constraint, only the slug does. Matching by name alone could pick
+ * a stranger's account and wipe their orders/reservations/customers, so this
+ * looks up the slug first (safe once assigned) and only falls back to name
+ * for the very first run — the one where this script itself still has to
+ * assign that slug below — refusing to guess if more than one row matches.
+ */
+async function resolveDemoRestaurant() {
+  const bySlug = await prisma.restaurant.findUnique({ where: { slug: "tanta" } });
+  if (bySlug) return bySlug;
+
+  const candidates = await prisma.restaurant.findMany({ where: { name: DEMO_RESTAURANT } });
+  if (candidates.length === 0) {
     throw new Error(`No existe el restaurante "${DEMO_RESTAURANT}". Nada que sembrar.`);
   }
+  if (candidates.length > 1) {
+    throw new Error(
+      `Hay ${candidates.length} restaurantes llamados "${DEMO_RESTAURANT}" y ninguno tiene el slug ` +
+        `"tanta" todavía, así que no se puede saber cuál es la cuenta demo real. Verifica manualmente ` +
+        `cuál es (ids: ${candidates.map((r) => r.id).join(", ")}) y asígnale el slug "tanta" antes de reintentar.`
+    );
+  }
+  return candidates[0];
+}
+
+async function main() {
+  const restaurant = await resolveDemoRestaurant();
   const R = restaurant.id;
   console.log(`Sembrando la cuenta demo: ${restaurant.name} (${R})`);
 

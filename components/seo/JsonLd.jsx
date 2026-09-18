@@ -41,9 +41,15 @@ function Script({ schema }) {
     <script
       type="application/ld+json"
       // The payload is our own dictionary, not user input. `<` is still
-      // escaped so a stray character in the copy can never close the tag.
+      // escaped so a stray character in the copy can never close the tag —
+      // note the double backslash on the next line: a single backslash
+      // before u003c is a JS Unicode escape that the parser resolves to a
+      // literal "<" before .replace() ever runs, making it a no-op. Two
+      // backslashes produce the six literal characters backslash-u-0-0-3-c,
+      // which HTML never treats as a tag boundary and which any JSON
+      // parser reading this script tag decodes back to "<".
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schema).replace(/</g, "\u003c"),
+        __html: JSON.stringify(schema).replace(/</g, "\\u003c"),
       }}
     />
   );

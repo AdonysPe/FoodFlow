@@ -24,3 +24,8 @@ next-env.d.ts
 /SEGURIDAD.md
 /BASE-DE-DATOS.md
 /FACTURACION-API.md
+
+# Local Claude Code / agent skill installs. Machine-specific tooling config,
+# not FoodFlow source — reappears whenever a skill is installed here.
+/.claude/skills/
+/.agents/skills/

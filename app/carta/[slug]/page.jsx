@@ -93,8 +93,11 @@ export default async function CartaPage({ params }) {
     <>
       <script
         type="application/ld+json"
-        // Built from this venue's own rows, not from anything a visitor sent.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        // Built from this venue's own rows, not from anything a visitor sent —
+        // but a venue name/description could still contain "</script>", so
+        // escape "<" the way components/seo/JsonLd.jsx does, or that text
+        // would close this tag early and run as markup in a diner's browser.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       {/* Read by nothing on screen — it is what a screen reader announces
           first, and what a text-only crawler sees before the client mounts. */}
