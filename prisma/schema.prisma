@@ -146,6 +146,9 @@ model StaffMembership {
 model Restaurant {
   id            String        @id @default(cuid())
   name          String
+  categoryId    String        @default("criolla")
+  category      RestaurantCategory @relation(fields: [categoryId], references: [id])
+  menuTemplateOverride String?
   ownerId       String
   owner         User          @relation(fields: [ownerId], references: [id])
   // Defaults to the smallest plan on purpose: a restaurant never gets paid
@@ -175,6 +178,19 @@ model Restaurant {
   cdrs         Cdr[]
 
   @@index([ownerId])
+  @@index([categoryId])
+}
+
+model RestaurantCategory {
+  id                  String       @id
+  name                String
+  slug                String       @unique
+  description         String
+  defaultMenuTemplate String
+  isActive            Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  restaurants         Restaurant[]
 }
 
 /// What the venue prints when a waiter charges a table, plus the running

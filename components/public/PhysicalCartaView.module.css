@@ -1,8 +1,28 @@
 .stage {
+  --surround: #e6dfcf;
+  --paper: #f4ebd8;
+  --ink: #322720;
+  --rule: #aa7b5c;
+  --diamond: #9e4c36;
+  --eyebrow: #8c563e;
+  --title: #612e24;
+  --tagline: #806b47;
+  --motif: #9c6548;
+  --section: #7e3427;
+  --flourish: #8e6840;
+  --section-rule: #ae8763;
+  --price: #8d4934;
+  --description: #655448;
+  --sold: #a04231;
+  --photo-border: #e8d7bc;
+  --footer-rule: #b28e6a;
+  --page-number: #8a664e;
+  --mobile-rule: #d7c5a8;
+  --grain: radial-gradient(ellipse at 9% 7%, rgb(169 102 53 / .10), transparent 27%), radial-gradient(ellipse at 96% 95%, rgb(119 89 52 / .09), transparent 25%), repeating-linear-gradient(93deg, transparent 0 17px, rgb(111 87 49 / .025) 18px, transparent 19px 43px), url("/carta/paper-fibers.svg");
   min-height: 100vh;
   padding: 32px 16px 48px;
-  background: #e6dfcf;
-  color: #322720;
+  background: var(--surround);
+  color: var(--ink);
   color-scheme: light;
 }
 
@@ -13,7 +33,7 @@
   min-height: 297mm;
   margin: 0 auto 28px;
   overflow: hidden;
-  background: #f4ebd8;
+  background: var(--paper);
   box-shadow: 0 18px 55px rgb(57 35 20 / .19), 0 2px 5px rgb(57 35 20 / .13);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
@@ -26,11 +46,7 @@
   inset: 0;
   pointer-events: none;
   opacity: .75;
-  background-image:
-    radial-gradient(ellipse at 9% 7%, rgb(169 102 53 / .10), transparent 27%),
-    radial-gradient(ellipse at 96% 95%, rgb(119 89 52 / .09), transparent 25%),
-    repeating-linear-gradient(93deg, transparent 0 17px, rgb(111 87 49 / .025) 18px, transparent 19px 43px),
-    url("/carta/paper-fibers.svg");
+  background-image: var(--grain);
   background-size: auto, auto, auto, 170px 170px;
 }
 .sheet::before,
@@ -55,15 +71,15 @@
   padding: 16mm 17mm 10mm;
 }
 .header { position: relative; text-align: center; padding-bottom: 9mm; }
-.topRule { position: relative; height: 1px; background: #aa7b5c; opacity: .7; }
-.topRule span { position: absolute; top: -3px; left: calc(50% - 4px); width: 8px; height: 8px; transform: rotate(45deg); background: #9e4c36; box-shadow: 0 0 0 5px #f4ebd8; }
+.topRule { position: relative; height: 1px; background: var(--rule); opacity: .7; }
+.topRule span { position: absolute; top: -3px; left: calc(50% - 4px); width: 8px; height: 8px; transform: rotate(45deg); background: var(--diamond); box-shadow: 0 0 0 5px var(--paper); }
 .eyebrow {
   margin-top: 8mm;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: .3em;
   text-transform: uppercase;
-  color: #8c563e;
+  color: var(--eyebrow);
 }
 .header h1 {
   margin-top: 2mm;
@@ -72,21 +88,21 @@
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -.045em;
-  color: #612e24;
+  color: var(--title);
 }
 .tagline {
   margin-top: 2mm;
   font-family: var(--font-bricolage), Georgia, serif;
   font-size: 15px;
   font-style: italic;
-  color: #806b47;
+  color: var(--tagline);
 }
 .headerMotif {
   display: block;
   width: 62px;
   height: 31px;
   margin: 3mm auto 0;
-  stroke: #9c6548;
+  stroke: var(--motif);
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -106,37 +122,37 @@
   font-size: 19px;
   font-weight: 700;
   line-height: 1.15;
-  color: #7e3427;
+  color: var(--section);
 }
-.sectionFlourish { color: #8e6840; font-size: 9px; transform: rotate(10deg); }
-.sectionLine { flex: 1; height: 1px; margin-left: 1mm; background: linear-gradient(90deg, #ae8763, transparent); opacity: .65; }
+.sectionFlourish { color: var(--flourish); font-size: 9px; transform: rotate(10deg); }
+.sectionLine { flex: 1; height: 1px; margin-left: 1mm; background: linear-gradient(90deg, var(--section-rule), transparent); opacity: .65; }
 .dishes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12mm; row-gap: 6mm; }
 .dish { min-width: 0; break-inside: avoid; }
 .dishTop { display: flex; justify-content: space-between; align-items: baseline; gap: 3mm; }
-.dish h3 { font-size: 13.5px; font-weight: 700; line-height: 1.24; color: #322720; }
-.price { flex: none; font-size: 12.5px; font-weight: 700; color: #8d4934; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.description { margin-top: 1mm; font-size: 11.5px; line-height: 1.38; color: #655448; }
-.soldOut { margin-top: 1mm; font-family: var(--font-bricolage), Georgia, serif; font-size: 10px; font-style: italic; color: #a04231; }
+.dish h3 { font-size: 13.5px; font-weight: 700; line-height: 1.24; color: var(--ink); }
+.price { flex: none; font-size: 12.5px; font-weight: 700; color: var(--price); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.description { margin-top: 1mm; font-size: 11.5px; line-height: 1.38; color: var(--description); }
+.soldOut { margin-top: 1mm; font-family: var(--font-bricolage), Georgia, serif; font-size: 10px; font-style: italic; color: var(--sold); }
 .photoWrap {
   position: relative;
   height: 31mm;
   margin-bottom: 2.3mm;
   overflow: hidden;
-  border: 2px solid #e8d7bc;
+  border: 2px solid var(--photo-border);
   border-radius: 42% 58% 46% 54% / 13% 17% 14% 15%;
   box-shadow: 0 3px 9px rgb(71 42 25 / .11);
 }
 .photo { object-fit: cover; }
-.empty { padding: 12mm 0; text-align: center; font-family: var(--font-bricolage), Georgia, serif; font-style: italic; color: #806b47; }
+.empty { padding: 12mm 0; text-align: center; font-family: var(--font-bricolage), Georgia, serif; font-style: italic; color: var(--tagline); }
 
 .footer { display: flex; align-items: center; gap: 4mm; margin-top: 3mm; }
-.footerLine { flex: 1; height: 1px; background: #b28e6a; opacity: .6; }
-.footerMotif { width: 35px; height: 18px; stroke: #9e674a; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
-.pageNumber { font-family: var(--font-bricolage), Georgia, serif; font-size: 10px; letter-spacing: .12em; color: #8a664e; }
+.footerLine { flex: 1; height: 1px; background: var(--footer-rule); opacity: .6; }
+.footerMotif { width: 35px; height: 18px; stroke: var(--motif); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+.pageNumber { font-family: var(--font-bricolage), Georgia, serif; font-size: 10px; letter-spacing: .12em; color: var(--page-number); }
 
 @media (max-width: 600px) {
-  .stage { padding: 0; background: #f4ebd8; }
-  .sheet { min-height: 0; margin-bottom: 0; box-shadow: none; border-bottom: 1px solid #d7c5a8; }
+  .stage { padding: 0; background: var(--paper); }
+  .sheet { min-height: 0; margin-bottom: 0; box-shadow: none; border-bottom: 1px solid var(--mobile-rule); }
   .inner { min-height: 0; padding: 28px 22px 26px; }
   .header { padding-bottom: 23px; }
   .eyebrow { margin-top: 27px; font-size: 8px; }

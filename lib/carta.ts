@@ -3,6 +3,7 @@
 //
 // No Prisma import and no "use server" — this is the one module both sides of
 // the wire are allowed to agree on.
+import type { MenuTemplateKey } from "@/lib/menuTemplates";
 
 export const CARTA_DAYS = [
   "Domingo",
@@ -54,6 +55,7 @@ export type CartaVenueDTO = {
 /** Everything the public page paints, and everything a live update replaces. */
 export type CartaPayload = {
   version: number;
+  template: MenuTemplateKey;
   venue: CartaVenueDTO;
   categories: CartaCategoryDTO[];
   items: CartaItemDTO[];

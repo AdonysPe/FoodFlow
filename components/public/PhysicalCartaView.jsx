@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { cartaPrice } from "@/lib/carta";
+import { menuTemplates, resolveMenuTemplate } from "@/lib/menuTemplates";
 import styles from "./PhysicalCartaView.module.css";
+import marineStyles from "./PhysicalCartaCevicheria.module.css";
 
 const POLL_MS = 30_000;
 const ROWS_PER_SHEET = 7;
@@ -159,6 +161,18 @@ function AjiMotif({ className }) {
   );
 }
 
+function CoastMotif({ className }) {
+  return <svg className={className} viewBox="0 0 108 52" fill="none" aria-hidden="true">
+    <path d="M4 28c13-8 25-8 38 0s25 8 38 0c8-5 16-5 24-1M4 40c13-8 25-8 38 0s25 8 38 0c8-5 16-5 24-1" />
+    <path d="M43 12c8-8 22-8 30 0-8 8-22 8-30 0ZM43 12l-9-5v10l9-5ZM62 11h.01" />
+  </svg>;
+}
+
+const visualThemes = {
+  criolla: { className: "", Motif: AjiMotif, eyebrow: "Cocina de nuestra tierra" },
+  cevicheria: { className: marineStyles.theme, Motif: CoastMotif, eyebrow: "Cocina de nuestro mar" },
+};
+
 function Dish({ item, featured }) {
   return (
     <div className={styles.dish}>
@@ -178,11 +192,13 @@ function Dish({ item, featured }) {
 }
 
 export default function PhysicalCartaView({ initial }) {
-  const { venue, categories, items } = useLiveCarta(initial.venue.slug, initial);
+  const { venue, categories, items, template } = useLiveCarta(initial.venue.slug, initial);
+  const templateKey = resolveMenuTemplate(template);
+  const { className: themeClass, Motif, eyebrow } = visualThemes[templateKey];
   const sheets = useMemo(() => paginate(menuSections(categories, items)), [categories, items]);
 
   return (
-    <main id="main" className={styles.stage}>
+    <main id="main" className={`${styles.stage} ${themeClass}`}>
       {sheets.map((sheet, pageIndex) => {
         const featured = featuredPhotos(sheet);
         return (
@@ -191,10 +207,10 @@ export default function PhysicalCartaView({ initial }) {
             <div className={styles.inner}>
               <header className={`${styles.header} ${pageIndex > 0 ? styles.continuation : ""}`}>
                 <div className={styles.topRule} aria-hidden="true"><span /></div>
-                <p className={styles.eyebrow}>Cocina de nuestra tierra</p>
+                <p className={styles.eyebrow}>{eyebrow}</p>
                 <h1>{venue.name}</h1>
-                <p className={styles.tagline}>Sabores de nuestra tierra</p>
-                <AjiMotif className={styles.headerMotif} />
+                <p className={styles.tagline}>{venue.tagline || menuTemplates[templateKey].subtitle}</p>
+                <Motif className={styles.headerMotif} />
               </header>
               <div className={styles.sections}>
                 {sheet.length === 0 && <p className={styles.empty}>Pronto compartiremos nuestra carta.</p>}
@@ -213,7 +229,7 @@ export default function PhysicalCartaView({ initial }) {
               </div>
               <footer className={styles.footer}>
                 <span className={styles.footerLine} aria-hidden="true" />
-                <AjiMotif className={styles.footerMotif} />
+                <Motif className={styles.footerMotif} />
                 <span className={styles.pageNumber}>{String(pageIndex + 1).padStart(2, "0")} / {String(sheets.length).padStart(2, "0")}</span>
               </footer>
             </div>

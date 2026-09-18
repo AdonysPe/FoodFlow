@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { normalizeHours, type CartaPayload } from "@/lib/carta";
+import { resolveMenuTemplate } from "@/lib/menuTemplates";
 
 /**
  * Everything the public carta shows, for one slug.
@@ -17,6 +18,8 @@ export async function readCarta(slug: string): Promise<CartaPayload | null> {
       name: true,
       slug: true,
       cartaVersion: true,
+      menuTemplateOverride: true,
+      category: { select: { defaultMenuTemplate: true } },
       carta: {
         select: {
           published: true,
@@ -59,6 +62,7 @@ export async function readCarta(slug: string): Promise<CartaPayload | null> {
 
   return {
     version: restaurant.cartaVersion,
+    template: resolveMenuTemplate(restaurant.menuTemplateOverride, restaurant.category.defaultMenuTemplate),
     venue: {
       name: restaurant.name,
       slug: restaurant.slug,

@@ -5,12 +5,15 @@ import Image from "next/image";
 import { submitTableOrder } from "@/lib/actions/publicOrder";
 import { NOTE_CHIPS, ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency } from "@/lib/format";
+import { isOpenAt, todayLabel } from "@/lib/carta";
+import { menuTemplates, resolveMenuTemplate } from "@/lib/menuTemplates";
 import styles from "./TableOrderExperience.module.css";
 import cevicheriaStyles from "./TableOrderCevicheria.module.css";
 
 const OTHERS = "__otros__";
 const POLL_MS = 8_000;
 const SUGGESTIONS = [...new Set([...NOTE_CHIPS, "poco picante", "sin cubiertos"])];
+const SEAFOOD_SUGGESTIONS = [...new Set([...SUGGESTIONS, "sin cancha", "limón adicional"])];
 const ERRORS = {
   invalid: "Revisa tu pedido y vuelve a intentar.",
   unknown_table: "Este código de mesa ya no es válido. Llama a un mozo.",
@@ -32,6 +35,15 @@ function CoastMotif({ className = "" }) {
     <path d="M3 32c13-8 25-8 38 0s25 8 38 0c7-4 12-5 18-4M3 43c13-8 25-8 38 0s25 8 38 0c7-4 12-5 18-4" />
     <path d="M39 13c9-9 25-9 34 0-9 9-25 9-34 0ZM39 13l-9-6v12l9-6ZM61 12h.01" />
   </svg>;
+}
+
+const visualThemes = {
+  criolla: { className: "", Motif: Pepper },
+  cevicheria: { className: cevicheriaStyles.theme, Motif: CoastMotif },
+};
+
+function initialsFor(name) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
 }
 
 function seafoodLabel(item) {
@@ -71,12 +83,38 @@ function useTableState(code, initial) {
   return { state, online, refresh };
 }
 
-function Quantity({ value, onChange, compact = false }) {
+function Quantity({ value, onChange, compact = false, min = 0 }) {
   return <div className={`${styles.quantity} ${compact ? styles.quantityCompact : ""}`} aria-label="Cantidad">
-    <button type="button" onClick={() => onChange(value - 1)} aria-label="Quitar uno">−</button>
+    <button type="button" disabled={value <= min} onClick={() => onChange(value - 1)} aria-label="Quitar uno">−</button>
     <span aria-live="polite">{value}</span>
     <button type="button" disabled={value >= 20} onClick={() => onChange(value + 1)} aria-label="Agregar uno">+</button>
   </div>;
+}
+
+function ProductDetail({ item, qty, note, setQty, setNote, onAdd, onClose, Motif, dialogRef, suggestions }) {
+  const parts = note.split(",").map((part) => part.trim()).filter(Boolean);
+  return <>
+    <div className={styles.detailBackdrop} onClick={onClose} aria-hidden="true" />
+    <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="detail-title" className={styles.detailDialog}>
+      <button type="button" className={styles.detailClose} onClick={onClose} aria-label="Cerrar detalle">×</button>
+      <div className={styles.detailPhoto}>
+        {item.photoUrl ? <Image src={item.photoUrl} alt={item.name} fill sizes="(min-width: 700px) 560px, 100vw" className={styles.foodPhoto} /> : <div className={styles.noPhoto}><Motif className={styles.placeholderPepper} /></div>}
+      </div>
+      <div className={styles.detailBody}>
+        <h2 id="detail-title">{item.name}</h2>
+        {item.description && <p>{item.description}</p>}
+        <div className={styles.detailMeta}><strong>{formatCurrency(item.price)}</strong><span>{item.available ? "Disponible" : "Agotado"}</span></div>
+        <div className={styles.detailQuantity}><span>Cantidad</span><Quantity value={qty} min={1} onChange={setQty} /></div>
+        <label className={styles.noteLabel} htmlFor="detail-note">Indicaciones especiales</label>
+        <input id="detail-note" className={styles.noteInput} maxLength={140} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Ej. sin cebolla" />
+        <div className={styles.noteChips}>{suggestions.map((chip) => {
+          const selected = parts.some((part) => part.toLowerCase() === chip);
+          return <button type="button" key={chip} aria-pressed={selected} onClick={() => setNote(selected ? parts.filter((part) => part.toLowerCase() !== chip).join(", ") : [...parts, chip].join(", "))}>{chip}</button>;
+        })}</div>
+        <button type="button" className={styles.sendButton} disabled={!item.available} onClick={onAdd}>{item.available ? "Agregar al pedido" : "Agotado"}</button>
+      </div>
+    </section>
+  </>;
 }
 
 function PreviousOrder({ openTab }) {
@@ -89,7 +127,7 @@ function PreviousOrder({ openTab }) {
   </section>;
 }
 
-function CartContent({ cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, onClose, mobile }) {
+function CartContent({ cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, onClose, mobile, suggestions, tableName }) {
   const lines = Object.entries(cart).map(([id, line]) => ({ item: itemById.get(id), ...line })).filter(({ item }) => item);
   const hasUnavailable = lines.some(({ item }) => !item.available);
   return <div className={styles.cartContent}>
@@ -108,7 +146,7 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
           {!item.available && <p className={styles.cartUnavailable}>Agotado · quítalo para enviar el pedido</p>}
           <label className={styles.noteLabel} htmlFor={`note-${mobile ? "mobile" : "desktop"}-${item.id}`}>Indicaciones para cocina</label>
           <input id={`note-${mobile ? "mobile" : "desktop"}-${item.id}`} value={note} onChange={(event) => setNote(item.id, event.target.value)} maxLength={140} placeholder="Ej. sin cebolla" className={styles.noteInput} />
-          <div className={styles.noteChips}>{SUGGESTIONS.map((chip) => {
+          <div className={styles.noteChips}>{suggestions.map((chip) => {
             const selected = parts.some((part) => part.toLowerCase() === chip);
             return <button key={chip} type="button" aria-pressed={selected} onClick={() => setNote(item.id, selected ? parts.filter((part) => part.toLowerCase() !== chip).join(", ") : [...parts, chip].join(", "))}>{chip}</button>;
           })}</div>
@@ -116,6 +154,7 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
       })}
     </ul>}
     <div className={styles.cartBottom}>
+      <p className={styles.cartTable}>{tableName} · Pedido desde QR</p>
       {!openTab && count > 0 && <label className={styles.nameLabel}>Nombre para la cuenta <span>(opcional)</span><input value={customerName} onChange={(event) => setCustomerName(event.target.value)} maxLength={60} placeholder="¿A nombre de quién?" /></label>}
       <p className={styles.totalRow}><span>Subtotal</span><strong>{formatCurrency(total)}</strong></p>
       <p className={styles.totalRowMain}><span>Total</span><strong>{formatCurrency(total)}</strong></p>
@@ -126,10 +165,10 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
   </div>;
 }
 
-function Sent({ sent, table, status, onAgain, cevicheria }) {
+function Sent({ sent, table, status, onAgain, themeClass, Motif }) {
   const step = status === "ready" || status === "delivered" ? 2 : status === "preparing" ? 1 : 0;
-  return <div className={`${styles.sentScreen} ${cevicheria ? cevicheriaStyles.theme : ""}`}><div className={styles.sentPaper}>
-    {cevicheria ? <CoastMotif className={styles.sentPepper} /> : <Pepper className={styles.sentPepper} />}<p className={styles.overline}>DIRECTO DE TU MESA A COCINA</p>
+  return <div className={`${styles.sentScreen} ${themeClass}`}><div className={styles.sentPaper}>
+    <Motif className={styles.sentPepper} /><p className={styles.overline}>DIRECTO DE TU MESA A COCINA</p>
     <h1>¡Pedido enviado!</h1>
     <p>{sent.round > 1 ? `Ronda ${sent.round} · ` : ""}{table.name} · Total de la mesa {formatCurrency(sent.total)}</p>
     <ol className={styles.steps}>{["Pedido recibido", "En preparación", "Listo para servir"].map((label, index) => <li key={label} className={index <= step ? styles.stepDone : ""}><span>{index < step ? "✓" : index + 1}</span>{label}</li>)}</ol>
@@ -138,15 +177,24 @@ function Sent({ sent, table, status, onAgain, cevicheria }) {
   </div></div>;
 }
 
-export default function TableOrderExperience({ code, initial, template = "criollo" }) {
-  const cevicheria = template === "cevicheria";
+export default function TableOrderExperience({ code, initial, template }) {
   const { state, online, refresh } = useTableState(code, initial);
   const { table, restaurantName, categories, items, openTab } = state;
+  const venue = state.venue ?? {};
+  const templateKey = resolveMenuTemplate(template ?? state.template);
+  const theme = menuTemplates[templateKey];
+  const { className: themeClass, Motif } = visualThemes[templateKey];
   const [cart, setCart] = useState({});
+  const [search, setSearch] = useState("");
+  const [now, setNow] = useState(null);
+  const [detailItemId, setDetailItemId] = useState(null);
+  const [detailQty, setDetailQty] = useState(1);
+  const [detailNote, setDetailNote] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [activeTab, setActiveTab] = useState(categories[0]?.id ?? OTHERS);
   const [cartOpen, setCartOpen] = useState(false);
   const cartDialogRef = useRef(null);
+  const detailDialogRef = useRef(null);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(null);
   const [isPending, startTransition] = useTransition();
@@ -156,8 +204,14 @@ export default function TableOrderExperience({ code, initial, template = "crioll
     return list;
   }, [categories, items]);
   useEffect(() => { if (!tabs.some((tab) => tab.id === activeTab)) setActiveTab(tabs[0]?.id ?? OTHERS); }, [tabs, activeTab]);
-  const shown = useMemo(() => items.filter((item) => (item.categoryId ?? OTHERS) === activeTab), [items, activeTab]);
+  const shown = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase("es-PE");
+    return items.filter((item) => query
+      ? `${item.name} ${item.description ?? ""}`.toLocaleLowerCase("es-PE").includes(query)
+      : (item.categoryId ?? OTHERS) === activeTab);
+  }, [items, activeTab, search]);
   const itemById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
+  const detailItem = detailItemId ? itemById.get(detailItemId) : null;
   useEffect(() => {
     const removed = Object.keys(cart).filter((id) => !itemById.has(id));
     if (!removed.length) return;
@@ -174,9 +228,26 @@ export default function TableOrderExperience({ code, initial, template = "crioll
   }, [cart, itemById]);
   useEffect(() => {
     const previous = document.body.style.overflow;
-    if (cartOpen) document.body.style.overflow = "hidden";
+    if (cartOpen || detailItemId) document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
-  }, [cartOpen]);
+  }, [cartOpen, detailItemId]);
+  useEffect(() => {
+    if (!detailItemId) return;
+    const previousFocus = document.activeElement;
+    const dialog = detailDialogRef.current;
+    dialog?.querySelector("button")?.focus();
+    const onKey = (event) => {
+      if (event.key === "Escape") setDetailItemId(null);
+      if (event.key !== "Tab" || !dialog) return;
+      const focusable = [...dialog.querySelectorAll("button:not(:disabled), input:not(:disabled)")];
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("keydown", onKey); previousFocus?.focus?.(); };
+  }, [detailItemId]);
+  useEffect(() => { if (detailItemId && !detailItem) setDetailItemId(null); }, [detailItemId, detailItem]);
   useEffect(() => {
     if (!cartOpen) return;
     const previousFocus = document.activeElement;
@@ -198,6 +269,12 @@ export default function TableOrderExperience({ code, initial, template = "crioll
     root.style.overflowX = "visible";
     return () => { root.style.overflowX = previous; };
   }, []);
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    tick();
+    const timer = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   function setQty(id, qty) {
     setCart((previous) => {
@@ -209,6 +286,17 @@ export default function TableOrderExperience({ code, initial, template = "crioll
     setError("");
   }
   function setNote(id, note) { setCart((previous) => previous[id] ? { ...previous, [id]: { ...previous[id], note: note.slice(0, 140) } } : previous); }
+  function openDetail(id) {
+    setDetailQty(cart[id]?.qty ?? 1);
+    setDetailNote(cart[id]?.note ?? "");
+    setDetailItemId(id);
+  }
+  function addFromDetail() {
+    if (!detailItem?.available) return;
+    setCart((previous) => ({ ...previous, [detailItem.id]: { qty: detailQty, note: detailNote.trim().slice(0, 140) } }));
+    setDetailItemId(null);
+    setError("");
+  }
   function send() {
     if (count === 0 || Object.keys(cart).some((id) => !itemById.get(id)?.available)) return;
     setError("");
@@ -231,15 +319,24 @@ export default function TableOrderExperience({ code, initial, template = "crioll
 
   if (sent) {
     const status = openTab && openTab.round >= sent.round ? openTab.status : "pending";
-    return <Sent sent={sent} table={table} status={status} cevicheria={cevicheria} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
+    return <Sent sent={sent} table={table} status={status} themeClass={themeClass} Motif={Motif} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
   }
   const zone = table.zone ? (ZONE_LABELS_ES[table.zone] ?? table.zone) : null;
-  const cartProps = { cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send };
-  return <div className={`${styles.stage} ${cevicheria ? cevicheriaStyles.theme : ""}`}>
+  const suggestions = templateKey === "cevicheria" ? SEAFOOD_SUGGESTIONS : SUGGESTIONS;
+  const cartProps = { cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, suggestions, tableName: table.name };
+  const open = venue.hours && now ? isOpenAt(venue.hours, now) : null;
+  return <div className={`${styles.stage} ${count > 0 ? styles.hasCart : ""} ${themeClass}`}>
     <div className={styles.paperTexture} aria-hidden="true" />
     <header className={styles.hero}><div className={styles.heroInner}>
-      <div><p className={styles.overline}>CARTA DE LA CASA</p><h1>{restaurantName}</h1><p className={styles.heroSubtitle}>{cevicheria ? "Frescura del Pacífico, hecha en casa" : "Sabores criollos hechos en casa"}</p></div>
-      {cevicheria ? <CoastMotif className={styles.heroPepper} /> : <Pepper className={styles.heroPepper} />}
+      <div className={styles.heroIdentity}>
+        <span className={styles.venueBadge}>{venue.logoUrl ? <Image src={venue.logoUrl} alt="" fill sizes="56px" className={styles.venueLogo} /> : initialsFor(restaurantName)}</span>
+        <div><p className={styles.overline}>CARTA DE LA CASA</p><h1>{restaurantName}</h1><p className={styles.heroSubtitle}>{venue.tagline || theme.subtitle}</p></div>
+      </div>
+      <Motif className={styles.heroPepper} />
+      {(venue.address || venue.hours) && <div className={styles.venueInfo}>
+        {venue.address && <span>{venue.address}</span>}
+        {venue.hours && now && <span>{todayLabel(venue.hours, now)} · <strong>{open ? "Abierto ahora" : "Fuera de horario"}</strong></span>}
+      </div>}
       <div className={styles.heroMeta}>
         <span className={styles.tableTag}>{table.name} · Pedido desde QR{zone ? ` · ${zone}` : ""}</span>
         <span className={`${styles.kitchenLive} ${online ? "" : styles.offline}`}><i aria-hidden="true" />{online ? "Cocina recibiendo pedidos" : "Actualizando conexión"}</span>
@@ -249,21 +346,24 @@ export default function TableOrderExperience({ code, initial, template = "crioll
       <div className={styles.menuColumn}>
         <PreviousOrder openTab={openTab} />
         <div className={styles.menuIntro}><div><p className={styles.overline}>HECHA PARA COMPARTIR</p><h2>{openTab ? "Elige otra ronda" : "Explora la carta"}</h2></div><span>{items.length} opciones</span></div>
-        <nav className={styles.categoryNav} aria-label="Categorías de la carta">{tabs.map((tab) => <button key={tab.id} type="button" aria-current={activeTab === tab.id ? "page" : undefined} className={activeTab === tab.id ? styles.activeTab : ""} onClick={() => setActiveTab(tab.id)}>{tab.name}</button>)}</nav>
+        <label className={styles.searchLabel} htmlFor="table-menu-search">Buscar platos<input id="table-menu-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Busca un plato o ingrediente" /></label>
+        {items.length > 0 && items.every((item) => !item.available) && <p className={styles.unavailableNotice}>Por ahora no hay platos disponibles. Consulta al personal del local.</p>}
+        <nav className={styles.categoryNav} aria-label="Categorías de la carta">{tabs.map((tab) => <button key={tab.id} type="button" aria-current={!search && activeTab === tab.id ? "page" : undefined} className={!search && activeTab === tab.id ? styles.activeTab : ""} onClick={() => { setActiveTab(tab.id); setSearch(""); }}>{tab.name}</button>)}</nav>
         <div className={styles.cards}>
-          {shown.length === 0 && <p className={styles.emptyCategory}>No hay platos en esta categoría por ahora.</p>}
+          {shown.length === 0 && <p className={styles.emptyCategory}>{search ? "No encontramos platos con esa búsqueda." : "No hay platos en esta categoría por ahora."}</p>}
           {shown.map((item) => {
             const qty = cart[item.id]?.qty ?? 0;
-            const label = cevicheria && item.available ? seafoodLabel(item) : null;
+            const label = templateKey === "cevicheria" && item.available ? seafoodLabel(item) : null;
             return <article key={item.id} className={`${styles.card} ${!item.available ? styles.cardSoldOut : ""}`}>
               <div className={styles.cardPhoto}>
-                {item.photoUrl ? <Image src={item.photoUrl} alt={item.name} fill sizes="(min-width: 1000px) 350px, (min-width: 640px) 45vw, 90vw" className={styles.foodPhoto} /> : <div className={styles.noPhoto}>{cevicheria ? <CoastMotif className={styles.placeholderPepper} /> : <Pepper className={styles.placeholderPepper} />}</div>}
+                {item.photoUrl ? <Image src={item.photoUrl} alt={item.name} fill sizes="(min-width: 1000px) 350px, (min-width: 640px) 45vw, 90vw" className={styles.foodPhoto} /> : <div className={styles.noPhoto}><Motif className={styles.placeholderPepper} /></div>}
                 {label && <span className={styles.seafoodLabel}>{label}</span>}
                 {!item.available ? <span className={styles.soldOut}>Agotado</span> : <span className={styles.available}><i aria-hidden="true" />Disponible</span>}
               </div>
               <div className={styles.cardBody}>
                 <h3>{item.name}</h3>{item.description && <p className={styles.cardDescription}>{item.description}</p>}
                 {item.prepMin != null && <p className={styles.prepTime}>{item.prepMin} min aprox.</p>}
+                <button type="button" className={styles.detailsLink} onClick={() => openDetail(item.id)}>Ver detalles</button>
                 <div className={styles.cardFoot}><strong>{formatCurrency(item.price)}</strong>
                   {!item.available ? <button type="button" disabled className={styles.addButton}>Agotado</button> : qty ? <Quantity value={qty} onChange={(next) => setQty(item.id, next)} /> : <button type="button" className={styles.addButton} onClick={() => setQty(item.id, 1)}>Agregar <span aria-hidden="true">+</span></button>}
                 </div>
@@ -274,8 +374,9 @@ export default function TableOrderExperience({ code, initial, template = "crioll
       </div>
       <aside className={styles.desktopCart} aria-label="Resumen de mi pedido"><CartContent {...cartProps} mobile={false} /></aside>
     </div>
-    <div className={styles.mobileBar}><div><strong>{count} {count === 1 ? "producto" : "productos"}</strong><span>{formatCurrency(total)}</span></div><button type="button" disabled={count === 0} onClick={() => setCartOpen(true)}>Ver mi pedido</button></div>
+    {count > 0 && <div className={styles.mobileBar}><div><strong>{count} {count === 1 ? "producto" : "productos"}</strong><span>{formatCurrency(total)}</span></div><button type="button" onClick={() => setCartOpen(true)}>Ver mi pedido</button></div>}
     {cartOpen && <div className={styles.backdrop} onClick={() => setCartOpen(false)} aria-hidden="true" />}
     <aside ref={cartDialogRef} className={`${styles.mobileCart} ${cartOpen ? styles.cartOpen : ""}`} role="dialog" aria-modal="true" aria-labelledby="mobile-cart-title" aria-hidden={!cartOpen}><CartContent {...cartProps} mobile onClose={() => setCartOpen(false)} /></aside>
+    {detailItem && <ProductDetail item={detailItem} qty={detailQty} note={detailNote} setQty={setDetailQty} setNote={setDetailNote} onAdd={addFromDetail} onClose={() => setDetailItemId(null)} Motif={Motif} dialogRef={detailDialogRef} suggestions={suggestions} />}
   </div>;
 }
