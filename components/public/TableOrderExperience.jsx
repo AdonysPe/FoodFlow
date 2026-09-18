@@ -6,6 +6,7 @@ import { submitTableOrder } from "@/lib/actions/publicOrder";
 import { NOTE_CHIPS, ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency } from "@/lib/format";
 import styles from "./TableOrderExperience.module.css";
+import cevicheriaStyles from "./TableOrderCevicheria.module.css";
 
 const OTHERS = "__otros__";
 const POLL_MS = 8_000;
@@ -24,6 +25,21 @@ function Pepper({ className = "" }) {
     <path d="M22 13c7-5 16-2 17 6 1 9-12 16-31 18 8-7 11-15 14-24Z" />
     <path d="M25 13C25 7 30 3 36 3M27 13c4-3 8-4 13-2-2 3-6 5-10 5M41 21c12-4 23-1 33 7M52 21c4-7 10-8 15-6-2 4-6 7-13 7" />
   </svg>;
+}
+
+function CoastMotif({ className = "" }) {
+  return <svg className={className} viewBox="0 0 100 58" fill="none" aria-hidden="true">
+    <path d="M3 32c13-8 25-8 38 0s25 8 38 0c7-4 12-5 18-4M3 43c13-8 25-8 38 0s25 8 38 0c7-4 12-5 18-4" />
+    <path d="M39 13c9-9 25-9 34 0-9 9-25 9-34 0ZM39 13l-9-6v12l9-6ZM61 12h.01" />
+  </svg>;
+}
+
+function seafoodLabel(item) {
+  const detail = `${item.name} ${item.description ?? ""}`.toLocaleLowerCase("es-PE");
+  if (/pesca del d[ií]a/.test(detail)) return "Pesca del día";
+  if (/picante|rocoto/.test(detail)) return "Picante";
+  if (/^ceviche cl[aá]sico\b/.test(item.name.toLocaleLowerCase("es-PE"))) return "Recomendado";
+  return null;
 }
 
 function useTableState(code, initial) {
@@ -110,10 +126,10 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
   </div>;
 }
 
-function Sent({ sent, table, status, onAgain }) {
+function Sent({ sent, table, status, onAgain, cevicheria }) {
   const step = status === "ready" || status === "delivered" ? 2 : status === "preparing" ? 1 : 0;
-  return <div className={styles.sentScreen}><div className={styles.sentPaper}>
-    <Pepper className={styles.sentPepper} /><p className={styles.overline}>DIRECTO DE TU MESA A COCINA</p>
+  return <div className={`${styles.sentScreen} ${cevicheria ? cevicheriaStyles.theme : ""}`}><div className={styles.sentPaper}>
+    {cevicheria ? <CoastMotif className={styles.sentPepper} /> : <Pepper className={styles.sentPepper} />}<p className={styles.overline}>DIRECTO DE TU MESA A COCINA</p>
     <h1>¡Pedido enviado!</h1>
     <p>{sent.round > 1 ? `Ronda ${sent.round} · ` : ""}{table.name} · Total de la mesa {formatCurrency(sent.total)}</p>
     <ol className={styles.steps}>{["Pedido recibido", "En preparación", "Listo para servir"].map((label, index) => <li key={label} className={index <= step ? styles.stepDone : ""}><span>{index < step ? "✓" : index + 1}</span>{label}</li>)}</ol>
@@ -122,7 +138,8 @@ function Sent({ sent, table, status, onAgain }) {
   </div></div>;
 }
 
-export default function TableOrderExperience({ code, initial }) {
+export default function TableOrderExperience({ code, initial, template = "criollo" }) {
+  const cevicheria = template === "cevicheria";
   const { state, online, refresh } = useTableState(code, initial);
   const { table, restaurantName, categories, items, openTab } = state;
   const [cart, setCart] = useState({});
@@ -214,15 +231,15 @@ export default function TableOrderExperience({ code, initial }) {
 
   if (sent) {
     const status = openTab && openTab.round >= sent.round ? openTab.status : "pending";
-    return <Sent sent={sent} table={table} status={status} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
+    return <Sent sent={sent} table={table} status={status} cevicheria={cevicheria} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
   }
   const zone = table.zone ? (ZONE_LABELS_ES[table.zone] ?? table.zone) : null;
   const cartProps = { cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send };
-  return <div className={styles.stage}>
+  return <div className={`${styles.stage} ${cevicheria ? cevicheriaStyles.theme : ""}`}>
     <div className={styles.paperTexture} aria-hidden="true" />
     <header className={styles.hero}><div className={styles.heroInner}>
-      <div><p className={styles.overline}>CARTA DE LA CASA</p><h1>{restaurantName}</h1><p className={styles.heroSubtitle}>Sabores criollos hechos en casa</p></div>
-      <Pepper className={styles.heroPepper} />
+      <div><p className={styles.overline}>CARTA DE LA CASA</p><h1>{restaurantName}</h1><p className={styles.heroSubtitle}>{cevicheria ? "Frescura del Pacífico, hecha en casa" : "Sabores criollos hechos en casa"}</p></div>
+      {cevicheria ? <CoastMotif className={styles.heroPepper} /> : <Pepper className={styles.heroPepper} />}
       <div className={styles.heroMeta}>
         <span className={styles.tableTag}>{table.name} · Pedido desde QR{zone ? ` · ${zone}` : ""}</span>
         <span className={`${styles.kitchenLive} ${online ? "" : styles.offline}`}><i aria-hidden="true" />{online ? "Cocina recibiendo pedidos" : "Actualizando conexión"}</span>
@@ -237,9 +254,11 @@ export default function TableOrderExperience({ code, initial }) {
           {shown.length === 0 && <p className={styles.emptyCategory}>No hay platos en esta categoría por ahora.</p>}
           {shown.map((item) => {
             const qty = cart[item.id]?.qty ?? 0;
+            const label = cevicheria && item.available ? seafoodLabel(item) : null;
             return <article key={item.id} className={`${styles.card} ${!item.available ? styles.cardSoldOut : ""}`}>
               <div className={styles.cardPhoto}>
-                {item.photoUrl ? <Image src={item.photoUrl} alt={item.name} fill sizes="(min-width: 1000px) 350px, (min-width: 640px) 45vw, 90vw" className={styles.foodPhoto} /> : <div className={styles.noPhoto}><Pepper className={styles.placeholderPepper} /></div>}
+                {item.photoUrl ? <Image src={item.photoUrl} alt={item.name} fill sizes="(min-width: 1000px) 350px, (min-width: 640px) 45vw, 90vw" className={styles.foodPhoto} /> : <div className={styles.noPhoto}>{cevicheria ? <CoastMotif className={styles.placeholderPepper} /> : <Pepper className={styles.placeholderPepper} />}</div>}
+                {label && <span className={styles.seafoodLabel}>{label}</span>}
                 {!item.available ? <span className={styles.soldOut}>Agotado</span> : <span className={styles.available}><i aria-hidden="true" />Disponible</span>}
               </div>
               <div className={styles.cardBody}>
