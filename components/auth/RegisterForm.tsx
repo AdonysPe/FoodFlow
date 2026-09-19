@@ -32,7 +32,7 @@ export default function RegisterForm() {
     setConsentError(false);
     setPending(true);
     try {
-      const result = await postAuth<{ role: "client" }>("/api/auth/register", { restaurant_name: restaurantName, email, password, consent });
+      const result = await postAuth<{ role: "restaurant_owner" }>("/api/auth/register", { restaurant_name: restaurantName, email, password, consent });
       if (result.ok) {
         window.location.href = "/dashboard/app/overview";
         return;

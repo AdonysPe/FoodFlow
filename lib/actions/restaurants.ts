@@ -3,7 +3,8 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
-import { requireAdmin } from "@/lib/auth/guards";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
+import { TENANT_ROLES } from "@/lib/auth/permissions";
 import { seedDefaultCategories } from "@/lib/menu/seedCategories";
 import { logAudit } from "@/lib/audit/log";
 import { PLANS, type PlanValue } from "@/lib/plans";
@@ -27,12 +28,12 @@ export async function selectActiveRestaurant(
   if (!parsed.success) return { ok: false, error: "Restaurante no válido." };
 
   const user = await getCurrentUser();
-  if (!user || (user.role !== "client" && user.role !== "mozo")) {
+  if (!user || !(TENANT_ROLES as readonly string[]).includes(user.role)) {
     return { ok: false, error: "Sesión no válida." };
   }
 
   const allowed =
-    user.role === "client"
+    user.role === "restaurant_owner"
       ? await prisma.restaurant.findFirst({
           where: { id: parsed.data, ownerId: user.id },
           select: { id: true },
@@ -94,7 +95,7 @@ export async function createRestaurant(input: {
   ownerEmail: string;
   plan: PlanValue;
 }): Promise<ActionResult> {
-  await requireAdmin();
+  await requirePlatformAdmin();
 
   const parsed = createRestaurantSchema.safeParse(input);
   if (!parsed.success) {
@@ -105,7 +106,7 @@ export async function createRestaurant(input: {
   const owner = await prisma.user.upsert({
     where: { email: ownerEmail },
     update: {},
-    create: { email: ownerEmail, role: "client", requiresPasswordSetup: true },
+    create: { email: ownerEmail, role: "restaurant_owner", requiresPasswordSetup: true },
   });
 
   const restaurant = await prisma.restaurant.create({
@@ -123,7 +124,7 @@ export async function updateRestaurant(
   id: string,
   input: { name: string; ownerEmail: string; plan: PlanValue }
 ): Promise<ActionResult> {
-  await requireAdmin();
+  await requirePlatformAdmin();
 
   const parsed = createRestaurantSchema.safeParse(input);
   if (!parsed.success) {
@@ -137,7 +138,7 @@ export async function updateRestaurant(
   const owner = await prisma.user.upsert({
     where: { email: ownerEmail },
     update: {},
-    create: { email: ownerEmail, role: "client", requiresPasswordSetup: true },
+    create: { email: ownerEmail, role: "restaurant_owner", requiresPasswordSetup: true },
   });
 
   await prisma.restaurant.update({
@@ -160,7 +161,7 @@ export async function updateRestaurantPlan(
   id: string,
   plan: PlanValue
 ): Promise<ActionResult> {
-  await requireAdmin();
+  await requirePlatformAdmin();
 
   const parsed = z.enum(PLANS).safeParse(plan);
   if (!parsed.success) return { ok: false, error: "Invalid plan." };
@@ -181,7 +182,7 @@ export async function updateRestaurantPlan(
 // The owner account itself is only deleted if they don't own any other
 // restaurant — otherwise it'd still be needed for that other restaurant.
 export async function deleteRestaurant(id: string): Promise<ActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requirePlatformAdmin();
 
   const restaurant = await prisma.restaurant.findUnique({ where: { id } });
   if (!restaurant) return { ok: false, error: "Restaurant not found." };
@@ -207,7 +208,7 @@ export async function deleteRestaurant(id: string): Promise<ActionResult> {
     const stillUsed = await prisma.staffMembership.count({ where: { userId } });
     if (stillUsed === 0) {
       await prisma.user
-        .deleteMany({ where: { id: userId, role: "mozo", restaurants: { none: {} } } })
+        .deleteMany({ where: { id: userId, role: "restaurant_staff", restaurants: { none: {} } } })
         .catch(() => {});
     }
   }

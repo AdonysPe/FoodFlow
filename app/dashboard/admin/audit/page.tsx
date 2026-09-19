@@ -5,7 +5,7 @@ export const metadata = {
   title: "Audit log",
 };
 
-// Read-only. Gated by AdminLayout (getCurrentUser().role === "admin"); the
+// Read-only. Gated by AdminLayout (getCurrentUser().role === "platform_admin"); the
 // AuditLog rows carry no tenant relation, so no restaurant user can reach them.
 const PAGE_SIZE = 200;
 

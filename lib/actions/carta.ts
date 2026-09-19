@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
+import type { OwnerWritableRestaurantData } from "@/lib/auth/restaurantFields";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { bumpCarta } from "@/lib/db/carta";
 import { RESERVED_SLUGS, SLUG_PATTERN } from "@/lib/carta";
@@ -90,13 +91,21 @@ export async function saveCartaSettings(
     }
   }
 
+  // Typed as owner-writable so the build rejects this update the day someone
+  // adds `categoryId`, `menuTemplateOverride`, `plan` or `billingStatus` to it:
+  // those belong to FoodFlow, and this is an owner-reachable path.
+  const ownerWritable: OwnerWritableRestaurantData = {
+    // Bumped here rather than through bumpCarta so the address change and the
+    // version move land in the same transaction as everything else.
+    slug,
+    cartaVersion: { increment: 1 },
+  };
+
   try {
     await prisma.$transaction([
       prisma.restaurant.update({
         where: { id: restaurant.id },
-        // Bumped here rather than through bumpCarta so the address change and
-        // the version move land in the same transaction as everything else.
-        data: { slug, cartaVersion: { increment: 1 } },
+        data: ownerWritable,
       }),
       prisma.cartaSettings.upsert({
         where: { restaurantId: restaurant.id },

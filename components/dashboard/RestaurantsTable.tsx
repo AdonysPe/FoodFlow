@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import GlassCard from "@/components/ui/GlassCard";
 import {
@@ -22,8 +23,46 @@ export type RestaurantRow = {
   ownerEmail: string;
   plan: PlanValue;
   staffCount: number;
+  /** Name of the platform category the venue is filed under. */
+  categoryName: string;
+  /** Display name of the template its carta actually renders with. */
+  templateLabel: string;
+  /** True when the venue follows its category instead of carrying an override. */
+  templateIsDefault: boolean;
+  billingStatus: "pending" | "active" | "cancelled";
+  slug: string | null;
   createdAtLabel: string;
 };
+
+const BILLING_TONE: Record<RestaurantRow["billingStatus"], string> = {
+  active: "bg-mint/10 text-mint-ink ring-mint/25",
+  pending: "bg-fg/[0.06] text-muted ring-fg/15",
+  cancelled: "bg-accent-500/12 text-accent-ink ring-accent-400/30",
+};
+
+const BILLING_LABEL: Record<RestaurantRow["billingStatus"], string> = {
+  active: "Activo",
+  pending: "Pendiente",
+  cancelled: "Cancelado",
+};
+
+/**
+ * The venue's identity as the platform set it: the category, and underneath it
+ * the template its carta renders with. "por categoría" is what distinguishes a
+ * venue following its category's default from one carrying an override — the
+ * whole distinction the configure screen exists to manage.
+ */
+function IdentityCell({ restaurant }: { restaurant: RestaurantRow }) {
+  return (
+    <>
+      <p className="text-fg/85">{restaurant.categoryName}</p>
+      <p className="text-[12px] text-faint">
+        {restaurant.templateLabel}
+        {restaurant.templateIsDefault ? " · por categoría" : " · personalizada"}
+      </p>
+    </>
+  );
+}
 
 const inputClass =
   "h-9 w-full rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 text-[13.5px] text-fg outline-none focus:border-accent-400/50";
@@ -64,7 +103,7 @@ function PlanPicker({ restaurant }: { restaurant: RestaurantRow }) {
       value={restaurant.plan}
       disabled={isPending}
       onChange={(e) => change(e.target.value as PlanValue)}
-      aria-label={`Plan for ${restaurant.name}`}
+      aria-label={`Plan de ${restaurant.name}`}
       className={`rounded-full px-2.5 py-1 text-[12px] font-medium ring-1 ring-inset outline-none disabled:opacity-40 ${PLAN_TONE[restaurant.plan]}`}
     >
       {PLANS.map((p) => (
@@ -90,7 +129,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
       const result = await updateRestaurant(restaurant.id, { name, ownerEmail, plan });
       if (result.ok) {
         setEditing(false);
-        pushToast("Restaurant updated.", "success");
+        pushToast("Restaurante actualizado.", "success");
       } else {
         pushToast(result.error, "error");
       }
@@ -105,7 +144,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
     startTransition(async () => {
       const result = await deleteRestaurant(restaurant.id);
       pushToast(
-        result.ok ? `${restaurant.name} deleted.` : result.error,
+        result.ok ? `${restaurant.name} eliminado.` : result.error,
         result.ok ? "success" : "error"
       );
       setConfirmingDelete(false);
@@ -139,6 +178,16 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
             ))}
           </select>
         </td>
+        <td className="px-5 py-3">
+          <IdentityCell restaurant={restaurant} />
+        </td>
+        <td className="px-5 py-3">
+          <span
+            className={`rounded-full px-2.5 py-1 text-[12px] font-medium ring-1 ring-inset ${BILLING_TONE[restaurant.billingStatus]}`}
+          >
+            {BILLING_LABEL[restaurant.billingStatus]}
+          </span>
+        </td>
         <td className="px-5 py-3 text-faint">{restaurant.createdAtLabel}</td>
         <td className="px-5 py-3">
           <div className="flex gap-2">
@@ -148,7 +197,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
               onClick={handleSave}
               className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent disabled:opacity-40"
             >
-              Save
+              Guardar
             </button>
             <button
               type="button"
@@ -161,7 +210,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
               }}
               className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 hover:bg-fg/[0.08]"
             >
-              Cancel
+              Cancelar
             </button>
           </div>
         </td>
@@ -184,15 +233,31 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
       <td className="px-5 py-3.5">
         <PlanPicker restaurant={restaurant} />
       </td>
+      <td className="px-5 py-3.5">
+        <IdentityCell restaurant={restaurant} />
+      </td>
+      <td className="px-5 py-3.5">
+        <span
+          className={`rounded-full px-2.5 py-1 text-[12px] font-medium ring-1 ring-inset ${BILLING_TONE[restaurant.billingStatus]}`}
+        >
+          {BILLING_LABEL[restaurant.billingStatus]}
+        </span>
+      </td>
       <td className="px-5 py-3.5 text-faint">{restaurant.createdAtLabel}</td>
       <td className="px-5 py-3.5">
         <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/dashboard/admin/restaurants/${restaurant.id}`}
+            className="rounded-lg border border-accent-400/30 bg-accent-400/10 px-3 py-1.5 text-[12.5px] font-semibold text-accent-ink transition-colors hover:bg-accent-400/20"
+          >
+            Configurar
+          </Link>
           <button
             type="button"
             onClick={() => setEditing(true)}
             className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg"
           >
-            Edit
+            Editar
           </button>
           <button
             type="button"
@@ -205,7 +270,7 @@ function RestaurantRowItem({ restaurant }: { restaurant: RestaurantRow }) {
                 : "border border-fg/[0.1] bg-fg/[0.04] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
             }`}
           >
-            {confirmingDelete ? "Confirm delete?" : "Delete"}
+            {confirmingDelete ? "¿Confirmar?" : "Eliminar"}
           </button>
         </div>
       </td>
@@ -217,7 +282,7 @@ export default function RestaurantsTable({ restaurants }: { restaurants: Restaur
   if (restaurants.length === 0) {
     return (
       <GlassCard className="p-10 text-center text-[14px] text-faint" hoverLift={false}>
-        No restaurants yet. Create the first one to get started.
+        Todavía no hay restaurantes. Crea el primero para empezar.
       </GlassCard>
     );
   }
@@ -225,14 +290,16 @@ export default function RestaurantsTable({ restaurants }: { restaurants: Restaur
   return (
     <GlassCard className="overflow-hidden p-0" hoverLift={false}>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-left text-[14px]">
+        <table className="w-full min-w-[980px] text-left text-[14px]">
           <thead>
             <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-faint">
-              <th className="px-5 py-3.5 font-medium">Name</th>
-              <th className="px-5 py-3.5 font-medium">Owner</th>
+              <th className="px-5 py-3.5 font-medium">Restaurante</th>
+              <th className="px-5 py-3.5 font-medium">Propietario</th>
               <th className="px-5 py-3.5 font-medium">Plan</th>
-              <th className="px-5 py-3.5 font-medium">Created</th>
-              <th className="px-5 py-3.5 font-medium">Actions</th>
+              <th className="px-5 py-3.5 font-medium">Categoría y plantilla</th>
+              <th className="px-5 py-3.5 font-medium">Estado</th>
+              <th className="px-5 py-3.5 font-medium">Alta</th>
+              <th className="px-5 py-3.5 font-medium">Acciones</th>
             </tr>
           </thead>
           <tbody>

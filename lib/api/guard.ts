@@ -22,6 +22,7 @@
 // Server only.
 
 import type { NextRequest } from "next/server";
+import type { UserRole } from "@prisma/client";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
@@ -32,7 +33,7 @@ import { ApiError, fail, logBilling, newRequestId, ok } from "@/lib/api/respond"
 export type ApiActor = {
   userId: string;
   email: string;
-  role: "admin" | "client" | "mozo";
+  role: UserRole;
 };
 
 export type ApiContext = {
@@ -104,7 +105,8 @@ async function resolveActor(): Promise<
   }
 
   const actor: ApiActor = { userId: user.id, email: user.email, role: user.role };
-  const venues = user.role === "client" ? owned : memberships.map((item) => item.restaurant);
+  const venues =
+    user.role === "restaurant_owner" ? owned : memberships.map((item) => item.restaurant);
   const venue =
     venues.find((restaurant) => restaurant.id === payload.restaurantId) ?? venues.at(0) ?? null;
   if (!venue) return { ok: false, reason: "no_restaurant" };
@@ -114,7 +116,7 @@ async function resolveActor(): Promise<
     actor,
     restaurantId: venue.id,
     restaurantName: venue.name,
-    isOwner: user.role === "client",
+    isOwner: user.role === "restaurant_owner",
   };
 }
 

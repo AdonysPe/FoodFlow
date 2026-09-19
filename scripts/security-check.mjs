@@ -33,9 +33,10 @@ function check(name, pass, detail = "") {
 
 async function main() {
   // ---- seed -------------------------------------------------------------
-  const ownerA = await prisma.user.create({ data: { email: `${TAG}-a@example.test`, role: "client" } });
-  const ownerB = await prisma.user.create({ data: { email: `${TAG}-b@example.test`, role: "client" } });
-  const mozo = await prisma.user.create({ data: { email: `${TAG}-m@example.test`, role: "mozo" } });
+  const ownerA = await prisma.user.create({ data: { email: `${TAG}-a@example.test`, role: "restaurant_owner" } });
+  const ownerB = await prisma.user.create({ data: { email: `${TAG}-b@example.test`, role: "restaurant_owner" } });
+  const mozo = await prisma.user.create({ data: { email: `${TAG}-m@example.test`, role: "restaurant_staff" } });
+  const operator = await prisma.user.create({ data: { email: `${TAG}-op@example.test`, role: "platform_admin" } });
 
   const rA = await prisma.restaurant.create({ data: { name: `${TAG} A`, ownerId: ownerA.id } });
   const rB = await prisma.restaurant.create({ data: { name: `${TAG} B`, ownerId: ownerB.id } });
@@ -81,8 +82,8 @@ async function main() {
     check("waiter of A has no membership in B", mozoInB === null);
 
     const mozoRow = await prisma.user.findUnique({ where: { id: mozo.id } });
-    // requireClientRestaurant redirects unless role === "client".
-    check("waiter role is not 'client' (so requireClientRestaurant would reject it)", mozoRow?.role !== "client");
+    // requireClientRestaurant redirects unless the role manages a venue.
+    check("waiter role is not a venue manager (so requireClientRestaurant rejects it)", mozoRow?.role !== "restaurant_owner" && mozoRow?.role !== "restaurant_admin");
 
     // ---- 4. leads have no tenant path ---------------------------------
     // clientLead / Lead carry no restaurantId and no relation from Restaurant,
@@ -200,14 +201,105 @@ async function main() {
       !receiptFields.some((f) => /Enc$/.test(f)),
       `fields: ${receiptFields.length}`,
     );
+
+    // ---- 7. categoría y plantilla: solo la plataforma ------------------
+    // Los campos que deciden cómo se presenta un local pertenecen al catálogo
+    // de FoodFlow, no al inquilino. Aquí se comprueba la forma de los datos y
+    // la transaccionalidad de la auditoría, que es lo que no puede verse en
+    // un test unitario.
+
+    check(
+      "el operador de plataforma no es dueño de ningún restaurante",
+      (await prisma.restaurant.count({ where: { ownerId: operator.id } })) === 0,
+    );
+    check(
+      "el operador tampoco entra por StaffMembership",
+      (await prisma.staffMembership.count({ where: { userId: operator.id } })) === 0,
+    );
+
+    // El dueño de A no puede alcanzar la fila de B ni con el id en la mano:
+    // es el mismo patrón { id, ownerId } que usa todo write del inquilino.
+    const bFromA = await prisma.restaurant.findFirst({ where: { id: rB.id, ownerId: ownerA.id } });
+    check("A no puede cargar el restaurante B para cambiarle la categoría", bFromA === null);
+
+    // La actualización real: dos columnas y la versión de la carta, más la
+    // fila de auditoría, en la MISMA transacción.
+    const beforeCategory = (await prisma.restaurant.findUnique({ where: { id: rA.id } })).categoryId;
+    await prisma.$transaction(async (tx) => {
+      await tx.restaurant.update({
+        where: { id: rA.id },
+        data: { categoryId: "cevicheria", menuTemplateOverride: null, cartaVersion: { increment: 1 } },
+      });
+      await tx.restaurantConfigurationAudit.create({
+        data: {
+          restaurantId: rA.id,
+          performedByUserId: operator.id,
+          performedByEmail: operator.email,
+          action: "restaurant.category_template.update",
+          previousCategoryId: beforeCategory,
+          newCategoryId: "cevicheria",
+          previousTemplate: null,
+          newTemplate: null,
+        },
+      });
+    });
+
+    const afterUpdate = await prisma.restaurant.findUnique({ where: { id: rA.id } });
+    check("la categoría del local A quedó guardada", afterUpdate.categoryId === "cevicheria");
+    check("la versión de la carta subió (invalida el QR abierto)", afterUpdate.cartaVersion > 0);
+
+    const trail = await prisma.restaurantConfigurationAudit.findMany({ where: { restaurantId: rA.id } });
+    check("quedó exactamente una fila de auditoría", trail.length === 1);
+    check("la auditoría guarda quién lo hizo", trail[0]?.performedByEmail === operator.email);
+    check(
+      "la auditoría guarda el antes y el después",
+      trail[0]?.previousCategoryId === beforeCategory && trail[0]?.newCategoryId === "cevicheria",
+    );
+
+    // B no se movió: un cambio administrativo toca un solo restaurante.
+    const untouchedB = await prisma.restaurant.findUnique({ where: { id: rB.id } });
+    check("el restaurante B siguió igual", untouchedB.categoryId === beforeCategory && untouchedB.cartaVersion === 0);
+
+    // Si la auditoría falla, el cambio se deshace con ella: no hay forma de
+    // mover la identidad de un local sin dejar rastro.
+    const categoryBeforeRollback = afterUpdate.categoryId;
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.restaurant.update({ where: { id: rA.id }, data: { categoryId: "chifa" } });
+        // FK inexistente → revienta la transacción entera.
+        await tx.restaurantConfigurationAudit.create({
+          data: { restaurantId: "no-existe", action: "forzar-fallo" },
+        });
+      });
+      check("una auditoría fallida aborta el cambio", false, "la transacción no falló");
+    } catch {
+      const rolledBack = await prisma.restaurant.findUnique({ where: { id: rA.id } });
+      check("una auditoría fallida deshace el cambio", rolledBack.categoryId === categoryBeforeRollback);
+      check(
+        "y no deja filas de auditoría de más",
+        (await prisma.restaurantConfigurationAudit.count({ where: { restaurantId: rA.id } })) === 1,
+      );
+    }
+
+    // Una categoría inactiva no es asignable: la acción la rechaza antes de
+    // escribir, y aquí se comprueba que la bandera existe para leerla.
+    const categories = await prisma.restaurantCategory.findMany();
+    check(
+      "las cuatro categorías del catálogo están activas",
+      ["criolla", "cevicheria", "chifa", "pizzeria"].every((id) =>
+        categories.some((c) => c.id === id && c.isActive),
+      ),
+      categories.map((c) => `${c.id}${c.isActive ? "" : " (inactiva)"}`).join(", "),
+    );
   } finally {
     // ---- teardown ------------------------------------------------------
     await prisma.cdr.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
     await prisma.order.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
     await prisma.menuItem.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
     await prisma.staffMembership.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
+    await prisma.restaurantConfigurationAudit.deleteMany({ where: { restaurantId: { in: [rA.id, rB.id] } } });
     await prisma.restaurant.deleteMany({ where: { id: { in: [rA.id, rB.id] } } });
-    await prisma.user.deleteMany({ where: { id: { in: [ownerA.id, ownerB.id, mozo.id] } } });
+    await prisma.user.deleteMany({ where: { id: { in: [ownerA.id, ownerB.id, mozo.id, operator.id] } } });
   }
 }
 

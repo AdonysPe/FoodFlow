@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       const user = await tx.user.create({
         data: {
           email,
-          role: "client",
+          role: "restaurant_owner",
           passwordHash,
           requiresPasswordSetup: false,
           sessionVersion: 1,

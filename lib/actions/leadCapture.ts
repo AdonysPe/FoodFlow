@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
-import { requireAdmin } from "@/lib/auth/guards";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { callerIpHash } from "@/lib/security/clientHash";
 import { logAudit } from "@/lib/audit/log";
 import { leadScore, normalizeWhatsApp } from "@/lib/leads/validation";
@@ -110,7 +110,7 @@ export async function updateLeadPipeline(
   leadId: string,
   rawStatus: string
 ): Promise<ActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requirePlatformAdmin();
 
   const parsed = pipelineSchema.safeParse(rawStatus);
   if (!parsed.success) return { ok: false, error: "Estado inválido." };

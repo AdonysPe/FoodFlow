@@ -62,7 +62,7 @@ const ADMIN_NAV: NavSection[] = [
       { href: "/dashboard/admin/overview", label: "Overview", icon: IconDashboard },
       { href: "/dashboard/admin/leads", label: "Leads", icon: IconUsers },
       { href: "/dashboard/admin/contactos", label: "Contactos", icon: IconMail },
-      { href: "/dashboard/admin/restaurants", label: "Restaurants", icon: IconStore },
+      { href: "/dashboard/admin/restaurants", label: "Administración de restaurantes", icon: IconStore },
       { href: "/dashboard/admin/analytics", label: "Analytics", icon: IconAnalytics },
       { href: "/dashboard/admin/audit", label: "Audit log", icon: IconShield },
     ],

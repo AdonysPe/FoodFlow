@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
-import { requireAdmin } from "@/lib/auth/guards";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { callerIpHash } from "@/lib/security/clientHash";
 import { logAudit } from "@/lib/audit/log";
 import type { ActionResult } from "@/lib/actions/auth";
@@ -48,7 +48,7 @@ export async function updateLeadStatus(
   leadId: string,
   rawStatus: string
 ): Promise<ActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requirePlatformAdmin();
 
   const parsed = statusSchema.safeParse(rawStatus);
   if (!parsed.success) return { ok: false, error: "Invalid status." };

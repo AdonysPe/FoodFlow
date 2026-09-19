@@ -13,12 +13,26 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+/// Who someone is to FoodFlow. Exactly one role per account.
+///
+/// The split that matters is the first line: `platform_admin` is the FoodFlow
+/// operator and is never a tenant of any restaurant, while every other value
+/// is scoped to a venue and can never reach a platform screen. A restaurant
+/// manager is `restaurant_admin` — deliberately NOT named "admin", because
+/// the whole point is that it carries no platform power.
 enum UserRole {
-  admin
-  client
-  // A waiter. Belongs to one restaurant via StaffMembership and only ever
-  // sees the mobile comanda screen — never the owner dashboard.
-  mozo
+  /// FoodFlow itself. Owns leads, restaurants, categories, templates and the
+  /// audit trail. Checked server-side on every platform route.
+  platform_admin
+  /// The person who signed a restaurant up. Owns their venue's data and
+  /// nothing outside it.
+  restaurant_owner
+  /// A manager inside one restaurant. Reaches the venue dashboard through a
+  /// StaffMembership; has no platform permissions whatsoever.
+  restaurant_admin
+  /// A waiter. Belongs to one restaurant via StaffMembership and only ever
+  /// sees the mobile comanda screen — never the owner dashboard.
+  restaurant_staff
 }
 
 enum LeadStatus {
@@ -104,28 +118,29 @@ enum ReservationSource {
 }
 
 model User {
-  id                        String            @id @default(cuid())
-  email                     String            @unique
-  role                      UserRole          @default(client)
-  passwordHash              String?           @map("password_hash")
-  verificationCode          String?           @map("verification_code")
-  verificationCodeExpiresAt DateTime?         @map("verification_code_expires_at")
-  passwordResetAt           DateTime?         @map("password_reset_at")
-  passwordResetAttempts     Int               @default(0) @map("password_reset_attempts")
-  requiresPasswordSetup     Boolean           @default(false) @map("requires_password_setup")
-  sessionVersion            Int               @default(0) @map("session_version")
-  failedLoginAttempts       Int               @default(0) @map("failed_login_attempts")
-  loginLockedUntil          DateTime?         @map("login_locked_until")
+  id                        String                         @id @default(cuid())
+  email                     String                         @unique
+  role                      UserRole                       @default(restaurant_owner)
+  passwordHash              String?                        @map("password_hash")
+  verificationCode          String?                        @map("verification_code")
+  verificationCodeExpiresAt DateTime?                      @map("verification_code_expires_at")
+  passwordResetAt           DateTime?                      @map("password_reset_at")
+  passwordResetAttempts     Int                            @default(0) @map("password_reset_attempts")
+  requiresPasswordSetup     Boolean                        @default(false) @map("requires_password_setup")
+  sessionVersion            Int                            @default(0) @map("session_version")
+  failedLoginAttempts       Int                            @default(0) @map("failed_login_attempts")
+  loginLockedUntil          DateTime?                      @map("login_locked_until")
   // When the owner ticked the Términos/Privacidad consent box at registration
   // — includes the international data transfer disclosed in Privacidad §5.
   // Ley 29733 puts the burden of proving consent on us, so the moment it was
   // given is stored, same pattern as Lead.consentAt. Null for staff accounts
   // an owner creates (their data collection is covered by the owner's own
   // consent, per Términos §5) and for accounts migrated before this existed.
-  consentAt                 DateTime?         @map("consent_at")
-  createdAt                 DateTime          @default(now())
+  consentAt                 DateTime?                      @map("consent_at")
+  createdAt                 DateTime                       @default(now())
   restaurants               Restaurant[]
   staffMemberships          StaffMembership[]
+  configChanges             RestaurantConfigurationAudit[]
 }
 
 // Links a mozo (or, later, other staff roles) to the restaurant they work at.
@@ -144,26 +159,26 @@ model StaffMembership {
 }
 
 model Restaurant {
-  id            String        @id @default(cuid())
-  name          String
-  categoryId    String        @default("criolla")
-  category      RestaurantCategory @relation(fields: [categoryId], references: [id])
+  id                   String             @id @default(cuid())
+  name                 String
+  categoryId           String             @default("criolla")
+  category             RestaurantCategory @relation(fields: [categoryId], references: [id])
   menuTemplateOverride String?
-  ownerId       String
-  owner         User          @relation(fields: [ownerId], references: [id])
+  ownerId              String
+  owner                User               @relation(fields: [ownerId], references: [id])
   // Defaults to the smallest plan on purpose: a restaurant never gets paid
   // modules by accident, the admin has to grant them.
-  plan          Plan          @default(carta)
-  billingStatus BillingStatus @default(pending) @map("billing_status")
+  plan                 Plan               @default(carta)
+  billingStatus        BillingStatus      @default(pending) @map("billing_status")
   // Public address of this venue's carta: /carta/<slug>, and the host that
   // <slug>.foodflow.site rewrites to. Nullable because a venue exists before
   // anyone has published its menu.
-  slug          String?       @unique
+  slug                 String?            @unique
   // Bumped by every write that changes what a diner sees. Lives here rather
   // than on CartaSettings so bumping is one guaranteed update with no upsert,
   // and so the live-update watcher reads a single row by primary key.
-  cartaVersion  Int           @default(0)
-  createdAt     DateTime      @default(now())
+  cartaVersion         Int                @default(0)
+  createdAt            DateTime           @default(now())
 
   orders       Order[]
   menuItems    MenuItem[]
@@ -176,6 +191,7 @@ model Restaurant {
   carta        CartaSettings?
   billing      BillingCredentials?
   cdrs         Cdr[]
+  configAudits RestaurantConfigurationAudit[]
 
   @@index([ownerId])
   @@index([categoryId])
@@ -191,6 +207,44 @@ model RestaurantCategory {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
   restaurants         Restaurant[]
+}
+
+/// Every change a platform admin makes to a restaurant's identity — its
+/// category and its carta template.
+///
+/// WHY NOT `AuditLog`. That table is written best-effort and swallows its own
+/// failures, which is correct for a login trail: an audit hiccup must not turn
+/// a successful sign-in into an error. This record has the opposite
+/// requirement. It is written inside the SAME transaction as the update, so a
+/// restaurant's identity cannot move without a row saying who moved it; if
+/// this insert fails, the update is rolled back with it.
+///
+/// `performedByEmail` is denormalized so a deleted operator account still
+/// traces, mirroring `AuditLog.actorEmail`.
+model RestaurantConfigurationAudit {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  performedByUserId String?
+  performedBy       User?   @relation(fields: [performedByUserId], references: [id], onDelete: SetNull)
+  performedByEmail  String?
+
+  /// e.g. "restaurant.category_template.update".
+  action String
+
+  previousCategoryId String?
+  newCategoryId      String?
+  /// The raw `menuTemplateOverride` on each side — null means "follow the
+  /// category default", which is a meaningful value here, not a missing one.
+  previousTemplate   String?
+  newTemplate        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([restaurantId, createdAt])
+  @@index([performedByUserId])
+  @@index([createdAt])
 }
 
 /// What the venue prints when a waiter charges a table, plus the running
@@ -720,10 +774,10 @@ model Claim {
   code String @unique
 
   // Identificación del consumidor — every field required by the regulation.
-  nombre    String
-  dni       String
-  telefono  String
-  email     String
+  nombre   String
+  dni      String
+  telefono String
+  email    String
   // The existing physical column keeps its original name for a zero-loss,
   // migration-free transition from the former domicilio field.
   distrito String @map("direccion")

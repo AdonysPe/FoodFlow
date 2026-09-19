@@ -16,7 +16,8 @@
     "auth:migrate-users": "tsx scripts/migrate-users.ts",
     "db:studio": "prisma studio",
     "db:seed-demo": "node scripts/seed-demo.mjs",
-    "security:check": "node scripts/security-check.mjs"
+    "security:check": "node scripts/security-check.mjs",
+    "grant:platform-admin": "node scripts/grant-platform-admin.mjs"
   },
   "dependencies": {
     "@prisma/client": "6.12.0",

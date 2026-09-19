@@ -48,7 +48,7 @@ describe("password auth", () => {
     const token = await createSessionToken({
       sub: "user-1",
       email: "owner@example.com",
-      role: "client",
+      role: "restaurant_owner",
       sessionVersion: 7,
     });
     await expect(verifySessionToken(token)).resolves.toMatchObject({

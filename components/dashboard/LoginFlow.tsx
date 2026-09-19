@@ -8,10 +8,12 @@ import { IconArrowRight, IconLock, IconMail } from "@/components/ui/Icons";
 import { AuthAlert, AuthCard, AuthField, LoadingIndicator, PasswordField } from "@/components/auth/AuthForm";
 import { postAuth } from "@/lib/auth/client";
 
-function targetForRole(role: "admin" | "client" | "mozo", next: string | null) {
+type SessionRole = "platform_admin" | "restaurant_owner" | "restaurant_admin" | "restaurant_staff";
+
+function targetForRole(role: SessionRole, next: string | null) {
   if (next?.startsWith("/dashboard")) return next;
-  if (role === "admin") return "/dashboard/admin/overview";
-  if (role === "mozo") return "/dashboard/comanda";
+  if (role === "platform_admin") return "/dashboard/admin/overview";
+  if (role === "restaurant_staff") return "/dashboard/comanda";
   return "/dashboard/app/overview";
 }
 
@@ -27,7 +29,7 @@ export default function LoginFlow() {
     setError("");
     setPending(true);
     try {
-      const result = await postAuth<{ role: "admin" | "client" | "mozo" }>("/api/auth/login", { email, password });
+      const result = await postAuth<{ role: SessionRole }>("/api/auth/login", { email, password });
       if (result.ok) {
         window.location.href = targetForRole(result.data.role, searchParams.get("next"));
         return;

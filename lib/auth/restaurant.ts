@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
+import { isVenueManager, TENANT_ROLES } from "@/lib/auth/permissions";
 
 /**
  * The signed-in user together with every venue they can reach and the active one.
@@ -43,8 +44,11 @@ const sessionContext = cache(async () => {
 
   if (!user || user.sessionVersion !== payload.sessionVersion) return null;
 
+  // An owner reaches their venues by owning them; everyone else reaches
+  // theirs through a StaffMembership. A platform admin has neither and
+  // resolves to an empty list here — they never work inside a tenant.
   const availableRestaurants =
-    user.role === "client"
+    user.role === "restaurant_owner"
       ? ownedRestaurants
       : memberships.map((membership) => membership.restaurant);
   const activeRestaurant =
@@ -55,23 +59,29 @@ const sessionContext = cache(async () => {
   return { user, availableRestaurants, activeRestaurant };
 });
 
+// The full venue dashboard: the owner, and a manager they promoted
+// (`restaurant_admin`). Neither is ever a platform admin — that role resolves
+// to no restaurant at all and is turned away here like any other stranger.
 export const requireClientRestaurant = cache(async () => {
   const ctx = await sessionContext();
-  if (!ctx || ctx.user.role !== "client") redirect("/login");
+  if (!ctx || !isVenueManager(ctx.user.role)) redirect("/login");
 
   return {
     user: ctx.user,
     restaurant: ctx.activeRestaurant,
     restaurants: ctx.availableRestaurants,
+    // Reserved for what only the person who signed up may do — billing
+    // credentials, the plan, deleting the venue.
+    isOwner: ctx.user.role === "restaurant_owner",
   };
 });
 
-// The comanda screen is shared by the owner (role "client") and their waiters
-// (role "mozo"). Resolves the restaurant selected in the current session.
-// `isOwner` lets the UI hide owner-only affordances from a mozo.
+// The comanda screen is shared by everyone who works in the venue: the owner,
+// a manager and the waiters. Resolves the restaurant selected in the current
+// session. `isOwner` lets the UI hide owner-only affordances from the rest.
 export const requireComandaRestaurant = cache(async () => {
   const ctx = await sessionContext();
-  if (!ctx || (ctx.user.role !== "client" && ctx.user.role !== "mozo")) {
+  if (!ctx || !(TENANT_ROLES as readonly string[]).includes(ctx.user.role)) {
     redirect("/login");
   }
 
@@ -79,6 +89,6 @@ export const requireComandaRestaurant = cache(async () => {
     user: ctx.user,
     restaurant: ctx.activeRestaurant,
     restaurants: ctx.availableRestaurants,
-    isOwner: ctx.user.role === "client",
+    isOwner: ctx.user.role === "restaurant_owner",
   };
 });

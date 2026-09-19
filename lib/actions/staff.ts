@@ -61,14 +61,14 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing && existing.role !== "mozo") {
+  if (existing && existing.role !== "restaurant_staff") {
     return { ok: false, error: "Ese correo ya tiene una cuenta con otro rol." };
   }
 
   const staffUser =
     existing ??
     (await prisma.user.create({
-      data: { email, role: "mozo", requiresPasswordSetup: true },
+      data: { email, role: "restaurant_staff", requiresPasswordSetup: true },
     }));
 
   const already = await prisma.staffMembership.findUnique({
@@ -86,7 +86,7 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
     entity: "StaffMembership",
     entityId: staffUser.id,
     restaurantId: restaurant.id,
-    after: { email, role: "mozo" },
+    after: { email, role: "restaurant_staff" },
   });
 
   revalidatePath(EQUIPO_PATH);
@@ -111,7 +111,7 @@ export async function removeStaffMember(membershipId: string): Promise<ActionRes
     entity: "StaffMembership",
     entityId: membership.userId,
     restaurantId: restaurant.id,
-    before: { email: membership.user.email, role: "mozo" },
+    before: { email: membership.user.email, role: "restaurant_staff" },
   });
 
   // If that mozo has no other job and owns nothing, drop the empty account too.
@@ -120,7 +120,7 @@ export async function removeStaffMember(membershipId: string): Promise<ActionRes
     prisma.restaurant.count({ where: { ownerId: membership.userId } }),
     prisma.user.findUnique({ where: { id: membership.userId }, select: { role: true } }),
   ]);
-  if (otherMemberships === 0 && ownedRestaurants === 0 && staffUser?.role === "mozo") {
+  if (otherMemberships === 0 && ownedRestaurants === 0 && staffUser?.role === "restaurant_staff") {
     await prisma.user.delete({ where: { id: membership.userId } }).catch(() => {});
   }
 

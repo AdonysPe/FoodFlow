@@ -5,10 +5,13 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
 import Toast from "@/components/dashboard/Toast";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { isPlatformAdmin } from "@/lib/auth/permissions";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
-  if (!user || user.role !== "admin") redirect("/login");
+  // The gate for every /dashboard/admin page. A tenant that types the URL
+  // lands on the login screen and is told nothing about what is behind it.
+  if (!user || !isPlatformAdmin(user.role)) redirect("/login");
 
   return (
     <MotionProvider>

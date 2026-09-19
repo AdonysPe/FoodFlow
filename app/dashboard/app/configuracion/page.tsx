@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db/prisma";
-import RestaurantCategorySelector from "@/components/dashboard/RestaurantCategorySelector";
 import GlassCard from "@/components/ui/GlassCard";
 import BillingStatusBadge from "@/components/dashboard/BillingStatusBadge";
 import ExportDataButton from "@/components/dashboard/ExportDataButton";
@@ -45,18 +43,6 @@ export default async function SettingsPage() {
   if (!restaurant) return null;
 
   const plan = restaurant.plan as PlanValue;
-  const [categories, previewTable] = await Promise.all([
-    prisma.restaurantCategory.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, description: true, defaultMenuTemplate: true },
-    }),
-    prisma.restaurantTable.findFirst({
-      where: { restaurantId: restaurant.id, active: true },
-      orderBy: { createdAt: "asc" },
-      select: { publicCode: true },
-    }),
-  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -107,8 +93,6 @@ export default async function SettingsPage() {
           <ExportDataButton className="mt-5" />
         </GlassCard>
       </div>
-
-      <RestaurantCategorySelector key={restaurant.id} categories={categories} initialCategoryId={restaurant.categoryId} previewUrl={previewTable?.publicCode ? `/m/${previewTable.publicCode}` : null} />
 
       <GlassCard className="p-5 sm:p-6" hoverLift={false}>
         <p className="text-[12px] font-semibold uppercase tracking-wide text-faint">

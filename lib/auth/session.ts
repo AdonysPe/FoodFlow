@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import type { UserRole } from "@prisma/client";
 
 export const SESSION_COOKIE = "foodflow_session";
 // 7 days. The session JWT carries the role claim, and middleware trusts it for
@@ -12,10 +13,40 @@ const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 export type SessionPayload = {
   sub: string;
   email: string;
-  role: "admin" | "client" | "mozo";
+  role: UserRole;
   sessionVersion: number;
   restaurantId?: string;
 };
+
+/**
+ * Role labels minted before the enum was renamed (admin/client/mozo), mapped
+ * to what they are called now.
+ *
+ * Tokens issued before that deploy are still valid for up to seven days, and
+ * signing everyone out to rename a label would be a worse trade than reading
+ * the old name. Only the ROUTING in middleware depends on this claim; every
+ * data access re-reads `User.role` from the database, which already holds the
+ * new value. Delete this once the last legacy token has expired.
+ */
+const LEGACY_ROLES: Record<string, UserRole> = {
+  admin: "platform_admin",
+  client: "restaurant_owner",
+  mozo: "restaurant_staff",
+};
+
+const CURRENT_ROLES = new Set<string>([
+  "platform_admin",
+  "restaurant_owner",
+  "restaurant_admin",
+  "restaurant_staff",
+]);
+
+/** Whatever the token says, normalized — or null if it is not a role at all. */
+function normalizeRole(claim: unknown): UserRole | null {
+  if (typeof claim !== "string") return null;
+  if (CURRENT_ROLES.has(claim)) return claim as UserRole;
+  return LEGACY_ROLES[claim] ?? null;
+}
 
 function secretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET || process.env.AUTH_SECRET;
@@ -42,10 +73,11 @@ export async function createSessionToken(payload: SessionPayload): Promise<strin
 export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey());
+    const role = normalizeRole(payload.role);
     if (
       !payload.sub ||
       !payload.email ||
-      !payload.role ||
+      !role ||
       typeof payload.sessionVersion !== "number"
     ) {
       return null;
@@ -53,7 +85,7 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
     return {
       sub: payload.sub as string,
       email: payload.email as string,
-      role: payload.role as SessionPayload["role"],
+      role,
       sessionVersion: payload.sessionVersion,
       ...(typeof payload.restaurantId === "string"
         ? { restaurantId: payload.restaurantId }

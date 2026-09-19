@@ -1,6 +1,5 @@
 import TableOrderExperience from "@/components/public/TableOrderExperience";
 import PhysicalCartaView from "@/components/public/PhysicalCartaView";
-import RestaurantCategorySelector from "@/components/dashboard/RestaurantCategorySelector";
 import { resolveMenuTemplate } from "@/lib/menuTemplates";
 
 const DEMOS = {
@@ -46,17 +45,8 @@ const DEMOS = {
   },
 };
 
-const selectorCategories = [
-  ["criolla", "Restaurante criollo", "Restaurantes de comida criolla y tradicional peruana"],
-  ["cevicheria", "Cevichería", "Cevicherías y restaurantes especializados en comida marina"],
-  ["chifa", "Chifa", "Restaurantes de cocina chino-peruana"],
-  ["pizzeria", "Pizzería", "Pizzerías artesanales, tradicionales y contemporáneas"],
-].map(([id, name, description]) => ({ id, name, description, defaultMenuTemplate: id }));
-
 export default async function PreviewCategory({ searchParams }) {
   const { mode, template: requested } = await searchParams;
-  if (mode === "selector") return <div className="mx-auto max-w-4xl p-8"><RestaurantCategorySelector initialCategoryId="criolla" previewUrl={null} categories={selectorCategories} /></div>;
-
   const template = resolveMenuTemplate(null, requested);
   const demo = DEMOS[template];
   const categories = demo.categories.map((name, index) => ({ id: String(index), name }));

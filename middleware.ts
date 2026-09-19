@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
+// Type-only Prisma import inside, so this stays Edge-safe.
+import { isVenueManager, TENANT_ROLES } from "@/lib/auth/permissions";
 import { RESERVED_SLUGS, SLUG_PATTERN } from "@/lib/carta";
 
 // Hosts we own. A subdomain of one of these can name a venue; anything else
@@ -104,7 +106,7 @@ export async function middleware(request: NextRequest) {
     return withUtmCookie(request, NextResponse.redirect(loginUrl), utm);
   }
 
-  if (pathname.startsWith("/dashboard/admin") && session.role !== "admin") {
+  if (pathname.startsWith("/dashboard/admin") && session.role !== "platform_admin") {
     return withUtmCookie(
       request,
       NextResponse.redirect(new URL("/dashboard", request.url)),
@@ -112,11 +114,11 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // The comanda is the one shared screen: owners and their waiters both use it.
+  // The comanda is the one shared screen: everyone who works in the venue uses
+  // it. Only the platform admin, who belongs to no venue, is kept out.
   if (
     pathname.startsWith("/dashboard/comanda") &&
-    session.role !== "client" &&
-    session.role !== "mozo"
+    !(TENANT_ROLES as readonly string[]).includes(session.role)
   ) {
     return withUtmCookie(
       request,
@@ -125,12 +127,16 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  if (pathname.startsWith("/dashboard/app") && session.role !== "client") {
+  // The venue dashboard: the owner and a manager they promoted. A waiter is
+  // sent to the comanda, the platform admin to its own panel.
+  if (pathname.startsWith("/dashboard/app") && !isVenueManager(session.role)) {
     return withUtmCookie(
       request,
       NextResponse.redirect(
         new URL(
-          session.role === "mozo" ? "/dashboard/comanda" : "/dashboard/admin/overview",
+          session.role === "restaurant_staff"
+            ? "/dashboard/comanda"
+            : "/dashboard/admin/overview",
           request.url
         )
       ),
