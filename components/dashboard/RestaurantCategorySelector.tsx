@@ -13,6 +13,13 @@ type CategoryOption = {
   defaultMenuTemplate: string;
 };
 
+function MiniatureMotif({ decoration }: { decoration: string }) {
+  if (decoration === "pacifico") return <><path d="M1 12c7-5 13-5 20 0s13 5 25-1M1 19c7-5 13-5 20 0s13 5 25-1" /><path d="M13 5c4-4 10-4 14 0-4 4-10 4-14 0ZM13 5 9 2v6l4-3Z" /></>;
+  if (decoration === "celosia") return <><path d="M4 2h16v16H4zM8 6h8v8H8zM27 2h16v16H27zM31 6h8v8h-8z" /><path d="M20 10h7" /></>;
+  if (decoration === "trigo") return <><path d="M24 21V2M24 7c-5-1-7-3-8-6 5 0 7 2 8 6Zm0 5c5-1 7-3 8-6-5 0-7 2-8 6Zm0 5c-5-1-7-3-8-6 5 0 7 2 8 6Z" /><path d="M3 20c8-4 13-4 20 0M28 20c7-4 12-4 17 0" /></>;
+  return <><path d="M7 4c9-3 14 1 11 8-2 5-7 8-15 9 4-5 3-12 4-17Z" /><path d="M12 4c2-3 5-4 8-3M24 8c7-3 13-2 20 2" /></>;
+}
+
 function TemplateMiniature({ template }: { template: string }) {
   const theme = menuTemplates[resolveMenuTemplate(null, template)];
   const { background, surface, primary, secondary, cta } = theme.colors;
@@ -25,9 +32,7 @@ function TemplateMiniature({ template }: { template: string }) {
             <span className="mt-2 block font-display text-[18px] font-bold leading-none" style={{ color: primary }}>La carta</span>
           </div>
           <svg width="47" height="22" viewBox="0 0 47 22" fill="none" stroke={secondary} strokeWidth="1.5" opacity="0.6">
-            {theme.decoration === "pacifico"
-              ? <><path d="M1 12c7-5 13-5 20 0s13 5 25-1M1 19c7-5 13-5 20 0s13 5 25-1" /><path d="M13 5c4-4 10-4 14 0-4 4-10 4-14 0ZM13 5 9 2v6l4-3Z" /></>
-              : <><path d="M7 4c9-3 14 1 11 8-2 5-7 8-15 9 4-5 3-12 4-17Z" /><path d="M12 4c2-3 5-4 8-3M24 8c7-3 13-2 20 2" /></>}
+            <MiniatureMotif decoration={theme.decoration} />
           </svg>
         </div>
       </div>
@@ -80,14 +85,20 @@ export default function RestaurantCategorySelector({ categories, initialCategory
         {categories.map((category) => {
           const active = selected === category.id;
           const theme = menuTemplates[resolveMenuTemplate(null, category.defaultMenuTemplate)];
-          return <label key={category.id} className={`cursor-pointer rounded-2xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-accent-400 ${active ? "border-accent-400 bg-accent-400/[0.06]" : "border-fg/10 bg-fg/[0.015] hover:border-fg/25"}`}>
-            <input type="radio" name="restaurantCategory" value={category.id} checked={active} onChange={() => { setSelected(category.id); setNotice(""); }} className="sr-only" />
-            <TemplateMiniature template={category.defaultMenuTemplate} />
-            <span className="mt-3 flex items-start justify-between gap-3">
-              <span><strong className="block text-[14px] text-fg">{category.name}</strong><span className="mt-1 block text-[12px] leading-relaxed text-faint">{theme.description || category.description}</span></span>
-              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[12px] ${active ? "border-accent-400 bg-accent-400 text-white" : "border-fg/30"}`} aria-hidden="true">{active ? "✓" : ""}</span>
-            </span>
-          </label>;
+          return <div key={category.id} className={`rounded-2xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-accent-400 ${active ? "border-accent-400 bg-accent-400/[0.06]" : "border-fg/10 bg-fg/[0.015] hover:border-fg/25"}`}>
+            <label className="block cursor-pointer">
+              <input type="radio" name="restaurantCategory" value={category.id} checked={active} onChange={() => { setSelected(category.id); setNotice(""); }} className="sr-only" />
+              <TemplateMiniature template={category.defaultMenuTemplate} />
+              <span className="mt-3 flex items-start justify-between gap-3">
+                <span><strong className="block text-[14px] text-fg">{category.name}</strong><span className="mt-1 block text-[12px] leading-relaxed text-faint">{category.description}</span></span>
+                <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[12px] ${active ? "border-accent-400 bg-accent-400 text-white" : "border-fg/30"}`} aria-hidden="true">{active ? "✓" : ""}</span>
+              </span>
+            </label>
+            <div className="mt-3 flex items-center justify-between border-t border-fg/10 pt-3">
+              <span className="flex gap-1.5" aria-label="Paleta de colores">{Object.values(theme.colors).slice(0, 5).map((color) => <i key={color} className="h-3.5 w-3.5 rounded-full border border-black/10" style={{ background: color }} />)}</span>
+              <Link href={`/preview-category?template=${theme.id}`} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-fg underline decoration-fg/30 underline-offset-4 hover:decoration-fg">Vista previa ↗</Link>
+            </div>
+          </div>;
         })}
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-3">

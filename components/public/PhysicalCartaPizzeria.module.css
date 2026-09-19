@@ -1,0 +1,23 @@
+.theme.theme {
+  --surround: #e8ddcf;
+  --paper: #f8f1e5;
+  --ink: #28221e;
+  --rule: #b67c55;
+  --diamond: #f2c66d;
+  --eyebrow: #3f6b3a;
+  --title: #8f2d24;
+  --tagline: #756052;
+  --motif: #c94c32;
+  --section: #8f2d24;
+  --flourish: #d6a550;
+  --section-rule: #bd8b65;
+  --price: #c94c32;
+  --description: #756a61;
+  --sold: #8d5144;
+  --photo-border: #e5c99e;
+  --footer-rule: #bf8c69;
+  --page-number: #7a6759;
+  --mobile-rule: #e5d5c3;
+  --photo-radius: 18px 18px 8px 8px;
+  --grain: radial-gradient(ellipse at 12% 8%, rgb(242 198 109 / .12), transparent 25%), radial-gradient(ellipse at 92% 94%, rgb(63 107 58 / .07), transparent 24%), url("/carta/paper-fibers.svg");
+}

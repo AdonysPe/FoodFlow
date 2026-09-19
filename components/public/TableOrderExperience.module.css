@@ -70,6 +70,14 @@
   --step-done-line: #9aae87;
   --step-done-bg: #e3ebdc;
   --paper-texture-opacity: .35;
+  --card-radius: 18px;
+  --control-radius: 10px;
+  --badge-radius: 14px;
+  --photo-height: 158px;
+  --hero-title: var(--aji);
+  --hero-overline: var(--terracotta);
+  --hero-meta: var(--muted);
+  --hero-open: var(--olive);
 }
 .stage {
   position: relative;
@@ -103,19 +111,20 @@
 .heroInner { position: relative; max-width: 1200px; margin: auto; padding: 31px 20px 22px; }
 .heroIdentity { display: flex; align-items: center; gap: 14px; padding-right: 70px; }
 .heroIdentity > div { min-width: 0; }
-.venueBadge { position: relative; display: grid; flex: none; width: 54px; height: 54px; overflow: hidden; place-items: center; border: 1px solid var(--table-line); border-radius: 14px; background: var(--card); color: var(--aji); font-family: var(--font-bricolage), Georgia, serif; font-size: 21px; font-weight: 700; box-shadow: 0 5px 16px -11px var(--sent-shadow); }
+.venueBadge { position: relative; display: grid; flex: none; width: 54px; height: 54px; overflow: hidden; place-items: center; border: 1px solid var(--table-line); border-radius: var(--badge-radius); background: var(--card); color: var(--aji); font-family: var(--font-bricolage), Georgia, serif; font-size: 21px; font-weight: 700; box-shadow: 0 5px 16px -11px var(--sent-shadow); }
 .venueLogo { object-fit: cover; }
 .hero h1 {
   max-width: 100%;
   margin-top: 8px;
   font-family: var(--font-bricolage), Georgia, serif;
-  color: var(--aji);
+  color: var(--hero-title);
   font-size: clamp(34px, 7vw, 58px);
   font-weight: 700;
   line-height: 1.03;
   letter-spacing: -.04em;
 }
 .heroSubtitle { margin-top: 7px; font-family: var(--font-bricolage), Georgia, serif; font-size: 16px; font-style: italic; color: var(--hero-subtitle); }
+.hero .overline { color: var(--hero-overline); }
 .heroPepper {
   position: absolute;
   top: 38px;
@@ -129,8 +138,8 @@
   opacity: .64;
   transform: rotate(-13deg);
 }
-.venueInfo { display: flex; flex-wrap: wrap; gap: 5px 16px; margin-top: 14px; color: var(--muted); font-size: 12px; }
-.venueInfo strong { color: var(--olive); }
+.venueInfo { display: flex; flex-wrap: wrap; gap: 5px 16px; margin-top: 14px; color: var(--hero-meta); font-size: 12px; }
+.venueInfo strong { color: var(--hero-open); }
 .heroMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 17px; margin-top: 23px; }
 .tableTag { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 11px; border: 1px solid var(--table-line); border-radius: 6px; color: var(--table-ink); font-size: 12px; font-weight: 800; }
 .kitchenLive { display: inline-flex; align-items: center; gap: 7px; color: var(--live-ink); font-size: 11.5px; font-weight: 700; }
@@ -162,12 +171,12 @@
   backdrop-filter: blur(10px);
 }
 .categoryNav::-webkit-scrollbar { display: none; }
-.categoryNav button { flex: none; min-height: 42px; padding: 9px 13px; border-radius: 9px; color: var(--nav-ink); font-size: 12.5px; font-weight: 700; white-space: nowrap; transition: background .18s, color .18s; }
+.categoryNav button { flex: none; min-height: 42px; padding: 9px 13px; border-radius: var(--control-radius); color: var(--nav-ink); font-size: 12.5px; font-weight: 700; white-space: nowrap; transition: background .18s, color .18s; }
 .categoryNav button:hover { background: var(--nav-hover); }
 .categoryNav button.activeTab { background: var(--nav-active); color: var(--nav-active-ink); box-shadow: 0 3px 10px rgb(153 70 32 / .13); }
 .cards { display: grid; gap: 14px; }
-.card { min-width: 0; overflow: hidden; border: 1px solid var(--card-line); border-radius: 18px; background: var(--card); box-shadow: 0 6px 22px -18px rgb(74 39 15 / .35); }
-.cardPhoto { position: relative; height: 158px; overflow: hidden; background: var(--photo-bg); }
+.card { min-width: 0; overflow: hidden; border: 1px solid var(--card-line); border-radius: var(--card-radius); background: var(--card); box-shadow: 0 6px 22px -18px rgb(74 39 15 / .35); }
+.cardPhoto { position: relative; height: var(--photo-height); overflow: hidden; background: var(--photo-bg); }
 .foodPhoto { object-fit: cover; }
 .cardSoldOut .foodPhoto { filter: grayscale(.6) saturate(.6); opacity: .74; }
 .noPhoto { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: var(--placeholder-bg); }
@@ -185,7 +194,7 @@
 .prepTime { margin-top: 7px; color: var(--olive); font-size: 11px; font-weight: 700; }
 .cardFoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 13px; }
 .cardFoot strong { color: var(--aji); font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.addButton { min-width: 96px; min-height: 44px; padding: 8px 13px; border: 1px solid var(--add-line); border-radius: 10px; background: var(--add-bg); color: var(--add-ink); font-size: 12.5px; font-weight: 800; }
+.addButton { min-width: 96px; min-height: 44px; padding: 8px 13px; border: 1px solid var(--add-line); border-radius: var(--control-radius); background: var(--add-bg); color: var(--add-ink); font-size: 12.5px; font-weight: 800; }
 .addButton span { margin-left: 5px; font-size: 17px; line-height: 0; }
 .addButton:hover:not(:disabled) { background: var(--add-hover); }
 .addButton:disabled { border-color: var(--add-disabled-line); background: var(--add-disabled-bg); color: var(--add-disabled-ink); }
@@ -215,7 +224,7 @@
 .mobileBar button:disabled, .sendButton:disabled { background: var(--disabled-bg); color: var(--disabled-ink); box-shadow: none; }
 .backdrop { position: fixed; z-index: 40; inset: 0; background: rgb(33 25 18 / .57); }
 .detailBackdrop { position: fixed; z-index: 60; inset: 0; background: rgb(20 34 38 / .65); }
-.detailDialog { position: fixed; z-index: 61; inset: 50% auto auto 50%; width: min(calc(100% - 24px), 560px); max-height: min(calc(100dvh - 24px), 850px); overflow-y: auto; border: 1px solid var(--card-line); border-radius: 20px; background: var(--card); box-shadow: 0 18px 60px rgb(12 30 39 / .3); transform: translate(-50%, -50%); }
+.detailDialog { position: fixed; z-index: 61; inset: 50% auto auto 50%; width: min(calc(100% - 24px), 560px); max-height: min(calc(100dvh - 24px), 850px); overflow-y: auto; border: 1px solid var(--card-line); border-radius: var(--card-radius); background: var(--card); box-shadow: 0 18px 60px rgb(12 30 39 / .3); transform: translate(-50%, -50%); }
 .detailClose { position: absolute; z-index: 2; top: 12px; right: 12px; display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; background: var(--card); color: var(--aji); font-size: 27px; line-height: 1; box-shadow: 0 2px 8px rgb(0 0 0 / .12); }
 .detailPhoto { position: relative; height: clamp(180px, 35vh, 270px); background: var(--photo-bg); }
 .detailBody { padding: 20px; }

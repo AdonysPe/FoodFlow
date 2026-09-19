@@ -6,6 +6,8 @@ import { cartaPrice } from "@/lib/carta";
 import { menuTemplates, resolveMenuTemplate } from "@/lib/menuTemplates";
 import styles from "./PhysicalCartaView.module.css";
 import marineStyles from "./PhysicalCartaCevicheria.module.css";
+import chifaStyles from "./PhysicalCartaChifa.module.css";
+import pizzeriaStyles from "./PhysicalCartaPizzeria.module.css";
 
 const POLL_MS = 30_000;
 const ROWS_PER_SHEET = 7;
@@ -168,9 +170,24 @@ function CoastMotif({ className }) {
   </svg>;
 }
 
+function LatticeMotif({ className }) {
+  return <svg className={className} viewBox="0 0 108 52" fill="none" aria-hidden="true">
+    <path d="M5 5h35v35H5zM13 13h19v19H13zM68 5h35v35H68zM76 13h19v19H76zM40 22h28M23 40v8M85 40v8" />
+  </svg>;
+}
+
+function WheatMotif({ className }) {
+  return <svg className={className} viewBox="0 0 108 52" fill="none" aria-hidden="true">
+    <path d="M54 49V3M54 14C43 12 38 8 37 1c10 1 16 5 17 13Zm0 10c11-2 16-6 17-13-10 1-16 5-17 13Zm0 10c-11-2-16-6-17-13 10 1 16 5 17 13Zm0 10c11-2 16-6 17-13-10 1-16 5-17 13Z" />
+    <path d="M6 47c12-7 24-7 36 0M66 47c12-7 24-7 36 0" />
+  </svg>;
+}
+
 const visualThemes = {
-  criolla: { className: "", Motif: AjiMotif, eyebrow: "Cocina de nuestra tierra" },
-  cevicheria: { className: marineStyles.theme, Motif: CoastMotif, eyebrow: "Cocina de nuestro mar" },
+  criolla: { className: "", Motif: AjiMotif },
+  cevicheria: { className: marineStyles.theme, Motif: CoastMotif },
+  chifa: { className: chifaStyles.theme, Motif: LatticeMotif },
+  pizzeria: { className: pizzeriaStyles.theme, Motif: WheatMotif },
 };
 
 function Dish({ item, featured }) {
@@ -194,7 +211,7 @@ function Dish({ item, featured }) {
 export default function PhysicalCartaView({ initial }) {
   const { venue, categories, items, template } = useLiveCarta(initial.venue.slug, initial);
   const templateKey = resolveMenuTemplate(template);
-  const { className: themeClass, Motif, eyebrow } = visualThemes[templateKey];
+  const { className: themeClass, Motif } = visualThemes[templateKey];
   const sheets = useMemo(() => paginate(menuSections(categories, items)), [categories, items]);
 
   return (
@@ -207,7 +224,6 @@ export default function PhysicalCartaView({ initial }) {
             <div className={styles.inner}>
               <header className={`${styles.header} ${pageIndex > 0 ? styles.continuation : ""}`}>
                 <div className={styles.topRule} aria-hidden="true"><span /></div>
-                <p className={styles.eyebrow}>{eyebrow}</p>
                 <h1>{venue.name}</h1>
                 <p className={styles.tagline}>{venue.tagline || menuTemplates[templateKey].subtitle}</p>
                 <Motif className={styles.headerMotif} />

@@ -19,6 +19,7 @@
   --page-number: #8a664e;
   --mobile-rule: #d7c5a8;
   --grain: radial-gradient(ellipse at 9% 7%, rgb(169 102 53 / .10), transparent 27%), radial-gradient(ellipse at 96% 95%, rgb(119 89 52 / .09), transparent 25%), repeating-linear-gradient(93deg, transparent 0 17px, rgb(111 87 49 / .025) 18px, transparent 19px 43px), url("/carta/paper-fibers.svg");
+  --photo-radius: 42% 58% 46% 54% / 13% 17% 14% 15%;
   min-height: 100vh;
   padding: 32px 16px 48px;
   background: var(--surround);
@@ -82,7 +83,7 @@
   color: var(--eyebrow);
 }
 .header h1 {
-  margin-top: 2mm;
+  margin-top: 8mm;
   font-family: var(--font-bricolage), Georgia, serif;
   font-size: clamp(36px, 5vw, 49px);
   font-weight: 700;
@@ -109,7 +110,7 @@
   opacity: .75;
 }
 .continuation { padding-bottom: 6mm; }
-.continuation .eyebrow { margin-top: 5mm; }
+.continuation h1 { margin-top: 5mm; }
 .continuation h1 { font-size: 35px; }
 .continuation .headerMotif { display: none; }
 
@@ -139,7 +140,7 @@
   margin-bottom: 2.3mm;
   overflow: hidden;
   border: 2px solid var(--photo-border);
-  border-radius: 42% 58% 46% 54% / 13% 17% 14% 15%;
+  border-radius: var(--photo-radius);
   box-shadow: 0 3px 9px rgb(71 42 25 / .11);
 }
 .photo { object-fit: cover; }

@@ -9,11 +9,15 @@ import { isOpenAt, todayLabel } from "@/lib/carta";
 import { menuTemplates, resolveMenuTemplate } from "@/lib/menuTemplates";
 import styles from "./TableOrderExperience.module.css";
 import cevicheriaStyles from "./TableOrderCevicheria.module.css";
+import chifaStyles from "./TableOrderChifa.module.css";
+import pizzeriaStyles from "./TableOrderPizzeria.module.css";
 
 const OTHERS = "__otros__";
 const POLL_MS = 8_000;
 const SUGGESTIONS = [...new Set([...NOTE_CHIPS, "poco picante", "sin cubiertos"])];
 const SEAFOOD_SUGGESTIONS = [...new Set([...SUGGESTIONS, "sin cancha", "limón adicional"])];
+const CHIFA_SUGGESTIONS = [...new Set([...SUGGESTIONS, "sin cebolla china", "salsa aparte"])];
+const PIZZA_SUGGESTIONS = [...new Set([...SUGGESTIONS, "sin orégano", "bien cocida"])];
 const ERRORS = {
   invalid: "Revisa tu pedido y vuelve a intentar.",
   unknown_table: "Este código de mesa ya no es válido. Llama a un mozo.",
@@ -37,20 +41,46 @@ function CoastMotif({ className = "" }) {
   </svg>;
 }
 
+function LatticeMotif({ className = "" }) {
+  return <svg className={className} viewBox="0 0 100 58" fill="none" aria-hidden="true">
+    <path d="M8 7h34v34H8zM16 15h18v18H16zM58 7h34v34H58zM66 15h18v18H66zM42 24h16M25 41v10M75 41v10" />
+  </svg>;
+}
+
+function WheatMotif({ className = "" }) {
+  return <svg className={className} viewBox="0 0 100 58" fill="none" aria-hidden="true">
+    <path d="M49 54V5M49 16c-11-2-16-7-17-14 10 1 16 5 17 14Zm0 10c11-2 16-7 17-14-10 1-16 5-17 14Zm0 10c-11-2-16-7-17-14 10 1 16 5 17 14Zm0 10c11-2 16-7 17-14-10 1-16 5-17 14Z" />
+    <path d="M11 49c11-7 21-7 32 0M57 49c11-7 21-7 32 0" />
+  </svg>;
+}
+
 const visualThemes = {
   criolla: { className: "", Motif: Pepper },
   cevicheria: { className: cevicheriaStyles.theme, Motif: CoastMotif },
+  chifa: { className: chifaStyles.theme, Motif: LatticeMotif },
+  pizzeria: { className: pizzeriaStyles.theme, Motif: WheatMotif },
 };
 
 function initialsFor(name) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
 }
 
-function seafoodLabel(item) {
+function itemLabel(template, item) {
   const detail = `${item.name} ${item.description ?? ""}`.toLocaleLowerCase("es-PE");
-  if (/pesca del d[ií]a/.test(detail)) return "Pesca del día";
   if (/picante|rocoto/.test(detail)) return "Picante";
-  if (/^ceviche cl[aá]sico\b/.test(item.name.toLocaleLowerCase("es-PE"))) return "Recomendado";
+  if (template === "cevicheria") {
+    if (/pesca del d[ií]a/.test(detail)) return "Pesca del día";
+    if (/^ceviche cl[aá]sico\b/.test(item.name.toLocaleLowerCase("es-PE"))) return "Recomendado";
+  }
+  if (template === "chifa") {
+    if (/especial|tipakay|kam lu/.test(detail)) return "Especial de la casa";
+    if (/chaufa|aeropuerto/.test(detail)) return "Más pedido";
+  }
+  if (template === "pizzeria") {
+    if (/artesanal|masa madre/.test(detail)) return "Artesanal";
+    if (/vegetarian|margarita/.test(detail)) return "Vegetariana";
+    if (/especial de la casa|pepperoni/.test(detail)) return "Más pedida";
+  }
   return null;
 }
 
@@ -132,7 +162,7 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
   const hasUnavailable = lines.some(({ item }) => !item.available);
   return <div className={styles.cartContent}>
     <div className={styles.cartHeading}>
-      <div><p className={styles.overline}>TU MESA</p><h2 id={mobile ? "mobile-cart-title" : "desktop-cart-title"}>Mi pedido</h2></div>
+      <h2 id={mobile ? "mobile-cart-title" : "desktop-cart-title"}>Mi pedido</h2>
       {mobile && <button type="button" className={styles.closeCart} onClick={onClose} aria-label="Cerrar pedido">×</button>}
     </div>
     {lines.length === 0 ? <p className={styles.emptyCart}>Aún no agregaste platos. Elige algo rico de la carta.</p> : <ul className={styles.cartLines}>
@@ -168,7 +198,7 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
 function Sent({ sent, table, status, onAgain, themeClass, Motif }) {
   const step = status === "ready" || status === "delivered" ? 2 : status === "preparing" ? 1 : 0;
   return <div className={`${styles.sentScreen} ${themeClass}`}><div className={styles.sentPaper}>
-    <Motif className={styles.sentPepper} /><p className={styles.overline}>DIRECTO DE TU MESA A COCINA</p>
+    <Motif className={styles.sentPepper} />
     <h1>¡Pedido enviado!</h1>
     <p>{sent.round > 1 ? `Ronda ${sent.round} · ` : ""}{table.name} · Total de la mesa {formatCurrency(sent.total)}</p>
     <ol className={styles.steps}>{["Pedido recibido", "En preparación", "Listo para servir"].map((label, index) => <li key={label} className={index <= step ? styles.stepDone : ""}><span>{index < step ? "✓" : index + 1}</span>{label}</li>)}</ol>
@@ -322,7 +352,7 @@ export default function TableOrderExperience({ code, initial, template }) {
     return <Sent sent={sent} table={table} status={status} themeClass={themeClass} Motif={Motif} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
   }
   const zone = table.zone ? (ZONE_LABELS_ES[table.zone] ?? table.zone) : null;
-  const suggestions = templateKey === "cevicheria" ? SEAFOOD_SUGGESTIONS : SUGGESTIONS;
+  const suggestions = templateKey === "cevicheria" ? SEAFOOD_SUGGESTIONS : templateKey === "chifa" ? CHIFA_SUGGESTIONS : templateKey === "pizzeria" ? PIZZA_SUGGESTIONS : SUGGESTIONS;
   const cartProps = { cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, suggestions, tableName: table.name };
   const open = venue.hours && now ? isOpenAt(venue.hours, now) : null;
   return <div className={`${styles.stage} ${count > 0 ? styles.hasCart : ""} ${themeClass}`}>
@@ -330,7 +360,7 @@ export default function TableOrderExperience({ code, initial, template }) {
     <header className={styles.hero}><div className={styles.heroInner}>
       <div className={styles.heroIdentity}>
         <span className={styles.venueBadge}>{venue.logoUrl ? <Image src={venue.logoUrl} alt="" fill sizes="56px" className={styles.venueLogo} /> : initialsFor(restaurantName)}</span>
-        <div><p className={styles.overline}>CARTA DE LA CASA</p><h1>{restaurantName}</h1><p className={styles.heroSubtitle}>{venue.tagline || theme.subtitle}</p></div>
+        <div><h1>{restaurantName}</h1><p className={styles.heroSubtitle}>{venue.tagline || theme.subtitle}</p></div>
       </div>
       <Motif className={styles.heroPepper} />
       {(venue.address || venue.hours) && <div className={styles.venueInfo}>
@@ -345,7 +375,7 @@ export default function TableOrderExperience({ code, initial, template }) {
     <div className={styles.layout}>
       <div className={styles.menuColumn}>
         <PreviousOrder openTab={openTab} />
-        <div className={styles.menuIntro}><div><p className={styles.overline}>HECHA PARA COMPARTIR</p><h2>{openTab ? "Elige otra ronda" : "Explora la carta"}</h2></div><span>{items.length} opciones</span></div>
+        <div className={styles.menuIntro}><h2>{openTab ? "Elige otra ronda" : "Explora la carta"}</h2><span>{items.length} opciones</span></div>
         <label className={styles.searchLabel} htmlFor="table-menu-search">Buscar platos<input id="table-menu-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Busca un plato o ingrediente" /></label>
         {items.length > 0 && items.every((item) => !item.available) && <p className={styles.unavailableNotice}>Por ahora no hay platos disponibles. Consulta al personal del local.</p>}
         <nav className={styles.categoryNav} aria-label="Categorías de la carta">{tabs.map((tab) => <button key={tab.id} type="button" aria-current={!search && activeTab === tab.id ? "page" : undefined} className={!search && activeTab === tab.id ? styles.activeTab : ""} onClick={() => { setActiveTab(tab.id); setSearch(""); }}>{tab.name}</button>)}</nav>
@@ -353,7 +383,7 @@ export default function TableOrderExperience({ code, initial, template }) {
           {shown.length === 0 && <p className={styles.emptyCategory}>{search ? "No encontramos platos con esa búsqueda." : "No hay platos en esta categoría por ahora."}</p>}
           {shown.map((item) => {
             const qty = cart[item.id]?.qty ?? 0;
-            const label = templateKey === "cevicheria" && item.available ? seafoodLabel(item) : null;
+            const label = item.available ? itemLabel(templateKey, item) : null;
             return <article key={item.id} className={`${styles.card} ${!item.available ? styles.cardSoldOut : ""}`}>
               <div className={styles.cardPhoto}>
                 {item.photoUrl ? <Image src={item.photoUrl} alt={item.name} fill sizes="(min-width: 1000px) 350px, (min-width: 640px) 45vw, 90vw" className={styles.foodPhoto} /> : <div className={styles.noPhoto}><Motif className={styles.placeholderPepper} /></div>}
