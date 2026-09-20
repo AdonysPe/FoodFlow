@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_ORDERING, deliveryQuote, onlineOrderSchema, orderingAvailability, orderingSettingsSchema } from "../lib/orderingWebsite";
+import { DEFAULT_ORDERING, deliveryQuote, matchZoneByDistrict, onlineOrderSchema, orderingAvailability, orderingSettingsSchema } from "../lib/orderingWebsite";
 import { planAllows } from "../lib/plans";
-import { orderOriginLabel } from "../lib/orderMeta";
+import { deliveryMapLink, orderOriginLabel } from "../lib/orderMeta";
 import { buildReceipt, RECEIPT_DEFAULTS } from "../lib/receipt";
 
 const mocks = vi.hoisted(() => ({
@@ -137,6 +137,52 @@ describe("creación en la cola de pedidos existente", () => {
     mocks.order.findFirst.mockResolvedValue({ id: "old", items: [], total: 10, roundNumber: 1 });
     mocks.order.update.mockResolvedValue({ total: 34.7 });
     expect(await submitTableOrder({ code: "ABCDEF1234", lines: input.lines })).toMatchObject({ ok: true, round: 2, total: 34.7 });
+  });
+});
+
+describe("ubicación de entrega", () => {
+  const zones = [zone, { ...zone, id: "b0a4a3e6-0000-4000-8000-000000000001", name: "San Juan de Lurigancho", fee: 9, minimum: 0, available: true },
+    { ...zone, id: "b0a4a3e6-0000-4000-8000-000000000002", name: "Surco", fee: 8, minimum: 0, available: false }];
+  it("empareja el distrito de Google con la zona configurada, sin tildes ni mayúsculas", () => {
+    expect(matchZoneByDistrict(zones, "MIRAFLORES")?.id).toBe(zone.id);
+    expect(matchZoneByDistrict(zones, "San Juan de Lurigáncho")?.id).toBe(zones[1].id);
+    // Lo que devuelve el geocoder no siempre es solo el distrito.
+    expect(matchZoneByDistrict(zones, "Miraflores, Lima")?.id).toBe(zone.id);
+  });
+  it("no inventa cobertura: zona apagada, distrito ajeno o vacío quedan sin zona", () => {
+    expect(matchZoneByDistrict(zones, "Surco")).toBeNull();
+    expect(matchZoneByDistrict(zones, "Chiclayo")).toBeNull();
+    expect(matchZoneByDistrict(zones, "")).toBeNull();
+  });
+  it("acepta el pin solo dentro del Perú y siempre como par completo", () => {
+    expect(onlineOrderSchema.safeParse({ ...input, latitude: -12.12, longitude: -77.03 }).success).toBe(true);
+    expect(onlineOrderSchema.safeParse({ ...input, latitude: 40.7, longitude: -74 }).success).toBe(false);
+    expect(onlineOrderSchema.safeParse({ ...input, latitude: -12.12 }).success).toBe(false);
+    // Sin mapa el pedido sigue siendo válido: la dirección escrita basta.
+    expect(onlineOrderSchema.safeParse(input).success).toBe(true);
+  });
+  it("guarda el pin del delivery y lo descarta en recojo", async () => {
+    await submitOnlineOrder({ ...input, latitude: -12.1211, longitude: -77.0296, placeId: "ChIJ_place" });
+    expect(mocks.order.create.mock.calls[0][0].data).toMatchObject({ deliveryLatitude: -12.1211, deliveryLongitude: -77.0296, deliveryPlaceId: "ChIJ_place" });
+    vi.clearAllMocks();
+    mocks.transaction.mockImplementation(async fn => fn(mocks));
+    mocks.restaurant.findUnique.mockResolvedValue(venue);
+    mocks.menuItem.findMany.mockResolvedValue([{ id: "dish", name: "Plato", price: 12.35, available: true, category: { active: true } }]);
+    mocks.order.findUnique.mockResolvedValue(null);
+    mocks.rateLimit.mockResolvedValue({ ok: true });
+    await submitOnlineOrder({ ...input, channel: "pickup", address: "", zoneId: "", reference: "", latitude: -12.1211, longitude: -77.0296, placeId: "ChIJ_place" });
+    expect(mocks.order.create.mock.calls[0][0].data).toMatchObject({ deliveryLatitude: null, deliveryLongitude: null, deliveryPlaceId: null });
+  });
+  it("la cobertura la decide la zona, nunca las coordenadas enviadas", async () => {
+    expect((await submitOnlineOrder({ ...input, zoneId: "ajena", latitude: -12.1211, longitude: -77.0296 })).ok).toBe(false);
+    expect(mocks.order.create).not.toHaveBeenCalled();
+  });
+  it("abre el mapa por coordenadas y, si no las hay, por dirección", () => {
+    expect(deliveryMapLink({ deliveryLatitude: -12.12, deliveryLongitude: -77.03, fulfillmentAddress: "Av. Lima 1", deliveryZone: "Miraflores" }))
+      .toBe("https://www.google.com/maps/search/?api=1&query=-12.12,-77.03");
+    expect(deliveryMapLink({ deliveryLatitude: null, deliveryLongitude: null, fulfillmentAddress: "Av. Lima 1", deliveryZone: "Miraflores" }))
+      .toBe("https://www.google.com/maps/search/?api=1&query=Av.%20Lima%201%2C%20Miraflores%2C%20Per%C3%BA");
+    expect(deliveryMapLink({ deliveryLatitude: null, deliveryLongitude: null, fulfillmentAddress: null, deliveryZone: null })).toBeNull();
   });
 });
 

@@ -24,3 +24,20 @@ export function nextStatus(status: string): OrderStatusValue | null {
   if (idx === -1 || idx === STATUS_FLOW.length - 1) return null;
   return STATUS_FLOW[idx + 1];
 }
+
+/**
+ * Where to send whoever is taking the order out. Coordinates win when the
+ * diner dropped a pin; otherwise the typed address still opens a search, so
+ * an order placed while Maps was down is not a dead end for the rider.
+ */
+export function deliveryMapLink(order: {
+  deliveryLatitude?: number | null;
+  deliveryLongitude?: number | null;
+  fulfillmentAddress?: string | null;
+  deliveryZone?: string | null;
+}): string | null {
+  const { deliveryLatitude: lat, deliveryLongitude: lng } = order;
+  if (lat != null && lng != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const query = [order.fulfillmentAddress, order.deliveryZone, "Perú"].filter(Boolean).join(", ");
+  return order.fulfillmentAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null;
+}

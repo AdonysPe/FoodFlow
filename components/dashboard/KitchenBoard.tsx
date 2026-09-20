@@ -6,6 +6,7 @@ import { getKitchenOrders, updateOrderStatus, type KitchenOrder } from "@/lib/ac
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { orderOriginLabel, type OrderStatusValue } from "@/lib/orderMeta";
 import { ZONE_LABELS_ES } from "@/lib/comandaMeta";
+import DeliveryDetails from "@/components/dashboard/DeliveryDetails";
 import { formatCurrency, formatDurationMs } from "@/lib/format";
 import { EASE } from "@/lib/motion";
 
@@ -242,7 +243,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                           </span>
                         </div>
 
-                        {order.source === "online_store" && <div className="mt-3 text-xs leading-relaxed text-muted"><p>{order.customerPhone}</p><p>{order.fulfillmentAddress}{order.deliveryZone ? ` · ${order.deliveryZone}` : ""}</p>{order.deliveryReference && <p>Referencia: {order.deliveryReference}</p>}{order.customerNotes && <p className="font-semibold text-accent-ink">{order.customerNotes}</p>}</div>}
+                        {order.source === "online_store" && <DeliveryDetails order={order} className="mt-3" highlightNotes />}
                         <OrderLines items={order.items} />
 
                         {/* the small print a chef never needs mid-service */}

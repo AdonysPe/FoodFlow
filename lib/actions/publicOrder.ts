@@ -192,6 +192,11 @@ export async function submitOnlineOrder(input: OnlineOrderInput): Promise<{ ok: 
             customerName: data.customerName, customerPhone: data.customerPhone,
             fulfillmentAddress: data.channel === "delivery" ? data.address : restaurant.carta.address,
             deliveryZone: quote.zone?.name ?? null, deliveryReference: data.channel === "delivery" ? data.reference : null,
+            // The pin rides along so the kitchen can hand the rider a map link.
+            // Coverage was already decided by quote() from the zone the diner
+            // picked — coordinates never get a vote on it.
+            deliveryLatitude: data.latitude ?? null, deliveryLongitude: data.longitude ?? null,
+            deliveryPlaceId: data.placeId || null,
             customerNotes: data.notes || null, deliveryFee: quote.fee,
             estimatedMinutes: data.channel === "delivery" ? settings.deliveryMinutes : settings.pickupMinutes,
             items: priced.items, total: quote.total, paymentMethod: data.paymentMethod,

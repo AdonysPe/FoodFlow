@@ -154,6 +154,8 @@ export type KitchenOrder = {
   fulfillmentAddress: string | null;
   deliveryZone: string | null;
   deliveryReference: string | null;
+  deliveryLatitude: number | null;
+  deliveryLongitude: number | null;
   customerNotes: string | null;
   customerName: string;
   tableName: string | null;
@@ -192,6 +194,8 @@ export async function getKitchenOrders(): Promise<KitchenOrder[]> {
     fulfillmentAddress: o.fulfillmentAddress,
     deliveryZone: o.deliveryZone,
     deliveryReference: o.deliveryReference,
+    deliveryLatitude: o.deliveryLatitude,
+    deliveryLongitude: o.deliveryLongitude,
     customerNotes: o.customerNotes,
     customerName: o.customerName,
     tableName: o.table?.name ?? null,

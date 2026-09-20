@@ -62,6 +62,8 @@ export default async function OrdersPage({
     fulfillmentAddress: o.fulfillmentAddress,
     deliveryZone: o.deliveryZone,
     deliveryReference: o.deliveryReference,
+    deliveryLatitude: o.deliveryLatitude,
+    deliveryLongitude: o.deliveryLongitude,
     customerNotes: o.customerNotes,
     deliveryFee: o.deliveryFee,
     createdAt: o.createdAt.toISOString(),

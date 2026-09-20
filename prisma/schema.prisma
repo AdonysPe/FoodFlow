@@ -461,6 +461,14 @@ model Order {
   fulfillmentAddress String?
   deliveryZone   String?
   deliveryReference String?
+  // Where the diner dropped the pin. Advisory only: they help the rider find
+  // the door, they never decide coverage — the zone the restaurant configured
+  // does, and the server re-checks it on every order.
+  deliveryLatitude  Float?
+  deliveryLongitude Float?
+  // Google Places id for the chosen address, when the picker could resolve
+  // one. Null for a hand-typed address or when Maps failed to load.
+  deliveryPlaceId   String?
   customerNotes  String?
   deliveryFee    Float            @default(0)
   estimatedMinutes Int?

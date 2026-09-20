@@ -8,6 +8,7 @@ import type { TillBillingState } from "@/lib/db/billing";
 import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import StatusPill from "@/components/dashboard/StatusPill";
+import DeliveryDetails from "@/components/dashboard/DeliveryDetails";
 import { IconPrinter } from "@/components/ui/Icons";
 import { updateOrderStatus } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
@@ -29,6 +30,8 @@ export type OrderRow = {
   fulfillmentAddress: string | null;
   deliveryZone: string | null;
   deliveryReference: string | null;
+  deliveryLatitude: number | null;
+  deliveryLongitude: number | null;
   customerNotes: string | null;
   deliveryFee: number;
   createdAt: string;
@@ -126,7 +129,7 @@ export default function OrdersTable({ orders, venueName, receiptSettings, billin
                     <p className="text-[12px] text-faint">
                       {orderOriginLabel(order.source, order.channel)} · {order.createdAtLabel}
                     </p>
-                    {order.source === "online_store" && <div className="mt-2 max-w-xs text-xs leading-relaxed text-muted"><p>{order.customerPhone}</p><p>{order.fulfillmentAddress}{order.deliveryZone ? ` · ${order.deliveryZone}` : ""}</p>{order.deliveryReference && <p>Referencia: {order.deliveryReference}</p>}{order.customerNotes && <p>{order.customerNotes}</p>}{order.paymentMethod && <p>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</p>}</div>}
+                    {order.source === "online_store" && <DeliveryDetails order={order} className="mt-2 max-w-xs" />}
                   </td>
                   <td className="max-w-[220px] px-5 py-3.5 text-muted">
                     {order.items.map((it) => `${it.quantity}× ${it.name}`).join(", ")}

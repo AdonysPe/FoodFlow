@@ -227,7 +227,9 @@ export default function TableOrderExperience({ code, initial, template = undefin
   const [cartLoaded, setCartLoaded] = useState(false);
   const submitting = useRef(false);
   const attemptRef = useRef(null);
-  const [checkoutValue, setCheckoutValue] = useState({ channel: "", customerName: "", customerPhone: "", address: "", zoneId: "", reference: "", notes: "", paymentMethod: "" });
+  // `district`, `placeId` and `locationConfirmed` only steer the address step;
+  // the server reads the zone, never the district the browser detected.
+  const [checkoutValue, setCheckoutValue] = useState({ channel: "", customerName: "", customerPhone: "", address: "", district: "", zoneId: "", reference: "", notes: "", paymentMethod: "", latitude: null, longitude: null, placeId: "", locationConfirmed: false });
   useEffect(() => {
     if (!remote || preview) return;
     try {

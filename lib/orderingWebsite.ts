@@ -55,17 +55,49 @@ export function orderingAvailability(settings: OrderingSettings, generalHours: u
   return { open: true, reason: "Abierto" };
 }
 
+// Lima Metropolitana. The map opens here and the diner pans from there, so a
+// fresh checkout never starts on the middle of the Atlantic.
+export const LIMA_CENTER = { lat: -12.0464, lng: -77.0428 } as const;
+export const LIMA_ZOOM = 12;
+// Rough bounding box of Peru. Every venue operates here, so a pin outside it
+// is a bug or a forged payload, never a customer — and the pin is advisory
+// anyway, so dropping it costs the order nothing.
+const inPeru = (lat: number, lng: number) => lat >= -18.6 && lat <= -0.01 && lng >= -81.5 && lng <= -68.5;
+
+/// Ties whatever Google called the district to a zone the restaurant actually
+/// serves. Accent- and case-insensitive because "Ate Vitarte", "ate vitarte"
+/// and "Áte" are the same place to everyone except a string comparison.
+const foldName = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+export function matchZoneByDistrict<T extends { name: string; available: boolean }>(zones: T[], district: string): T | null {
+  const wanted = foldName(district ?? "");
+  if (!wanted) return null;
+  const open = zones.filter(zone => zone.available);
+  return open.find(zone => foldName(zone.name) === wanted)
+    // "San Isidro, Lima" from the geocoder still has to find the "San Isidro"
+    // zone, but never let a one-letter zone swallow everything.
+    ?? open.find(zone => foldName(zone.name).length >= 4 && (wanted.includes(foldName(zone.name)) || foldName(zone.name).includes(wanted)))
+    ?? null;
+}
+
 export const onlineOrderSchema = z.object({
   slug: z.string().min(1).max(40), checkoutKey: z.string().uuid(),
   channel: z.enum(["delivery", "pickup"]),
   customerName: cleanText(80).pipe(z.string().min(2, "Ingresa tu nombre.")),
   customerPhone: z.string().trim().regex(/^\+?[0-9 ()-]{7,20}$/, "Ingresa un teléfono válido."),
   address: cleanText(200), zoneId: z.string().max(40), reference: cleanText(160), notes: cleanText(300),
+  // Where the pin ended up, when the diner used the map. Optional on purpose:
+  // Maps can fail to load and the hand-typed address still has to go through.
+  latitude: z.number().finite().optional().nullable(),
+  longitude: z.number().finite().optional().nullable(),
+  placeId: z.string().trim().max(300).optional().nullable(),
   paymentMethod: z.enum(ONLINE_PAYMENT_METHODS),
   // Only detects a changed quote. The stored amount always comes from the catalog.
   expectedTotal: z.number().finite().nonnegative().optional(),
   lines: z.array(z.object({ menuItemId: z.string().min(1).max(100), quantity: z.number().int().min(1).max(20), note: cleanText(140).optional() }).strict()).min(1).max(20),
-}).refine(v => v.channel !== "delivery" || (v.address.length >= 5 && v.zoneId.length > 0), "Indica tu dirección y una zona atendida.");
+}).refine(v => v.channel !== "delivery" || (v.address.length >= 5 && v.zoneId.length > 0), "Indica tu dirección y una zona atendida.")
+  .refine(v => (v.latitude == null) === (v.longitude == null), "La ubicación del mapa está incompleta. Vuelve a confirmarla.")
+  .refine(v => v.latitude == null || inPeru(v.latitude, v.longitude!), "Esa ubicación está fuera del Perú.")
+  .transform(v => v.channel === "delivery" ? v : { ...v, latitude: null, longitude: null, placeId: null });
 export type OnlineOrderInput = z.input<typeof onlineOrderSchema>;
 
 export function deliveryQuote(settings: OrderingSettings, channel: "delivery" | "pickup", zoneId: string, subtotal: number) {
