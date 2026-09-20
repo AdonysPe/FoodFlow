@@ -452,6 +452,18 @@ model Order {
   items          Json
   total          Float
   channel        OrderChannel     @default(dine_in)
+  // Null preserves the origin of existing orders; fulfillment reuses channel.
+  source         String?
+  publicToken    String?          @unique
+  checkoutKey    String?          @unique
+  checkoutHash   String?
+  customerPhone  String?
+  fulfillmentAddress String?
+  deliveryZone   String?
+  deliveryReference String?
+  customerNotes  String?
+  deliveryFee    Float            @default(0)
+  estimatedMinutes Int?
   status         OrderStatus      @default(pending)
   // Incremented each time a server sends another round of items to an
   // already-open order for the same table, instead of opening a new order.
@@ -828,6 +840,8 @@ model CartaSettings {
   /// `[{ "day": 0, "closed": true }, { "day": 1, "open": "12:00", "close": "23:00" }]`.
   /// Shape validated in lib/carta.ts, not by Postgres.
   hours Json?
+  // Own ordering channel only. Validated by lib/orderingWebsite.ts.
+  ordering Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -20,6 +20,7 @@ export const FEATURES = [
   "customers",
   "staff",
   "analytics",
+  "own_ordering_website",
 ] as const;
 export type FeatureValue = (typeof FEATURES)[number];
 
@@ -55,7 +56,7 @@ const SERVICIO_FEATURES: FeatureValue[] = [
   "staff",
 ];
 
-const NEGOCIO_FEATURES: FeatureValue[] = [...SERVICIO_FEATURES, "analytics"];
+const NEGOCIO_FEATURES: FeatureValue[] = [...SERVICIO_FEATURES, "analytics", "own_ordering_website"];
 
 export const PLAN_FEATURES: Record<PlanValue, FeatureValue[]> = {
   carta: CARTA_FEATURES,
@@ -95,6 +96,7 @@ export const PLAN_SUMMARIES: Record<PlanValue, string> = {
 };
 
 export const FEATURE_LABELS: Record<FeatureValue, string> = {
+  own_ordering_website: "Web de pedidos",
   overview: "Resumen",
   menu: "Menú",
   tables: "Mesas",
@@ -108,6 +110,7 @@ export const FEATURE_LABELS: Record<FeatureValue, string> = {
 
 // Why each locked module is worth the upgrade — shown on the upsell screen.
 export const FEATURE_PITCHES: Record<FeatureValue, string> = {
+  own_ordering_website: "Tu propia web para recibir delivery y recojo con tu menú y tu cocina, sin comisión por pedido.",
   overview: "Las ventas y los pedidos del día de un vistazo.",
   menu: "Tu carta completa: categorías, precios y disponibilidad.",
   tables:

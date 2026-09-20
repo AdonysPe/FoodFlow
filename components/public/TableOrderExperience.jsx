@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { submitTableOrder } from "@/lib/actions/publicOrder";
+import { submitTableOrder, submitOnlineOrder } from "@/lib/actions/publicOrder";
+import OnlineCheckout from "./OnlineCheckout";
+import { orderingAvailability, peruWallTime } from "@/lib/orderingWebsite";
 import { NOTE_CHIPS, ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency } from "@/lib/format";
 import { isOpenAt, todayLabel } from "@/lib/carta";
@@ -84,22 +86,27 @@ function itemLabel(template, item) {
   return null;
 }
 
-function useTableState(code, initial) {
+function useTableState(code, initial, remote, preview) {
   const [state, setState] = useState(initial);
   const [online, setOnline] = useState(true);
   const latestRequest = useRef(0);
   const refresh = useCallback(async () => {
+    if (preview) return;
     const request = ++latestRequest.current;
     try {
-      const response = await fetch(`/api/m/${code}/state`, { cache: "no-store" });
-      if (!response.ok) throw new Error("state unavailable");
+      const response = await fetch(remote ? `/api/pedido/${code}` : `/api/m/${code}/state`, { cache: "no-store" });
+      if (!response.ok) {
+        if (remote && response.status === 404) setState(previous => ({ ...previous, ordering: { ...previous.ordering, active: false } }));
+        throw new Error("state unavailable");
+      }
       const next = await response.json();
       if (request !== latestRequest.current) return;
       setState(next);
       setOnline(true);
     } catch { if (request === latestRequest.current) setOnline(false); }
-  }, [code]);
+  }, [code, remote, preview]);
   useEffect(() => {
+    if (preview) return;
     const updateWhenVisible = () => { if (document.visibilityState === "visible") void refresh(); };
     const timer = window.setInterval(updateWhenVisible, POLL_MS);
     document.addEventListener("visibilitychange", updateWhenVisible);
@@ -109,7 +116,7 @@ function useTableState(code, initial) {
       document.removeEventListener("visibilitychange", updateWhenVisible);
       window.removeEventListener("focus", updateWhenVisible);
     };
-  }, [refresh]);
+  }, [refresh, preview]);
   return { state, online, refresh };
 }
 
@@ -157,7 +164,7 @@ function PreviousOrder({ openTab }) {
   </section>;
 }
 
-function CartContent({ cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, onClose, mobile, suggestions, tableName }) {
+function CartContent({ cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, onClose, mobile, suggestions, tableName, checkout }) {
   const lines = Object.entries(cart).map(([id, line]) => ({ item: itemById.get(id), ...line })).filter(({ item }) => item);
   const hasUnavailable = lines.some(({ item }) => !item.available);
   return <div className={styles.cartContent}>
@@ -184,6 +191,7 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
       })}
     </ul>}
     <div className={styles.cartBottom}>
+      {checkout ? <OnlineCheckout {...checkout} subtotal={total} count={count} isPending={isPending || hasUnavailable} error={error} send={send} mobile={mobile} /> : <>
       <p className={styles.cartTable}>{tableName} · Pedido desde QR</p>
       {!openTab && count > 0 && <label className={styles.nameLabel}>Nombre para la cuenta <span>(opcional)</span><input value={customerName} onChange={(event) => setCustomerName(event.target.value)} maxLength={60} placeholder="¿A nombre de quién?" /></label>}
       <p className={styles.totalRow}><span>Subtotal</span><strong>{formatCurrency(total)}</strong></p>
@@ -191,6 +199,7 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
       {error && <p role="alert" className={styles.error}>{error}</p>}
       <button type="button" className={styles.sendButton} disabled={count === 0 || hasUnavailable || isPending} onClick={send}>{isPending ? "Enviando…" : "Enviar pedido a cocina"}</button>
       <p className={styles.sendHint}>Tu pedido será enviado directamente a cocina.</p>
+      </>}
     </div>
   </div>;
 }
@@ -207,14 +216,31 @@ function Sent({ sent, table, status, onAgain, themeClass, Motif }) {
   </div></div>;
 }
 
-export default function TableOrderExperience({ code, initial, template }) {
-  const { state, online, refresh } = useTableState(code, initial);
+export default function TableOrderExperience({ code, initial, template = undefined, remote = false, preview = false, previewViewport = "desktop" }) {
+  const { state, online, refresh } = useTableState(code, initial, remote, preview);
   const { table, restaurantName, categories, items, openTab } = state;
   const venue = state.venue ?? {};
   const templateKey = resolveMenuTemplate(template ?? state.template);
   const theme = menuTemplates[templateKey];
   const { className: themeClass, Motif } = visualThemes[templateKey];
   const [cart, setCart] = useState({});
+  const [cartLoaded, setCartLoaded] = useState(false);
+  const submitting = useRef(false);
+  const attemptRef = useRef(null);
+  const [checkoutValue, setCheckoutValue] = useState({ channel: "", customerName: "", customerPhone: "", address: "", zoneId: "", reference: "", notes: "", paymentMethod: "" });
+  useEffect(() => {
+    if (!remote || preview) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem('foodflow:online-cart:' + code) || '{}');
+      const valid = Object.entries(stored).filter(([, line]) => line && Number.isInteger(line.qty) && line.qty > 0 && line.qty <= 20 && typeof line.note === 'string');
+      setCart(Object.fromEntries(valid.slice(0, 20)));
+    } catch { /* Storage can be disabled without blocking checkout. */ }
+    setCartLoaded(true);
+  }, [code, remote, preview]);
+  useEffect(() => {
+    if (!remote || preview || !cartLoaded) return;
+    try { localStorage.setItem('foodflow:online-cart:' + code, JSON.stringify(cart)); } catch { /* optional persistence */ }
+  }, [cart, cartLoaded, code, remote, preview]);
   const [search, setSearch] = useState("");
   const [now, setNow] = useState(null);
   const [detailItemId, setDetailItemId] = useState(null);
@@ -269,7 +295,7 @@ export default function TableOrderExperience({ code, initial, template }) {
     const onKey = (event) => {
       if (event.key === "Escape") setDetailItemId(null);
       if (event.key !== "Tab" || !dialog) return;
-      const focusable = [...dialog.querySelectorAll("button:not(:disabled), input:not(:disabled)")];
+      const focusable = [...dialog.querySelectorAll("button:not(:disabled), input:not(:disabled), select:not(:disabled), a[href]")];
       const first = focusable[0], last = focusable[focusable.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -286,7 +312,7 @@ export default function TableOrderExperience({ code, initial, template }) {
     const onKey = (event) => {
       if (event.key === "Escape") setCartOpen(false);
       if (event.key !== "Tab" || !dialog) return;
-      const focusable = [...dialog.querySelectorAll("button:not(:disabled), input:not(:disabled)")];
+      const focusable = [...dialog.querySelectorAll("button:not(:disabled), input:not(:disabled), select:not(:disabled), a[href]")];
       const first = focusable[0], last = focusable[focusable.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -295,10 +321,11 @@ export default function TableOrderExperience({ code, initial, template }) {
     return () => { document.removeEventListener("keydown", onKey); previousFocus?.focus?.(); };
   }, [cartOpen]);
   useEffect(() => {
+    if (preview) return;
     const root = document.documentElement, previous = root.style.overflowX;
     root.style.overflowX = "visible";
     return () => { root.style.overflowX = previous; };
-  }, []);
+  }, [preview]);
   useEffect(() => {
     const tick = () => setNow(new Date());
     tick();
@@ -328,11 +355,29 @@ export default function TableOrderExperience({ code, initial, template }) {
     setError("");
   }
   function send() {
+    if (preview || submitting.current) return;
     if (count === 0 || Object.keys(cart).some((id) => !itemById.get(id)?.available)) return;
     setError("");
     const lines = Object.entries(cart).map(([menuItemId, line]) => ({ menuItemId, quantity: line.qty, note: line.note.trim() || undefined }));
+    submitting.current = true;
     startTransition(async () => {
       try {
+        if (remote) {
+          const deliveryFee = checkoutValue.channel === "delivery" ? state.ordering.zones.find(z => z.id === checkoutValue.zoneId)?.fee ?? 0 : 0;
+          const payload = { slug: code, lines, ...checkoutValue, expectedTotal: (Math.round(total * 100) + Math.round(deliveryFee * 100)) / 100 };
+          const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(payload)));
+          const signature = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+          let attempt = attemptRef.current;
+          try { attempt = JSON.parse(sessionStorage.getItem('foodflow:checkout:' + code)) || attempt; } catch { /* optional storage */ }
+          if (!attempt || attempt.signature !== signature) attempt = { signature, key: crypto.randomUUID() };
+          attemptRef.current = attempt;
+          try { sessionStorage.setItem('foodflow:checkout:' + code, JSON.stringify(attempt)); } catch { /* optional storage */ }
+          const result = await submitOnlineOrder({ ...payload, checkoutKey: attempt.key });
+          if (!result.ok) { setError(result.error); void refresh(); return; }
+          try { localStorage.removeItem('foodflow:online-cart:' + code); } catch { /* optional storage */ }
+          window.location.assign('/pedido/' + code + '/seguimiento/' + result.token);
+          return;
+        }
         const result = await submitTableOrder({ code, lines, customerName });
         if (!result.ok) {
           setError(result.detail ? `“${result.detail}” ya no está disponible. Quítalo y envía de nuevo.` : (ERRORS[result.code] ?? ERRORS.server));
@@ -343,7 +388,8 @@ export default function TableOrderExperience({ code, initial, template }) {
         setCart({});
         setCartOpen(false);
         void refresh();
-      } catch { setError(ERRORS.server); }
+      } catch { setError(remote ? "No pudimos confirmar el envío. Reintenta con el mismo carrito." : ERRORS.server); }
+      finally { submitting.current = false; }
     });
   }
 
@@ -351,12 +397,16 @@ export default function TableOrderExperience({ code, initial, template }) {
     const status = openTab && openTab.round >= sent.round ? openTab.status : "pending";
     return <Sent sent={sent} table={table} status={status} themeClass={themeClass} Motif={Motif} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
   }
-  const zone = table.zone ? (ZONE_LABELS_ES[table.zone] ?? table.zone) : null;
+  const zone = table?.zone ? (ZONE_LABELS_ES[table.zone] ?? table.zone) : null;
   const suggestions = templateKey === "cevicheria" ? SEAFOOD_SUGGESTIONS : templateKey === "chifa" ? CHIFA_SUGGESTIONS : templateKey === "pizzeria" ? PIZZA_SUGGESTIONS : SUGGESTIONS;
-  const cartProps = { cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, suggestions, tableName: table.name };
-  const open = venue.hours && now ? isOpenAt(venue.hours, now) : null;
-  return <div className={`${styles.stage} ${count > 0 ? styles.hasCart : ""} ${themeClass}`}>
+  const availability = remote ? (now ? orderingAvailability(state.ordering, venue.hours, now) : state.availability) : null;
+  const checkout = remote ? { settings: state.ordering, venue, availability, value: checkoutValue, onChange: setCheckoutValue, preview } : null;
+  const cartProps = { checkout, cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, suggestions, tableName: table?.name };
+  const open = remote ? availability.open : venue.hours && now ? isOpenAt(venue.hours, now) : null;
+  const selectedFee = remote && checkoutValue.channel === "delivery" ? state.ordering.zones.find(z => z.id === checkoutValue.zoneId)?.fee ?? 0 : 0;
+  return <div className={`${styles.stage} ${preview ? styles.preview : ""} ${preview && previewViewport === "mobile" ? styles.previewMobile : ""} ${count > 0 ? styles.hasCart : ""} ${themeClass}`}>
     <div className={styles.paperTexture} aria-hidden="true" />
+    {remote && state.ordering.coverUrl && <div className={styles.storeCover}><Image src={state.ordering.coverUrl} alt={`Portada de ${restaurantName}`} fill sizes="100vw" className={styles.foodPhoto} priority /></div>}
     <header className={styles.hero}><div className={styles.heroInner}>
       <div className={styles.heroIdentity}>
         <span className={styles.venueBadge}>{venue.logoUrl ? <Image src={venue.logoUrl} alt="" fill sizes="56px" className={styles.venueLogo} /> : initialsFor(restaurantName)}</span>
@@ -365,12 +415,13 @@ export default function TableOrderExperience({ code, initial, template }) {
       <Motif className={styles.heroPepper} />
       {(venue.address || venue.hours) && <div className={styles.venueInfo}>
         {venue.address && <span>{venue.address}</span>}
-        {venue.hours && now && <span>{todayLabel(venue.hours, now)} · <strong>{open ? "Abierto ahora" : "Fuera de horario"}</strong></span>}
+        {venue.hours && now && <span>{todayLabel(venue.hours, remote ? peruWallTime(now) : now)} · <strong>{open ? "Abierto ahora" : "Cerrado"}</strong></span>}
       </div>}
       <div className={styles.heroMeta}>
-        <span className={styles.tableTag}>{table.name} · Pedido desde QR{zone ? ` · ${zone}` : ""}</span>
-        <span className={`${styles.kitchenLive} ${online ? "" : styles.offline}`}><i aria-hidden="true" />{online ? "Cocina recibiendo pedidos" : "Actualizando conexión"}</span>
+        {remote ? <span className={styles.tableTag}>{[state.ordering.delivery && "Delivery", state.ordering.pickup && "Recojo en local"].filter(Boolean).join(" · ")} · Preparación {state.ordering.preparationMinutes} min</span> : <span className={styles.tableTag}>{table.name} · Pedido desde QR{zone ? ` · ${zone}` : ""}</span>}
+        <span className={`${styles.kitchenLive} ${online ? "" : styles.offline}`}><i aria-hidden="true" />{!online ? "Actualizando conexión" : remote && !availability.open ? "Pedidos no disponibles" : "Cocina recibiendo pedidos"}</span>
       </div>
+      {remote && <div className={styles.venueInfo}><span>{state.ordering.minimum > 0 ? 'Pedido mínimo S/ ' + state.ordering.minimum.toFixed(2) : 'Sin pedido mínimo'}</span>{state.ordering.delivery && <span>Delivery: tarifa según zona</span>}{!availability.open && <p role="status">{availability.reason}</p>}</div>}
     </div></header>
     <div className={styles.layout}>
       <div className={styles.menuColumn}>
@@ -404,9 +455,9 @@ export default function TableOrderExperience({ code, initial, template }) {
       </div>
       <aside className={styles.desktopCart} aria-label="Resumen de mi pedido"><CartContent {...cartProps} mobile={false} /></aside>
     </div>
-    {count > 0 && <div className={styles.mobileBar}><div><strong>{count} {count === 1 ? "producto" : "productos"}</strong><span>{formatCurrency(total)}</span></div><button type="button" onClick={() => setCartOpen(true)}>Ver mi pedido</button></div>}
+    {count > 0 && <div className={styles.mobileBar}><div><strong>{count} {count === 1 ? "producto" : "productos"}</strong><span>{formatCurrency(total + selectedFee)}</span></div><button type="button" onClick={() => setCartOpen(true)}>Ver mi pedido</button></div>}
     {cartOpen && <div className={styles.backdrop} onClick={() => setCartOpen(false)} aria-hidden="true" />}
-    <aside ref={cartDialogRef} className={`${styles.mobileCart} ${cartOpen ? styles.cartOpen : ""}`} role="dialog" aria-modal="true" aria-labelledby="mobile-cart-title" aria-hidden={!cartOpen}><CartContent {...cartProps} mobile onClose={() => setCartOpen(false)} /></aside>
+    <aside inert={!cartOpen ? true : undefined} ref={cartDialogRef} className={`${styles.mobileCart} ${cartOpen ? styles.cartOpen : ""}`} role="dialog" aria-modal="true" aria-labelledby="mobile-cart-title" aria-hidden={!cartOpen}><CartContent {...cartProps} mobile onClose={() => setCartOpen(false)} /></aside>
     {detailItem && <ProductDetail item={detailItem} qty={detailQty} note={detailNote} setQty={setDetailQty} setNote={setDetailNote} onAdd={addFromDetail} onClose={() => setDetailItemId(null)} Motif={Motif} dialogRef={detailDialogRef} suggestions={suggestions} />}
   </div>;
 }

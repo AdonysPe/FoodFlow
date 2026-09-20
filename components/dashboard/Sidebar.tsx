@@ -106,6 +106,7 @@ const CLIENT_NAV: NavSection[] = [
   {
     title: "Negocio",
     items: [
+      { href: "/dashboard/app/web-pedidos", label: "Web de pedidos", icon: IconGlobe, feature: "own_ordering_website" },
       { href: "/dashboard/app/customers", label: "Clientes", icon: IconUsers, feature: "customers" },
       { href: "/dashboard/app/analytics", label: "Análisis", icon: IconAnalytics, feature: "analytics" },
     ],

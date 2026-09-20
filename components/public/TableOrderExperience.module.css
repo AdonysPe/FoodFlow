@@ -292,3 +292,16 @@
 @media (prefers-reduced-motion: reduce) {
   .mobileCart, .categoryNav button { transition: none; }
 }
+.storeCover { position: relative; width: 100%; height: clamp(160px, 26vw, 320px); overflow: hidden; }
+.checkout { display: flex; flex-direction: column; gap: 14px; font-size: 14px; line-height: 1.5; }
+.checkout select { width: 100%; min-height: 46px; border: 1px solid currentColor; border-radius: 10px; padding: 10px; background: #fffaf0; color: #34221b; }
+.checkout input { min-height: 46px; }
+.checkout a { text-decoration: underline; }
+.preview { min-height: 0; }
+.preview .desktopCart { display: block; position: static; max-height: none; }
+.preview .mobileBar, .preview .mobileCart { display: none; }
+.previewMobile { width: 390px; max-width: 100%; margin-inline: auto; }
+.previewMobile .layout { grid-template-columns: 1fr; padding: 16px; }
+.previewMobile .cards { grid-template-columns: 1fr; }
+.previewMobile .heroInner { padding: 20px; }
+.previewMobile .heroIdentity h1 { font-size: 28px; }

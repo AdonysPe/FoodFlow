@@ -39,6 +39,7 @@ export default async function ReceiptPage({
       where: { id: orderId, restaurantId: restaurant.id },
       select: {
         items: true,
+        deliveryFee: true,
         total: true,
         channel: true,
         customerName: true,

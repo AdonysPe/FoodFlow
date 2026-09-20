@@ -148,6 +148,13 @@ export async function updateOrderStatus(orderId: string, rawStatus: string): Pro
 
 export type KitchenOrder = {
   id: string;
+  source: string | null;
+  publicCode: string | null;
+  customerPhone: string | null;
+  fulfillmentAddress: string | null;
+  deliveryZone: string | null;
+  deliveryReference: string | null;
+  customerNotes: string | null;
   customerName: string;
   tableName: string | null;
   tableZone: string | null;
@@ -179,6 +186,13 @@ export async function getKitchenOrders(): Promise<KitchenOrder[]> {
 
   return orders.map((o) => ({
     id: o.id,
+    source: o.source,
+    publicCode: o.publicToken?.slice(0, 10).toUpperCase() ?? null,
+    customerPhone: o.customerPhone,
+    fulfillmentAddress: o.fulfillmentAddress,
+    deliveryZone: o.deliveryZone,
+    deliveryReference: o.deliveryReference,
+    customerNotes: o.customerNotes,
     customerName: o.customerName,
     tableName: o.table?.name ?? null,
     tableZone: o.table?.zone ?? null,

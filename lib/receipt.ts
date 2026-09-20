@@ -183,6 +183,7 @@ const CHANNEL_FALLBACK: Record<string, string> = {
 
 type OrderForReceipt = {
   items: unknown;
+  deliveryFee?: number;
   total: number;
   channel: string;
   customerName: string;
@@ -230,8 +231,9 @@ export function buildReceipt(
   settings: ReceiptSettingsDTO,
   options: BuildReceiptOptions = {}
 ): ReceiptDTO {
-  const lines = (Array.isArray(order.items) ? order.items : []) as ReceiptLine[];
+  const lines = [...(Array.isArray(order.items) ? order.items : [])] as ReceiptLine[];
   const dishCount = lines.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
+  if (order.deliveryFee) lines.push({ name: "Servicio de delivery", price: order.deliveryFee, quantity: 1 });
 
   const where = order.table?.name ?? CHANNEL_FALLBACK[order.channel] ?? "Salón";
   // The comanda writes the table name into customerName when nobody gave one,

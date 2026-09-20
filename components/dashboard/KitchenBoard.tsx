@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getKitchenOrders, updateOrderStatus, type KitchenOrder } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import { CHANNEL_LABELS, type OrderStatusValue } from "@/lib/orderMeta";
+import { orderOriginLabel, type OrderStatusValue } from "@/lib/orderMeta";
 import { ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency, formatDurationMs } from "@/lib/format";
 import { EASE } from "@/lib/motion";
@@ -232,7 +232,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                             <p className="mt-0.5 truncate text-[11.5px] text-faint">
                               {order.tableName
                                 ? (zone ?? "Salón")
-                                : CHANNEL_LABELS[order.channel]}
+                                : orderOriginLabel(order.source, order.channel)}
                             </p>
                           </div>
                           <span
@@ -242,12 +242,13 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                           </span>
                         </div>
 
+                        {order.source === "online_store" && <div className="mt-3 text-xs leading-relaxed text-muted"><p>{order.customerPhone}</p><p>{order.fulfillmentAddress}{order.deliveryZone ? ` · ${order.deliveryZone}` : ""}</p>{order.deliveryReference && <p>Referencia: {order.deliveryReference}</p>}{order.customerNotes && <p className="font-semibold text-accent-ink">{order.customerNotes}</p>}</div>}
                         <OrderLines items={order.items} />
 
                         {/* the small print a chef never needs mid-service */}
                         <div className="mt-3 flex items-center justify-between gap-2 border-t border-fg/[0.07] pt-2.5 text-[11px] text-faint">
                           <span className="truncate font-mono tracking-wide">
-                            #{ticketNumber(order.id)}
+                            #{order.publicCode ?? ticketNumber(order.id)}
                             {order.serverName ? ` · ${order.serverName}` : ""}
                             {order.paid ? " · Pagado" : ""}
                           </span>

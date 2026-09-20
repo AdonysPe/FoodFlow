@@ -4,6 +4,11 @@ export const CHANNEL_LABELS: Record<string, string> = {
   pickup: "Para llevar",
 };
 
+export function orderOriginLabel(source: string | null | undefined, channel: string) {
+  if (source === "online_store") return channel === "delivery" ? "WEB · DELIVERY" : "WEB · RECOJO";
+  return channel === "dine_in" ? "Mesa" : CHANNEL_LABELS[channel];
+}
+
 export const STATUS_FLOW = ["pending", "preparing", "ready", "delivered"] as const;
 export type OrderStatusValue = (typeof STATUS_FLOW)[number];
 

@@ -74,6 +74,10 @@ export async function saveCartaSettings(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos." };
   }
   const { slug, ...carta } = parsed.data;
+  if (restaurant.slug && restaurant.slug !== slug) {
+    const existing = await prisma.cartaSettings.findUnique({ where: { restaurantId: restaurant.id }, select: { ordering: true } });
+    if (existing?.ordering) return { ok: false, error: "La dirección ya está vinculada a tu web de pedidos y debe mantenerse estable." };
+  }
 
   // A published carta with no dishes is a dead link handed to real diners.
   if (carta.published) {

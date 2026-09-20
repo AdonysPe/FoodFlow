@@ -1,5 +1,9 @@
 "use server";
 
+import { createHash, randomBytes } from "node:crypto";
+import { planAllows } from "@/lib/plans";
+import { resolvePublicOrderLines } from "@/lib/db/orderPricing";
+import { OrderingProblem, onlineOrderSchema, readOrderingSettings, orderingAvailability, deliveryQuote, type OnlineOrderInput } from "@/lib/orderingWebsite";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
@@ -84,27 +88,9 @@ export async function submitTableOrder(
   });
   if (!limit.ok) return { ok: false, code: "rate_limited" };
 
-  // Prices and names come from the menu, never from the request.
-  const ids = [...new Set(lines.map((l) => l.menuItemId))];
-  const menuItems = await prisma.menuItem.findMany({
-    where: { id: { in: ids }, restaurantId: table.restaurantId },
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      available: true,
-      category: { select: { active: true } },
-    },
-  });
-  const byId = new Map(menuItems.map((m) => [m.id, m]));
-
-  for (const line of lines) {
-    const item = byId.get(line.menuItemId);
-    if (!item) return { ok: false, code: "unavailable" };
-    if (!item.available || (item.category && !item.category.active)) {
-      return { ok: false, code: "unavailable", detail: item.name };
-    }
-  }
+  let resolved;
+  try { resolved = await resolvePublicOrderLines(prisma, table.restaurantId, lines); }
+  catch { return { ok: false, code: "unavailable" }; }
 
   const openOrder = await prisma.order.findFirst({
     where: {
@@ -118,17 +104,8 @@ export async function submitTableOrder(
   });
 
   const round = openOrder ? openOrder.roundNumber + 1 : 1;
-  const newLines: Snapshot[] = lines.map((l) => {
-    const item = byId.get(l.menuItemId)!;
-    return {
-      name: item.name,
-      price: item.price,
-      quantity: l.quantity,
-      ...(l.note ? { note: l.note } : {}),
-      round,
-    };
-  });
-  const addedTotal = newLines.reduce((sum, l) => sum + l.price * l.quantity, 0);
+  const newLines: Snapshot[] = resolved.items.map(line => ({ ...line, round }));
+  const addedTotal = resolved.subtotal;
 
   try {
     if (openOrder) {
@@ -179,4 +156,59 @@ function revalidateService() {
   ]) {
     revalidatePath(path);
   }
+}
+
+// Same menu snapshots, Order model and kitchen states as the table flow.
+export async function submitOnlineOrder(input: OnlineOrderInput): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
+  const parsed = onlineOrderSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos del pedido." };
+  const data = parsed.data;
+  const checkoutKey = createHash("sha256").update(`${data.slug}:${data.checkoutKey}`).digest("hex");
+  const checkoutHash = createHash("sha256").update(JSON.stringify(data)).digest("hex");
+  try {
+    const limit = await rateLimit("online-order", await callerIpHash(), { max: 20, windowMs: 60 * 60 * 1000 });
+    if (!limit.ok) return { ok: false, error: "Has enviado varios pedidos. Espera unos minutos antes de continuar." };
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const token = await prisma.$transaction(async tx => {
+          const existing = await tx.order.findUnique({ where: { checkoutKey }, select: { publicToken: true, checkoutHash: true } });
+          if (existing) {
+            if (existing.checkoutHash !== checkoutHash) throw new OrderingProblem("Este intento ya fue enviado con otros datos. Consulta su confirmación.");
+            return existing.publicToken!;
+          }
+          const restaurant = await tx.restaurant.findUnique({ where: { slug: data.slug }, include: { carta: true } });
+          if (!restaurant || restaurant.billingStatus !== "active" || !planAllows(restaurant.plan, "own_ordering_website")) throw new OrderingProblem("Esta web no está disponible para pedidos.");
+          const settings = readOrderingSettings(restaurant.carta?.ordering);
+          const availability = orderingAvailability(settings, restaurant.carta?.hours);
+          if (!availability.open) throw new OrderingProblem(availability.reason);
+          if (!settings.payments.some(p => p.method === data.paymentMethod)) throw new OrderingProblem("El método de pago ya no está disponible.");
+          if (!restaurant.carta?.address) throw new OrderingProblem("El local aún no tiene una dirección configurada.");
+          const priced = await resolvePublicOrderLines(tx, restaurant.id, data.lines);
+          const quote = deliveryQuote(settings, data.channel, data.zoneId, priced.subtotal);
+          if (data.expectedTotal != null && Math.round(data.expectedTotal * 100) !== Math.round(quote.total * 100)) throw new OrderingProblem("Los precios o la tarifa cambiaron. Revisa el total actualizado y confirma de nuevo.");
+          const publicToken = randomBytes(32).toString("hex");
+          await tx.order.create({ data: {
+            restaurantId: restaurant.id, source: "online_store", channel: data.channel, tableId: null,
+            customerName: data.customerName, customerPhone: data.customerPhone,
+            fulfillmentAddress: data.channel === "delivery" ? data.address : restaurant.carta.address,
+            deliveryZone: quote.zone?.name ?? null, deliveryReference: data.channel === "delivery" ? data.reference : null,
+            customerNotes: data.notes || null, deliveryFee: quote.fee,
+            estimatedMinutes: data.channel === "delivery" ? settings.deliveryMinutes : settings.pickupMinutes,
+            items: priced.items, total: quote.total, paymentMethod: data.paymentMethod,
+            publicToken, checkoutKey, checkoutHash,
+          } });
+          return publicToken;
+        }, { isolationLevel: "Serializable" });
+        revalidateService();
+        return { ok: true, token };
+      } catch (error) {
+        const code = (error as { code?: string }).code;
+        if ((code === "P2034" || code === "P2002") && attempt < 2) continue;
+        throw error;
+      }
+    }
+  } catch (error) {
+    return { ok: false, error: error instanceof OrderingProblem ? error.message : "No pudimos enviar tu pedido. Reintenta con el mismo carrito." };
+  }
+  return { ok: false, error: "No pudimos enviar tu pedido. Inténtalo de nuevo." };
 }

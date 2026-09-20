@@ -79,8 +79,14 @@ export type BillingSettingsInput = z.input<typeof settingsSchema>;
 export async function saveBillingSettings(
   input: BillingSettingsInput
 ): Promise<ActionResult<{ updatedAt: string }>> {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  // Billing credentials are the owner's alone — a restaurant_admin passes
+  // requireClientRestaurant() same as the owner, so this has to be checked
+  // separately, same as app/api/restaurants/[id]/billing-config/route.ts.
+  if (!isOwner) {
+    return { ok: false, error: "Solo el dueño de la cuenta puede cambiar la configuración de facturación." };
+  }
 
   const parsed = settingsSchema.safeParse(input);
   if (!parsed.success) {
@@ -217,8 +223,11 @@ export type CertificateUploadResult = {
 export async function uploadCertificate(
   input: CertificateUploadInput
 ): Promise<ActionResult<CertificateUploadResult>> {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  if (!isOwner) {
+    return { ok: false, error: "Solo el dueño de la cuenta puede cambiar la configuración de facturación." };
+  }
 
   const parsed = certSchema.safeParse(input);
   if (!parsed.success) {
@@ -285,8 +294,11 @@ export async function uploadCertificate(
 }
 
 export async function removeCertificate(): Promise<ActionResult> {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  if (!isOwner) {
+    return { ok: false, error: "Solo el dueño de la cuenta puede cambiar la configuración de facturación." };
+  }
 
   await prisma.billingCredentials.updateMany({
     where: { restaurantId: restaurant.id },
@@ -317,8 +329,11 @@ export async function removeCertificate(): Promise<ActionResult> {
 export async function testOseConnection(): Promise<
   ActionResult<{ passed: boolean; message: string }>
 > {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  if (!isOwner) {
+    return { ok: false, error: "Solo el dueño de la cuenta puede cambiar la configuración de facturación." };
+  }
 
   const [row, creds] = await Promise.all([
     prisma.receiptSettings.findUnique({

@@ -9,6 +9,7 @@ import { logout } from "@/lib/actions/auth";
 import type { PlanValue } from "@/lib/plans";
 
 const CLIENT_TITLES: Record<string, string> = {
+  "web-pedidos": "Web de pedidos",
   overview: "Resumen",
   orders: "Pedidos",
   kitchen: "Cocina",

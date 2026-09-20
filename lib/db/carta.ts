@@ -10,7 +10,7 @@ import { resolveMenuTemplate } from "@/lib/menuTemplates";
  * badge. Hidden categories and their dishes are excluded, because a hidden
  * category is the owner saying "not on the menu right now".
  */
-export async function readCarta(slug: string): Promise<CartaPayload | null> {
+export async function readCarta(slug: string, includeUnpublished = false): Promise<CartaPayload | null> {
   const restaurant = await prisma.restaurant.findUnique({
     where: { slug },
     select: {
@@ -34,7 +34,7 @@ export async function readCarta(slug: string): Promise<CartaPayload | null> {
     },
   });
 
-  if (!restaurant?.slug || !restaurant.carta?.published) return null;
+  if (!restaurant?.slug || !restaurant.carta || (!includeUnpublished && !restaurant.carta.published)) return null;
 
   const [categories, items] = await Promise.all([
     prisma.menuCategory.findMany({

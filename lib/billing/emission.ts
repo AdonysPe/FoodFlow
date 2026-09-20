@@ -61,6 +61,7 @@ export type EmissionOutcome =
 
 type OrderRow = {
   id: string;
+  deliveryFee: number;
   items: unknown;
   total: number;
   paidAt: Date | null;
@@ -75,6 +76,7 @@ type OrderRow = {
 
 const ORDER_SELECT = {
   id: true,
+  deliveryFee: true,
   items: true,
   total: true,
   paidAt: true,
@@ -146,6 +148,7 @@ export async function emitForOrder(
   }
 
   const lines = normalizeLines(order.items);
+  if (order.deliveryFee) lines.push({ description: "Servicio de delivery", quantity: 1, unitPrice: order.deliveryFee });
   const totals = breakdownFromTotal(order.total, {
     rate: issuer.igvRate,
     taxed: issuer.taxed,

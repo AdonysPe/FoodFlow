@@ -1,6 +1,10 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useTransition, useState } from "react";
+import { useRouter } from "next/navigation";
+import PaymentSheet from "@/components/dashboard/comanda/PaymentSheet";
+import type { ReceiptSettingsDTO } from "@/lib/receipt";
+import type { TillBillingState } from "@/lib/db/billing";
 import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import StatusPill from "@/components/dashboard/StatusPill";
@@ -8,7 +12,7 @@ import { IconPrinter } from "@/components/ui/Icons";
 import { updateOrderStatus } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import {
-  CHANNEL_LABELS,
+  orderOriginLabel,
   ORDER_STATUS_LABELS,
   nextStatus,
   type OrderStatusValue,
@@ -19,6 +23,15 @@ import type { OrderItemInput, OrderChannel } from "@/lib/actions/orders";
 
 export type OrderRow = {
   id: string;
+  source: string | null;
+  publicCode: string | null;
+  customerPhone: string | null;
+  fulfillmentAddress: string | null;
+  deliveryZone: string | null;
+  deliveryReference: string | null;
+  customerNotes: string | null;
+  deliveryFee: number;
+  createdAt: string;
   customerName: string;
   items: OrderItemInput[];
   total: number;
@@ -52,7 +65,9 @@ function PaymentCell({ row }: { row: OrderRow }) {
   );
 }
 
-export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
+export default function OrdersTable({ orders, venueName, receiptSettings, billing }: { orders: OrderRow[]; venueName: string; receiptSettings: ReceiptSettingsDTO; billing: TillBillingState }) {
+  const [payingId, setPayingId] = useState<string | null>(null);
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
   const [optimisticOrders, applyOptimistic] = useOptimistic(
@@ -71,6 +86,9 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
       );
     });
   }
+
+  const paying = orders.find(o => o.id === payingId && !o.paid && !o.voided);
+  if (paying) return <PaymentSheet venueName={venueName} receiptSettings={receiptSettings} billing={billing} autoPrint={receiptSettings.autoPrint} onBack={() => setPayingId(null)} onPaid={() => { setPayingId(null); router.refresh(); }} tab={{ orderId: paying.id, tableId: "", tableName: orderOriginLabel(paying.source, paying.channel), customerName: paying.customerName, tableZone: null, lines: [...paying.items, ...(paying.deliveryFee ? [{ name: "Servicio de delivery", price: paying.deliveryFee, quantity: 1 }] : [])], total: paying.total, roundNumber: 1, kitchenStatus: paying.status, serverName: null, openedAt: paying.createdAt }} />;
 
   if (orders.length === 0) {
     return (
@@ -101,19 +119,21 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
               return (
                 <tr key={order.id} className="border-b border-fg/[0.04] align-top last:border-0">
                   <td className="px-5 py-3.5 font-mono text-[12.5px] text-faint">
-                    #{order.id.slice(-6).toUpperCase()}
+                    #{order.publicCode ?? order.id.slice(-6).toUpperCase()}
                   </td>
                   <td className="px-5 py-3.5 text-fg/85">
                     <p>{order.customerName}</p>
                     <p className="text-[12px] text-faint">
-                      {CHANNEL_LABELS[order.channel]} · {order.createdAtLabel}
+                      {orderOriginLabel(order.source, order.channel)} · {order.createdAtLabel}
                     </p>
+                    {order.source === "online_store" && <div className="mt-2 max-w-xs text-xs leading-relaxed text-muted"><p>{order.customerPhone}</p><p>{order.fulfillmentAddress}{order.deliveryZone ? ` · ${order.deliveryZone}` : ""}</p>{order.deliveryReference && <p>Referencia: {order.deliveryReference}</p>}{order.customerNotes && <p>{order.customerNotes}</p>}{order.paymentMethod && <p>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</p>}</div>}
                   </td>
                   <td className="max-w-[220px] px-5 py-3.5 text-muted">
                     {order.items.map((it) => `${it.quantity}× ${it.name}`).join(", ")}
                   </td>
                   <td className="px-5 py-3.5 font-medium text-fg/85">
                     {formatCurrency(order.total)}
+                    {order.deliveryFee > 0 && <small className="block text-faint">Delivery: {formatCurrency(order.deliveryFee)}</small>}
                   </td>
                   <td className="px-5 py-3.5">
                     <StatusPill status={order.status} />
@@ -123,6 +143,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
+                      {order.source === "online_store" && !order.paid && !order.voided && <button type="button" className="rounded-lg border border-fg/10 px-3 py-2 text-xs" onClick={() => setPayingId(order.id)}>Cobrar</button>}
                       {upcoming ? (
                         <button
                           type="button"
