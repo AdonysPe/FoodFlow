@@ -12,11 +12,30 @@ export default async function OrderingSettingsPage() {
   if (!allowed) return <PlanGate feature="own_ordering_website" plan={plan} />;
   if (!restaurant) return null;
   if (user.role !== "restaurant_owner") return <p>Solo el dueño puede configurar la web de pedidos.</p>;
-  const [carta, category, summary] = await Promise.all([
+  const [carta, category, summary, availableItems] = await Promise.all([
     prisma.cartaSettings.findUnique({ where: { restaurantId: restaurant.id } }),
     prisma.restaurantCategory.findUnique({ where: { id: restaurant.categoryId } }),
     prisma.order.aggregate({ where: { restaurantId: restaurant.id, source: "online_store", voidedAt: null }, _count: true, _sum: { total: true } }),
+    prisma.menuItem.count({
+      where: {
+        restaurantId: restaurant.id,
+        available: true,
+        OR: [{ categoryId: null }, { category: { active: true } }],
+      },
+    }),
   ]);
   const preview = restaurant.slug ? await readOrderingWebsite(restaurant.slug, true) : null;
-  return <OrderingWebsiteSettings key={`${restaurant.id}:${carta?.updatedAt.toISOString()}`} name={restaurant.name} slug={restaurant.slug} initial={readOrderingSettings(carta?.ordering)} generalHours={normalizeHours(carta?.hours)} address={carta?.address ?? ""} templateName={menuTemplates[resolveMenuTemplate(restaurant.menuTemplateOverride, category?.defaultMenuTemplate)].name} subscriptionActive={restaurant.billingStatus === "active"} preview={preview} summary={{ count: summary._count, total: summary._sum.total ?? 0 }} />;
+  return <OrderingWebsiteSettings
+    key={`${restaurant.id}:${carta?.updatedAt.toISOString()}`}
+    name={restaurant.name}
+    slug={restaurant.slug}
+    initial={readOrderingSettings(carta?.ordering)}
+    generalHours={normalizeHours(carta?.hours)}
+    hasGeneralHours={Boolean(carta?.hours)}
+    address={carta?.address ?? ""}
+    availableItems={availableItems}
+    templateName={menuTemplates[resolveMenuTemplate(restaurant.menuTemplateOverride, category?.defaultMenuTemplate)].name}
+    preview={preview}
+    summary={{ count: summary._count, total: summary._sum.total ?? 0 }}
+  />;
 }

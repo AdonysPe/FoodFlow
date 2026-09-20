@@ -16,7 +16,6 @@ async function writeSettings(input: unknown, statusOnly = false): Promise<Action
     const slug = await prisma.$transaction(async tx => {
       const current = await tx.restaurant.findFirst({ where: { id: restaurant.id, ownerId: user.id }, include: { carta: true } });
       if (!current || !planAllows(current.plan, "own_ordering_website")) throw new OrderingProblem("Tu plan no incluye Web de pedidos.");
-      if (current.billingStatus !== "active") throw new OrderingProblem("El restaurante debe tener una suscripción activa.");
       const previous = readOrderingSettings(current.carta?.ordering);
       const settings = orderingSettingsSchema.safeParse(statusOnly ? { ...previous, active: true, paused: input, accepting: input === false ? true : previous.accepting } : input);
       if (!settings.success) throw new OrderingProblem(settings.error.issues[0]?.message ?? "Revisa la configuración.");

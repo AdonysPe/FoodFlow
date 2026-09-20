@@ -92,10 +92,15 @@ describe("creación en la cola de pedidos existente", () => {
     await submitOnlineOrder({ ...input, channel: "pickup", address: "", zoneId: "", reference: "" });
     expect(mocks.order.create.mock.calls[0][0].data).toMatchObject({ channel: "pickup", fulfillmentAddress: venue.carta.address, deliveryFee: 0, deliveryZone: null, total: 24.7 });
   });
-  it.each([{ plan: "servicio" }, { billingStatus: "cancelled" }, { carta: { ...venue.carta, ordering: { ...settings, paused: true } } }])("rechaza restaurante sin acceso: %o", async override => {
+  it.each([{ plan: "servicio" }, { carta: { ...venue.carta, ordering: { ...settings, paused: true } } }])("rechaza restaurante sin acceso: %o", async override => {
     mocks.restaurant.findUnique.mockResolvedValue({ ...venue, ...override });
     expect((await submitOnlineOrder(input)).ok).toBe(false);
     expect(mocks.order.create).not.toHaveBeenCalled();
+  });
+  it("usa la capacidad del plan aunque el estado informativo de cobro esté pendiente", async () => {
+    mocks.restaurant.findUnique.mockResolvedValue({ ...venue, billingStatus: "pending" });
+    expect((await submitOnlineOrder(input)).ok).toBe(true);
+    expect(mocks.order.create).toHaveBeenCalledOnce();
   });
   it.each([{ items: [] }, { items: [{ id: "dish", name: "Plato", price: 12, available: false }] }, { items: [{ id: "dish", name: "Plato", price: 12, available: true, category: { active: false } }] }])("rechaza productos ajenos, agotados u ocultos: %o", async ({ items }) => {
     mocks.menuItem.findMany.mockResolvedValue(items);

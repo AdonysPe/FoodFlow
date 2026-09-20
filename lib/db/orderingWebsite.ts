@@ -5,9 +5,9 @@ import { orderingAvailability, readOrderingSettings } from "@/lib/orderingWebsit
 
 export async function readOrderingWebsite(slug: string, preview = false) {
   const restaurant = await prisma.restaurant.findUnique({ where: { slug }, select: {
-    plan: true, billingStatus: true, carta: { select: { ordering: true, hours: true } },
+    plan: true, carta: { select: { ordering: true, hours: true } },
   } });
-  if (!restaurant || !planAllows(restaurant.plan, "own_ordering_website") || restaurant.billingStatus !== "active") return null;
+  if (!restaurant || !planAllows(restaurant.plan, "own_ordering_website")) return null;
   const settings = readOrderingSettings(restaurant.carta?.ordering);
   if (!preview && !settings.active) return null;
   const carta = await readCarta(slug, true);

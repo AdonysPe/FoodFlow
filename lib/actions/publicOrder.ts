@@ -177,7 +177,7 @@ export async function submitOnlineOrder(input: OnlineOrderInput): Promise<{ ok: 
             return existing.publicToken!;
           }
           const restaurant = await tx.restaurant.findUnique({ where: { slug: data.slug }, include: { carta: true } });
-          if (!restaurant || restaurant.billingStatus !== "active" || !planAllows(restaurant.plan, "own_ordering_website")) throw new OrderingProblem("Esta web no está disponible para pedidos.");
+          if (!restaurant || !planAllows(restaurant.plan, "own_ordering_website")) throw new OrderingProblem("Esta web no está disponible para pedidos.");
           const settings = readOrderingSettings(restaurant.carta?.ordering);
           const availability = orderingAvailability(settings, restaurant.carta?.hours);
           if (!availability.open) throw new OrderingProblem(availability.reason);
