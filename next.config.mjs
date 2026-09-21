@@ -13,12 +13,16 @@ const csp = [
   "form-action 'self'",
   // 'unsafe-inline' is required until we wire per-request nonces into Next's
   // script tags. 'unsafe-eval' only in dev (React Refresh / HMR).
-  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com${isDev ? " 'unsafe-eval'" : ""}`,
+  // maps.googleapis.com/maps.gstatic.com: the delivery address picker, loaded
+  // only when a diner picks Delivery (components/public/DeliveryLocationPicker.jsx).
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://maps.googleapis.com https://maps.gstatic.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "img-src 'self' data: blob:",
+  // Map tiles and UI icons are served from several googleapis/gstatic
+  // subdomains (khms*, mt*, etc.) — Google's own CSP guidance wildcards them.
+  "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   // Server Actions POST to same-origin. ws/wss only in dev for HMR.
-  `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com${isDev ? " ws: wss:" : ""}`,
+  `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://maps.googleapis.com https://*.googleapis.com${isDev ? " ws: wss:" : ""}`,
   "frame-src 'none'",
   "manifest-src 'self'",
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
@@ -31,7 +35,9 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+    // geolocation=(self): only this origin may ask, and only on the diner's
+    // own click ("Usar mi ubicación" in the delivery picker) — never on load.
+    value: "camera=(), microphone=(), geolocation=(self), browsing-topics=()",
   },
   // Browsers ignore HSTS over plain HTTP / on localhost, so it's safe to always
   // send; it only takes effect on the HTTPS Vercel deploy.
