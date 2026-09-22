@@ -661,28 +661,32 @@
   92%, 100% { opacity: 0; transform: translate(-50%, 265px); }
 }
 
+/* Compressed to ~40% of the original 1.5s pass (same 58% hold/lift split,
+   same relative stagger) — long enough for the mark to draw itself once,
+   short enough that it reads as a beat, not a wait. See INTRO_DELAY in
+   lib/motion.js, which is timed to when the lift starts below. */
 .intro-curtain {
-  animation: intro-curtain 1.5s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  animation: intro-curtain 0.6s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 .intro-mark rect {
-  animation: intro-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: intro-pop 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 /* Each stroke carries pathLength="1", so one dashoffset step draws them all. */
 .intro-mark path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: intro-draw 0.6s ease-out both;
+  animation: intro-draw 0.24s ease-out both;
 }
-.intro-mark path:nth-child(1) { animation-delay: 0.18s; }
-.intro-mark path:nth-child(2) { animation-delay: 0.3s; }
-.intro-mark path:nth-child(3) { animation-delay: 0.42s; }
+.intro-mark path:nth-child(1) { animation-delay: 0.07s; }
+.intro-mark path:nth-child(2) { animation-delay: 0.12s; }
+.intro-mark path:nth-child(3) { animation-delay: 0.17s; }
 
 .intro-word {
-  animation: intro-word 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+  animation: intro-word 0.24s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 }
 .intro-bar {
   transform-origin: left;
-  animation: intro-bar 0.85s cubic-bezier(0.5, 0, 0.2, 1) 0.18s both;
+  animation: intro-bar 0.34s cubic-bezier(0.5, 0, 0.2, 1) 0.07s both;
 }
 
 /* Light sweep that rides across a filled button. */
