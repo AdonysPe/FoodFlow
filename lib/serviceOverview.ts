@@ -153,7 +153,12 @@ function demoLabels(range: OverviewRange, now: Date): string[] {
   return dayLabels(range, now);
 }
 
-export function demoOverview(range: OverviewRange, now = new Date()): ServiceOverviewData {
+/**
+ * The demo's figures for one range, with no dates in them — so the landing's
+ * panel (statically rendered, bilingual) and an owner's empty dashboard show
+ * exactly the same numbers.
+ */
+export function demoFigures(range: OverviewRange) {
   const raw = DEMO_SERIES[range];
   const rawTotal = raw.reduce((a, b) => a + b, 0);
   // Today adds up to the demo's S/ 8,940; longer ranges are the sum of their
@@ -162,12 +167,22 @@ export function demoOverview(range: OverviewRange, now = new Date()): ServiceOve
   const sales = range === "1d" ? 8940 : rawTotal;
   const orders = range === "1d" ? 96 : Math.round(sales / 93.1);
   return {
-    range,
-    demo: true,
-    kpis: { sales, orders, avgTicket: range === "1d" ? 93.1 : sales / orders, kitchenSeconds: 680 },
-    deltas: { sales: 18.2, orders: 12.4, avgTicket: 4.1, kitchen: -9.3 },
     series,
     previous: series.map((v, i) => Math.round(v * (0.8 + ((i * 7) % 5) * 0.03))),
+    kpis: { sales, orders, avgTicket: range === "1d" ? 93.1 : sales / orders, kitchenSeconds: 680 },
+    deltas: { sales: 18.2, orders: 12.4, avgTicket: 4.1, kitchen: -9.3 },
+  };
+}
+
+export function demoOverview(range: OverviewRange, now = new Date()): ServiceOverviewData {
+  const figures = demoFigures(range);
+  return {
+    range,
+    demo: true,
+    kpis: figures.kpis,
+    deltas: figures.deltas,
+    series: figures.series,
+    previous: figures.previous,
     labels: demoLabels(range, now),
     axis: spreadLabels(demoLabels(range, now)),
     channels: [
