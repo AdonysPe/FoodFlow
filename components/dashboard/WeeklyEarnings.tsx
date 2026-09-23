@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
 import { EASE } from "@/lib/motion";
 
@@ -64,7 +64,7 @@ export default function WeeklyEarnings({
                 </span>
 
                 <div className="flex h-32 w-full items-end sm:h-36">
-                  <motion.div
+                  <m.div
                     initial={{ height: 0 }}
                     animate={{ height: `${heightPct}%` }}
                     transition={{ duration: 0.7, ease: EASE, delay: i * 0.05 }}

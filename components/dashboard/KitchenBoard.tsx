@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { getKitchenOrders, updateOrderStatus, type KitchenOrder } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { orderOriginLabel, type OrderStatusValue } from "@/lib/orderMeta";
@@ -191,7 +191,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                 const late = now !== null && ageMs >= LATE_MS;
 
                 return (
-                  <motion.div
+                  <m.div
                     key={order.id}
                     layout
                     initial={{ opacity: 0, y: 8 }}
@@ -281,7 +281,7 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
                         )}
                       </div>
                     </article>
-                  </motion.div>
+                  </m.div>
                 );
               })}
             </AnimatePresence>

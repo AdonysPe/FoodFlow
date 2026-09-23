@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { EASE } from "@/lib/motion";
 import { sendComanda } from "@/lib/actions/comanda";
@@ -178,7 +178,7 @@ export default function ComandaFlow({
     <div className="flex min-h-[calc(100vh-53px)] flex-col">
       <AnimatePresence mode="wait" initial={false}>
         {step === "target" && (
-          <motion.div
+          <m.div
             key="target"
             initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -192,11 +192,11 @@ export default function ComandaFlow({
               onPickTable={chooseTable}
               onPickOther={chooseOther}
             />
-          </motion.div>
+          </m.div>
         )}
 
         {step === "account" && activeTab && (
-          <motion.div
+          <m.div
             key="account"
             initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -218,11 +218,11 @@ export default function ComandaFlow({
                 router.refresh();
               }}
             />
-          </motion.div>
+          </m.div>
         )}
 
         {step === "pay" && activeTab && (
-          <motion.div
+          <m.div
             key="pay"
             initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -243,11 +243,11 @@ export default function ComandaFlow({
                 router.refresh();
               }}
             />
-          </motion.div>
+          </m.div>
         )}
 
         {step === "done" && settled && (
-          <motion.div
+          <m.div
             key="done"
             initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -265,11 +265,11 @@ export default function ComandaFlow({
                 resetToTarget();
               }}
             />
-          </motion.div>
+          </m.div>
         )}
 
         {step === "items" && (
-          <motion.div
+          <m.div
             key="items"
             initial={{ opacity: 0, x: direction === 1 ? 12 : -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -297,7 +297,7 @@ export default function ComandaFlow({
               onSetQty={setQty}
               onSetNote={setNote}
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

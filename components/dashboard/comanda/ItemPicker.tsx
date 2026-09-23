@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { EASE } from "@/lib/motion";
 import { formatPrice } from "@/components/dashboard/menu/ui";
 import { NOTE_CHIPS, type ComandaCategoryDTO, type ComandaItemDTO, type FrequentItemDTO } from "@/lib/comandaMeta";
@@ -221,7 +221,7 @@ export default function ItemPicker({
                   }`}
                 >
                   {active && (
-                    <motion.span
+                    <m.span
                       layoutId="comanda-tab"
                       transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
                       className="absolute inset-0 rounded-lg bg-fg/[0.1]"
@@ -302,7 +302,7 @@ export default function ItemPicker({
 
                   <AnimatePresence initial={false}>
                     {picked && (
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
@@ -313,7 +313,7 @@ export default function ItemPicker({
                           note={line?.note ?? ""}
                           onChange={(v) => onSetNote(item.id, v)}
                         />
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </li>

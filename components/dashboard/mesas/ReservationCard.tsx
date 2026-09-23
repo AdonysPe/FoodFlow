@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { EASE } from "@/lib/motion";
 import {
@@ -151,7 +151,7 @@ export default function ReservationCard({
 
       <AnimatePresence initial={false}>
         {editing && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -176,7 +176,7 @@ export default function ReservationCard({
                 onCancel={() => setEditing(false)}
               />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </li>

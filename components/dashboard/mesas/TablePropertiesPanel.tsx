@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { IconX } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { updateTable, deleteTable } from "@/lib/actions/tables";
@@ -71,7 +71,7 @@ export default function TablePropertiesPanel({
     <>
       <AnimatePresence>
         {table && form && (
-          <motion.aside
+          <m.aside
             key={table.id}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -120,7 +120,7 @@ export default function TablePropertiesPanel({
                 {isPending ? "Guardando…" : "Guardar cambios"}
               </button>
             </footer>
-          </motion.aside>
+          </m.aside>
         )}
       </AnimatePresence>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import GlassCard from "@/components/ui/GlassCard";
 import Button from "@/components/ui/Button";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
@@ -118,7 +118,7 @@ export default function ReservationsPanel({
 
       <AnimatePresence initial={false}>
         {adding && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -142,7 +142,7 @@ export default function ReservationsPanel({
                 onCancel={() => setAdding(false)}
               />
             </GlassCard>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -244,7 +244,7 @@ export default function ReservationsPanel({
 
           <AnimatePresence initial={false}>
             {selected && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
@@ -260,7 +260,7 @@ export default function ReservationsPanel({
                     />
                   </ul>
                 </GlassCard>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

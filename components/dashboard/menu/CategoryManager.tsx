@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { IconGrip } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { EASE } from "@/lib/motion";
@@ -206,7 +206,7 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
 
       <AnimatePresence initial={false}>
         {adding && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -229,7 +229,7 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
                 Añadir
               </button>
             </form>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

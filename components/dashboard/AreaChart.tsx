@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { buildAreaPath } from "@/lib/chart";
 import { EASE, viewportOnce } from "@/lib/motion";
 
@@ -50,7 +50,7 @@ export default function AreaChart({
           />
         ))}
 
-        <motion.path
+        <m.path
           d={area}
           fill={`url(#fill-${uid})`}
           initial={{ opacity: 0 }}
@@ -58,7 +58,7 @@ export default function AreaChart({
           viewport={viewportOnce}
           transition={{ duration: 1, ease: EASE, delay: 0.2 }}
         />
-        <motion.path
+        <m.path
           d={line}
           fill="none"
           stroke={`url(#stroke-${uid})`}

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 // Apple-style segmented control: the selected "pill" glides between options
 // with a spring. `idBase` must be unique per mounted instance — it keys the
@@ -36,7 +36,7 @@ export default function SegmentedControl<T extends string>({
             }`}
           >
             {active && (
-              <motion.span
+              <m.span
                 layoutId={`seg-${idBase}`}
                 transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
                 className="absolute inset-0 rounded-lg bg-fg/[0.1] shadow-[inset_0_1px_0_0_var(--spec),0_2px_8px_-2px_var(--drop-soft)]"

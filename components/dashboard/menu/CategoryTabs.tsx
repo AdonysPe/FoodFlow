@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { MenuCategoryDTO } from "@/lib/menuMeta";
 
 export type CatFilter = string; // "all" | "none" | categoryId
@@ -42,7 +42,7 @@ export default function CategoryTabs({
               }`}
             >
               {active && (
-                <motion.span
+                <m.span
                   layoutId="menu-cat-tab"
                   transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
                   className="absolute inset-0 rounded-lg bg-fg/[0.1] shadow-[inset_0_1px_0_0_var(--spec),0_2px_8px_-2px_var(--drop-soft)]"

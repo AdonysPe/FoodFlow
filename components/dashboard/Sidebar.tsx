@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import {
   IconDashboard,
   IconOrders,
@@ -337,7 +337,7 @@ export default function Sidebar({
       <AnimatePresence>
         {sidebarOpen && (
           <>
-            <motion.div
+            <m.div
               key="backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -347,7 +347,7 @@ export default function Sidebar({
               className="fixed inset-0 z-40 bg-[var(--scrim)] backdrop-blur-sm lg:hidden"
               aria-hidden
             />
-            <motion.aside
+            <m.aside
               key="panel"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -373,7 +373,7 @@ export default function Sidebar({
                 onNavigate={closeSidebar}
               />
               {footer}
-            </motion.aside>
+            </m.aside>
           </>
         )}
       </AnimatePresence>

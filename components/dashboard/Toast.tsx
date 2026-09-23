@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { IconCheck, IconX } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 
@@ -24,7 +24,7 @@ function ToastItem({
   }, [id, tone, onDismiss]);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 16, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } }}
@@ -47,7 +47,7 @@ function ToastItem({
       >
         <IconX className="h-3 w-3" />
       </button>
-    </motion.div>
+    </m.div>
   );
 }
 

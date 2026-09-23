@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import GlassCard from "@/components/ui/GlassCard";
 import Button from "@/components/ui/Button";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
@@ -152,7 +152,7 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
 
       <AnimatePresence initial={false}>
         {adding && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -169,7 +169,7 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
                 </div>
               </form>
             </GlassCard>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

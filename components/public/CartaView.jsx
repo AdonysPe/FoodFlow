@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import {
   CARTA_DAYS,
   CARTA_DAYS_SHORT,
@@ -374,7 +374,7 @@ export default function CartaView({ initial }) {
                   }`}
                 >
                   {activeCat === section.id && (
-                    <motion.span
+                    <m.span
                       layoutId="public-carta-category"
                       transition={
                         reducedMotion
@@ -457,7 +457,7 @@ function CartaCard({ item, onZoom, reducedMotion, priority }) {
   const zoomable = Boolean(item.photoUrl);
 
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={() => zoomable && onZoom(item)}
       aria-label={zoomable ? `Ver foto de ${item.name}` : undefined}
@@ -510,7 +510,7 @@ function CartaCard({ item, onZoom, reducedMotion, priority }) {
       >
         {cartaPrice(item.price)}
       </p>
-    </motion.button>
+    </m.button>
   );
 }
 
@@ -522,7 +522,7 @@ function PhotoZoom({ item, onClose, reducedMotion }) {
   }, [onClose]);
 
   return (
-    <motion.div
+    <m.div
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
@@ -533,7 +533,7 @@ function PhotoZoom({ item, onClose, reducedMotion }) {
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-5 backdrop-blur-sm"
     >
-      <motion.figure
+      <m.figure
         initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={reducedMotion ? undefined : { opacity: 0, scale: 0.97 }}
@@ -555,8 +555,8 @@ function PhotoZoom({ item, onClose, reducedMotion }) {
         >
           Cerrar
         </button>
-      </motion.figure>
-    </motion.div>
+      </m.figure>
+    </m.div>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { PARTICLE_RGB, particlesConfig as cfg } from "@/lib/particlesConfig";
+import { GRADIENT_FROM_RGB, GRADIENT_TO_RGB, particlesConfig as cfg } from "@/lib/particlesConfig";
 
 /**
  * Ambient hero background: a slow constellation of points that link into
@@ -20,6 +20,16 @@ import { PARTICLE_RGB, particlesConfig as cfg } from "@/lib/particlesConfig";
 
 function between({ min, max }) {
   return min + Math.random() * (max - min);
+}
+
+// Tints each particle by where it sits left-to-right, so the field reads as
+// one continuous bermellón-to-amber gradient rather than a flat color — the
+// same two stops Pricing and the old hero glow already mix elsewhere.
+function colorAt(t) {
+  const r = Math.round(GRADIENT_FROM_RGB[0] + (GRADIENT_TO_RGB[0] - GRADIENT_FROM_RGB[0]) * t);
+  const g = Math.round(GRADIENT_FROM_RGB[1] + (GRADIENT_TO_RGB[1] - GRADIENT_FROM_RGB[1]) * t);
+  const b = Math.round(GRADIENT_FROM_RGB[2] + (GRADIENT_TO_RGB[2] - GRADIENT_FROM_RGB[2]) * t);
+  return `${r}, ${g}, ${b}`;
 }
 
 function buildParticles(width, height, count) {
@@ -49,8 +59,15 @@ function step(particles, width, height, dt) {
   }
 }
 
-function line(ctx, ax, ay, bx, by, alpha) {
-  ctx.strokeStyle = `rgba(${PARTICLE_RGB}, ${alpha})`;
+// A flat rgba would make every thread the same shade; a two-stop canvas
+// gradient between each endpoint's own tint reads as current running
+// through a circuit rather than a static mesh.
+function link(ctx, ax, ay, aColor, bx, by, bColor, alpha, width) {
+  const grad = ctx.createLinearGradient(ax, ay, bx, by);
+  grad.addColorStop(0, `rgba(${aColor}, ${alpha})`);
+  grad.addColorStop(1, `rgba(${bColor}, ${alpha})`);
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = width;
   ctx.beginPath();
   ctx.moveTo(ax, ay);
   ctx.lineTo(bx, by);
@@ -58,9 +75,10 @@ function line(ctx, ax, ay, bx, by, alpha) {
 }
 
 function draw(ctx, particles, width, height, pointer) {
-  const { links, grab } = cfg;
+  const { links, grab, particle } = cfg;
   ctx.clearRect(0, 0, width, height);
-  ctx.lineWidth = links.width;
+
+  const colors = particles.map((p) => colorAt(width ? p.x / width : 0));
 
   for (let i = 0; i < particles.length; i += 1) {
     const a = particles[i];
@@ -68,20 +86,32 @@ function draw(ctx, particles, width, height, pointer) {
       const b = particles[j];
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       if (dist < links.distance) {
-        line(ctx, a.x, a.y, b.x, b.y, (1 - dist / links.distance) * links.opacity);
+        const alpha = (1 - dist / links.distance) * links.opacity;
+        link(ctx, a.x, a.y, colors[i], b.x, b.y, colors[j], alpha, links.width);
       }
     }
 
     if (pointer.active) {
       const dist = Math.hypot(a.x - pointer.x, a.y - pointer.y);
       if (dist < grab.distance) {
-        line(ctx, a.x, a.y, pointer.x, pointer.y, (1 - dist / grab.distance) * grab.opacity);
+        const alpha = (1 - dist / grab.distance) * grab.opacity;
+        link(ctx, a.x, a.y, colors[i], pointer.x, pointer.y, colors[i], alpha, grab.width);
       }
     }
   }
 
-  ctx.fillStyle = `rgba(${PARTICLE_RGB}, ${cfg.particle.opacity})`;
-  for (const p of particles) {
+  // Each dot is a faint halo plus a bright core — a cheap stand-in for a
+  // glow filter that doesn't cost a blur pass every frame.
+  for (let i = 0; i < particles.length; i += 1) {
+    const p = particles[i];
+    const c = colors[i];
+
+    ctx.fillStyle = `rgba(${c}, ${particle.haloOpacity})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * particle.haloScale, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = `rgba(${c}, ${particle.opacity})`;
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
     ctx.fill();

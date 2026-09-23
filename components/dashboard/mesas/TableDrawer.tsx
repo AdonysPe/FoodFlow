@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { IconX } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { EASE } from "@/lib/motion";
@@ -89,7 +89,7 @@ export default function TableDrawer({
     <AnimatePresence>
       {open && table && (
         <>
-          <motion.div
+          <m.div
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -99,7 +99,7 @@ export default function TableDrawer({
             className="fixed inset-0 z-40 bg-[var(--scrim)] backdrop-blur-sm"
             aria-hidden
           />
-          <motion.aside
+          <m.aside
             key="panel"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -311,7 +311,7 @@ export default function TableDrawer({
                 </div>
               )}
             </footer>
-          </motion.aside>
+          </m.aside>
         </>
       )}
     </AnimatePresence>

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { EASE } from "@/lib/motion";
 
 const BAR_TONES = [
@@ -31,7 +31,7 @@ export default function FunnelChart({
               </span>
             </div>
             <div className="h-3 w-full overflow-hidden rounded-full bg-fg/[0.05]">
-              <motion.div
+              <m.div
                 initial={{ width: 0 }}
                 whileInView={{ width: `${pct}%` }}
                 viewport={{ once: true, amount: 0.6 }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
 import { EASE } from "@/lib/motion";
 
@@ -115,14 +115,14 @@ export default function SalesTrendChart({ points }: { points: TrendPoint[] }) {
               />
             ))}
 
-            <motion.path
+            <m.path
               d={area}
               fill={`url(#fill-${uid})`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.9, ease: EASE, delay: 0.15 }}
             />
-            <motion.path
+            <m.path
               d={line}
               fill="none"
               stroke={`url(#stroke-${uid})`}

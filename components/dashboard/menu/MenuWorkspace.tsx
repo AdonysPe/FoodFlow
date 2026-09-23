@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import Button from "@/components/ui/Button";
 import AutoRefresh from "@/components/dashboard/AutoRefresh";
 import { IconSearch } from "@/components/ui/Icons";
@@ -130,7 +130,7 @@ export default function MenuWorkspace({
 
       <AnimatePresence initial={false}>
         {showCats && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -138,7 +138,7 @@ export default function MenuWorkspace({
             className="overflow-hidden"
           >
             <CategoryManager categories={categories} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

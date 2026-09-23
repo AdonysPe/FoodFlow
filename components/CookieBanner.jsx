@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { CONSENT, readConsent, saveConsent } from "@/lib/consent";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, INTRO_DELAY } from "@/lib/motion";
@@ -32,7 +32,7 @@ export default function CookieBanner() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
+        <m.div
           role="region"
           aria-label={t.cookies.page.title}
           initial={{ opacity: 0, y: 28 }}
@@ -78,7 +78,7 @@ export default function CookieBanner() {
               </button>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

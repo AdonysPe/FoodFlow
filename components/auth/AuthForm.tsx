@@ -2,12 +2,12 @@
 
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { useId, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { IconCheck, IconEye, IconEyeOff } from "@/components/ui/Icons";
 
 export function AuthCard({ title, description, children, footer }: { title: string; description?: string; children: ReactNode; footer?: ReactNode }) {
   return (
-    <motion.section initial={{ opacity: 0, y: 22, filter: "blur(10px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} className="auth-card relative overflow-hidden rounded-2xl p-6 shadow-panel sm:p-9">
+    <m.section initial={{ opacity: 0, y: 22, filter: "blur(10px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} className="auth-card relative overflow-hidden rounded-2xl p-6 shadow-panel sm:p-9">
       <div aria-hidden className="absolute inset-x-8 top-0 h-px hairline-top opacity-80" />
       <div className="relative">
         <h1 className="max-w-[18ch] font-display text-[clamp(1.75rem,5vw,2.2rem)] font-bold leading-[1.08] tracking-[-0.035em] text-fg">{title}</h1>
@@ -15,7 +15,7 @@ export function AuthCard({ title, description, children, footer }: { title: stri
         {children}
         {footer ? <div className="mt-7 border-t border-fg/[0.07] pt-5">{footer}</div> : null}
       </div>
-    </motion.section>
+    </m.section>
   );
 }
 
@@ -87,7 +87,7 @@ export function ConsentCheckbox({ id, checked, onChange, error, errorMessage, ch
 }
 
 export function AuthAlert({ message }: { message: string }) {
-  return <AnimatePresence initial={false}>{message ? <motion.p role="alert" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="rounded-xl bg-accent-500/[0.09] px-3.5 py-3 text-[13px] leading-5 text-accent-ink ring-1 ring-inset ring-accent-500/20">{message}</motion.p> : null}</AnimatePresence>;
+  return <AnimatePresence initial={false}>{message ? <m.p role="alert" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="rounded-xl bg-accent-500/[0.09] px-3.5 py-3 text-[13px] leading-5 text-accent-ink ring-1 ring-inset ring-accent-500/20">{message}</m.p> : null}</AnimatePresence>;
 }
 
 export function LoadingIndicator() {
