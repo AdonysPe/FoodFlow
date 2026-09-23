@@ -1,35 +1,38 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { PARTICLE_RGB, particlesConfig as cfg } from "@/lib/particlesConfig";
 
 /**
  * Ambient hero background: a slow constellation of points that link into
- * threads when close enough, three.js-network-effect in spirit but plain
- * Canvas 2D — no WebGL context, no model/shader/renderer to spin up, nothing
- * to download beyond this file.
+ * threads when close, and reach for the cursor (tsparticles' "grab" mode) —
+ * plain Canvas 2D, no particle library to download.
  *
  * Load-time budget is the whole point: setup (particle generation, the
  * first frame) is pushed to `requestIdleCallback` so it never competes with
  * hydration or the hero's own entrance animation, the frame rate is capped
- * at ~30fps since a background this subtle doesn't need 120Hz, DPR is capped
- * at 1.5, and the loop pauses outright when the tab is hidden, the canvas
- * scrolls out of view, or `prefers-reduced-motion` is set (one static frame
- * instead).
+ * (a background this subtle doesn't need 120Hz), DPR is capped, and the loop
+ * pauses outright when the tab is hidden, the canvas scrolls out of view, or
+ * `prefers-reduced-motion` is set (one static frame instead).
+ *
+ * Numbers live in lib/particlesConfig.js.
  */
 
-const MAX_LINK_DIST = 130;
-const POINTER_LINK_DIST = 170;
-const TARGET_FPS = 30;
+function between({ min, max }) {
+  return min + Math.random() * (max - min);
+}
 
 function buildParticles(width, height, count) {
   const particles = [];
   for (let i = 0; i < count; i += 1) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = between(cfg.particle.speed);
     particles.push({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 14,
-      vy: (Math.random() - 0.5) * 14,
-      r: 1.2 + Math.random() * 1.4,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      r: between(cfg.particle.radius),
     });
   }
   return particles;
@@ -46,42 +49,38 @@ function step(particles, width, height, dt) {
   }
 }
 
+function line(ctx, ax, ay, bx, by, alpha) {
+  ctx.strokeStyle = `rgba(${PARTICLE_RGB}, ${alpha})`;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+}
+
 function draw(ctx, particles, width, height, pointer) {
+  const { links, grab } = cfg;
   ctx.clearRect(0, 0, width, height);
+  ctx.lineWidth = links.width;
 
   for (let i = 0; i < particles.length; i += 1) {
     const a = particles[i];
     for (let j = i + 1; j < particles.length; j += 1) {
       const b = particles[j];
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist >= MAX_LINK_DIST) continue;
-      const alpha = (1 - dist / MAX_LINK_DIST) * 0.5;
-      ctx.strokeStyle = `rgba(255, 130, 80, ${alpha})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (dist < links.distance) {
+        line(ctx, a.x, a.y, b.x, b.y, (1 - dist / links.distance) * links.opacity);
+      }
     }
 
     if (pointer.active) {
-      const dx = a.x - pointer.x;
-      const dy = a.y - pointer.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < POINTER_LINK_DIST) {
-        ctx.strokeStyle = `rgba(255, 176, 92, ${(1 - dist / POINTER_LINK_DIST) * 0.55})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(pointer.x, pointer.y);
-        ctx.stroke();
+      const dist = Math.hypot(a.x - pointer.x, a.y - pointer.y);
+      if (dist < grab.distance) {
+        line(ctx, a.x, a.y, pointer.x, pointer.y, (1 - dist / grab.distance) * grab.opacity);
       }
     }
   }
 
-  ctx.fillStyle = "rgba(255, 165, 130, 0.85)";
+  ctx.fillStyle = `rgba(${PARTICLE_RGB}, ${cfg.particle.opacity})`;
   for (const p of particles) {
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -105,15 +104,13 @@ export default function ParticleThreads({ className = "" }) {
     const mount = mountRef.current;
     if (!mount) return undefined;
 
-    let cancelIdle = null;
     let cleanupInner = () => {};
-
-    cancelIdle = onIdle(() => {
+    const cancelIdle = onIdle(() => {
       cleanupInner = setup(mount);
     });
 
     return () => {
-      cancelIdle?.();
+      cancelIdle();
       cleanupInner();
     };
   }, []);
@@ -141,78 +138,84 @@ function setup(mount) {
   let width = 0;
   let height = 0;
   let particles = [];
+  const pointer = { x: 0, y: 0, active: false };
 
   const layout = () => {
     width = mount.clientWidth;
     height = mount.clientHeight;
     if (!width || !height) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = Math.min(window.devicePixelRatio || 1, cfg.maxDpr);
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const isSmall = width < 768;
-    particles = buildParticles(width, height, isSmall ? 24 : 46);
+    const small = width < cfg.mobileBreakpoint;
+    particles = buildParticles(width, height, small ? cfg.count.mobile : cfg.count.desktop);
+    // Resizing the canvas wipes it; the animated loop repaints on its next
+    // frame, the static one has to be told.
+    if (reduceMotion) draw(ctx, particles, width, height, pointer);
   };
   layout();
 
-  const pointer = { x: 0, y: 0, active: false };
   const onPointerMove = (e) => {
     const rect = mount.getBoundingClientRect();
     pointer.x = e.clientX - rect.left;
     pointer.y = e.clientY - rect.top;
     pointer.active = pointer.x >= 0 && pointer.x <= width && pointer.y >= 0 && pointer.y <= height;
   };
-  const onPointerLeave = () => {
+  const release = () => {
     pointer.active = false;
   };
+  // A finger lifting leaves no hover behind, so it shouldn't leave threads.
+  const onPointerUp = (e) => {
+    if (e.pointerType !== "mouse") release();
+  };
+  const root = document.documentElement;
   if (!reduceMotion) {
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerout", onPointerLeave, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
+    window.addEventListener("pointercancel", release, { passive: true });
+    root.addEventListener("pointerleave", release, { passive: true });
   }
 
   let raf = 0;
-  let visible = true;
+  let visible = document.visibilityState === "visible";
   let onScreen = true;
   let last = performance.now();
-  const frameBudget = 1000 / TARGET_FPS;
+  const frameBudget = 1000 / cfg.fps;
 
   const tick = (now) => {
     raf = requestAnimationFrame(tick);
     if (!visible || !onScreen || !width || !height) return;
     const elapsed = now - last;
     if (elapsed < frameBudget) return;
-    const dt = Math.min(elapsed, 100) / 1000;
     last = now;
-    step(particles, width, height, dt);
+    step(particles, width, height, Math.min(elapsed, 100) / 1000);
     draw(ctx, particles, width, height, pointer);
   };
 
-  if (reduceMotion) {
-    draw(ctx, particles, width, height, pointer);
-  } else {
-    raf = requestAnimationFrame(tick);
-  }
+  if (!reduceMotion) raf = requestAnimationFrame(tick);
 
   const ro = new ResizeObserver(layout);
   ro.observe(mount);
 
   const onVisibility = () => {
     visible = document.visibilityState === "visible";
+    // Don't let the time spent hidden arrive as one giant step.
+    if (visible) last = performance.now();
   };
   document.addEventListener("visibilitychange", onVisibility);
 
-  const io = new IntersectionObserver(
-    ([entry]) => {
-      onScreen = entry.isIntersecting;
-    },
-    { threshold: 0 }
-  );
+  const io = new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+  });
   io.observe(mount);
 
   return () => {
     cancelAnimationFrame(raf);
     window.removeEventListener("pointermove", onPointerMove);
-    window.removeEventListener("pointerout", onPointerLeave);
+    window.removeEventListener("pointerup", onPointerUp);
+    window.removeEventListener("pointercancel", release);
+    root.removeEventListener("pointerleave", release);
     document.removeEventListener("visibilitychange", onVisibility);
     ro.disconnect();
     io.disconnect();

@@ -46,7 +46,7 @@ export default function Hero() {
       ref={ref}
       className="relative isolate overflow-hidden pt-24 pb-14 sm:pt-28 sm:pb-20 lg:pt-32 lg:[@media(max-height:820px)]:pt-24"
     >
-      <ParticleThreads className="opacity-70" />
+      <ParticleThreads />
 
       {/* lime core glow behind the headline */}
       <div
