@@ -1,31 +1,89 @@
-node_modules
-.next
-out
-.env*
-!.env.example
-.vercel
-.DS_Store
-*.log
-
-# graphify knowledge graph output
-/graphify-out/
-
-# Prisma
-/prisma/dev.db
-/prisma/dev.db-journal
-
-# TypeScript
+# Dependencies, builds and generated caches
+node_modules/
+.next/
+/out/
+/dist/
+/build/
+.cache/
+.turbo/
+.vercel/
+.netlify/
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
 *.tsbuildinfo
 next-env.d.ts
 
-# Internal docs that describe security posture, the DB schema and the billing
-# encryption model in detail. Kept locally, out of git — a private repo isn't
-# a reason to hand an attacker a map if it ever changes hands or goes public.
-/SEGURIDAD.md
-/BASE-DE-DATOS.md
-/FACTURACION-API.md
+# Local environment and credentials. Only the reviewed root template is public.
+.env*
+!/.env.example
+.npmrc
+.yarnrc.yml
+.netrc
+.npm-token
+.aws/
+.ssh/
+credentials.json
+credentials.*.json
+service-account*.json
+serviceAccount*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
 
-# Local Claude Code / agent skill installs. Machine-specific tooling config,
-# not FoodFlow source — reappears whenever a skill is installed here.
-/.claude/skills/
-/.agents/skills/
+# Local databases, exports and backups. Keep Prisma SQL migrations versioned.
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.dump
+*.sql.gz
+*.sql.zip
+*.backup
+*.bak
+/backups/
+/dumps/
+/exports/
+/secrets/
+/certificates/
+
+# Logs, temporary files and editor/OS state
+*.log
+/logs/
+/tmp/
+/temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local agent configuration, installed skills and generated analysis
+/.agents/
+/.claude/
+/.codex/
+/.cursor/
+/skills-lock.json
+/graphify-out/
+
+# Internal Markdown stays local; keep the public README and image attribution.
+*.[mM][dD]
+*.[mM][aA][rR][kK][dD][oO][wW][nN]
+!/README.md
+!/public/demo/carta/CREDITOS.md
+
+# These rules do not remove tracked files or erase prior Git history.
+# Review source, commit history and metadata before publishing.
