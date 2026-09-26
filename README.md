@@ -1,93 +1,113 @@
-# FoodFlow — landing page
+# FoodFlow
 
-Conversion-focused marketing site for a restaurant operations SaaS. Dark, glass,
-one warm accent, motion used to explain rather than decorate.
+## El sistema operativo de tu restaurante
 
-## Stack
+FoodFlow reúne tu carta, tus pedidos, tu cocina y los números del día en un solo lugar. Menos pedidos perdidos entre WhatsApp, llamadas y cuadernos; más control durante cada turno.
 
-- **Next.js 15** (App Router, JS + JSX)
-- **React 19**
-- **Tailwind CSS v4** (CSS-first config — tokens live in `app/globals.css` under `@theme`)
-- **Framer Motion 12** — scroll reveals, hover physics, scroll-linked transforms
-- **Three.js** — ambient particle field behind the hero and final CTA
+FoodFlow es un SaaS para restaurantes que quieren vender directo, trabajar con más orden y dejar de pagar una comisión por cada pedido que ya podrían recibir ellos mismos.
 
-## Run it
+[Conoce FoodFlow](https://foodflow.site) · [Ver planes](https://foodflow.site/precios) · [Calcular cuánto pierdes en comisiones](https://foodflow.site/calculadora)
 
-```bash
-npm install
-```
+## Hecho para el ritmo real de una cocina
 
-```bash
-npm run dev
-```
+### Carta digital con QR
 
-Then open http://localhost:3000. `npm run build && npm start` for production.
+Publica tu carta desde un panel, organiza categorías, cambia precios al instante y marca platos agotados sin volver a imprimir nada. Cada mesa puede tener su propio código QR.
 
-## Structure
+### Pedidos directos
 
-```
-app/
-  layout.jsx          fonts (Inter + Sora), metadata, skip link
-  page.jsx            section composition
-  globals.css         design tokens, base styles, custom utilities
-components/
-  MotionProvider.jsx  MotionConfig — honours prefers-reduced-motion
-  ParticleThreads.jsx Canvas 2D constellation field, setup on requestIdleCallback
-  DashboardPreview.jsx the product shot — pure DOM + SVG, no screenshots
-  sections/           Navbar, Hero, SocialProof, Features, Showcase,
-                      HowItWorks, Benefits, CTA, Footer
-  ui/                 Button, GlassCard, Reveal, SectionHeading, Container,
-                      Badge, ScrollProgress, Icons
-lib/
-  motion.js           shared easing + variants (one curve for the whole page)
-  chart.js            smoothed area-path maths for the dashboard chart
-  useCountUp.js       rAF count-up that fires once on scroll into view
-  i18n/
-    dictionaries.js   all page copy, English and Spanish, mirrored key-for-key
-    LanguageContext.jsx  provider + useLanguage() hook
-```
+Recibe pedidos de salón, para llevar y delivery en una sola cola. Con tu propia web de pedidos, tus clientes compran directo a tu restaurante y el dinero va a tu cuenta.
 
-## Language
+### Comanda para mozos
 
-The page ships in English and Spanish. `LanguageProvider` (wrapping the page in
-`app/page.jsx`) holds the active language in a context, persists the choice to
-`localStorage`, and sets `<html lang>` accordingly. `components/ui/LanguageToggle.jsx`
-is the switch in the navbar (desktop and mobile). Every section reads its copy
-from `useLanguage().t`, so adding a third language means adding one more entry
-to `lib/i18n/dictionaries.js` — no component changes needed.
+Tus mozos toman pedidos desde el celular, agregan indicaciones y envían cada ronda a cocina en pocos toques. Cada persona entra con su propia cuenta.
 
-## Design decisions worth knowing
+### Cocina sincronizada
 
-**One accent.** Everything is ink + white-at-low-opacity, with a single warm
-amber (`--color-accent-*`) reserved for the primary action, live data and
-positive deltas. A cool violet appears only in glows. This is what keeps the
-"Start Free" button unmissable.
+La pantalla de cocina muestra cada pedido, sus notas, sus rondas y el tiempo que lleva esperando. Todo el equipo sabe qué sigue y qué necesita atención.
 
-**One motion curve.** `lib/motion.js` exports a single easing and a small set of
-variants. Every section reveals on the same curve and distance, which is the
-difference between a page that feels authored and one that feels assembled.
+### Mesas, reservas y cuentas
 
-**The dashboard is real markup.** `DashboardPreview` is built from DOM and SVG
-rather than an image: it stays sharp on any display, animates its chart and bars
-on scroll, and never goes stale when the product changes. It renders in two
-variants (hero and showcase) from one component.
+Administra el plano de tu salón, visualiza mesas ocupadas, gestiona reservas y mantén cada cuenta vinculada al lugar correcto.
 
-**The 3D layer is deliberately quiet.** The particle field caps DPR at 2, pauses
-rendering when the tab is hidden or the canvas scrolls out of view, disposes its
-geometry and material on unmount, falls back silently if WebGL is unavailable,
-and renders a single static frame for users who prefer reduced motion.
+### Números del turno
 
-## Accessibility
+Mira ventas, pedidos, canales, tiempos y rendimiento sin abrir un Excel al final del día. FoodFlow convierte la operación en información que puedes usar.
 
-- `prefers-reduced-motion` is handled twice over: CSS for transitions/animations,
-  and `MotionConfig reducedMotion="user"` for Framer Motion's JS-driven ones
-  (CSS media queries do not reach those).
-- Skip link, labelled form control, `aria-expanded` on the menu toggle, and
-  `inert` on the closed mobile sheet so it stays out of the tab order.
-- Decorative layers are `aria-hidden`; the dashboard carries a descriptive label.
+## Tu canal propio, sin comisión por pedido
 
-## Wiring it up
+Las plataformas de delivery pueden llevarse entre el 20% y el 35% de cada pedido, además de quedarse con la relación con tu cliente. FoodFlow funciona con una cuota mensual fija: recibes el pedido en tu panel y el cliente sigue siendo tuyo.
 
-The CTA form is demo-only — `onSubmit` in `components/sections/CTA.jsx` reads the
-email off the form and flips to a success state. Point it at your signup
-endpoint. Nav links, footer links and the logo marquee are placeholders.
+Usa tu enlace en Instagram, Google, WhatsApp o tu propio sitio. Tus clientes no necesitan descargar una aplicación.
+
+## Te ayudamos a ponerlo en marcha
+
+No tienes que pasar meses migrando tu operación. En el programa piloto de FoodFlow:
+
+- montamos tu carta y tus categorías;
+- configuramos tus canales de pedido;
+- dejamos lista la pantalla de cocina;
+- conectamos tus mesas y códigos QR;
+- te acompañamos durante tu primer servicio.
+
+El objetivo es que puedas empezar en 48 horas, con el equipo y los celulares que ya tienes.
+
+## Planes para cada etapa
+
+Empieza con la carta digital y el QR. Suma mesas, pedidos, cocina, comanda, equipo, clientes, analítica y tu web de pedidos a medida que tu operación lo necesite.
+
+Todos los planes tienen soporte en español e inglés, actualizaciones y no cobran comisión por pedido. No hay permanencia: puedes cambiar o cancelar de un mes a otro.
+
+[Ver los planes de FoodFlow](https://foodflow.site/precios)
+
+## Programa fundador en Lima
+
+FoodFlow está abriendo plazas limitadas para restaurantes de Lima. Las plazas fundadoras incluyen precio congelado de por vida, migración de carta gratis y acompañamiento en vivo durante el primer viernes de servicio.
+
+[Hablar con el equipo](https://foodflow.site) · [Escribir por WhatsApp](https://wa.me/51950360685)
+
+## ¿Para quién es FoodFlow?
+
+Para restaurantes, cevicherías, cafeterías y locales de comida que:
+
+- reciben pedidos por varios canales y quieren ordenarlos;
+- tienen mesas y necesitan una comanda simple para su equipo;
+- quieren una carta que puedan actualizar sin depender de un diseñador;
+- desean vender directo sin regalar un porcentaje de cada plato;
+- necesitan ver qué está pasando durante el turno, no tres días después.
+
+## Preguntas frecuentes
+
+**¿Necesito comprar hardware?**
+
+No. FoodFlow funciona en los celulares, tablets y computadoras que ya tienes.
+
+**¿Puedo seguir usando Rappi u otras plataformas?**
+
+Sí. FoodFlow suma un canal propio; no tienes que apagar tus canales actuales para empezar a vender directo.
+
+**¿FoodFlow cobra una comisión por pedido?**
+
+No. Pagas el plan mensual y el pedido entra a tu panel sin comisión de FoodFlow.
+
+**¿Cuánto demora la implementación?**
+
+El programa piloto está diseñado para dejar tu operación lista en 48 horas, incluyendo la carga inicial de tu carta.
+
+**¿Puedo probarlo antes de decidir?**
+
+Sí. Escríbenos y te mostramos el panel, revisamos cómo recibes pedidos hoy y te decimos qué plan tiene sentido para tu local.
+
+[Leer todas las preguntas frecuentes](https://foodflow.site/preguntas)
+
+## Empieza por una conversación
+
+Cuéntanos cómo funciona hoy tu restaurante. En 20 minutos podemos identificar dónde se están perdiendo pedidos, cuánto te cuestan las comisiones y qué parte de FoodFlow te conviene activar primero.
+
+[Solicitar información](https://foodflow.site) · [Usar la calculadora](https://foodflow.site/calculadora)
+
+---
+
+© FoodFlow · Lima, Perú
+
+[Privacidad](https://foodflow.site/privacidad) · [Términos](https://foodflow.site/terminos) · [Libro de Reclamaciones](https://foodflow.site/libro-de-reclamaciones)
