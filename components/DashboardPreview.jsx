@@ -52,7 +52,7 @@ const kitchenTime = (s) => `${Math.floor(s / 60)}m ${String(Math.round(s % 60)).
  * tickets age, move through the kitchen and new ones walk in, lifting the
  * tiles, the chart and the channel bars as they do.
  */
-export default function DashboardPreview({ variant = "full", className = "" }) {
+export default function DashboardPreview({ variant = "full", className = "", staticCapture = false }) {
   const { t } = useLanguage();
   const d = t.dashboard;
   const full = variant === "full";
@@ -62,7 +62,7 @@ export default function DashboardPreview({ variant = "full", className = "" }) {
 
   const ref = useRef(null);
   const inView = useInView(ref, { amount: 0.25 });
-  const live = useLiveService(d, inView);
+  const live = useLiveService(d, staticCapture ? false : inView);
 
   return (
     // A screenshot of the product, not a part of the page: it keeps the dark
@@ -202,13 +202,13 @@ export default function DashboardPreview({ variant = "full", className = "" }) {
               on the spot, so switching never waits on an animation to finish. */}
           <motion.div
             key={view}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={TRANSITION}
+            initial={staticCapture ? false : { opacity: 0, y: 8 }}
+            animate={staticCapture ? undefined : { opacity: 1, y: 0 }}
+            transition={staticCapture ? { duration: 0 } : TRANSITION}
             role="tabpanel"
           >
               {view === 0 && (
-                <Overview d={d} full={full} rangeKey={RANGE_KEYS[range]} live={live} />
+                <Overview d={d} full={full} rangeKey={RANGE_KEYS[range]} live={live} staticCapture={staticCapture} />
               )}
               {view === 1 && <Orders d={d} />}
               {view === 2 && <Kitchen d={d} />}
@@ -357,7 +357,7 @@ function SidebarKitchen({ d, kitchen }) {
   );
 }
 
-function KitchenBar({ pending, preparing, ready, total, thin = false }) {
+function KitchenBar({ pending, preparing, ready, total, thin = false, staticCapture = false }) {
   const segments = [
     [pending, "bg-cream/30"],
     [preparing, "bg-accent-400"],
@@ -369,9 +369,9 @@ function KitchenBar({ pending, preparing, ready, total, thin = false }) {
         <motion.div
           key={i}
           className={`h-full ${tone}`}
-          initial={{ width: 0 }}
+          initial={staticCapture ? false : { width: 0 }}
           animate={{ width: `${(count / total) * 100}%` }}
-          transition={{ duration: 0.8, ease: EASE }}
+          transition={staticCapture ? { duration: 0 } : { duration: 0.8, ease: EASE }}
         />
       ))}
     </div>
@@ -380,7 +380,7 @@ function KitchenBar({ pending, preparing, ready, total, thin = false }) {
 
 /* -------------------------------- overview ------------------------------- */
 
-function Overview({ d, full, rangeKey, live }) {
+function Overview({ d, full, rangeKey, live, staticCapture = false }) {
   const base = demoFigures(rangeKey);
   const { extra } = live;
 
@@ -424,7 +424,7 @@ function Overview({ d, full, rangeKey, live }) {
     <>
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
         {kpis.map((kpi, i) => (
-          <Kpi key={i} kpi={kpi} index={i} />
+          <Kpi key={i} kpi={kpi} index={i} staticCapture={staticCapture} />
         ))}
       </div>
 
@@ -435,13 +435,14 @@ function Overview({ d, full, rangeKey, live }) {
           series={series}
           previous={base.previous}
           labels={labels}
+          staticCapture={staticCapture}
         />
-        {full && <Channels d={d} channels={channels} />}
+        {full && <Channels d={d} channels={channels} staticCapture={staticCapture} />}
       </div>
 
       <div className={`mt-3 grid gap-3 ${full ? "lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]" : ""}`}>
-        <LiveOrders d={d} live={live} rows={full ? MAX_ROWS : 3} />
-        {full && <KitchenCard d={d} kitchen={live.kitchen} />}
+        <LiveOrders d={d} live={live} rows={full ? MAX_ROWS : 3} staticCapture={staticCapture} />
+        {full && <KitchenCard d={d} kitchen={live.kitchen} staticCapture={staticCapture} />}
       </div>
     </>
   );
@@ -452,13 +453,13 @@ function hourLabel(hour) {
   return hour < 12 ? `${hour}am` : `${hour - 12}pm`;
 }
 
-function Kpi({ kpi, index }) {
+function Kpi({ kpi, index, staticCapture = false }) {
   const good = kpi.lowerIsBetter ? kpi.delta <= 0 : kpi.delta >= 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={staticCapture ? false : { opacity: 0, y: 12 }}
+      whileInView={staticCapture ? undefined : { opacity: 1, y: 0 }}
       viewport={viewportOnce}
       transition={{ duration: 0.5, ease: EASE, delay: 0.05 * index }}
       className={`${PANEL} p-3`}
@@ -507,7 +508,7 @@ function Ticker({ value, format }) {
 const W = 560;
 const H = 150;
 
-function SalesChart({ d, rangeKey, series, previous, labels }) {
+function SalesChart({ d, rangeKey, series, previous, labels, staticCapture = false }) {
   const uid = useId().replace(/:/g, "");
   const [hover, setHover] = useState(null);
   const { line, area, prevLine } = buildComparisonPaths(series, previous, W, H, 10, { fit: true });
@@ -572,9 +573,9 @@ function SalesChart({ d, rangeKey, series, previous, labels }) {
           {prevLine && (
             <motion.path
               key={`p-${rangeKey}`}
-              initial={{ d: prevLine, opacity: 0 }}
+              initial={staticCapture ? false : { d: prevLine, opacity: 0 }}
               animate={{ d: prevLine, opacity: 1 }}
-              transition={{ duration: 0.8, ease: EASE }}
+              transition={staticCapture ? { duration: 0 } : { duration: 0.8, ease: EASE }}
               fill="none"
               stroke="rgba(243,239,230,0.3)"
               strokeWidth="1.5"
@@ -584,16 +585,16 @@ function SalesChart({ d, rangeKey, series, previous, labels }) {
           )}
           <motion.path
             key={`a-${rangeKey}`}
-            initial={{ d: area, opacity: 0 }}
+            initial={staticCapture ? false : { d: area, opacity: 0 }}
             animate={{ d: area, opacity: 1 }}
-            transition={{ duration: 0.8, ease: EASE }}
+            transition={staticCapture ? { duration: 0 } : { duration: 0.8, ease: EASE }}
             fill={`url(#fill-${uid})`}
           />
           <motion.path
             key={`l-${rangeKey}`}
-            initial={{ d: line, pathLength: 0 }}
+            initial={staticCapture ? false : { d: line, pathLength: 0 }}
             animate={{ d: line, pathLength: 1 }}
-            transition={{ d: { duration: 0.8, ease: EASE }, pathLength: { duration: 1.1, ease: EASE } }}
+            transition={staticCapture ? { duration: 0 } : { d: { duration: 0.8, ease: EASE }, pathLength: { duration: 1.1, ease: EASE } }}
             fill="none"
             stroke={`url(#stroke-${uid})`}
             strokeWidth="2.5"
@@ -632,7 +633,7 @@ function SalesChart({ d, rangeKey, series, previous, labels }) {
   );
 }
 
-function Channels({ d, channels }) {
+function Channels({ d, channels, staticCapture = false }) {
   const total = channels.reduce((acc, c) => acc + c.count, 0);
 
   return (
@@ -657,9 +658,9 @@ function Channels({ d, channels }) {
               <div className="h-1.5 overflow-hidden rounded-full bg-cream/[0.07]">
                 <motion.div
                   className={`h-full rounded-full ${c.tone}`}
-                  initial={{ width: 0 }}
+                  initial={staticCapture ? false : { width: 0 }}
                   animate={{ width: `${share}%` }}
-                  transition={{ duration: 0.9, ease: EASE, delay: 0.1 + i * 0.08 }}
+                  transition={staticCapture ? { duration: 0 } : { duration: 0.9, ease: EASE, delay: 0.1 + i * 0.08 }}
                 />
               </div>
             </div>
@@ -670,7 +671,7 @@ function Channels({ d, channels }) {
   );
 }
 
-function LiveOrders({ d, live, rows }) {
+function LiveOrders({ d, live, rows, staticCapture = false }) {
   const list = live.orders.slice(0, rows);
 
   return (
@@ -687,14 +688,14 @@ function LiveOrders({ d, live, rows }) {
             // No exit animation: a retired row just leaves and the rest slide
             // up via `layout`, so nothing can hang half-way out.
             <motion.button
-              layout
+              layout={!staticCapture}
               key={o.id}
               type="button"
               onClick={() => live.advance(o.id)}
               disabled={o.state === "served"}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, ease: EASE, layout: { duration: 0.35, ease: EASE } }}
+              initial={staticCapture ? false : { opacity: 0, x: -10 }}
+              animate={staticCapture ? undefined : { opacity: 1, x: 0 }}
+              transition={staticCapture ? { duration: 0 } : { duration: 0.4, ease: EASE, layout: { duration: 0.35, ease: EASE } }}
               className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors enabled:hover:bg-cream/[0.05] ${
                 fresh ? "bg-accent-400/[0.06]" : ""
               }`}
@@ -722,7 +723,7 @@ function LiveOrders({ d, live, rows }) {
   );
 }
 
-function KitchenCard({ d, kitchen }) {
+function KitchenCard({ d, kitchen, staticCapture = false }) {
   const { pending, preparing, ready } = kitchen;
   const total = pending + preparing + ready || 1;
   const c = d.kitchenCard;
@@ -736,7 +737,7 @@ function KitchenCard({ d, kitchen }) {
         <Ticker value={pending + preparing} format={(v) => Math.round(v)} />
         <span className="ml-2 font-sans text-[11.5px] font-normal text-cream/50">{c.active}</span>
       </p>
-      <KitchenBar pending={pending} preparing={preparing} ready={ready} total={total} />
+      <KitchenBar pending={pending} preparing={preparing} ready={ready} total={total} staticCapture={staticCapture} />
       <div className="mt-3 grid grid-cols-3 gap-2">
         {c.segments.map((label, i) => (
           <div key={label} className="rounded-lg bg-cream/[0.03] px-2 py-1.5">
