@@ -79,6 +79,10 @@ Desktop.ini
 /skills-lock.json
 /graphify-out/
 
+# Local video-authoring project (Remotion source, stills, audio beds, renders).
+# Only the finished export belongs in the product, at /public/videos/.
+/videos/
+
 # Internal Markdown stays local; keep the public README and image attribution.
 *.[mM][dD]
 *.[mM][aA][rR][kK][dD][oO][wW][nN]
