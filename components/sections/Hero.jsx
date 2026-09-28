@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   m as motion,
   useScroll,
@@ -22,11 +22,15 @@ import { EASE } from "@/lib/motion";
 const ParticleThreads = dynamic(() => import("@/components/ParticleThreads"), {
   ssr: false,
 });
+const DemoVideoModal = dynamic(() => import("@/components/DemoVideoModal"), {
+  ssr: false,
+});
 
 export default function Hero() {
   const { t } = useLanguage();
   const { headlineWords: words, offer } = t.hero;
   const ref = useRef(null);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   // The offer card drifts up a touch slower than the copy as the hero
   // leaves. Spring-smoothed so it never reads as stepped.
@@ -132,7 +136,10 @@ export default function Hero() {
                 {t.hero.ctaPrimary}
               </Button>
               <Button
-                href="#product"
+                type="button"
+                onClick={() => setDemoOpen(true)}
+                aria-haspopup="dialog"
+                aria-expanded={demoOpen}
                 variant="secondary"
                 size="lg"
                 className="w-full sm:w-auto"
@@ -254,6 +261,7 @@ export default function Hero() {
           </motion.div>
         </div>
       </Container>
+      {demoOpen && <DemoVideoModal onClose={() => setDemoOpen(false)} />}
     </section>
   );
 }
