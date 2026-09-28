@@ -68,8 +68,8 @@ export default function Pricing({ as }) {
                   <span className="text-[13.5px] font-medium text-cream/50">
                     {plan.period}
                   </span>
-                  <span aria-hidden className="text-[13.5px] text-accent-ink">
-                    *
+                  <span className="text-[11.5px] font-normal text-cream/50">
+                    + IGV
                   </span>
                 </p>
 
