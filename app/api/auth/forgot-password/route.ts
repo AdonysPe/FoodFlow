@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { verifyCsrf } from "@/lib/auth/csrf";
 import { generateOtp, hashOtp, otpExpiryDate } from "@/lib/auth/otp";
@@ -66,14 +66,22 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  try {
-    await sendPasswordResetOTP(email, code);
-  } catch {
-    await prisma.user.updateMany({
-      where: { id: user.id, verificationCode },
-      data: { verificationCode: null, verificationCodeExpiresAt: null },
-    });
-  }
+  // The mail goes out AFTER the response. Sending is the slow part (an SMTP
+  // round trip), and doing it inline made "this address has an account" show
+  // up as a slower answer than "it does not" — a way to enumerate accounts
+  // that no generic message can hide.
+  after(async () => {
+    try {
+      await sendPasswordResetOTP(email, code);
+    } catch {
+      await prisma.user
+        .updateMany({
+          where: { id: user.id, verificationCode },
+          data: { verificationCode: null, verificationCodeExpiresAt: null },
+        })
+        .catch(() => undefined);
+    }
+  });
 
   return genericResponse();
 }

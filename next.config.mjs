@@ -5,7 +5,25 @@ const isDev = process.env.NODE_ENV !== "production";
 // Enforced CSP. Next.js emits inline bootstrap scripts and the UI uses inline
 // styles, so unsafe-inline remains scoped to script/style while every remote
 // origin is explicitly allow-listed.
-const csp = [
+//
+// `culqi` widens it for exactly one page (see `headers()` below): Culqi
+// Checkout and Culqi 3-D Secure are scripts and iframes served from Culqi's
+// own domains, so the page that opens them has to allow those — and no other
+// page in the product does.
+function buildCsp({ culqi = false } = {}) {
+  const culqiScripts = culqi ? " https://checkout.culqi.com https://3ds.culqi.com" : "";
+  // 3-D Secure shows the issuing bank's challenge inside an iframe, and which
+  // bank (so which domain) is not known in advance. Framing is therefore
+  // opened to https on this one page. It only lets THIS page embed things; it
+  // does not let anyone embed FoodFlow (frame-ancestors stays 'none').
+  // Tighten to the exact origins once the sandbox shows them in the console.
+  const frameSrc = culqi ? "frame-src https:" : "frame-src 'none'";
+  const culqiConnect = culqi
+    ? " https://api.culqi.com https://secure.culqi.com https://checkout.culqi.com https://3ds.culqi.com"
+    : "";
+  const culqiImg = culqi ? " https://*.culqi.com" : "";
+  const culqiStyle = culqi ? " https://checkout.culqi.com" : "";
+  return [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
@@ -15,18 +33,22 @@ const csp = [
   // script tags. 'unsafe-eval' only in dev (React Refresh / HMR).
   // maps.googleapis.com/maps.gstatic.com: the delivery address picker, loaded
   // only when a diner picks Delivery (components/public/DeliveryLocationPicker.jsx).
-  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://maps.googleapis.com https://maps.gstatic.com${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://maps.googleapis.com https://maps.gstatic.com${culqiScripts}${isDev ? " 'unsafe-eval'" : ""}`,
+  `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com${culqiStyle}`,
   // Map tiles and UI icons are served from several googleapis/gstatic
   // subdomains (khms*, mt*, etc.) — Google's own CSP guidance wildcards them.
-  "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com",
+  `img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com${culqiImg}`,
   "font-src 'self' data: https://fonts.gstatic.com",
   // Server Actions POST to same-origin. ws/wss only in dev for HMR.
-  `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://maps.googleapis.com https://*.googleapis.com${isDev ? " ws: wss:" : ""}`,
-  "frame-src 'none'",
+  `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://maps.googleapis.com https://*.googleapis.com${culqiConnect}${isDev ? " ws: wss:" : ""}`,
+  frameSrc,
   "manifest-src 'self'",
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
-].join("; ");
+  ].join("; ");
+}
+
+const csp = buildCsp();
+const cspWithCulqi = buildCsp({ culqi: true });
 
 const securityHeaders = [
   // Enforced immediately — none of these can break a flow this app has.
@@ -54,7 +76,18 @@ const nextConfig = {
   poweredByHeader: false,
 
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Where two rules match the same path and set the same header, the LAST
+      // one wins (Next.js docs, "Headers"). So this replaces only the CSP, on
+      // only the settings page that hosts the plan checkout. Sub-pages such as
+      // /configuracion/facturacion (certificates and OSE credentials) keep the
+      // strict policy.
+      {
+        source: "/dashboard/app/configuracion",
+        headers: [{ key: "Content-Security-Policy", value: cspWithCulqi }],
+      },
+    ];
   },
 
   images: {

@@ -31,16 +31,19 @@ describe("password auth", () => {
   });
 
   test("reset OTP expires in 10 minutes and allows three attempts", () => {
+    // The expiry is read between two clock samples taken back to back, so the
+    // check does not depend on how long hashing takes on a busy machine.
     const before = Date.now();
+    const expiry = otpExpiryDate().getTime();
+    const after = Date.now();
     const code = generateOtp();
     const stored = hashOtp(code);
-    const ttl = otpExpiryDate().getTime() - before;
 
     expect(code).toMatch(/^\d{6}$/);
     expect(verifyOtpHash(code, stored)).toBe(true);
     expect(verifyOtpHash("000000", stored)).toBe(code === "000000");
-    expect(ttl).toBeGreaterThanOrEqual(10 * 60 * 1000 - 100);
-    expect(ttl).toBeLessThanOrEqual(10 * 60 * 1000 + 100);
+    expect(expiry).toBeGreaterThanOrEqual(before + 10 * 60 * 1000);
+    expect(expiry).toBeLessThanOrEqual(after + 10 * 60 * 1000);
     expect(maxOtpAttempts()).toBe(3);
   });
 

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { callerIpHash } from "@/lib/security/clientHash";
+import { rateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +29,12 @@ export async function POST(request: Request): Promise<Response> {
   if (!sameOrigin) {
     return NextResponse.json({ ok: false }, { status: 403 });
   }
+
+  // A browser reports a crash once or twice; a script could post this all
+  // day into the ops webhook. The Origin check above is not a defence against
+  // anything but a browser, so the volume is bounded per caller too.
+  const limit = await rateLimit("client-error", await callerIpHash(), { max: 20, windowMs: 10 * 60_000 });
+  if (!limit.ok) return NextResponse.json({ ok: false }, { status: 429 });
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > 12_000) {

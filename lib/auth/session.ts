@@ -54,6 +54,24 @@ function secretKey(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
+/**
+ * How the session-signing key is set up, for the health check. It never
+ * returns the key or any part of it.
+ *  - `separate`: JWT_SECRET, its own value (what SEGURIDAD.md asks for).
+ *  - `shared`:   falls back to AUTH_SECRET, which also peppers OTP and IP
+ *                hashes. Works, but one leaked value then breaks both.
+ *  - `weak`:     shorter than 32 characters.
+ *  - `missing`:  nothing set; sessions cannot be signed.
+ */
+export function sessionSecretStatus(): "separate" | "shared" | "weak" | "missing" {
+  const jwt = process.env.JWT_SECRET?.trim();
+  const auth = process.env.AUTH_SECRET?.trim();
+  const active = jwt || auth;
+  if (!active) return "missing";
+  if (active.length < 32) return "weak";
+  return jwt ? "separate" : "shared";
+}
+
 // Uses jose (WebCrypto-based) so this also works unmodified inside
 // middleware, which runs on the Edge runtime.
 export async function createSessionToken(payload: SessionPayload): Promise<string> {
@@ -72,7 +90,9 @@ export async function createSessionToken(payload: SessionPayload): Promise<strin
 
 export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, secretKey());
+    // The algorithm is pinned: a token that names any other one (or "none")
+    // is refused instead of being verified however its header asks.
+    const { payload } = await jwtVerify(token, secretKey(), { algorithms: ["HS256"] });
     const role = normalizeRole(payload.role);
     if (
       !payload.sub ||
