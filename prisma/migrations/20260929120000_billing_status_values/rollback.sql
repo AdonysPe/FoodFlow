@@ -1,0 +1,13 @@
+-- Postgres cannot drop a value from an enum. Rolling back means recreating the
+-- type, and that is only safe once no row uses the new values:
+--
+--   UPDATE "Restaurant"   SET "billing_status" = 'active'
+--     WHERE "billing_status" IN ('trialing', 'past_due', 'suspended');
+--   (same for "Subscription"."status" and "SubscriptionTransition", or roll
+--    back 20260929121000_subscriptions first, which drops those tables)
+--   ALTER TYPE "BillingStatus" RENAME TO "BillingStatus_old";
+--   CREATE TYPE "BillingStatus" AS ENUM ('pending', 'active', 'cancelled');
+--   ALTER TABLE "Restaurant" ALTER COLUMN "billing_status" DROP DEFAULT,
+--     ALTER COLUMN "billing_status" TYPE "BillingStatus" USING "billing_status"::text::"BillingStatus",
+--     ALTER COLUMN "billing_status" SET DEFAULT 'pending';
+--   DROP TYPE "BillingStatus_old";

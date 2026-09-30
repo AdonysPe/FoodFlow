@@ -86,10 +86,57 @@ enum Plan {
   negocio
 }
 
+/// Where a restaurant stands on paying FoodFlow. Read together with
+/// `BillingSource` and `accessUntil` by lib/subscriptions/entitlement.ts —
+/// never on its own.
 enum BillingStatus {
   pending
+  /// In the free trial of a card subscription.
+  trialing
   active
+  /// A renewal failed; access continues through the grace period.
+  past_due
+  /// Grace ran out without a payment. Nothing is deleted, access is locked.
+  suspended
   cancelled
+}
+
+/// Who decided the plan. The split is what keeps a manual deal (a pilot paying
+/// by transfer, the demo venue) from being overwritten by the card flow, and
+/// the card flow from being overwritten by an admin.
+enum BillingSource {
+  /// Nothing has been granted or bought yet (a fresh self-service sign-up).
+  none
+  /// A FoodFlow admin granted the plan by hand. Every venue that existed
+  /// before the payment gateway was backfilled to this.
+  manual
+  /// A card subscription with a payment provider decides the plan.
+  provider
+}
+
+enum SubscriptionProvider {
+  culqi
+}
+
+enum CheckoutStatus {
+  /// Waiting for the card token from the provider's checkout.
+  created
+  /// The card needs 3-D Secure before it can be saved.
+  requires_action
+  /// The provider subscription exists; waiting for the server to confirm it.
+  processing
+  completed
+  failed
+  expired
+  canceled
+}
+
+enum WebhookEventStatus {
+  received
+  processing
+  processed
+  ignored
+  failed
 }
 
 enum TableShape {
@@ -170,6 +217,10 @@ model Restaurant {
   // modules by accident, the admin has to grant them.
   plan                 Plan               @default(carta)
   billingStatus        BillingStatus      @default(pending) @map("billing_status")
+  billingSource        BillingSource      @default(none) @map("billing_source")
+  // End of the access that has been paid for (or granted). Null on a manual
+  // grant means "no end date". Written only by lib/subscriptions.
+  accessUntil          DateTime?          @map("access_until")
   // Public address of this venue's carta: /carta/<slug>, and the host that
   // <slug>.foodflow.site rewrites to. Nullable because a venue exists before
   // anyone has published its menu.
@@ -193,8 +244,186 @@ model Restaurant {
   cdrs         Cdr[]
   configAudits RestaurantConfigurationAudit[]
 
+  subscriptions         Subscription[]
+  subscriptionCheckouts SubscriptionCheckout[]
+
   @@index([ownerId])
   @@index([categoryId])
+}
+
+// ------------------------------------------------ FoodFlow's own subscriptions
+// What a restaurant pays FoodFlow. Deliberately NOT under "billing": in this
+// codebase billing means the venue's own SUNAT receipts (lib/billing).
+// Contract and decisions: docs/SUSCRIPCIONES-CONTRATO.md.
+
+/// A card subscription at the payment provider. A venue can accumulate several
+/// over time (cancel, subscribe again); at most one is live, which the
+/// checkout guarantees by locking the restaurant row.
+///
+/// Survives the restaurant (`SetNull` plus the name snapshot): it is the
+/// record of what was charged.
+model Subscription {
+  id             String      @id @default(cuid())
+  restaurantId   String?
+  restaurant     Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
+  restaurantName String
+  // The payer. No foreign key on purpose: deleting an account must not erase
+  // what it paid.
+  ownerId        String
+  ownerEmail     String
+
+  provider               SubscriptionProvider
+  providerCustomerId     String?
+  providerCardId         String?
+  providerSubscriptionId String?
+  providerPlanId         String
+
+  plan   Plan
+  status BillingStatus @default(pending)
+
+  // The price agreed at checkout, frozen: a later change to the catalogue
+  // does not reprice an existing subscription.
+  currency         String @default("PEN")
+  netAmountCents   Int
+  igvAmountCents   Int
+  grossAmountCents Int
+  igvRateBps       Int
+  discountBps      Int    @default(0)
+
+  trialDays          Int       @default(0)
+  // Set when a subscription that starts with the free trial is created at the
+  // provider. One trial per restaurant, ever.
+  trialUsedAt        DateTime?
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  canceledAt         DateTime?
+  endedAt            DateTime?
+
+  // Brand and last four only, as the provider reports them. Never more.
+  cardBrand String?
+  cardLast4 String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  checkouts SubscriptionCheckout[]
+
+  @@unique([provider, providerSubscriptionId])
+  @@index([restaurantId, createdAt])
+  @@index([status])
+}
+
+/// One attempt to buy a plan. The price is computed on the server when the
+/// attempt is created and copied here; nothing the browser sends later can
+/// change it.
+model SubscriptionCheckout {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId       String
+  userEmail    String
+
+  // Chosen by the owner, repeated per request: the same key returns the same
+  // attempt instead of opening a second one.
+  idempotencyKey String
+  status         CheckoutStatus @default(created)
+
+  plan           Plan
+  provider       SubscriptionProvider
+  providerPlanId String
+  withTrial      Boolean
+  trialDays      Int
+
+  currency         String @default("PEN")
+  netAmountCents   Int
+  igvAmountCents   Int
+  grossAmountCents Int
+  igvRateBps       Int
+  discountBps      Int    @default(0)
+
+  // The payer as the provider requires it (Culqi customers need all five).
+  customerFirstName String
+  customerLastName  String
+  customerPhone     String
+  customerAddress   String
+  customerCity      String
+
+  // What FoodFlow's own receipt to the venue will be.
+  billingDocType   String
+  billingRuc       String?
+  billingLegalName String?
+
+  // Validated server-side against an allowlist; never a full URL.
+  returnPath      String
+  termsAcceptedAt DateTime
+  termsVersion    String
+
+  // A confirm in flight holds this, so a double click cannot create two
+  // subscriptions at the provider.
+  lockedUntil DateTime?
+  attempts    Int       @default(0)
+
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  failureCode String?
+  expiresAt   DateTime
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([restaurantId, idempotencyKey])
+  @@index([restaurantId, status])
+  @@index([status, expiresAt])
+}
+
+/// Every notification the provider sends, stored before it is acted on. The
+/// unique pair is what makes processing idempotent: a redelivered event finds
+/// its row and does nothing.
+model SubscriptionWebhookEvent {
+  id              String               @id @default(cuid())
+  provider        SubscriptionProvider
+  providerEventId String
+  type            String
+  status          WebhookEventStatus   @default(received)
+  // SHA-256 of the raw body, to tell a redelivery from a different payload
+  // under the same id.
+  payloadHash     String
+  payload         Json?
+  attempts        Int                  @default(0)
+  error           String?
+  receivedAt      DateTime             @default(now())
+  processedAt     DateTime?
+
+  @@unique([provider, providerEventId])
+  @@index([status, receivedAt])
+}
+
+/// Every change to what a restaurant has paid for, written in the SAME
+/// transaction as the change — same reasoning as RestaurantConfigurationAudit:
+/// access cannot move without a row saying who or what moved it. No foreign
+/// keys, so the trail outlives the restaurant and the account.
+model SubscriptionTransition {
+  id             String         @id @default(cuid())
+  restaurantId   String
+  subscriptionId String?
+  fromStatus     BillingStatus?
+  toStatus       BillingStatus
+  fromSource     BillingSource?
+  toSource       BillingSource
+  fromPlan       Plan?
+  toPlan         Plan
+  /// e.g. "backfill.manual", "admin.grant", "provider.activated".
+  reason         String
+  actorUserId    String?
+  actorEmail     String?
+  eventId        String?
+  createdAt      DateTime       @default(now())
+
+  @@index([restaurantId, createdAt])
+  @@index([subscriptionId])
 }
 
 model RestaurantCategory {
@@ -445,60 +674,60 @@ model Cdr {
 // `items` is a JSON snapshot of the order lines (name/price/quantity) taken
 // at order time, so later menu price edits never rewrite historical orders.
 model Order {
-  id             String           @id @default(cuid())
-  restaurantId   String
-  restaurant     Restaurant       @relation(fields: [restaurantId], references: [id])
-  customerName   String
-  items          Json
-  total          Float
-  channel        OrderChannel     @default(dine_in)
+  id                 String           @id @default(cuid())
+  restaurantId       String
+  restaurant         Restaurant       @relation(fields: [restaurantId], references: [id])
+  customerName       String
+  items              Json
+  total              Float
+  channel            OrderChannel     @default(dine_in)
   // Null preserves the origin of existing orders; fulfillment reuses channel.
-  source         String?
-  publicToken    String?          @unique
-  checkoutKey    String?          @unique
-  checkoutHash   String?
-  customerPhone  String?
+  source             String?
+  publicToken        String?          @unique
+  checkoutKey        String?          @unique
+  checkoutHash       String?
+  customerPhone      String?
   fulfillmentAddress String?
-  deliveryZone   String?
-  deliveryReference String?
+  deliveryZone       String?
+  deliveryReference  String?
   // Where the diner dropped the pin. Advisory only: they help the rider find
   // the door, they never decide coverage — the zone the restaurant configured
   // does, and the server re-checks it on every order.
-  deliveryLatitude  Float?
-  deliveryLongitude Float?
+  deliveryLatitude   Float?
+  deliveryLongitude  Float?
   // Google Places id for the chosen address, when the picker could resolve
   // one. Null for a hand-typed address or when Maps failed to load.
-  deliveryPlaceId   String?
-  customerNotes  String?
-  deliveryFee    Float            @default(0)
-  estimatedMinutes Int?
-  status         OrderStatus      @default(pending)
+  deliveryPlaceId    String?
+  customerNotes      String?
+  deliveryFee        Float            @default(0)
+  estimatedMinutes   Int?
+  status             OrderStatus      @default(pending)
   // Incremented each time a server sends another round of items to an
   // already-open order for the same table, instead of opening a new order.
-  roundNumber    Int              @default(1)
+  roundNumber        Int              @default(1)
   // Display name of the waiter who placed / last added to the order. Shown on
   // the kitchen board. Null for orders logged from the owner dashboard.
-  serverName     String?
+  serverName         String?
   // Optional link to a floor-plan table. Nullable and unset by the existing
   // order flow — the Mesas module uses it to show a table's active order.
-  tableId        String?
-  table          RestaurantTable? @relation(fields: [tableId], references: [id])
+  tableId            String?
+  table              RestaurantTable? @relation(fields: [tableId], references: [id])
   // Set the moment status flips to "ready" — lets us compute an accurate
   // average prep time without a separate status-history table.
-  readyAt        DateTime?
+  readyAt            DateTime?
   // Payment is tracked separately from the kitchen status. A dine-in order
   // keeps its table occupied until it is paid (paidAt) or voided (voidedAt).
   // For cash, amountReceived/changeGiven record the tendered amount and change.
-  paidAt         DateTime?
-  paymentMethod  PaymentMethod?
-  amountReceived Float?
-  changeGiven    Float?
+  paidAt             DateTime?
+  paymentMethod      PaymentMethod?
+  amountReceived     Float?
+  changeGiven        Float?
   // The number printed on the receipt, assigned once when the order is
   // charged. Series and number are copied onto the order rather than read
   // back from settings, so reprinting a ticket years later reproduces the
   // paper the diner was handed, not today's configuration.
-  receiptSeries  String?
-  receiptNumber  Int?
+  receiptSeries      String?
+  receiptNumber      Int?
 
   // What the diner asked for at the till and who it is made out to. Stored on
   // the order rather than looked up later for the same reason as the series:
@@ -847,7 +1076,7 @@ model CartaSettings {
   /// Weekly opening hours, as seven entries keyed by weekday (0 = Sunday):
   /// `[{ "day": 0, "closed": true }, { "day": 1, "open": "12:00", "close": "23:00" }]`.
   /// Shape validated in lib/carta.ts, not by Postgres.
-  hours Json?
+  hours    Json?
   // Own ordering channel only. Validated by lib/orderingWebsite.ts.
   ordering Json?
 
