@@ -8,14 +8,12 @@ import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { IconArrowRight, IconCheck } from "@/components/ui/Icons";
-import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { EASE, scaleIn } from "@/lib/motion";
 
 // `as` is forwarded so /precios can claim the h1; it stays h2 anywhere else.
 export default function Pricing({ as }) {
   const { t } = useLanguage();
-  const { openLeadForm } = useLeadCapture();
   // Same source as the chat and the closing block: prices are written once.
   const plans = t.chat.plans.items;
 
@@ -103,7 +101,10 @@ export default function Pricing({ as }) {
                   variant={plan.badge ? "primary" : "secondary"}
                   size="md"
                   className="mt-6 w-full"
-                  onClick={() => openLeadForm()}
+                  onClick={() => {
+                    const planKey = plan.name.toLowerCase();
+                    window.location.href = `/register?plan=${encodeURIComponent(planKey)}`;
+                  }}
                   icon={
                     <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   }

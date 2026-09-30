@@ -2,7 +2,7 @@ import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import BillingStatusBadge from "@/components/dashboard/BillingStatusBadge";
 import ExportDataButton from "@/components/dashboard/ExportDataButton";
-import PlanManagementButton from "@/components/dashboard/PlanManagementButton";
+import SubscriptionCheckoutPanel from "@/components/dashboard/SubscriptionCheckoutPanel";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import {
   PLAN_LABELS,
@@ -31,12 +31,6 @@ const SETTINGS = [
     description: "SUNAT, OSE, comprobantes y configuración de ticketera.",
   },
 ] as const;
-
-function suggestedPlan(currentPlan: PlanValue): PlanValue | undefined {
-  if (currentPlan === "carta") return "servicio";
-  if (currentPlan === "servicio") return "negocio";
-  return undefined;
-}
 
 export default async function SettingsPage() {
   const { restaurant } = await requireClientRestaurant();
@@ -69,15 +63,7 @@ export default async function SettingsPage() {
             </div>
             <BillingStatusBadge status={restaurant.billingStatus} />
           </div>
-          <p className="mt-5 text-[13px] leading-relaxed text-faint">
-            Los cambios y cancelaciones se confirman manualmente por WhatsApp.
-          </p>
-          <PlanManagementButton
-            currentPlan={plan}
-            suggestedPlan={suggestedPlan(plan)}
-            className="mt-5 w-full"
-            splitActions
-          />
+          <SubscriptionCheckoutPanel restaurantId={restaurant.id} restaurantName={restaurant.name} />
         </GlassCard>
 
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>

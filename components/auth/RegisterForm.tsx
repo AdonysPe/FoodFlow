@@ -2,12 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Button from "@/components/ui/Button";
 import { IconArrowRight, IconBuilding, IconLock, IconMail } from "@/components/ui/Icons";
 import { AuthAlert, AuthCard, AuthField, ConsentCheckbox, LoadingIndicator, PasswordField, PasswordRules } from "@/components/auth/AuthForm";
 import { postAuth } from "@/lib/auth/client";
 
 export default function RegisterForm() {
+  const searchParams = useSearchParams();
+  const requestedPlan = searchParams.get("plan");
+  const selectedPlan = ["carta", "servicio", "negocio"].includes(requestedPlan ?? "") ? requestedPlan : null;
+  const nextPath = selectedPlan
+    ? `/dashboard/app/configuracion?plan=${encodeURIComponent(selectedPlan)}`
+    : "/dashboard/app/overview";
   const [restaurantName, setRestaurantName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +41,7 @@ export default function RegisterForm() {
     try {
       const result = await postAuth<{ role: "restaurant_owner" }>("/api/auth/register", { restaurant_name: restaurantName, email, password, consent });
       if (result.ok) {
-        window.location.href = "/dashboard/app/overview";
+        window.location.href = nextPath;
         return;
       }
       setError(result.error);
@@ -46,8 +53,9 @@ export default function RegisterForm() {
   }
 
   return (
-    <AuthCard title="Pon tu restaurante en movimiento" description="Crea tu espacio y empieza a configurar tu carta. Iniciarás sesión automáticamente." footer={<p className="text-center text-[13px] text-muted">¿Ya tienes cuenta?{" "}<Link href="/login" className="font-semibold text-accent-icon underline-offset-4 hover:underline">Ingresa aquí</Link></p>}>
+    <AuthCard title="Pon tu restaurante en movimiento" description="Crea tu espacio y empieza a configurar tu carta. Iniciarás sesión automáticamente." footer={<p className="text-center text-[13px] text-muted">¿Ya tienes cuenta?{" "}<Link href={selectedPlan ? `/login?next=${encodeURIComponent(nextPath)}` : "/login"} className="font-semibold text-accent-icon underline-offset-4 hover:underline">Ingresa aquí</Link></p>}>
       <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
+        {selectedPlan && <p className="rounded-xl border border-accent-400/25 bg-accent-400/[0.07] px-4 py-3 text-[13px] text-fg/80">Plan elegido: <span className="font-semibold capitalize">{selectedPlan}</span>. Lo revisarás y confirmarás desde tu restaurante.</p>}
         <AuthField id="restaurant-name" label="Nombre del restaurante" icon={<IconBuilding className="h-[18px] w-[18px]" />} required minLength={2} maxLength={80} autoComplete="organization" value={restaurantName} onChange={(event) => setRestaurantName(event.target.value)} placeholder="Ej. Sazón de Casa" disabled={pending} />
         <AuthField id="register-email" label="Correo" icon={<IconMail className="h-[18px] w-[18px]" />} type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@restaurante.com" disabled={pending} />
         <PasswordField id="register-password" label="Contraseña" icon={<IconLock className="h-[18px] w-[18px]" />} required minLength={8} maxLength={72} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} disabled={pending} />
