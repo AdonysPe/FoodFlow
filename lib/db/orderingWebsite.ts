@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/db/prisma";
 import { readCarta } from "@/lib/db/carta";
-import { planAllows } from "@/lib/plans";
+import { ENTITLEMENT_SELECT, restaurantCanUse } from "@/lib/subscriptions/access";
 import { orderingAvailability, readOrderingSettings } from "@/lib/orderingWebsite";
 
 export async function readOrderingWebsite(slug: string, preview = false) {
   const restaurant = await prisma.restaurant.findUnique({ where: { slug }, select: {
-    plan: true, carta: { select: { ordering: true, hours: true } },
+    ...ENTITLEMENT_SELECT, carta: { select: { ordering: true, hours: true } },
   } });
-  if (!restaurant || !planAllows(restaurant.plan, "own_ordering_website")) return null;
+  if (!restaurant || !restaurantCanUse(restaurant, "own_ordering_website")) return null;
   const settings = readOrderingSettings(restaurant.carta?.ordering);
   if (!preview && !settings.active) return null;
   const carta = await readCarta(slug, true);

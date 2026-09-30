@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import type { BillingSource, BillingStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
@@ -13,6 +14,12 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { createSessionToken, setSessionCookie } from "@/lib/auth/session";
 import { buildWhatsAppUrl } from "@/lib/contact";
+import { hasLiveProviderSubscription } from "@/lib/subscriptions/access";
+
+// A plan paid by card belongs to the card subscription. Overwriting it by
+// hand would leave the client charged for one plan and using another.
+const PAID_PLAN_LOCKED =
+  "Este local tiene una suscripción pagada con tarjeta. El plan se cambia desde la suscripción, no a mano.";
 
 const createRestaurantSchema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(80),
@@ -95,7 +102,7 @@ export async function createRestaurant(input: {
   ownerEmail: string;
   plan: PlanValue;
 }): Promise<ActionResult> {
-  await requirePlatformAdmin();
+  const admin = await requirePlatformAdmin();
 
   const parsed = createRestaurantSchema.safeParse(input);
   if (!parsed.success) {
@@ -109,8 +116,24 @@ export async function createRestaurant(input: {
     create: { email: ownerEmail, role: "restaurant_owner", requiresPasswordSetup: true },
   });
 
-  const restaurant = await prisma.restaurant.create({
-    data: { name, ownerId: owner.id, plan },
+  const restaurant = await prisma.$transaction(async (tx) => {
+    // An admin creating a venue is granting its plan by hand: manual, active,
+    // no end date — the same state every pre-gateway venue was backfilled to.
+    const created = await tx.restaurant.create({
+      data: { name, ownerId: owner.id, plan, billingSource: "manual", billingStatus: "active" },
+    });
+    await tx.subscriptionTransition.create({
+      data: {
+        restaurantId: created.id,
+        toStatus: "active",
+        toSource: "manual",
+        toPlan: plan,
+        reason: "admin.create",
+        actorUserId: admin.id,
+        actorEmail: admin.email,
+      },
+    });
+    return created;
   });
   await seedDefaultCategories(prisma, restaurant.id);
 
@@ -124,7 +147,7 @@ export async function updateRestaurant(
   id: string,
   input: { name: string; ownerEmail: string; plan: PlanValue }
 ): Promise<ActionResult> {
-  await requirePlatformAdmin();
+  const admin = await requirePlatformAdmin();
 
   const parsed = createRestaurantSchema.safeParse(input);
   if (!parsed.success) {
@@ -134,6 +157,9 @@ export async function updateRestaurant(
 
   const restaurant = await prisma.restaurant.findUnique({ where: { id } });
   if (!restaurant) return { ok: false, error: "Restaurant not found." };
+  if (plan !== restaurant.plan && hasLiveProviderSubscription(restaurant)) {
+    return { ok: false, error: PAID_PLAN_LOCKED };
+  }
 
   const owner = await prisma.user.upsert({
     where: { email: ownerEmail },
@@ -141,9 +167,13 @@ export async function updateRestaurant(
     create: { email: ownerEmail, role: "restaurant_owner", requiresPasswordSetup: true },
   });
 
-  await prisma.restaurant.update({
-    where: { id },
-    data: { name, ownerId: owner.id, plan },
+  await prisma.$transaction(async (tx) => {
+    if (plan === restaurant.plan) {
+      await tx.restaurant.update({ where: { id }, data: { name, ownerId: owner.id } });
+      return;
+    }
+    await grantManualPlan(tx, restaurant, plan, admin, "admin.update");
+    await tx.restaurant.update({ where: { id }, data: { name, ownerId: owner.id } });
   });
 
   revalidatePath("/dashboard/admin/overview");
@@ -161,21 +191,57 @@ export async function updateRestaurantPlan(
   id: string,
   plan: PlanValue
 ): Promise<ActionResult> {
-  await requirePlatformAdmin();
+  const admin = await requirePlatformAdmin();
 
   const parsed = z.enum(PLANS).safeParse(plan);
   if (!parsed.success) return { ok: false, error: "Invalid plan." };
 
   const restaurant = await prisma.restaurant.findUnique({ where: { id } });
   if (!restaurant) return { ok: false, error: "Restaurant not found." };
+  if (hasLiveProviderSubscription(restaurant)) return { ok: false, error: PAID_PLAN_LOCKED };
 
-  await prisma.restaurant.update({ where: { id }, data: { plan: parsed.data } });
+  await prisma.$transaction((tx) => grantManualPlan(tx, restaurant, parsed.data, admin, "admin.plan"));
 
   revalidatePath("/dashboard/admin/overview");
   revalidatePath("/dashboard/admin/restaurants");
   revalidatePath("/dashboard/app", "layout");
 
   return { ok: true, data: undefined };
+}
+
+type GrantActor = { id: string; email: string };
+
+/**
+ * An admin setting the plan by hand. The venue becomes (or stays) a manual
+ * grant, active, with no end date, and the change is recorded in the same
+ * transaction — access cannot move without a row saying who moved it.
+ * Callers check `hasLiveProviderSubscription` first.
+ */
+async function grantManualPlan(
+  tx: Prisma.TransactionClient,
+  restaurant: { id: string; plan: PlanValue; billingStatus: BillingStatus; billingSource: BillingSource },
+  plan: PlanValue,
+  admin: GrantActor,
+  reason: string
+) {
+  await tx.restaurant.update({
+    where: { id: restaurant.id },
+    data: { plan, billingSource: "manual", billingStatus: "active", accessUntil: null },
+  });
+  await tx.subscriptionTransition.create({
+    data: {
+      restaurantId: restaurant.id,
+      fromStatus: restaurant.billingStatus,
+      toStatus: "active",
+      fromSource: restaurant.billingSource,
+      toSource: "manual",
+      fromPlan: restaurant.plan,
+      toPlan: plan,
+      reason,
+      actorUserId: admin.id,
+      actorEmail: admin.email,
+    },
+  });
 }
 
 // Removes the restaurant and everything scoped to it (orders, menu, customers).
@@ -186,6 +252,15 @@ export async function deleteRestaurant(id: string): Promise<ActionResult> {
 
   const restaurant = await prisma.restaurant.findUnique({ where: { id } });
   if (!restaurant) return { ok: false, error: "Restaurant not found." };
+  // Deleting the venue would leave Culqi charging a card for nothing. The
+  // subscription has to be cancelled first; its rows survive the delete
+  // (SetNull) because they are the record of what was charged.
+  if (hasLiveProviderSubscription(restaurant)) {
+    return {
+      ok: false,
+      error: "Este local tiene una suscripción pagada activa. Cancélala antes de eliminarlo.",
+    };
+  }
 
   const staff = await prisma.staffMembership.findMany({
     where: { restaurantId: id },

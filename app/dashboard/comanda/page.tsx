@@ -13,7 +13,9 @@ import type {
   OpenTabDTO,
   OpenTabLine,
 } from "@/lib/comandaMeta";
-import { planAllows, PLAN_LABELS, firstPlanWith, type PlanValue } from "@/lib/plans";
+import { entitlementAllows } from "@/lib/subscriptions/entitlement";
+import { restaurantEntitlement } from "@/lib/subscriptions/access";
+import { PLAN_LABELS, firstPlanWith, type PlanValue } from "@/lib/plans";
 import { readReceiptSettings } from "@/lib/db/receiptSettings";
 import { readTillBillingState } from "@/lib/db/billing";
 import ComandaFlow from "@/components/dashboard/comanda/ComandaFlow";
@@ -37,7 +39,21 @@ export default async function ComandaPage() {
   // The comanda has its own bare layout (no sidebar), so it explains the gate
   // here instead of rendering the dashboard's PlanGate screen.
   const plan = restaurant.plan as PlanValue;
-  if (!planAllows(plan, "comanda")) {
+  const entitlement = restaurantEntitlement(restaurant);
+  if (entitlement.mode === "locked") {
+    return (
+      <div className="mx-auto max-w-md px-5 py-20 text-center">
+        <h1 className="font-display text-[20px] font-bold tracking-[-0.02em] text-fg">El acceso a la comanda está pausado</h1>
+        <p className="mt-2.5 text-[14px] leading-relaxed text-muted">
+          {entitlement.reason === "pending_confirmation"
+            ? "Estamos confirmando el pago de la suscripción. El acceso se habilitará cuando llegue la confirmación."
+            : "El dueño debe revisar el estado de cobro del restaurante."}
+        </p>
+        {isOwner && <a href="/dashboard/app/configuracion" className="mt-6 inline-block rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-5 py-2.5 text-[14px] font-semibold text-on-accent">Ver plan y cobro</a>}
+      </div>
+    );
+  }
+  if (!entitlementAllows(entitlement, "comanda")) {
     return (
       <div className="mx-auto max-w-md px-5 py-20 text-center">
         <h1 className="font-display text-[20px] font-bold tracking-[-0.02em] text-fg">

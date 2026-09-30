@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
-import { planAllows } from "@/lib/plans";
+import { restaurantCanUse } from "@/lib/subscriptions/access";
 import { slugifyVenue } from "@/lib/carta";
 import { OrderingProblem, orderingSettingsSchema, readOrderingSettings, type OrderingSettings } from "@/lib/orderingWebsite";
 import type { ActionResult } from "@/lib/actions/auth";
@@ -15,7 +15,7 @@ async function writeSettings(input: unknown, statusOnly = false): Promise<Action
   try {
     const slug = await prisma.$transaction(async tx => {
       const current = await tx.restaurant.findFirst({ where: { id: restaurant.id, ownerId: user.id }, include: { carta: true } });
-      if (!current || !planAllows(current.plan, "own_ordering_website")) throw new OrderingProblem("Tu plan no incluye Web de pedidos.");
+      if (!current || !restaurantCanUse(current, "own_ordering_website")) throw new OrderingProblem("Tu plan no incluye Web de pedidos.");
       const previous = readOrderingSettings(current.carta?.ordering);
       const settings = orderingSettingsSchema.safeParse(statusOnly ? { ...previous, active: true, paused: input, accepting: input === false ? true : previous.accepting } : input);
       if (!settings.success) throw new OrderingProblem(settings.error.issues[0]?.message ?? "Revisa la configuración.");

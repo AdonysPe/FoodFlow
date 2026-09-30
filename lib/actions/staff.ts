@@ -14,6 +14,7 @@ import {
   type PlanValue,
 } from "@/lib/plans";
 import type { ActionResult } from "@/lib/actions/auth";
+import { restaurantEntitlement } from "@/lib/subscriptions/access";
 
 const EQUIPO_PATH = "/dashboard/app/equipo";
 
@@ -42,8 +43,16 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
     return { ok: false, error: "Ese es tu propio correo." };
   }
 
-  // The plan caps how many people can use the dashboard, owner included.
-  const plan = restaurant.plan as PlanValue;
+  // The plan caps how many people can use the dashboard, owner included —
+  // the plan that is paid for right now, not merely the one on the row.
+  const entitlement = restaurantEntitlement(restaurant);
+  if (entitlement.effectivePlan == null) {
+    return {
+      ok: false,
+      error: "Tu suscripción no está activa. Revisa tu plan en Configuración para agregar mozos.",
+    };
+  }
+  const plan: PlanValue = entitlement.effectivePlan;
   if (!planAllows(plan, "staff")) {
     return {
       ok: false,

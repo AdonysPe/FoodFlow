@@ -1,4 +1,6 @@
-export type BillingStatusValue = "pending" | "active" | "cancelled";
+import type { BillingStatusValue } from "@/lib/subscriptions/entitlement";
+
+export type { BillingStatusValue };
 
 const STATUS: Record<
   BillingStatusValue,
@@ -13,6 +15,21 @@ const STATUS: Record<
     label: "Cobro activo",
     className: "bg-mint/10 text-mint-ink ring-mint/25",
     dotClassName: "bg-mint",
+  },
+  trialing: {
+    label: "En prueba",
+    className: "bg-mint/10 text-mint-ink ring-mint/25",
+    dotClassName: "bg-mint",
+  },
+  past_due: {
+    label: "Pago atrasado",
+    className: "bg-warn/10 text-warn-ink ring-warn/25",
+    dotClassName: "bg-warn",
+  },
+  suspended: {
+    label: "Suspendido",
+    className: "bg-fg/[0.06] text-muted ring-fg/15",
+    dotClassName: "bg-fg/35",
   },
   cancelled: {
     label: "Cobro cancelado",

@@ -16,6 +16,7 @@ import {
   PLAN_PRICES,
   type PlanValue,
 } from "@/lib/plans";
+import type { BillingStatusValue } from "@/lib/subscriptions/entitlement";
 
 export type RestaurantRow = {
   id: string;
@@ -29,7 +30,7 @@ export type RestaurantRow = {
   templateLabel: string;
   /** True when the venue follows its category instead of carrying an override. */
   templateIsDefault: boolean;
-  billingStatus: "pending" | "active" | "cancelled";
+  billingStatus: BillingStatusValue;
   slug: string | null;
   createdAtLabel: string;
 };
@@ -38,12 +39,18 @@ const BILLING_TONE: Record<RestaurantRow["billingStatus"], string> = {
   active: "bg-mint/10 text-mint-ink ring-mint/25",
   pending: "bg-fg/[0.06] text-muted ring-fg/15",
   cancelled: "bg-accent-500/12 text-accent-ink ring-accent-400/30",
+  trialing: "bg-mint/10 text-mint-ink ring-mint/25",
+  past_due: "bg-warn/10 text-warn-ink ring-warn/25",
+  suspended: "bg-accent-500/12 text-accent-ink ring-accent-400/30",
 };
 
 const BILLING_LABEL: Record<RestaurantRow["billingStatus"], string> = {
   active: "Activo",
   pending: "Pendiente",
   cancelled: "Cancelado",
+  trialing: "En prueba",
+  past_due: "Pago atrasado",
+  suspended: "Suspendido",
 };
 
 /**

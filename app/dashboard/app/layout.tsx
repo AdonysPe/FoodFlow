@@ -7,6 +7,7 @@ import GlassCard from "@/components/ui/GlassCard";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { logout } from "@/lib/actions/auth";
 import type { PlanValue } from "@/lib/plans";
+import { restaurantEntitlement } from "@/lib/subscriptions/access";
 
 const CLIENT_TITLES: Record<string, string> = {
   "web-pedidos": "Web de pedidos",
@@ -65,7 +66,7 @@ export default async function ClientAppLayout({ children }: { children: ReactNod
           userEmail={user.email}
           variant="client"
           badgeLabel={restaurant.name}
-          plan={restaurant.plan as PlanValue}
+          plan={(restaurantEntitlement(restaurant).effectivePlan ?? "carta") as PlanValue}
           restaurants={restaurants.map((item) => ({ id: item.id, name: item.name }))}
           activeRestaurantId={restaurant.id}
         />

@@ -16,6 +16,9 @@ const BILLING_LABEL: Record<string, string> = {
   active: "Activo",
   pending: "Pendiente",
   cancelled: "Cancelado",
+  trialing: "En prueba",
+  past_due: "Pago atrasado",
+  suspended: "Suspendido",
 };
 
 function templateName(value: string | null, categoryDefault: string) {
