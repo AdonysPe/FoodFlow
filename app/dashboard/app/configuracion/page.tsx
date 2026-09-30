@@ -1,14 +1,8 @@
 import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
-import BillingStatusBadge from "@/components/dashboard/BillingStatusBadge";
 import ExportDataButton from "@/components/dashboard/ExportDataButton";
 import SubscriptionCheckoutPanel from "@/components/dashboard/SubscriptionCheckoutPanel";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
-import {
-  PLAN_LABELS,
-  PLAN_PRICES,
-  type PlanValue,
-} from "@/lib/plans";
 
 export const metadata = {
   title: "Configuración",
@@ -36,8 +30,6 @@ export default async function SettingsPage() {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return null;
 
-  const plan = restaurant.plan as PlanValue;
-
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -51,18 +43,6 @@ export default async function SettingsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-[12px] font-semibold uppercase tracking-wide text-faint">
-                Plan y cobro
-              </p>
-              <h3 className="mt-2 font-display text-[20px] font-bold text-fg">
-                Plan {PLAN_LABELS[plan]}
-              </h3>
-              <p className="mt-1 text-[13px] text-muted">{PLAN_PRICES[plan]}/mes</p>
-            </div>
-            <BillingStatusBadge status={restaurant.billingStatus} />
-          </div>
           <SubscriptionCheckoutPanel restaurantId={restaurant.id} restaurantName={restaurant.name} />
         </GlassCard>
 
