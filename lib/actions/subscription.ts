@@ -16,7 +16,18 @@ import {
   type SubscriptionActor,
 } from "@/lib/subscriptions/service";
 import {
+  cancelSubscription as cancelOwnedSubscription,
+  changeSubscriptionPlan as changeOwnedPlan,
+  previewPlanChange as previewOwnedPlanChange,
+} from "@/lib/subscriptions/operations";
+import {
   SUBSCRIPTION_ERROR_MESSAGES,
+  type CancelSubscriptionInput,
+  type CancelSubscriptionOutput,
+  type ChangePlanInput,
+  type ChangePlanOutput,
+  type PlanChangePreview,
+  type PreviewPlanChangeInput,
   type CheckoutStatusOutput,
   type ConfirmCheckoutInput,
   type ConfirmCheckoutOutput,
@@ -78,4 +89,36 @@ export async function getSubscriptionCheckoutStatus(
 /** Owner or manager. Everything the "Plan y cobro" screen needs. */
 export async function getSubscriptionStatus(): Promise<SubscriptionResult<SubscriptionView>> {
   return guarded("status", async () => getSubscriptionView(await actor()));
+}
+
+/**
+ * Owner only. Stops the renewal at Culqi now; access continues until the end
+ * of the period already paid (`data.accessUntil`).
+ */
+export async function cancelSubscription(
+  input: CancelSubscriptionInput
+): Promise<SubscriptionResult<CancelSubscriptionOutput>> {
+  const result = await guarded("cancel", async () => cancelOwnedSubscription(await actor(), input));
+  if (result.ok) revalidatePath("/dashboard/app", "layout");
+  return result;
+}
+
+/** Owner only. What a plan change would do — changes nothing. */
+export async function previewPlanChange(
+  input: PreviewPlanChangeInput
+): Promise<SubscriptionResult<PlanChangePreview>> {
+  return guarded("plan.preview", async () => previewOwnedPlanChange(await actor(), input));
+}
+
+/**
+ * Owner only. Upgrade → `{ kind: "checkout" }`: poll
+ * `getSubscriptionCheckoutStatus` exactly as after a purchase; the new plan
+ * opens when its first charge is confirmed. Downgrade → `{ kind: "scheduled" }`.
+ */
+export async function changeSubscriptionPlan(
+  input: ChangePlanInput
+): Promise<SubscriptionResult<ChangePlanOutput>> {
+  const result = await guarded("plan.change", async () => changeOwnedPlan(await actor(), input));
+  if (result.ok) revalidatePath("/dashboard/app/configuracion");
+  return result;
 }

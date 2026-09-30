@@ -1,12 +1,12 @@
 // FoodFlow subscriptions: open a checkout, turn the card token into a Culqi
 // subscription, and report where a restaurant stands.
 //
-// WHAT THIS PHASE DOES NOT DO: activate anything. `confirmCheckout` ends with
-// the subscription created at Culqi and the checkout in `processing`; the
-// restaurant's plan, status and access are only moved by the provider-event
-// processor (next phase), after Culqi confirms it server to server. Nothing
-// the browser sends — a return URL, a query string, a "success" callback —
-// can change what a restaurant may use.
+// `confirmCheckout` never activates anything: it ends with the subscription
+// created at Culqi and the checkout in `processing`. The restaurant's plan,
+// status and access are moved only by lib/subscriptions/lifecycle.ts, after
+// Culqi confirms server to server (a re-read webhook event, or a direct read
+// of the subscription). Nothing the browser sends — a return URL, a query
+// string, a "success" callback — can change what a restaurant may use.
 //
 // Callers resolve the session (lib/actions/subscription.ts); every function
 // here re-checks ownership against the rows it touches.
@@ -19,8 +19,10 @@ import { SITE_URL } from "@/lib/seo";
 import { PLANS, PLAN_LABELS, type PlanValue } from "@/lib/plans";
 import { rateLimit } from "@/lib/security/rateLimit";
 import { readCulqiConfig, type CulqiConfig } from "@/lib/subscriptions/config";
-import { createCulqiAdapter } from "@/lib/subscriptions/culqi";
 import { restaurantEntitlement } from "@/lib/subscriptions/access";
+import { adapterFor, fail, logSubscription, onAdapterReset } from "@/lib/subscriptions/runtime";
+import { accessUntilOf } from "@/lib/subscriptions/lifecycle";
+import { reconcileCheckout } from "@/lib/subscriptions/reconcile";
 import {
   ProviderRejectedError,
   ProviderUnavailableError,
@@ -33,7 +35,6 @@ import {
   type PriceSummary,
 } from "@/lib/subscriptions/pricing";
 import {
-  SUBSCRIPTION_ERROR_MESSAGES,
   confirmCheckoutInputSchema,
   createCheckoutInputSchema,
   safeReturnPath,
@@ -70,18 +71,7 @@ const PLAN_CHECK_TTL_MS = 10 * 60 * 1000;
 /** Subscription states that still hold (or are about to hold) the plan. */
 const LIVE_SUBSCRIPTION_STATUSES: BillingStatusValue[] = ["trialing", "active", "past_due"];
 
-function fail<T>(code: SubscriptionErrorCode, error?: string): SubscriptionResult<T> {
-  return { ok: false, code, error: error ?? SUBSCRIPTION_ERROR_MESSAGES[code] };
-}
-
-/** Structured, secret-free log line. Never pass a token, key or card data. */
-export function logSubscription(
-  level: "info" | "warn" | "error",
-  event: string,
-  data: Record<string, unknown> = {}
-) {
-  console[level](JSON.stringify({ scope: "subscriptions", event, ...data }));
-}
+export { logSubscription, setAdapterFactoryForTests } from "@/lib/subscriptions/runtime";
 
 type ConfigCheck = { ok: true; config: CulqiConfig } | { ok: false; result: SubscriptionResult<never> };
 
@@ -91,17 +81,6 @@ function requireConfig(): ConfigCheck {
   if (read.reason === "disabled") return { ok: false, result: fail("subscriptions_disabled") };
   logSubscription("error", "config.invalid", { problems: read.problems });
   return { ok: false, result: fail("provider_misconfigured") };
-}
-
-// Seam for tests: the adapter is built from the config on every call.
-let adapterFactory: (config: CulqiConfig) => SubscriptionProviderAdapter = (config) =>
-  createCulqiAdapter(config.secretKey);
-
-export function setAdapterFactoryForTests(
-  factory: ((config: CulqiConfig) => SubscriptionProviderAdapter) | null
-) {
-  adapterFactory = factory ?? ((config) => createCulqiAdapter(config.secretKey));
-  planChecks.clear();
 }
 
 function returnUrlFor(checkoutId: string, returnPath: string): string {
@@ -124,6 +103,7 @@ async function trialEligible(
 // ------------------------------------------------ plan price verification
 
 const planChecks = new Map<string, number>();
+onAdapterReset(() => planChecks.clear());
 
 /**
  * The plan at Culqi must charge exactly what our catalogue says, in soles, and
@@ -232,7 +212,7 @@ export async function createCheckout(
   const withTrial = await trialEligible(prisma, restaurant.id);
   const providerPlanId = withTrial ? config.planIds[plan].trial : config.planIds[plan].regular;
 
-  const adapter = adapterFactory(config);
+  const adapter = adapterFor(config);
   try {
     if ((await verifyProviderPlan(adapter, providerPlanId, price, withTrial)) === "mismatch") {
       return fail("provider_misconfigured");
@@ -425,7 +405,7 @@ export async function confirmCheckout(
       data: { lockedUntil: null, ...data },
     });
 
-  const adapter = adapterFactory(config);
+  const adapter = adapterFor(config);
   const metadata = { restaurant_id: restaurant.id, checkout_id: checkout.id };
 
   // 1. Customer and card. A failure here leaves nothing charged.
@@ -576,10 +556,17 @@ export async function getCheckoutStatus(
   const restaurant = actor.restaurant;
   if (!restaurant) return fail("restaurant_mismatch");
 
-  let row = await prisma.subscriptionCheckout.findFirst({
-    where: { id: checkoutId, restaurantId: restaurant.id },
-  });
+  const find = () =>
+    prisma.subscriptionCheckout.findFirst({ where: { id: checkoutId, restaurantId: restaurant.id } });
+  let row = await find();
   if (!row) return fail("checkout_not_found");
+
+  if (row.status === "processing") {
+    // The panel polls this every few seconds. Ask Culqi directly (throttled)
+    // so a started trial shows up even if the webhook is late or lost.
+    await reconcileCheckout(row.id);
+    row = (await find()) ?? row;
+  }
 
   if ((row.status === "created" || row.status === "requires_action") && row.expiresAt <= new Date()) {
     await prisma.subscriptionCheckout.updateMany({
@@ -594,6 +581,7 @@ export async function getCheckoutStatus(
     data: {
       checkoutId: row.id,
       status: row.status,
+      purpose: row.purpose,
       plan: row.plan,
       trialDays: row.withTrial ? row.trialDays : 0,
       failureCode: row.failureCode,
@@ -610,18 +598,24 @@ function iso(date: Date | null): string | null {
 export async function getSubscriptionView(
   actor: SubscriptionActor
 ): Promise<SubscriptionResult<SubscriptionView>> {
-  const restaurant = actor.restaurant;
-  if (!restaurant) return fail("restaurant_mismatch");
+  if (!actor.restaurant) return fail("restaurant_mismatch");
+  const restaurantId = actor.restaurant.id;
 
   const now = new Date();
-  const [subscription, openCheckout, eligible] = await Promise.all([
-    prisma.subscription.findFirst({
-      where: { restaurantId: restaurant.id },
-      orderBy: { createdAt: "desc" },
+  const [fresh, current, latest, openCheckout, eligible] = await Promise.all([
+    // Re-read: a reconciliation earlier in this request may have moved it.
+    prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+      select: { plan: true, billingStatus: true, billingSource: true, accessUntil: true },
     }),
+    prisma.subscription.findFirst({
+      where: { restaurantId, activatedAt: { not: null }, endedAt: null },
+      orderBy: { activatedAt: "desc" },
+    }),
+    prisma.subscription.findFirst({ where: { restaurantId }, orderBy: { createdAt: "desc" } }),
     prisma.subscriptionCheckout.findFirst({
       where: {
-        restaurantId: restaurant.id,
+        restaurantId,
         OR: [
           { status: "processing" },
           { status: { in: ["created", "requires_action"] }, expiresAt: { gt: now } },
@@ -629,16 +623,26 @@ export async function getSubscriptionView(
       },
       orderBy: { createdAt: "desc" },
     }),
-    trialEligible(prisma, restaurant.id),
+    trialEligible(prisma, restaurantId),
   ]);
+  const restaurant = fresh ?? actor.restaurant;
+  const subscription = current ?? latest;
+  const lastPayment = subscription
+    ? await prisma.subscriptionPayment.findFirst({
+        where: { subscriptionId: subscription.id },
+        orderBy: { occurredAt: "desc" },
+      })
+    : null;
 
   const entitlement = restaurantEntitlement(restaurant, now);
   const trialDays = eligible ? TRIAL_DAYS : 0;
+  const managedByCard = restaurant.billingSource === "provider" && current != null;
+  const accessUntil = subscription ? accessUntilOf(subscription) : null;
 
   return {
     ok: true,
     data: {
-      restaurantId: restaurant.id,
+      restaurantId,
       canManage: actor.isOwner,
       checkoutEnabled: readCulqiConfig().ok,
       source: restaurant.billingSource as BillingSourceValue,
@@ -668,8 +672,36 @@ export async function getSubscriptionView(
             currentPeriodEnd: iso(subscription.currentPeriodEnd),
             cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
             card: { brand: subscription.cardBrand, last4: subscription.cardLast4 },
+            activatedAt: iso(subscription.activatedAt),
+            accessUntil: iso(accessUntil),
+            canceledAt: iso(subscription.canceledAt),
+            pendingChange:
+              subscription.pendingPlan && subscription.pendingPlanEffectiveAt
+                ? { plan: subscription.pendingPlan, effectiveAt: subscription.pendingPlanEffectiveAt.toISOString() }
+                : null,
+            lastPayment: lastPayment
+              ? {
+                  status: lastPayment.status,
+                  grossCents: lastPayment.amountCents,
+                  at: lastPayment.occurredAt.toISOString(),
+                  failureCode: lastPayment.failureCode,
+                }
+              : null,
           }
         : null,
+      actions: {
+        canCancel:
+          actor.isOwner &&
+          managedByCard &&
+          ["trialing", "active", "past_due"].includes(current!.status) &&
+          openCheckout?.status !== "processing",
+        canChangePlan:
+          actor.isOwner &&
+          managedByCard &&
+          ["trialing", "active"].includes(current!.status) &&
+          !current!.pendingPlan &&
+          openCheckout?.status !== "processing",
+      },
       openCheckout: openCheckout
         ? {
             id: openCheckout.id,
