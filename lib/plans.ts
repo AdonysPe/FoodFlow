@@ -30,10 +30,24 @@ export const PLAN_LABELS: Record<PlanValue, string> = {
   negocio: "Negocio",
 };
 
+// The monthly price of each plan in céntimos, BEFORE IGV — the public site
+// shows these followed by "+ IGV". This is the only place a price is a
+// number: the checkout computes what it charges from here on the server, and
+// the label below is derived from it so the two cannot drift.
+export const PLAN_MONTHLY_NET_CENTS: Record<PlanValue, number> = {
+  carta: 6900,
+  servicio: 16900,
+  negocio: 33900,
+};
+
+function soles(cents: number): string {
+  return cents % 100 === 0 ? `S/ ${cents / 100}` : `S/ ${(cents / 100).toFixed(2)}`;
+}
+
 export const PLAN_PRICES: Record<PlanValue, string> = {
-  carta: "S/ 79",
-  servicio: "S/ 179",
-  negocio: "S/ 349",
+  carta: soles(PLAN_MONTHLY_NET_CENTS.carta),
+  servicio: soles(PLAN_MONTHLY_NET_CENTS.servicio),
+  negocio: soles(PLAN_MONTHLY_NET_CENTS.negocio),
 };
 
 export const PLAN_TAGLINES: Record<PlanValue, string> = {
