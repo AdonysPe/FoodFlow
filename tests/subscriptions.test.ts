@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   subscription: { findFirst: vi.fn(), create: vi.fn() },
+  subscriptionPayment: { findFirst: vi.fn() },
   subscriptionCheckout: {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
@@ -404,6 +405,10 @@ function fakeAdapter(overrides: Partial<SubscriptionProviderAdapter> = {}): Subs
     ensureCustomer: vi.fn(async () => ({ customerId: "cus_test_1" })),
     saveCard: vi.fn(async () => ({ kind: "saved" as const, cardId: "crd_test_1", brand: "Visa", last4: "1111" })),
     createSubscription: vi.fn(async () => ({ subscriptionId: "sxn_test_1", rawStatus: "1" })),
+    getEvent: vi.fn(async () => null),
+    getSubscription: vi.fn(async () => null),
+    cancelSubscription: vi.fn(async () => "canceled" as const),
+    findSubscription: vi.fn(async () => null),
     ...overrides,
   };
 }
