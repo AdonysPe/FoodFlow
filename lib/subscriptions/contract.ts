@@ -7,6 +7,7 @@
 
 import { z } from "zod";
 import { PLANS, type FeatureValue, type PlanValue } from "@/lib/plans";
+import { isValidRuc } from "@/lib/subscriptions/ruc";
 import type { PriceSummary } from "@/lib/subscriptions/pricing";
 import type {
   AccessMode,
@@ -42,6 +43,9 @@ export const SUBSCRIPTION_ERROR_CODES = [
   "same_plan",
   "change_pending",
   "downgrade_blocked",
+  // Fase 5: reactivation and payment method.
+  "not_reactivable",
+  "no_payment_method",
 ] as const;
 export type SubscriptionErrorCode = (typeof SUBSCRIPTION_ERROR_CODES)[number];
 
@@ -80,6 +84,8 @@ export const SUBSCRIPTION_ERROR_MESSAGES: Record<SubscriptionErrorCode, string> 
     "Tu plan lo gestiona el equipo de FoodFlow. Escríbenos por WhatsApp para cambiarlo o cancelarlo.",
   same_plan: "Ya estás en ese plan.",
   change_pending: "Ya hay un cambio de plan en curso para este restaurante.",
+  not_reactivable: "Tu suscripción sigue activa: no hace falta reactivarla.",
+  no_payment_method: "No encontramos una tarjeta guardada. Contrata el plan de nuevo con una tarjeta.",
   downgrade_blocked:
     "Tienes más usuarios de los que permite ese plan. Quita mozos en Equipo antes de bajar de plan.",
 };
@@ -160,7 +166,7 @@ export const billingDocumentSchema = z.discriminatedUnion("type", [
   z
     .object({
       type: z.literal("factura"),
-      ruc: z.string().regex(/^(10|15|16|17|20)\d{9}$/, "RUC no válido."),
+      ruc: z.string().refine(isValidRuc, "RUC no válido."),
       legalName: text(3, 120),
     })
     .strict(),
@@ -234,6 +240,35 @@ export const changePlanInputSchema = z
   })
   .strict();
 export type ChangePlanInput = z.input<typeof changePlanInputSchema>;
+
+export const reactivateSubscriptionInputSchema = z
+  .object({
+    restaurantId: z.string().cuid(),
+    /** A fresh `crypto.randomUUID()` per attempt, reused on retry. */
+    idempotencyKey: z.string().uuid(),
+    confirm: z.literal(true),
+  })
+  .strict();
+export type ReactivateSubscriptionInput = z.input<typeof reactivateSubscriptionInputSchema>;
+
+export const cancelReactivationInputSchema = z
+  .object({ restaurantId: z.string().cuid(), confirm: z.literal(true) })
+  .strict();
+export type CancelReactivationInput = z.input<typeof cancelReactivationInputSchema>;
+
+export const paymentMethodSessionInputSchema = z.object({ restaurantId: z.string().cuid() }).strict();
+export type PaymentMethodSessionInput = z.input<typeof paymentMethodSessionInputSchema>;
+
+export const updatePaymentMethodInputSchema = z
+  .object({
+    restaurantId: z.string().cuid(),
+    /** `Culqi.token.id` from Culqi Checkout. Single use, never a card number. */
+    tokenId: z.string().regex(/^tkn_(test|live)_[A-Za-z0-9]{8,64}$/, "Token no válido."),
+    /** Only on the second call, after Culqi3DS finished. */
+    authentication3DS: authentication3DSSchema.optional(),
+  })
+  .strict();
+export type UpdatePaymentMethodInput = z.input<typeof updatePaymentMethodInputSchema>;
 
 // ----------------------------------------------------------------- outputs
 
@@ -358,9 +393,24 @@ export type SubscriptionView = {
       at: string;
       failureCode: string | null;
     } | null;
+    /**
+     * Fase 5. Present when `actions.canReactivate`. `chargeAt` is when the
+     * card is charged: a future date if paid days remain (nothing is charged
+     * now and those days are kept), or null for "now".
+     */
+    reactivation: { plan: PlanValue; price: PriceSummary; chargeAt: string | null } | null;
   } | null;
-  /** Fase 3. What the owner can do right now (always false for managers). */
-  actions: { canCancel: boolean; canChangePlan: boolean };
+  /** Fase 3 and 5. What the owner can do right now (always false for managers). */
+  actions: {
+    canCancel: boolean;
+    canChangePlan: boolean;
+    /** Fase 5. Cancelled, or ended: start paying again on the saved card. */
+    canReactivate: boolean;
+    /** Fase 5. A reactivation is scheduled and can still be dropped. */
+    canUndoReactivation: boolean;
+    /** Fase 5. Change the card of a subscription that exists (fixes `past_due`). */
+    canUpdatePaymentMethod: boolean;
+  };
   openCheckout: { id: string; status: CheckoutStatusValue; plan: PlanValue; expiresAt: string } | null;
   trial: { eligible: boolean; days: number };
   offers: PlanOffer[];
@@ -400,3 +450,24 @@ export type ChangePlanOutput =
       status: CheckoutStatusValue;
     }
   | { kind: "scheduled"; effectiveAt: string };
+
+// ------------------------------------------------------ Fase 5 outputs
+
+/** Same shape the purchase uses, so the Culqi Checkout code path is shared. */
+export type PaymentMethodSessionOutput = {
+  next: CheckoutNext;
+  card: { brand: string | null; last4: string | null };
+};
+
+export type UpdatePaymentMethodOutput =
+  | {
+      status: "updated";
+      card: { brand: string | null; last4: string | null };
+      /** `past_due`: Culqi retries the charge on its own schedule with the new card. */
+      willRetryCharge: boolean;
+    }
+  | {
+      /** The bank wants 3-D Secure. Run Culqi3DS, then call again with its result. */
+      status: "requires_action";
+      threeDS: { email: string; totalAmount: number; returnUrl: string };
+    };

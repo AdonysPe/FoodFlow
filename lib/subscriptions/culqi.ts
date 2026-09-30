@@ -16,6 +16,8 @@
 //   GET  /v2/recurrent/subscriptions/{id}   read a subscription
 //   GET  /v2/recurrent/subscriptions?plan_id= list (lost-response recovery)
 //   DELETE /v2/recurrent/subscriptions/{id} cancel — immediate, irreversible
+//   PATCH /v2/recurrent/subscriptions/{id} change the card (card_id)
+//   GET  /v2/charges/{id}                   one charge, to verify its outcome
 //   GET  /v2/events/{id}                    the event as Culqi stored it
 //
 // The card itself never passes through here: the browser tokenizes it in
@@ -33,7 +35,14 @@ import {
   type SaveCardResult,
   type SubscriptionProviderAdapter,
 } from "@/lib/subscriptions/provider";
-import { asRecord, normalizeSubscription, providerDate, str } from "@/lib/subscriptions/events";
+import {
+  asRecord,
+  chargeFacts,
+  chargeOutcome,
+  normalizeSubscription,
+  providerDate,
+  str,
+} from "@/lib/subscriptions/events";
 
 const BASE_URL = "https://api.culqi.com/v2";
 const TIMEOUT_MS = 15_000;
@@ -50,7 +59,7 @@ export function createCulqiAdapter(
 ): SubscriptionProviderAdapter {
   async function call(
     operation: string,
-    method: "GET" | "POST" | "DELETE",
+    method: "GET" | "POST" | "PATCH" | "DELETE",
     path: string,
     body?: CulqiBody
   ): Promise<CulqiResponse> {
@@ -226,6 +235,25 @@ export function createCulqiAdapter(
 
     getSubscription,
 
+    async getCharge(chargeId) {
+      const res = await call("charge.get", "GET", `/charges/${idPath(chargeId)}`);
+      if (res.status === 404) return null;
+      if (res.status !== 200) throw rejected("charge.get", res);
+      const facts = chargeFacts(res.body);
+      if (!facts) return null;
+      return { facts, outcome: chargeOutcome(res.body) };
+    },
+
+    async updateSubscriptionCard(subscriptionId, cardId) {
+      const res = await call(
+        "subscription.update_card",
+        "PATCH",
+        `/recurrent/subscriptions/${idPath(subscriptionId)}`,
+        { card_id: cardId }
+      );
+      if (res.status !== 200) throw rejected("subscription.update_card", res);
+    },
+
     async cancelSubscription(subscriptionId) {
       const res = await call(
         "subscription.cancel",
@@ -245,7 +273,9 @@ export function createCulqiAdapter(
       const res = await call(
         "subscription.list",
         "GET",
-        `/recurrent/subscriptions?plan_id=${idPath(planId)}&limit=100`
+        // The plan is shared by every customer, so the list grows without
+        // bound: narrow it to what was created since this attempt began.
+        `/recurrent/subscriptions?plan_id=${idPath(planId)}&creation_date_from=${createdAfter.getTime() - 5 * 60 * 1000}&limit=100`
       );
       if (res.status !== 200) throw rejected("subscription.list", res);
       const list = Array.isArray(res.body.data) ? res.body.data : [];

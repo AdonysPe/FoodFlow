@@ -16,6 +16,7 @@
 
 import type { PlanValue } from "@/lib/plans";
 import { PLANS } from "@/lib/plans";
+import { foodflowRuc } from "@/lib/subscriptions/ruc";
 
 export type ProviderMode = "test" | "live";
 
@@ -70,6 +71,21 @@ export function readCulqiKeys(): KeysResult {
   const mode = secretMode ?? "test";
   if (mode === "live" && env("SUBSCRIPTIONS_ALLOW_LIVE") !== "true") {
     problems.push("Llaves live sin SUBSCRIPTIONS_ALLOW_LIVE=true");
+  }
+  // Real money needs a real taxpayer behind it. Every payment must be
+  // answered with a boleta or factura issued by FoodFlow's own RUC, so live
+  // mode refuses to start until that RUC is configured and valid. (Test mode
+  // does not need it: nothing is charged.)
+  if (mode === "live" && !foodflowRuc()) {
+    problems.push("Llaves live sin el RUC de FoodFlow (NEXT_PUBLIC_LEGAL_TAX_ID válido)");
+  }
+  // Sandbox and production stay apart even if a variable is scoped wrongly in
+  // Vercel: real keys are refused on a Preview or Development deployment, so
+  // a preview URL can never take a real card. (VERCEL_ENV is unset locally,
+  // where ALLOW_LIVE alone decides.)
+  const vercelEnv = env("VERCEL_ENV");
+  if (mode === "live" && vercelEnv && vercelEnv !== "production") {
+    problems.push(`Llaves live en un despliegue ${vercelEnv}: solo se aceptan en producción`);
   }
 
   if (problems.length > 0) return { ok: false, reason: "misconfigured", problems };

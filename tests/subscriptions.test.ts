@@ -178,7 +178,7 @@ describe("contrato", () => {
     expect(
       createCheckoutInputSchema.safeParse({
         ...validCheckout,
-        billingDocument: { type: "factura", ruc: "20123456789", legalName: "Mi Local SAC" },
+        billingDocument: { type: "factura", ruc: "20131312955", legalName: "Mi Local SAC" },
       }).success
     ).toBe(true);
     expect(
@@ -409,6 +409,8 @@ function fakeAdapter(overrides: Partial<SubscriptionProviderAdapter> = {}): Subs
     getSubscription: vi.fn(async () => null),
     cancelSubscription: vi.fn(async () => "canceled" as const),
     findSubscription: vi.fn(async () => null),
+    getCharge: vi.fn(async () => null),
+    updateSubscriptionCard: vi.fn(async () => undefined),
     ...overrides,
   };
 }

@@ -8,7 +8,7 @@
 
 import { NextResponse } from "next/server";
 import { receiveCulqiWebhook } from "@/lib/subscriptions/webhooks";
-import { logSubscription } from "@/lib/subscriptions/runtime";
+import { logSubscription, safeError } from "@/lib/subscriptions/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       headers: { "cache-control": "no-store", ...(reply.status === 503 ? { "retry-after": "60" } : {}) },
     });
   } catch (error) {
-    logSubscription("error", "webhook.crashed", { error: String(error).slice(0, 200) });
+    logSubscription("error", "webhook.crashed", { error: safeError(error) });
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }

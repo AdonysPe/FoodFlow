@@ -5,19 +5,50 @@ vi.mock("@/lib/db/prisma", async () => {
   const { createFakePrisma } = await import("./helpers/fakePrisma");
   return { prisma: createFakePrisma() };
 });
-vi.mock("@/lib/security/rateLimit", () => ({ rateLimit: async () => ({ ok: true, remaining: 9 }) }));
+vi.mock("@/lib/security/rateLimit", () => ({
+  rateLimit: vi.fn(async () => ({ ok: true, remaining: 9 })),
+}));
+const adminGate = vi.hoisted(() => ({ allow: true }));
+vi.mock("@/lib/auth/guards", () => ({
+  requirePlatformAdmin: async () => {
+    if (!adminGate.allow) throw new Error("Not authorized");
+    return { id: "admin-1", email: "admin@foodflow.site" };
+  },
+}));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import { prisma } from "@/lib/db/prisma";
+import { rateLimit } from "@/lib/security/rateLimit";
+import { Prisma } from "@prisma/client";
 import { receiveCulqiWebhook, authenticateDelivery } from "../lib/subscriptions/webhooks";
 import { runSubscriptionMaintenance } from "../lib/subscriptions/maintenance";
 import { cancelSubscription, changeSubscriptionPlan, previewPlanChange } from "../lib/subscriptions/operations";
 import { getCheckoutStatus, getSubscriptionView, setAdapterFactoryForTests, type SubscriptionActor } from "../lib/subscriptions/service";
 import { restaurantEntitlement } from "../lib/subscriptions/access";
+import { processStoredEvent } from "../lib/subscriptions/webhooks";
+import { safeError } from "../lib/subscriptions/runtime";
+import { readCulqiKeys } from "../lib/subscriptions/config";
+import {
+  cancelReactivation,
+  reactivateSubscription,
+  startPaymentMethodUpdate,
+  updatePaymentMethod,
+} from "../lib/subscriptions/operations";
+import {
+  abandonPendingSubscription,
+  getSubscriptionOps,
+  reconcileSubscriptionNow,
+  reprocessSubscriptionEvent,
+  repairSubscriptionProjection,
+  resolveSubscriptionReview,
+} from "../lib/actions/subscriptionAdmin";
 import { addMonths } from "../lib/subscriptions/lifecycle";
 import { chargeFacts, classifyEvent, collectIds, providerDate } from "../lib/subscriptions/events";
 import { createCulqiAdapter } from "../lib/subscriptions/culqi";
 import {
+  ProviderRejectedError,
   ProviderUnavailableError,
+  type ProviderCharge,
   type ProviderEvent,
   type ProviderSubscriptionState,
   type SubscriptionProviderAdapter,
@@ -40,6 +71,7 @@ const PLAN_ENV = {
 
 type FakeCulqi = {
   events: Map<string, ProviderEvent>;
+  charges: Map<string, ProviderCharge>;
   subs: Map<string, ProviderSubscriptionState>;
   adapter: SubscriptionProviderAdapter;
   down: boolean;
@@ -49,7 +81,7 @@ let culqi: FakeCulqi;
 let subSeq = 0;
 
 function makeCulqi(): FakeCulqi {
-  const state: FakeCulqi = { events: new Map(), subs: new Map(), down: false } as FakeCulqi;
+  const state: FakeCulqi = { events: new Map(), charges: new Map(), subs: new Map(), down: false } as FakeCulqi;
   const guard = () => {
     if (state.down) throw new ProviderUnavailableError("down", "test");
   };
@@ -61,7 +93,7 @@ function makeCulqi(): FakeCulqi {
     createSubscription: vi.fn(async ({ cardId, planId }) => {
       guard();
       const id = `sxn_test_new${++subSeq}`;
-      state.subs.set(id, { id, status: "active", cardId, planId, trialEndsAt: null, nextBillingAt: null, createdAt: new Date() });
+      state.subs.set(id, { id, status: "active", cardId, planId, trialEndsAt: null, nextBillingAt: null, createdAt: new Date(), chargeIds: [] });
       return { subscriptionId: id, rawStatus: "1" };
     }),
     getEvent: vi.fn(async (id: string) => {
@@ -79,6 +111,15 @@ function makeCulqi(): FakeCulqi {
       return "canceled" as const;
     }),
     findSubscription: vi.fn(async () => null),
+    getCharge: vi.fn(async (id: string) => {
+      guard();
+      return state.charges.get(id) ?? null;
+    }),
+    updateSubscriptionCard: vi.fn(async (id: string, cardId: string) => {
+      guard();
+      const sub = state.subs.get(id);
+      if (sub) sub.cardId = cardId;
+    }),
   };
   return state;
 }
@@ -180,6 +221,7 @@ async function seedPendingSubscription({ trialDays = 7, plan = "servicio", provi
     trialEndsAt: trialDays ? new Date(Date.now() + trialDays * DAY) : null,
     nextBillingAt: null,
     createdAt: new Date(),
+    chargeIds: [],
   });
   return { restaurant, sub, checkout };
 }
@@ -250,10 +292,16 @@ describe("webhook: autenticidad", () => {
     expect((await deliver("x", undefined, JSON.stringify({ id: "chr_test_1" }))).status).toBe(400);
   });
 
-  it("un evento que Culqi no tiene (falsificado) se ignora sin tocar nada", async () => {
+  it("un evento que Culqi no tiene (falsificado) no toca nada y se descarta tras la ventana", async () => {
     await seedPendingSubscription();
-    const reply = await deliver("evt_test_0000forged");
-    expect(reply.status).toBe(200);
+    // Culqi's event API can lag its own webhook: the first answer is "retry".
+    expect((await deliver("evt_test_0000forged")).status).toBe(503);
+    expect(db.subscriptionWebhookEvent.rows[0]).toMatchObject({ status: "failed", error: "event_not_visible_yet" });
+    expect((await restaurantRow()).billingSource).toBe("manual");
+
+    // Past the window it is dropped for good.
+    const later = new Date(Date.now() + 20 * 60 * 1000);
+    expect(await processStoredEvent(db.subscriptionWebhookEvent.rows[0].id, later)).toBe("ignored");
     expect(db.subscriptionWebhookEvent.rows[0]).toMatchObject({ status: "ignored" });
     expect((await restaurantRow()).billingSource).toBe("manual");
   });
@@ -288,6 +336,8 @@ describe("ciclo de suscripción", () => {
     event("evt_test_0000start", "subscription.creation.succeeded", { id: "sxn_test_trial1" });
     await deliver("evt_test_0000start");
     expect(((await restaurantRow()).accessUntil as Date).getTime()).toBeLessThanOrEqual(Date.now() + 7 * DAY + 1000);
+    // ...and a plan configured with a longer trial at Culqi is flagged for a person.
+    expect(db.subscription.rows[0]).toMatchObject({ needsReview: true, reviewReason: "trial_longer_at_provider" });
   });
 
   it("un aviso repetido no hace nada la segunda vez", async () => {
@@ -528,7 +578,7 @@ describe("cancelar y cambiar de plan", () => {
 
     const view = await getSubscriptionView(await actor());
     expect(view.ok && view.data.subscription?.pendingChange?.plan).toBe("carta");
-    expect(view.ok && view.data.actions).toEqual({ canCancel: true, canChangePlan: false });
+    expect(view.ok && view.data.actions).toMatchObject({ canCancel: true, canChangePlan: false, canReactivate: false });
 
     // Culqi reports the stop we asked for: the status must not drop.
     event("evt_test_0000stop", "subscription.deleted", { id: "sxn_test_trial1" });
@@ -604,5 +654,618 @@ describe("lectura defensiva de Culqi", () => {
     expect(await adapter.getEvent("evt_test_0000missing")).toBeNull();
     expect(await adapter.getEvent("evt_test_00001")).toMatchObject({ type: "charge.failed", data: { id: "chr_test_1" } });
     expect(await adapter.cancelSubscription("sxn_test_gone")).toBe("already_canceled");
+  });
+});
+
+
+// =====================================================================
+// Fase 5 — revisión de integración
+// =====================================================================
+
+const RID = "ckrestaurant000000000001";
+
+describe("registros y alertas sin datos sensibles", () => {
+  it("un error de Prisma nunca se escribe con sus argumentos", () => {
+    const error = new Prisma.PrismaClientKnownRequestError(
+      "Invalid `prisma.subscriptionCheckout.create()` invocation: data: { customerFirstName: 'Ana', customerPhone: '987654321' }",
+      { code: "P2002", clientVersion: "test" }
+    );
+    expect(safeError(error)).toBe("PrismaError:P2002");
+    expect(safeError(new Error("sk_test_secret leaked"))).toBe("Error");
+    expect(safeError(new ProviderUnavailableError("Culqi card.create: HTTP 503", "card.create"))).toContain("HTTP 503");
+  });
+
+  it("un fallo interno del webhook no filtra su mensaje al registro ni a la fila del evento", async () => {
+    await seedPendingSubscription();
+    event("evt_test_0000leak1", "subscription.creation.succeeded", { id: "sxn_test_trial1" });
+    culqi.adapter.getSubscription = vi.fn(async () => {
+      throw new Error("boom with Ana Quispe 987654321 and sk_test_secret");
+    });
+    const logs: string[] = [];
+    const spy = vi.spyOn(console, "error").mockImplementation((line) => void logs.push(String(line)));
+    const reply = await deliver("evt_test_0000leak1");
+    spy.mockRestore();
+
+    expect(reply.status).toBe(500);
+    const row = db.subscriptionWebhookEvent.rows[0];
+    expect(row).toMatchObject({ status: "failed", error: "Error" });
+    const written = logs.join("\n") + JSON.stringify(row);
+    expect(written).not.toMatch(/Ana|987654321|sk_test_secret/);
+    expect(logs.some((l) => l.includes("alert.webhook_failed"))).toBe(true);
+  });
+
+  it("las alertas salen al webhook de errores con ids y códigos, sin secretos", async () => {
+    vi.stubEnv("ERROR_LOG_WEBHOOK_URL", "https://logs.example/hook");
+    const posted: Array<{ url: string; body: string }> = [];
+    const original = globalThis.fetch;
+    globalThis.fetch = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+      posted.push({ url: String(url), body: String(init?.body) });
+      return new Response("{}", { status: 200 });
+    }) as unknown as typeof fetch;
+    const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      const { alertOps } = await import("../lib/subscriptions/runtime");
+      await alertOps("review_needed", { subscriptionId: "cksub1", reason: "refund" });
+    } finally {
+      globalThis.fetch = original;
+      spy.mockRestore();
+    }
+    expect(posted).toHaveLength(1);
+    expect(JSON.parse(posted[0].body)).toMatchObject({
+      source: "foodflow.subscriptions",
+      event: "alert.review_needed",
+      data: { subscriptionId: "cksub1", reason: "refund" },
+    });
+  });
+});
+
+describe("webhook: eventos que llegan antes de tiempo", () => {
+  it("un evento que aún no menciona nada nuestro se conserva y se procesa cuando aparece la suscripción", async () => {
+    event("evt_test_0000early", "subscription.creation.succeeded", { id: "sxn_test_trial1" });
+    const first = await deliver("evt_test_0000early");
+    expect(first).toMatchObject({ status: 200, body: { result: "pending" } });
+    expect(db.subscriptionWebhookEvent.rows[0]).toMatchObject({ status: "failed", error: "no_matching_subscription" });
+
+    await seedPendingSubscription();
+    await runSubscriptionMaintenance();
+    expect(db.subscriptionWebhookEvent.rows[0]).toMatchObject({ status: "processed" });
+    expect((await restaurantRow()).billingStatus).toBe("trialing");
+  });
+
+  it("si nada nuestro aparece en 24 horas, el evento se descarta", async () => {
+    event("evt_test_0000never", "subscription.creation.succeeded", { id: "sxn_test_stranger" });
+    await deliver("evt_test_0000never");
+    const later = new Date(Date.now() + 25 * 60 * 60 * 1000);
+    expect(await processStoredEvent(db.subscriptionWebhookEvent.rows[0].id, later)).toBe("ignored");
+  });
+
+  it("los intentos con secreto equivocado tienen tope por origen", async () => {
+    vi.mocked(rateLimit).mockResolvedValueOnce({ ok: false, retryAfterMs: 1000 });
+    const reply = await deliver("evt_test_0000abcd", "Bearer wrong");
+    expect(reply.status).toBe(429);
+  });
+});
+
+describe("conciliación por los cargos de Culqi (sin webhook)", () => {
+  function listCharge(id: string, outcome: "succeeded" | "failed" | "unknown", extra: Partial<ProviderCharge["facts"]> = {}) {
+    culqi.charges.set(id, {
+      outcome,
+      facts: { chargeId: id, amountCents: 19942, currency: "PEN", occurredAt: new Date(), failureCode: null, ...extra },
+    });
+    culqi.subs.get("sxn_test_trial1")!.chargeIds.push(id);
+  }
+
+  it("un cobro pagado cuyo aviso se perdió extiende el acceso igual", async () => {
+    await activeTrial();
+    culqi.subs.get("sxn_test_trial1")!.nextBillingAt = new Date(Date.now() + 30 * DAY);
+    listCharge("chr_test_ledger1", "succeeded");
+    const { checkout } = { checkout: db.subscriptionCheckout.rows[0] };
+    void checkout;
+    const adapter = culqi.adapter;
+    const { reconcileSubscription } = await import("../lib/subscriptions/reconcile");
+    const note = await reconcileSubscription(adapter, db.subscription.rows[0].id);
+    expect(note).toContain("charges:1");
+    expect(await restaurantRow()).toMatchObject({ billingStatus: "active" });
+    expect(db.subscriptionPayment.rows).toHaveLength(1);
+    // Running it again changes nothing.
+    await reconcileSubscription(adapter, db.subscription.rows[0].id);
+    expect(db.subscriptionPayment.rows).toHaveLength(1);
+  });
+
+  it("una suscripción sin prueba se activa por su cobro aunque no llegue ningún aviso", async () => {
+    const { sub } = await seedPendingSubscription({ trialDays: 0, providerSubscriptionId: "sxn_test_nt9" });
+    culqi.subs.get("sxn_test_nt9")!.chargeIds = ["chr_test_first9"];
+    culqi.subs.get("sxn_test_nt9")!.nextBillingAt = new Date(Date.now() + 30 * DAY);
+    culqi.charges.set("chr_test_first9", {
+      outcome: "succeeded",
+      facts: { chargeId: "chr_test_first9", amountCents: 19942, currency: "PEN", occurredAt: new Date(), failureCode: null },
+    });
+    await runSubscriptionMaintenance();
+    expect(await restaurantRow()).toMatchObject({ plan: "servicio", billingStatus: "active", billingSource: "provider" });
+    expect(db.subscriptionCheckout.rows[0].status).toBe("completed");
+    void sub;
+  });
+
+  it("un cargo rechazado leído de Culqi deja al local en gracia; uno ambiguo no cambia nada", async () => {
+    await activeTrial();
+    listCharge("chr_test_bad1", "failed", { failureCode: "insufficient_funds" });
+    listCharge("chr_test_odd1", "unknown");
+    const { reconcileSubscription } = await import("../lib/subscriptions/reconcile");
+    await reconcileSubscription(culqi.adapter, db.subscription.rows[0].id);
+    expect((await restaurantRow()).billingStatus).toBe("past_due");
+    expect(db.subscriptionPayment.rows).toHaveLength(1);
+    expect(db.subscriptionPayment.rows[0]).toMatchObject({ status: "failed", failureCode: "insufficient_funds" });
+  });
+
+  it("un evento de cargo sin id de cargo cae a leer la suscripción y sus cargos", async () => {
+    await activeTrial();
+    culqi.subs.get("sxn_test_trial1")!.nextBillingAt = new Date(Date.now() + 30 * DAY);
+    listCharge("chr_test_ledger2", "succeeded");
+    event("evt_test_0000nocharge", "charge.creation.succeeded", { subscription_id: "sxn_test_trial1" });
+    const reply = await deliver("evt_test_0000nocharge");
+    expect(reply.status).toBe(200);
+    expect(db.subscriptionPayment.rows).toHaveLength(1);
+    expect((await restaurantRow()).billingStatus).toBe("active");
+  });
+
+  it("dos suscripciones con la misma tarjeta: no se adivina, cada una lee sus propios cargos", async () => {
+    await activeTrial(); // old, on card crd_test_card1
+    const old = db.subscription.rows[0];
+    const fresh = await db.subscription.create({
+      data: {
+        restaurantId: RID, restaurantName: "Mi local", ownerId: OWNER.id, ownerEmail: OWNER.email,
+        provider: "culqi", providerCustomerId: "cus_test_1", providerCardId: "crd_test_card1",
+        providerSubscriptionId: "sxn_test_fresh1", providerPlanId: PLAN_ENV.CULQI_PLAN_NEGOCIO,
+        plan: "negocio", status: "pending", netAmountCents: 33900, igvAmountCents: 6102, grossAmountCents: 40002,
+        igvRateBps: 1800, replacesSubscriptionId: old.id,
+      },
+    });
+    culqi.subs.set("sxn_test_fresh1", {
+      id: "sxn_test_fresh1", status: "active", cardId: "crd_test_card1", planId: PLAN_ENV.CULQI_PLAN_NEGOCIO,
+      trialEndsAt: null, nextBillingAt: null, createdAt: new Date(), chargeIds: [],
+    });
+    // The renewal charge belongs to the OLD subscription's list.
+    culqi.subs.get("sxn_test_trial1")!.nextBillingAt = new Date(Date.now() + 30 * DAY);
+    listCharge("chr_test_oldrenew", "succeeded");
+    event("evt_test_0000ambig", "charge.creation.succeeded", { source: { id: "crd_test_card1" } });
+    await deliver("evt_test_0000ambig");
+
+    expect(db.subscriptionPayment.rows.map((p) => p.subscriptionId)).toEqual([old.id]);
+    expect((await db.subscription.findUnique({ where: { id: fresh.id } }))!.activatedAt).toBeNull();
+    expect(db.subscriptionWebhookEvent.rows.at(-1)!.payload).toMatchObject({ note: "ambiguous_card:reconciled" });
+  });
+});
+
+describe("separación entre sandbox y producción", () => {
+  it("las llaves reales se rechazan en Preview y Development aunque se habiliten", () => {
+    vi.stubEnv("CULQI_SECRET_KEY", "sk_live_secret");
+    vi.stubEnv("CULQI_PUBLIC_KEY", "pk_live_public");
+    vi.stubEnv("SUBSCRIPTIONS_ALLOW_LIVE", "true");
+    vi.stubEnv("NEXT_PUBLIC_LEGAL_TAX_ID", "20131312955");
+    vi.stubEnv("VERCEL_ENV", "preview");
+    const preview = readCulqiKeys();
+    expect(preview.ok).toBe(false);
+    expect(!preview.ok && preview.reason === "misconfigured" && preview.problems.join()).toContain("solo se aceptan en producción");
+
+    vi.stubEnv("VERCEL_ENV", "production");
+    expect(readCulqiKeys().ok).toBe(true);
+    vi.stubEnv("SUBSCRIPTIONS_ALLOW_LIVE", "false");
+    expect(readCulqiKeys().ok).toBe(false);
+  });
+
+  it("un evento del otro modo se ignora sin guardarse", async () => {
+    const reply = await deliver("evt_live_0000abcd");
+    expect(reply).toMatchObject({ status: 200, body: { ignored: true } });
+    expect(db.subscriptionWebhookEvent.rows).toHaveLength(0);
+  });
+});
+
+describe("reactivar", () => {
+  async function cancelled() {
+    await activeTrial();
+    await cancelSubscription(await actor(), { restaurantId: RID, confirm: true });
+    return db.subscription.rows[0];
+  }
+  const key = () => crypto.randomUUID();
+
+  it("con días pagados por delante se programa: no cobra ahora y conserva los días", async () => {
+    const before = await cancelled();
+    const result = await reactivateSubscription(await actor(), { restaurantId: RID, idempotencyKey: key(), confirm: true });
+    expect(result).toMatchObject({ ok: true, data: { kind: "scheduled" } });
+    expect(culqi.adapter.createSubscription).not.toHaveBeenCalled();
+    const sub = db.subscription.rows[0];
+    expect(sub).toMatchObject({ pendingPlan: "servicio", status: "cancelled" });
+    expect((sub.pendingPlanEffectiveAt as Date).getTime()).toBe((before.trialEndsAt as Date).getTime());
+    expect(restaurantEntitlement((await restaurantRow()) as never).mode).toBe("full");
+
+    const view = await getSubscriptionView(await actor());
+    expect(view.ok && view.data.actions).toMatchObject({ canReactivate: false, canUndoReactivation: true });
+
+    // The date arrives: the card is charged then, and the new subscription takes over.
+    db.subscription.rows[0].pendingPlanEffectiveAt = new Date(Date.now() - 1000);
+    await runSubscriptionMaintenance();
+    expect(culqi.adapter.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ cardId: "crd_test_card1", planId: PLAN_ENV.CULQI_PLAN_SERVICIO })
+    );
+    const fresh = db.subscription.rows.find((s) => s.replacesSubscriptionId)!;
+    culqi.subs.get(fresh.providerSubscriptionId as string)!.nextBillingAt = new Date(Date.now() + 30 * DAY);
+    event("evt_test_0000react", "charge.creation.succeeded", { id: "chr_test_react", amount: 19942, subscription_id: fresh.providerSubscriptionId });
+    await deliver("evt_test_0000react");
+    expect(await restaurantRow()).toMatchObject({ plan: "servicio", billingStatus: "active" });
+  });
+
+  it("sin días por delante se cobra ahora con la tarjeta guardada", async () => {
+    await cancelled();
+    db.subscription.rows[0].trialEndsAt = new Date(Date.now() - DAY);
+    db.subscription.rows[0].endedAt = new Date();
+    const view = await getSubscriptionView(await actor());
+    expect(view.ok && view.data.subscription?.reactivation).toMatchObject({ plan: "servicio", chargeAt: null });
+    const result = await reactivateSubscription(await actor(), { restaurantId: RID, idempotencyKey: key(), confirm: true });
+    expect(result).toMatchObject({ ok: true, data: { kind: "checkout", status: "processing" } });
+    expect(culqi.adapter.createSubscription).toHaveBeenCalledTimes(1);
+    expect(db.subscriptionCheckout.rows.at(-1)).toMatchObject({ purpose: "new", withTrial: false });
+  });
+
+  it("solo el dueño, solo si está cancelada, y no dos veces", async () => {
+    await activeTrial();
+    expect(await reactivateSubscription(await actor(), { restaurantId: RID, idempotencyKey: key(), confirm: true })).toMatchObject({
+      ok: false,
+      code: "not_reactivable",
+    });
+    await cancelSubscription(await actor(), { restaurantId: RID, confirm: true });
+    expect(await reactivateSubscription(await actor(false), { restaurantId: RID, idempotencyKey: key(), confirm: true })).toMatchObject({
+      ok: false,
+      code: "forbidden_not_owner",
+    });
+    expect(await reactivateSubscription(await actor(), { restaurantId: "ckotherrestaurant0000001", idempotencyKey: key(), confirm: true })).toMatchObject({
+      ok: false,
+      code: "restaurant_mismatch",
+    });
+    const k = key();
+    await reactivateSubscription(await actor(), { restaurantId: RID, idempotencyKey: k, confirm: true });
+    expect(await reactivateSubscription(await actor(), { restaurantId: RID, idempotencyKey: key(), confirm: true })).toMatchObject({
+      ok: false,
+      code: "change_pending",
+    });
+  });
+
+  it("se puede deshacer una reactivación programada", async () => {
+    await cancelled();
+    await reactivateSubscription(await actor(), { restaurantId: RID, idempotencyKey: key(), confirm: true });
+    expect(await cancelReactivation(await actor(), { restaurantId: RID, confirm: true })).toMatchObject({ ok: true });
+    expect(db.subscription.rows[0].pendingPlan).toBeNull();
+    expect(db.subscriptionTransition.rows.at(-1)).toMatchObject({ reason: "owner.reactivation_canceled" });
+  });
+
+  it("si al llegar la fecha la tarjeta es rechazada, no se reintenta cada noche", async () => {
+    await cancelled();
+    await reactivateSubscription(await actor(), { restaurantId: RID, idempotencyKey: key(), confirm: true });
+    db.subscription.rows[0].pendingPlanEffectiveAt = new Date(Date.now() - 1000);
+    culqi.adapter.createSubscription = vi.fn(async () => {
+      throw new ProviderRejectedError("402", "subscription.create", 402, "card_error");
+    });
+    await runSubscriptionMaintenance();
+    expect(db.subscription.rows[0]).toMatchObject({ pendingPlan: null, status: "cancelled" });
+    await runSubscriptionMaintenance();
+    expect(culqi.adapter.createSubscription).toHaveBeenCalledTimes(1);
+  });
+
+  it("una bajada programada que no se puede cobrar vuelve a 'pago atrasado' y no se reintenta", async () => {
+    await activeTrial();
+    await changeSubscriptionPlan(await actor(), { restaurantId: RID, targetPlan: "carta", idempotencyKey: key(), confirm: true });
+    db.subscription.rows[0].pendingPlanEffectiveAt = new Date(Date.now() - 1000);
+    culqi.adapter.createSubscription = vi.fn(async () => {
+      throw new ProviderRejectedError("402", "subscription.create", 402, "card_error");
+    });
+    await runSubscriptionMaintenance();
+    expect(db.subscription.rows[0]).toMatchObject({ pendingPlan: null, status: "past_due" });
+    await runSubscriptionMaintenance();
+    expect(culqi.adapter.createSubscription).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("cambiar la tarjeta", () => {
+  const tok = "tkn_test_abcDEF123456";
+
+  it("entrega la configuración de Culqi Checkout con la tarjeta actual", async () => {
+    await activeTrial();
+    const session = await startPaymentMethodUpdate(await actor(), { restaurantId: RID });
+    expect(session).toMatchObject({
+      ok: true,
+      data: { card: { last4: "1111" }, next: { type: "culqi_checkout", publicKey: "pk_test_public", settings: { currency: "PEN", amount: 19942 } } },
+    });
+    expect(JSON.stringify(session)).not.toContain("sk_test_secret");
+  });
+
+  it("guarda la tarjeta nueva, la pone en la suscripción de Culqi y avisa que reintentará el cobro", async () => {
+    await activeTrial();
+    db.subscription.rows[0].status = "past_due";
+    culqi.adapter.saveCard = vi.fn(async () => ({ kind: "saved" as const, cardId: "crd_test_card2", brand: "Mastercard", last4: "4444" }));
+    const result = await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: tok });
+    expect(result).toMatchObject({ ok: true, data: { status: "updated", card: { last4: "4444" }, willRetryCharge: true } });
+    expect(culqi.adapter.updateSubscriptionCard).toHaveBeenCalledWith("sxn_test_trial1", "crd_test_card2");
+    expect(db.subscription.rows[0]).toMatchObject({ providerCardId: "crd_test_card2", cardBrand: "Mastercard", cardLast4: "4444" });
+    expect(db.subscriptionTransition.rows.at(-1)).toMatchObject({ reason: "owner.card_updated" });
+    expect(JSON.stringify(db.subscriptionTransition.rows)).not.toContain(tok);
+  });
+
+  it("3-D Secure: pide la autenticación y reenvía su resultado", async () => {
+    await activeTrial();
+    culqi.adapter.saveCard = vi.fn(async () => ({ kind: "requires_3ds" as const }));
+    expect(await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: tok })).toMatchObject({
+      ok: true,
+      data: { status: "requires_action", threeDS: { totalAmount: 19942 } },
+    });
+    expect(culqi.adapter.updateSubscriptionCard).not.toHaveBeenCalled();
+  });
+
+  it("una tarjeta rechazada no cambia nada", async () => {
+    await activeTrial();
+    culqi.adapter.saveCard = vi.fn(async () => ({ kind: "declined" as const, code: "stolen_card", userMessage: "Tarjeta rechazada." }));
+    expect(await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: tok })).toMatchObject({ ok: false, code: "card_declined" });
+    expect(db.subscription.rows[0].providerCardId).toBe("crd_test_card1");
+  });
+
+  it("solo el dueño del local activo, con token del modo correcto", async () => {
+    await activeTrial();
+    expect(await updatePaymentMethod(await actor(false), { restaurantId: RID, tokenId: tok })).toMatchObject({ code: "forbidden_not_owner" });
+    expect(await updatePaymentMethod(await actor(), { restaurantId: "ckotherrestaurant0000001", tokenId: tok })).toMatchObject({ code: "restaurant_mismatch" });
+    expect(await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: "tkn_live_abcDEF123456" })).toMatchObject({ code: "invalid_input" });
+    expect(await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: "4111111111111111" })).toMatchObject({ code: "invalid_input" });
+    expect(culqi.adapter.saveCard).not.toHaveBeenCalled();
+  });
+
+  it("una suscripción cancelada solo gana la tarjeta (nada que actualizar en Culqi)", async () => {
+    await activeTrial();
+    await cancelSubscription(await actor(), { restaurantId: RID, confirm: true });
+    culqi.adapter.saveCard = vi.fn(async () => ({ kind: "saved" as const, cardId: "crd_test_card3", brand: "Visa", last4: "9999" }));
+    const result = await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: tok });
+    expect(result).toMatchObject({ ok: true, data: { status: "updated", willRetryCharge: false } });
+    expect(culqi.adapter.updateSubscriptionCard).not.toHaveBeenCalled();
+    expect(db.subscription.rows[0].providerCardId).toBe("crd_test_card3");
+  });
+});
+
+describe("operación: reconciliar sin tocar la base a mano", () => {
+  beforeEach(() => {
+    adminGate.allow = true;
+  });
+
+  it("solo el admin de la plataforma; dueños y gerentes no", async () => {
+    adminGate.allow = false;
+    await expect(getSubscriptionOps()).rejects.toThrow("Not authorized");
+    await expect(reconcileSubscriptionNow({ subscriptionId: "ckx000000000000000000001" })).rejects.toThrow();
+    await expect(resolveSubscriptionReview({ subscriptionId: "ckx000000000000000000001", note: "ok ok" })).rejects.toThrow();
+  });
+
+  it("el panorama cuenta lo que necesita atención y la configuración, sin datos de clientes", async () => {
+    await seedPendingSubscription();
+    db.subscription.rows[0].createdAt = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    await db.subscriptionWebhookEvent.create({
+      data: { provider: "culqi", providerEventId: "evt_test_0000fail", type: "charge.failed", payloadHash: "h", status: "failed", error: "Error" },
+    });
+    const result = await getSubscriptionOps();
+    expect(result.ok && result.data).toMatchObject({
+      keys: "ok",
+      mode: "test",
+      webhookSecretConfigured: true,
+      plansConfigured: true,
+      counts: { failedEvents: 1, stuckPending: 1 },
+    });
+    expect(JSON.stringify(result)).not.toMatch(/987654321|Ana|sk_test_secret|dueno@local/);
+  });
+
+  it("reconciliar una suscripción aplica lo que Culqi dice (como el cron)", async () => {
+    await seedPendingSubscription();
+    const result = await reconcileSubscriptionNow({ subscriptionId: db.subscription.rows[0].id });
+    expect(result).toMatchObject({ ok: true });
+    expect((await restaurantRow()).billingStatus).toBe("trialing");
+  });
+
+  it("reprocesar un evento fallido lo termina, y uno ya procesado no se repite", async () => {
+    await seedPendingSubscription();
+    event("evt_test_0000replay", "subscription.creation.succeeded", { id: "sxn_test_trial1" });
+    culqi.down = true;
+    await deliver("evt_test_0000replay");
+    culqi.down = false;
+    db.subscriptionWebhookEvent.rows[0].attempts = 99;
+    const id = db.subscriptionWebhookEvent.rows[0].id;
+    expect(await reprocessSubscriptionEvent({ eventId: id })).toMatchObject({ ok: true, data: { note: "processed" } });
+    expect((await restaurantRow()).billingStatus).toBe("trialing");
+    expect(await reprocessSubscriptionEvent({ eventId: id })).toMatchObject({ ok: true, data: { note: "already_processed" } });
+  });
+
+  it("cerrar una revisión deja nota y rastro; la bandera se apaga", async () => {
+    await activeTrial();
+    db.subscription.rows[0].needsReview = true;
+    db.subscription.rows[0].reviewReason = "refund";
+    const id = db.subscription.rows[0].id;
+    expect(await resolveSubscriptionReview({ subscriptionId: id, note: "Devolución de cortesía" })).toMatchObject({ ok: true });
+    expect(db.subscription.rows[0]).toMatchObject({ needsReview: false, reviewReason: null });
+    expect(db.subscriptionTransition.rows.at(-1)).toMatchObject({
+      actorEmail: "admin@foodflow.site",
+    });
+    expect(String(db.subscriptionTransition.rows.at(-1)!.reason)).toContain("Devolución de cortesía");
+  });
+
+  it("cerrar una suscripción atascada la detiene en Culqi y libera al dueño; si Culqi dice que sí se pagó, se activa", async () => {
+    await seedPendingSubscription({ trialDays: 0, providerSubscriptionId: "sxn_test_stuck1" });
+    const id = db.subscription.rows[0].id;
+    expect(await abandonPendingSubscription({ subscriptionId: id })).toMatchObject({ ok: true, data: { note: "abandoned" } });
+    expect(culqi.adapter.cancelSubscription).toHaveBeenCalledWith("sxn_test_stuck1");
+    expect(db.subscription.rows[0].endedAt).toBeInstanceOf(Date);
+    expect(db.subscriptionCheckout.rows[0]).toMatchObject({ status: "failed", failureCode: "abandoned_by_admin" });
+    expect((await restaurantRow()).billingSource).toBe("manual");
+  });
+
+  it("cerrar una suscripción que en realidad se pagó la activa en lugar de cerrarla", async () => {
+    await seedPendingSubscription({ trialDays: 0, providerSubscriptionId: "sxn_test_paid1" });
+    culqi.subs.get("sxn_test_paid1")!.chargeIds = ["chr_test_paid1"];
+    culqi.subs.get("sxn_test_paid1")!.nextBillingAt = new Date(Date.now() + 30 * DAY);
+    culqi.charges.set("chr_test_paid1", {
+      outcome: "succeeded",
+      facts: { chargeId: "chr_test_paid1", amountCents: 19942, currency: "PEN", occurredAt: new Date(), failureCode: null },
+    });
+    const result = await abandonPendingSubscription({ subscriptionId: db.subscription.rows[0].id });
+    expect(result).toMatchObject({ ok: true, data: { note: "activated_by_reconcile" } });
+    expect(culqi.adapter.cancelSubscription).not.toHaveBeenCalled();
+    expect((await restaurantRow()).billingStatus).toBe("active");
+  });
+
+  it("un local que se desvió de su suscripción se repara solo con el mantenimiento", async () => {
+    await activeTrial();
+    // Simulate a path that moved the subscription but not the restaurant.
+    db.restaurant.rows[0].billingStatus = "past_due";
+    const before = db.subscriptionTransition.rows.length;
+    await runSubscriptionMaintenance();
+    expect((await restaurantRow()).billingStatus).toBe("trialing");
+    expect(db.subscriptionTransition.rows.length).toBe(before + 1);
+    expect(db.subscriptionTransition.rows.at(-1)).toMatchObject({ reason: "maintenance.reprojected" });
+
+    db.restaurant.rows[0].plan = "negocio";
+    const id = db.subscription.rows[0].id;
+    expect(await repairSubscriptionProjection({ subscriptionId: id })).toMatchObject({ ok: true });
+    expect((await restaurantRow()).plan).toBe("servicio");
+  });
+});
+
+describe("coherencia entre suscripción, cobro y permisos efectivos", () => {
+  it("cada estado de la suscripción produce el acceso que el contrato promete", async () => {
+    await activeTrial();
+    const access = async () => restaurantEntitlement((await restaurantRow()) as never);
+
+    expect(await access()).toMatchObject({ mode: "full", reason: "trialing" });
+
+    // trial over and the charge never showed up: grace, not a lock
+    db.restaurant.rows[0].accessUntil = new Date(Date.now() - 2 * DAY);
+    expect(await access()).toMatchObject({ mode: "grace", reason: "renewal_pending" });
+
+    // grace over
+    db.restaurant.rows[0].accessUntil = new Date(Date.now() - 9 * DAY);
+    expect(await access()).toMatchObject({ mode: "locked", reason: "grace_expired" });
+
+    // a late payment restores it
+    db.subscription.rows[0].trialEndsAt = new Date(Date.now() - 9 * DAY);
+    culqi.subs.get("sxn_test_trial1")!.nextBillingAt = new Date(Date.now() + 25 * DAY);
+    event("evt_test_0000late", "charge.creation.succeeded", { id: "chr_test_late", amount: 19942, subscription_id: "sxn_test_trial1" });
+    await deliver("evt_test_0000late");
+    expect(await access()).toMatchObject({ mode: "full", reason: "active" });
+  });
+
+  it("el estado que ve el frontend nunca declara pago confirmado mientras la suscripción está pendiente", async () => {
+    await seedPendingSubscription();
+    culqi.down = true; // Culqi unreachable: the poll must not invent a result
+    const view = await getSubscriptionView(await actor());
+    expect(view).toMatchObject({
+      ok: true,
+      data: { source: "manual", openCheckout: { status: "processing" }, subscription: { activatedAt: null } },
+    });
+    const status = await getCheckoutStatus(await actor(), db.subscriptionCheckout.rows[0].id);
+    expect(status).toMatchObject({ ok: true, data: { status: "processing" } });
+    expect((await restaurantRow()).billingSource).toBe("manual");
+  });
+
+  it("nada que mande el navegador cambia plan, precio, estado o restaurante", async () => {
+    await activeTrial();
+    const tampered = { restaurantId: RID, confirm: true, plan: "negocio", status: "active", amount: 1, billingSource: "provider" };
+    expect(await cancelSubscription(await actor(), tampered as never)).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(await changeSubscriptionPlan(await actor(), { restaurantId: RID, targetPlan: "negocio", idempotencyKey: crypto.randomUUID(), confirm: true, amount: 1 } as never)).toMatchObject({ code: "invalid_input" });
+    expect(await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: "tkn_test_abcDEF123456", plan: "negocio" } as never)).toMatchObject({ code: "invalid_input" });
+    expect((await restaurantRow()).plan).toBe("servicio");
+  });
+});
+
+// =====================================================================
+// Endurecimiento de seguridad
+// =====================================================================
+
+describe("webhook: cuerpo acotado y secreto sin filtrar su largo", () => {
+  it("un cuerpo enorme sin Content-Length se corta al llegar al límite", async () => {
+    const chunk = new Uint8Array(16 * 1024).fill(97);
+    let sent = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        // Would run forever if the receiver kept reading.
+        sent += chunk.byteLength;
+        controller.enqueue(chunk);
+        if (sent > 4 * 1024 * 1024) controller.close();
+      },
+    });
+    const reply = await receiveCulqiWebhook(
+      new Request("https://foodflow.site/api/subscriptions/webhooks/culqi", {
+        method: "POST",
+        headers: { authorization: `Basic ${Buffer.from(`culqi:${SECRET}`).toString("base64")}` },
+        body,
+        duplex: "half",
+      } as RequestInit)
+    );
+    expect(reply.status).toBe(413);
+    expect(sent).toBeLessThan(1024 * 1024); // stopped reading long before the end
+    expect(db.subscriptionWebhookEvent.rows).toHaveLength(0);
+  });
+
+  it("un secreto de otro largo se rechaza igual que uno equivocado", async () => {
+    for (const wrong of ["x", "x".repeat(200)]) {
+      const reply = await deliver("evt_test_0000abcd", `Bearer ${wrong}`);
+      expect(reply.status).toBe(401);
+    }
+  });
+});
+
+describe("retención de datos personales", () => {
+  const day = 24 * 60 * 60 * 1000;
+
+  async function attempt(status: string, ageDays: number) {
+    const row = await db.subscriptionCheckout.create({
+      data: {
+        restaurantId: RID, userId: OWNER.id, userEmail: OWNER.email,
+        idempotencyKey: crypto.randomUUID(), status, plan: "servicio", provider: "culqi",
+        providerPlanId: PLAN_ENV.CULQI_PLAN_SERVICIO, withTrial: false, trialDays: 0, currency: "PEN",
+        netAmountCents: 16900, igvAmountCents: 3042, grossAmountCents: 19942, igvRateBps: 1800,
+        customerFirstName: "Ana", customerLastName: "Quispe", customerPhone: "987654321",
+        customerAddress: "Av. Lima 123", customerCity: "Lima",
+        billingDocType: "factura", billingRuc: "20131312955", billingLegalName: "Mi Local SAC",
+        returnPath: "/dashboard/app/configuracion", termsAcceptedAt: new Date(), termsVersion: "v",
+        expiresAt: new Date(),
+      },
+    });
+    db.subscriptionCheckout.rows.find((r) => r.id === row.id)!.updatedAt = new Date(Date.now() - ageDays * day);
+    return row.id;
+  }
+
+  it("borra los datos del titular de intentos fallidos viejos y conserva los completados", async () => {
+    await seedRestaurant();
+    const oldFailed = await attempt("failed", 45);
+    const oldExpired = await attempt("expired", 45);
+    const freshFailed = await attempt("failed", 5);
+    const completed = await attempt("completed", 400);
+    await runSubscriptionMaintenance();
+
+    const get = (id: string) => db.subscriptionCheckout.rows.find((r) => r.id === id)!;
+    for (const id of [oldFailed, oldExpired]) {
+      expect(get(id)).toMatchObject({
+        customerFirstName: "-", customerLastName: "-", customerPhone: "-", customerAddress: "-", customerCity: "-",
+        billingRuc: null, billingLegalName: null,
+      });
+    }
+    expect(get(freshFailed).customerFirstName).toBe("Ana"); // too recent
+    expect(get(completed)).toMatchObject({ customerFirstName: "Ana", billingRuc: "20131312955" }); // the receipt needs it
+  });
+
+  it("poda los eventos ya procesados de más de 90 días y conserva los que fallaron", async () => {
+    const mk = (id: string, status: string, ageDays: number) =>
+      db.subscriptionWebhookEvent.create({
+        // attempts 99: past the retry cap, so only retention looks at it.
+        data: { provider: "culqi", providerEventId: id, type: "charge.failed", payloadHash: "h", status, attempts: 99, receivedAt: new Date(Date.now() - ageDays * day) },
+      });
+    await mk("evt_test_0000old1", "processed", 120);
+    await mk("evt_test_0000old2", "ignored", 100);
+    await mk("evt_test_0000new1", "processed", 10);
+    await mk("evt_test_0000bad1", "failed", 120);
+    await runSubscriptionMaintenance();
+    expect(db.subscriptionWebhookEvent.rows.map((e) => e.providerEventId).sort()).toEqual([
+      "evt_test_0000bad1",
+      "evt_test_0000new1",
+    ]);
   });
 });

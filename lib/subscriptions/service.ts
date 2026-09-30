@@ -20,7 +20,7 @@ import { PLANS, PLAN_LABELS, type PlanValue } from "@/lib/plans";
 import { rateLimit } from "@/lib/security/rateLimit";
 import { readCulqiConfig, type CulqiConfig } from "@/lib/subscriptions/config";
 import { restaurantEntitlement } from "@/lib/subscriptions/access";
-import { adapterFor, fail, logSubscription, onAdapterReset } from "@/lib/subscriptions/runtime";
+import { adapterFor, alertOps, fail, logSubscription, onAdapterReset, safeError } from "@/lib/subscriptions/runtime";
 import { accessUntilOf } from "@/lib/subscriptions/lifecycle";
 import { reconcileCheckout } from "@/lib/subscriptions/reconcile";
 import {
@@ -218,7 +218,7 @@ export async function createCheckout(
       return fail("provider_misconfigured");
     }
   } catch (error) {
-    logSubscription("error", "plan.check_failed", { planId: providerPlanId, error: String(error) });
+    logSubscription("error", "plan.check_failed", { planId: providerPlanId, error: safeError(error) });
     return fail(error instanceof ProviderUnavailableError ? "provider_unavailable" : "provider_misconfigured");
   }
 
@@ -461,7 +461,7 @@ export async function confirmCheckout(
     card = saved;
   } catch (error) {
     await release({ failureCode: error instanceof ProviderRejectedError ? error.providerCode : "provider_unavailable" });
-    logSubscription("error", "confirm.card_stage_failed", { checkoutId: checkout.id, error: String(error) });
+    logSubscription("error", "confirm.card_stage_failed", { checkoutId: checkout.id, error: safeError(error) });
     if (error instanceof ProviderRejectedError) {
       return error.operation === "customer.create"
         ? fail("invalid_input", "La pasarela rechazó los datos del titular. Revísalos.")
@@ -497,7 +497,7 @@ export async function confirmCheckout(
     // Timeout or 5xx: Culqi may have created it. Do NOT let the owner retry
     // into a second subscription — park it for reconciliation instead.
     outcome = "unknown";
-    logSubscription("error", "subscription.unknown_outcome", { checkoutId: checkout.id });
+    await alertOps("unknown_outcome", { checkoutId: checkout.id, purpose: "new" });
   }
 
   await prisma.$transaction(async (tx) => {
@@ -602,7 +602,7 @@ export async function getSubscriptionView(
   const restaurantId = actor.restaurant.id;
 
   const now = new Date();
-  const [fresh, current, latest, openCheckout, eligible] = await Promise.all([
+  const [fresh, current, latest, holder, openCheckout, eligible] = await Promise.all([
     // Re-read: a reconciliation earlier in this request may have moved it.
     prisma.restaurant.findUnique({
       where: { id: restaurantId },
@@ -613,6 +613,11 @@ export async function getSubscriptionView(
       orderBy: { activatedAt: "desc" },
     }),
     prisma.subscription.findFirst({ where: { restaurantId }, orderBy: { createdAt: "desc" } }),
+    // The one that holds the saved card: the newest that ever activated.
+    prisma.subscription.findFirst({
+      where: { restaurantId, activatedAt: { not: null } },
+      orderBy: { activatedAt: "desc" },
+    }),
     prisma.subscriptionCheckout.findFirst({
       where: {
         restaurantId,
@@ -636,15 +641,29 @@ export async function getSubscriptionView(
 
   const entitlement = restaurantEntitlement(restaurant, now);
   const trialDays = eligible ? TRIAL_DAYS : 0;
+  const checkoutOn = readCulqiConfig().ok;
   const managedByCard = restaurant.billingSource === "provider" && current != null;
   const accessUntil = subscription ? accessUntilOf(subscription) : null;
+  const reactivable =
+    actor.isOwner &&
+    restaurant.billingSource === "provider" &&
+    checkoutOn &&
+    holder != null &&
+    holder.activatedAt != null &&
+    holder.providerCardId != null &&
+    (holder.status === "cancelled" || holder.status === "suspended") &&
+    !holder.pendingPlan &&
+    openCheckout?.status !== "processing";
+  const paidUntil = holder ? accessUntilOf(holder) : null;
+  const reactivationChargeAt =
+    holder && !holder.endedAt && paidUntil && paidUntil.getTime() > now.getTime() ? paidUntil : null;
 
   return {
     ok: true,
     data: {
       restaurantId,
       canManage: actor.isOwner,
-      checkoutEnabled: readCulqiConfig().ok,
+      checkoutEnabled: checkoutOn,
       source: restaurant.billingSource as BillingSourceValue,
       plan: restaurant.plan as PlanValue,
       status: restaurant.billingStatus as BillingStatusValue,
@@ -687,6 +706,14 @@ export async function getSubscriptionView(
                   failureCode: lastPayment.failureCode,
                 }
               : null,
+            reactivation:
+              reactivable && holder
+                ? {
+                    plan: holder.plan,
+                    price: priceFor(holder.plan),
+                    chargeAt: reactivationChargeAt ? reactivationChargeAt.toISOString() : null,
+                  }
+                : null,
           }
         : null,
       actions: {
@@ -700,6 +727,20 @@ export async function getSubscriptionView(
           managedByCard &&
           ["trialing", "active"].includes(current!.status) &&
           !current!.pendingPlan &&
+          openCheckout?.status !== "processing",
+        canReactivate: reactivable,
+        canUndoReactivation:
+          actor.isOwner &&
+          subscription != null &&
+          subscription.status === "cancelled" &&
+          subscription.pendingPlan != null &&
+          !subscription.endedAt,
+        canUpdatePaymentMethod:
+          actor.isOwner &&
+          restaurant.billingSource === "provider" &&
+          holder != null &&
+          holder.providerCustomerId != null &&
+          holder.providerCardId != null &&
           openCheckout?.status !== "processing",
       },
       openCheckout: openCheckout

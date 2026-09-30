@@ -93,6 +93,20 @@ export function classifyEvent(type: string): EventKind {
   return "ignored";
 }
 
+export type ChargeOutcome = "succeeded" | "failed" | "unknown";
+
+/**
+ * Whether a charge object (read from the provider's API) went through.
+ * Anything not clearly one or the other is "unknown" and is never applied.
+ */
+export function chargeOutcome(raw: Json): ChargeOutcome {
+  const type = (str(asRecord(raw.outcome).type) ?? "").toLowerCase();
+  if (/exitos|success|paid|approved/.test(type)) return "succeeded";
+  if (/rechaz|fail|denied|declin|error/.test(type)) return "failed";
+  if (raw.paid === true) return "succeeded";
+  return "unknown";
+}
+
 export type ChargeFacts = {
   /** The provider charge id — the idempotency key for payments. */
   chargeId: string;
@@ -153,5 +167,8 @@ export function normalizeSubscription(raw: Json): ProviderSubscriptionState | nu
     trialEndsAt: providerDate(raw.trial_end),
     nextBillingAt: providerDate(raw.next_billing_date),
     createdAt: providerDate(raw.creation_date),
+    // Whatever charges the subscription object lists. Each one is fetched and
+    // verified on its own before it moves anything (lib/subscriptions/reconcile.ts).
+    chargeIds: collectIds(raw).charges.slice(0, 24),
   };
 }

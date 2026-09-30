@@ -36,6 +36,8 @@ export type PlanCheck = {
   hasFreeInitialCycles: boolean | null;
 };
 
+import type { ChargeFacts, ChargeOutcome } from "@/lib/subscriptions/events";
+
 /** An event as the provider's own API returns it — never the webhook body. */
 export type ProviderEvent = {
   id: string;
@@ -57,6 +59,14 @@ export type ProviderSubscriptionState = {
   trialEndsAt: Date | null;
   nextBillingAt: Date | null;
   createdAt: Date | null;
+  /** Charge ids the provider lists on the subscription, if it lists any. */
+  chargeIds: string[];
+};
+
+/** A charge as the provider's API returns it. */
+export type ProviderCharge = {
+  facts: ChargeFacts;
+  outcome: ChargeOutcome;
 };
 
 /**
@@ -103,6 +113,10 @@ export interface SubscriptionProviderAdapter {
   getEvent(eventId: string): Promise<ProviderEvent | null>;
   /** Null when the provider has no such subscription. */
   getSubscription(subscriptionId: string): Promise<ProviderSubscriptionState | null>;
+  /** One charge, by id; null if the provider has none with that id. */
+  getCharge(chargeId: string): Promise<ProviderCharge | null>;
+  /** Point the subscription at another saved card. */
+  updateSubscriptionCard(subscriptionId: string, cardId: string): Promise<void>;
   /** Stops future charges. Idempotent: an already cancelled one is fine. */
   cancelSubscription(subscriptionId: string): Promise<"canceled" | "already_canceled">;
   /**

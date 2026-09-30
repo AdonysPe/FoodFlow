@@ -167,6 +167,12 @@ function table(name: string, prefix: string, defaults: () => Record<string, unkn
     async count({ where }: { where?: Where } = {}) {
       return rows.filter((r) => matches(r, where)).length;
     },
+    async deleteMany({ where }: { where?: Where } = {}) {
+      const keep = rows.filter((r) => !matches(r, where));
+      const count = rows.length - keep.length;
+      rows.splice(0, rows.length, ...keep);
+      return { count };
+    },
   };
 }
 

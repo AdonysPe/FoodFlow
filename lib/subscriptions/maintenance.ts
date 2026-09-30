@@ -8,6 +8,10 @@
 //   4. stop at Culqi what we decided to stop but could not reach
 //   5. start the scheduled downgrades that reached their date
 //   6. mark `suspended` what ran out of grace; close finished cancellations
+//   7. repair any restaurant whose plan/status/access drifted from the
+//      subscription that speaks for it, and alert on what is still stuck
+//   8. retention: erase the payer's personal data from attempts that never
+//      became a subscription, and old processed webhook events
 //
 // Bounded per run so it fits a serverless function. Server only.
 
@@ -18,7 +22,8 @@ import { endIfExpired, loadLocked, suspendIfGraceOver } from "@/lib/subscription
 import { startReplacement } from "@/lib/subscriptions/operations";
 import { GRACE_DAYS } from "@/lib/subscriptions/pricing";
 import { reconcileSubscription, stopAtProvider } from "@/lib/subscriptions/reconcile";
-import { adapterFor, lifecycleAdapter, logSubscription } from "@/lib/subscriptions/runtime";
+import { adapterFor, alertOps, lifecycleAdapter, logSubscription, safeError } from "@/lib/subscriptions/runtime";
+import { repairDrift } from "@/lib/subscriptions/ops";
 import { processStoredEvent } from "@/lib/subscriptions/webhooks";
 
 const BATCH = 50;
@@ -57,7 +62,7 @@ export async function runSubscriptionMaintenance(now: Date = new Date()): Promis
       report.processed++;
     } catch (error) {
       report.failed++;
-      logSubscription("error", "maintenance.step_failed", { step: label, error: String(error).slice(0, 200) });
+      logSubscription("error", "maintenance.step_failed", { step: label, error: safeError(error) });
     }
   };
 
@@ -145,6 +150,50 @@ export async function runSubscriptionMaintenance(now: Date = new Date()): Promis
       })
     );
   }
+
+  // 7. Consistency. A repaired drift means some path moved the subscription
+  //    without moving the restaurant: it is fixed, and reported so the cause is.
+  await step("consistency", async () => {
+    const repaired = await repairDrift(now);
+    if (repaired > 0) await alertOps("projection_drift_repaired", { count: repaired });
+  });
+
+  // 8. Retention (Ley 29733: keep personal data only as long as it has a use).
+  //    An attempt that failed, expired or was replaced never produced a
+  //    receipt, so its payer's name, phone, address and RUC have no purpose
+  //    after a month. Completed attempts keep theirs: the receipt needs them.
+  //    Webhook events carry no personal data; they are pruned to bound the table.
+  await step("retention", async () => {
+    const day = 24 * 60 * 60 * 1000;
+    await prisma.subscriptionCheckout.updateMany({
+      where: {
+        status: { in: ["failed", "expired", "canceled"] },
+        updatedAt: { lt: new Date(now.getTime() - 30 * day) },
+        customerFirstName: { not: "-" },
+      },
+      data: {
+        customerFirstName: "-",
+        customerLastName: "-",
+        customerPhone: "-",
+        customerAddress: "-",
+        customerCity: "-",
+        billingRuc: null,
+        billingLegalName: null,
+      },
+    });
+    await prisma.subscriptionWebhookEvent.deleteMany({
+      where: {
+        status: { in: ["processed", "ignored"] },
+        receivedAt: { lt: new Date(now.getTime() - 90 * day) },
+      },
+    });
+  });
+
+  const stuck = await prisma.subscription.count({
+    where: { activatedAt: null, endedAt: null, createdAt: { lt: new Date(now.getTime() - 24 * 60 * 60 * 1000) } },
+  });
+  if (stuck > 0) await alertOps("stuck_pending", { count: stuck });
+  if (report.failed > 0) await alertOps("maintenance_step_failures", { failed: report.failed });
 
   return done();
 }

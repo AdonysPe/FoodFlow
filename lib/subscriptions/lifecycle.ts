@@ -40,6 +40,8 @@ export type LifecycleOutcome = {
   cancelAtProvider: string[];
   /** A short machine note for the event log. */
   note: string;
+  /** Set when a person has to look at this subscription (it is flagged in the row). */
+  review?: string;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -203,7 +205,12 @@ async function activate(
   }
 
   await projectRestaurant(tx, activated, reason, ctx);
-  return { changed: true, cancelAtProvider, note: reason };
+  return {
+    changed: true,
+    cancelAtProvider,
+    note: reason,
+    review: activated.needsReview ? (activated.reviewReason ?? "review") : undefined,
+  };
 }
 
 // --------------------------------------------------------------- charges
@@ -253,12 +260,9 @@ export async function applyChargeSucceeded(
   const lastPaymentAt = later(sub.lastPaymentAt, at);
 
   if (sub.endedAt) {
-    await update(tx, sub, {
-      lastPaymentAt,
-      needsReview: true,
-      reviewReason: [...review, "charge_after_end"].join(","),
-    });
-    return { changed: true, cancelAtProvider: [], note: "charge_after_end" };
+    const reason = [...review, "charge_after_end"].join(",");
+    await update(tx, sub, { lastPaymentAt, needsReview: true, reviewReason: reason });
+    return { changed: true, cancelAtProvider: [], note: "charge_after_end", review: reason };
   }
 
   const reviewData = review.length ? { needsReview: true, reviewReason: review.join(",") } : {};
@@ -291,7 +295,12 @@ export async function applyChargeSucceeded(
     sub.status === "past_due" ? "provider.recovered" : "provider.renewed",
     ctx
   );
-  return { changed: true, cancelAtProvider: [], note: sub.status === "past_due" ? "recovered" : "renewed" };
+  return {
+    changed: true,
+    cancelAtProvider: [],
+    note: sub.status === "past_due" ? "recovered" : "renewed",
+    review: renewed.needsReview ? (renewed.reviewReason ?? "review") : undefined,
+  };
 }
 
 export async function applyChargeFailed(
@@ -347,13 +356,19 @@ export async function applyChargeFailed(
 }
 
 /**
- * A downgrade's replacement could not be charged. The old subscription was
- * already stopped at the provider when the downgrade was scheduled, so it
- * falls to `past_due`: the owner keeps the grace period to add a card.
+ * A scheduled switch's replacement could not be charged (a downgrade reaching
+ * its date, or a reactivation). The old subscription was already stopped at
+ * the provider when the switch was scheduled, so it falls to `past_due`: the
+ * owner keeps the grace period to fix the card. A cancelled one (a
+ * reactivation that failed) simply stays cancelled.
  */
-async function abandonPlanChange(tx: Tx, oldId: string, ctx: LifecycleContext) {
+export async function abandonPlanChange(tx: Tx, oldId: string, ctx: LifecycleContext) {
   const old = await loadLocked(tx, oldId);
   if (!old || old.endedAt || !old.pendingPlan) return;
+  if (old.status === "cancelled") {
+    await update(tx, old, { pendingPlan: null, pendingPlanEffectiveAt: null });
+    return;
+  }
   const reverted = await update(tx, old, {
     status: "past_due",
     pendingPlan: null,
@@ -393,7 +408,7 @@ export async function applyRefund(
   // Refunds are decided by a person (a goodwill refund must not lock the
   // venue; a chargeback might). Flag it, change nothing else.
   await update(tx, sub, { needsReview: true, reviewReason: "refund" });
-  return { changed: true, cancelAtProvider: [], note: "refund_flagged" };
+  return { changed: true, cancelAtProvider: [], note: "refund_flagged", review: "refund" };
 }
 
 // --------------------------------------------------- subscription state
@@ -448,7 +463,16 @@ export async function applyProviderState(
     const cap = addDays(sub.createdAt, sub.trialDays);
     const trialEndsAt =
       state.trialEndsAt && state.trialEndsAt.getTime() < cap.getTime() ? state.trialEndsAt : cap;
-    return activate(tx, sub, { status: "trialing", trialEndsAt }, "provider.trial_started", ctx);
+
+    // Our access never runs past the approved trial, but the card is charged
+    // when Culqi says. A plan configured with a longer trial there would lock
+    // a venue out (trial + grace) before its first charge even happens: flag
+    // it now, while the venue is still on day one.
+    let flagged = sub;
+    if (state.trialEndsAt && state.trialEndsAt.getTime() > cap.getTime() + DAY_MS) {
+      flagged = await update(tx, sub, { needsReview: true, reviewReason: "trial_longer_at_provider" });
+    }
+    return activate(tx, flagged, { status: "trialing", trialEndsAt }, "provider.trial_started", ctx);
   }
 
   return noop(state.status === "unknown" ? "provider_status_unknown" : "no_change");
@@ -506,6 +530,70 @@ export async function scheduleDowngrade(
     });
   }
   return scheduled;
+}
+
+/**
+ * The owner changed their mind about cancelling. Culqi cancellation is
+ * irreversible, so "reactivating" means a NEW subscription on the saved card,
+ * created when the paid period ends (the same mechanism as a scheduled
+ * downgrade). The venue keeps the days it already paid for and is charged
+ * from that date; nothing is charged now.
+ */
+export async function scheduleReactivation(
+  tx: Tx,
+  sub: Subscription,
+  effectiveAt: Date,
+  ctx: LifecycleContext
+): Promise<Subscription> {
+  const scheduled = await update(tx, sub, {
+    pendingPlan: sub.plan,
+    pendingPlanEffectiveAt: effectiveAt,
+  });
+  if (sub.restaurantId) {
+    await tx.subscriptionTransition.create({
+      data: {
+        restaurantId: sub.restaurantId,
+        subscriptionId: sub.id,
+        fromStatus: sub.status,
+        toStatus: sub.status,
+        fromSource: "provider",
+        toSource: "provider",
+        fromPlan: sub.plan,
+        toPlan: sub.plan,
+        reason: "owner.reactivation_scheduled",
+        actorUserId: ctx.actor?.id ?? null,
+        actorEmail: ctx.actor?.email ?? null,
+      },
+    });
+  }
+  return scheduled;
+}
+
+/** Undo a scheduled reactivation: the subscription just runs out. */
+export async function cancelScheduledSwitch(
+  tx: Tx,
+  sub: Subscription,
+  ctx: LifecycleContext
+): Promise<Subscription> {
+  const cleared = await update(tx, sub, { pendingPlan: null, pendingPlanEffectiveAt: null });
+  if (sub.restaurantId) {
+    await tx.subscriptionTransition.create({
+      data: {
+        restaurantId: sub.restaurantId,
+        subscriptionId: sub.id,
+        fromStatus: sub.status,
+        toStatus: sub.status,
+        fromSource: "provider",
+        toSource: "provider",
+        fromPlan: sub.plan,
+        toPlan: sub.plan,
+        reason: "owner.reactivation_canceled",
+        actorUserId: ctx.actor?.id ?? null,
+        actorEmail: ctx.actor?.email ?? null,
+      },
+    });
+  }
+  return cleared;
 }
 
 /**

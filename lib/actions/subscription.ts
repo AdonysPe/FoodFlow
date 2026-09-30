@@ -12,22 +12,32 @@ import {
   createCheckout,
   getCheckoutStatus,
   getSubscriptionView,
-  logSubscription,
   type SubscriptionActor,
 } from "@/lib/subscriptions/service";
+import { logSubscription, safeError } from "@/lib/subscriptions/runtime";
 import {
+  cancelReactivation as cancelOwnedReactivation,
   cancelSubscription as cancelOwnedSubscription,
   changeSubscriptionPlan as changeOwnedPlan,
   previewPlanChange as previewOwnedPlanChange,
+  reactivateSubscription as reactivateOwnedSubscription,
+  startPaymentMethodUpdate as startOwnedPaymentMethodUpdate,
+  updatePaymentMethod as updateOwnedPaymentMethod,
 } from "@/lib/subscriptions/operations";
 import {
   SUBSCRIPTION_ERROR_MESSAGES,
+  type CancelReactivationInput,
   type CancelSubscriptionInput,
   type CancelSubscriptionOutput,
   type ChangePlanInput,
   type ChangePlanOutput,
+  type PaymentMethodSessionInput,
+  type PaymentMethodSessionOutput,
   type PlanChangePreview,
   type PreviewPlanChangeInput,
+  type ReactivateSubscriptionInput,
+  type UpdatePaymentMethodInput,
+  type UpdatePaymentMethodOutput,
   type CheckoutStatusOutput,
   type ConfirmCheckoutInput,
   type ConfirmCheckoutOutput,
@@ -54,7 +64,7 @@ async function guarded<T>(
     if (error instanceof Error && "digest" in error && String(error.digest).startsWith("NEXT_")) {
       throw error;
     }
-    logSubscription("error", `${name}.crashed`, { error: String(error) });
+    logSubscription("error", `${name}.crashed`, { error: safeError(error) });
     return { ok: false, code: "internal", error: SUBSCRIPTION_ERROR_MESSAGES.internal };
   }
 }
@@ -120,5 +130,56 @@ export async function changeSubscriptionPlan(
 ): Promise<SubscriptionResult<ChangePlanOutput>> {
   const result = await guarded("plan.change", async () => changeOwnedPlan(await actor(), input));
   if (result.ok) revalidatePath("/dashboard/app/configuracion");
+  return result;
+}
+
+/**
+ * Owner only. Start paying again after cancelling (or after the access ended)
+ * on the card already saved at Culqi — no card form.
+ *  - paid days left  → `{ kind: "scheduled", effectiveAt }`: nothing is charged
+ *    now, the days are kept, and Culqi is charged when they end.
+ *  - no days left    → `{ kind: "checkout" }`: charged now; poll
+ *    `getSubscriptionCheckoutStatus` as after a purchase.
+ * Errors: not_reactivable (still active), no_payment_method,
+ * subscriptions_disabled, change_pending, manual_subscription.
+ */
+export async function reactivateSubscription(
+  input: ReactivateSubscriptionInput
+): Promise<SubscriptionResult<ChangePlanOutput>> {
+  const result = await guarded("reactivate", async () => reactivateOwnedSubscription(await actor(), input));
+  if (result.ok) revalidatePath("/dashboard/app", "layout");
+  return result;
+}
+
+/** Owner only. Drop a scheduled reactivation: the subscription just runs out. */
+export async function cancelReactivation(
+  input: CancelReactivationInput
+): Promise<SubscriptionResult<{ accessUntil: string | null }>> {
+  const result = await guarded("reactivate.cancel", async () => cancelOwnedReactivation(await actor(), input));
+  if (result.ok) revalidatePath("/dashboard/app/configuracion");
+  return result;
+}
+
+/**
+ * Owner only. Step 1 of changing the card: the Culqi Checkout configuration
+ * (same shape as a purchase's `next`) and the card currently on file.
+ */
+export async function startPaymentMethodUpdate(
+  input: PaymentMethodSessionInput
+): Promise<SubscriptionResult<PaymentMethodSessionOutput>> {
+  return guarded("card.start", async () => startOwnedPaymentMethodUpdate(await actor(), input));
+}
+
+/**
+ * Owner only. Step 2: the token Culqi Checkout returned (and, on the second
+ * call, the 3DS result). `status: "updated"` means Culqi now charges the new
+ * card; for a `past_due` subscription Culqi retries on its own schedule
+ * (`willRetryCharge`), it does not charge at once.
+ */
+export async function updatePaymentMethod(
+  input: UpdatePaymentMethodInput
+): Promise<SubscriptionResult<UpdatePaymentMethodOutput>> {
+  const result = await guarded("card.update", async () => updateOwnedPaymentMethod(await actor(), input));
+  if (result.ok && result.data.status === "updated") revalidatePath("/dashboard/app/configuracion");
   return result;
 }

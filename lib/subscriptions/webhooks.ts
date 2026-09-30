@@ -22,8 +22,9 @@
 //
 // Server only.
 
-import { createHash, timingSafeEqual } from "node:crypto";
-import { Prisma } from "@prisma/client";
+import { createHash } from "node:crypto";
+import { safeEqual } from "@/lib/security/bearer";
+import { Prisma, type Subscription } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { readCulqiKeys, readWebhookSecret } from "@/lib/subscriptions/config";
 import {
@@ -44,19 +45,46 @@ import {
   type LifecycleOutcome,
 } from "@/lib/subscriptions/lifecycle";
 import { ProviderUnavailableError, type SubscriptionProviderAdapter } from "@/lib/subscriptions/provider";
-import { stopAtProvider } from "@/lib/subscriptions/reconcile";
-import { lifecycleAdapter, logSubscription } from "@/lib/subscriptions/runtime";
+import { reconcileSubscription, stopAtProvider } from "@/lib/subscriptions/reconcile";
+import { rateLimit } from "@/lib/security/rateLimit";
+import { callerIpHash } from "@/lib/security/clientHash";
+import { alertOps, lifecycleAdapter, logSubscription, safeError } from "@/lib/subscriptions/runtime";
 
 const MAX_BODY_BYTES = 64 * 1024;
 const PROCESSING_LOCK_MS = 2 * 60 * 1000;
+/** The provider's event API may lag its own webhook. */
+const EVENT_VISIBILITY_WINDOW_MS = 15 * 60 * 1000;
+/** An event can arrive before we have committed the subscription it is about. */
+const UNMATCHED_WINDOW_MS = 24 * 60 * 60 * 1000;
 const EVENT_ID = /^evt_(test|live)_[A-Za-z0-9]{6,64}$/;
 
 // ------------------------------------------------------------ auth
 
-function same(a: string, b: string): boolean {
-  const x = Buffer.from(a, "utf8");
-  const y = Buffer.from(b, "utf8");
-  return x.length === y.length && timingSafeEqual(x, y);
+// Compared as digests (lib/security/bearer.ts): a length check before the
+// comparison would tell a caller how long the secret is.
+const same = safeEqual;
+
+/**
+ * The body, read as a stream and cut off at the limit. `Content-Length` is
+ * only what the sender says; a chunked request has none, and reading it whole
+ * before measuring would let an oversized body cost memory first.
+ */
+async function readCapped(request: Request, limit: number): Promise<string | null> {
+  const reader = request.body?.getReader();
+  if (!reader) return "";
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel().catch(() => undefined);
+      return null;
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString("utf8");
 }
 
 export function authenticateDelivery(headers: Headers, url: URL, secret: string): boolean {
@@ -83,13 +111,19 @@ export async function receiveCulqiWebhook(request: Request): Promise<Reply> {
   }
   if (!authenticateDelivery(request.headers, new URL(request.url), secret)) {
     logSubscription("warn", "webhook.unauthenticated", {});
-    return { status: 401, body: { ok: false } };
+    // Guessing a 32+ character secret is hopeless, but every wrong guess
+    // should not be free either: cap failures per source.
+    const limit = await rateLimit("culqi-webhook-auth", await callerIpHash().catch(() => "unknown"), {
+      max: 30,
+      windowMs: 10 * 60 * 1000,
+    }).catch(() => ({ ok: true as const, remaining: 0 }));
+    return { status: limit.ok ? 401 : 429, body: { ok: false } };
   }
 
   const declared = Number(request.headers.get("content-length") ?? "0");
   if (declared > MAX_BODY_BYTES) return { status: 413, body: { ok: false } };
-  const rawBody = await request.text();
-  if (Buffer.byteLength(rawBody, "utf8") > MAX_BODY_BYTES) return { status: 413, body: { ok: false } };
+  const rawBody = await readCapped(request, MAX_BODY_BYTES);
+  if (rawBody === null) return { status: 413, body: { ok: false } };
 
   let parsed: Record<string, unknown>;
   try {
@@ -138,6 +172,10 @@ export async function receiveCulqiWebhook(request: Request): Promise<Reply> {
     case "processed":
     case "ignored":
     case "in_flight":
+    case "pending":
+      // `pending`: nothing of ours matches yet (the event can outrun the
+      // commit of the subscription it is about). Acknowledged, because it is
+      // not a provider outage, and kept for the maintenance retry.
       return { status: 200, body: { ok: true, result } };
     case "retry":
       // Culqi (or its API) is unavailable: ask for a redelivery.
@@ -149,7 +187,7 @@ export async function receiveCulqiWebhook(request: Request): Promise<Reply> {
 
 // ------------------------------------------------------- processing
 
-export type ProcessResult = "processed" | "ignored" | "in_flight" | "retry" | "error";
+export type ProcessResult = "processed" | "ignored" | "pending" | "in_flight" | "retry" | "error";
 
 /** Process (or retry) one stored event. Used by the route and by maintenance. */
 export async function processStoredEvent(rowId: string, now: Date = new Date()): Promise<ProcessResult> {
@@ -196,6 +234,21 @@ export async function processStoredEvent(rowId: string, now: Date = new Date()):
 
   try {
     const outcome = await handleEvent(adapter, row.providerEventId, row.id, now);
+
+    // Two answers are "not yet", not "never": an event the provider's API does
+    // not show yet (a delivery can beat its own read model), and one that
+    // names nothing of ours yet (it can beat our commit). Both are kept and
+    // retried for a while, then dropped.
+    const age = now.getTime() - row.receivedAt.getTime();
+    if (outcome.status === "ignored" && outcome.note === "not_found_at_provider" && age < EVENT_VISIBILITY_WINDOW_MS) {
+      await finish("failed", { ...outcome, error: "event_not_visible_yet" });
+      return "retry";
+    }
+    if (outcome.status === "ignored" && outcome.note === "no_matching_subscription" && age < UNMATCHED_WINDOW_MS) {
+      await finish("failed", { ...outcome, error: "no_matching_subscription" });
+      return "pending";
+    }
+
     await finish(outcome.status, outcome);
     logSubscription("info", "webhook.done", {
       eventId: row.providerEventId,
@@ -208,12 +261,14 @@ export async function processStoredEvent(rowId: string, now: Date = new Date()):
     const unavailable = error instanceof ProviderUnavailableError;
     await finish("failed", {
       note: unavailable ? "provider_unavailable" : "error",
-      error: (error instanceof Error ? error.name + ": " + error.message : String(error)).slice(0, 200),
+      error: safeError(error),
     });
-    logSubscription(unavailable ? "warn" : "error", "webhook.failed", {
-      eventId: row.providerEventId,
-      error: String(error).slice(0, 200),
-    });
+    // A provider outage is expected and retried; anything else is ours to fix.
+    if (unavailable) {
+      logSubscription("warn", "webhook.failed", { eventId: row.providerEventId, error: safeError(error) });
+    } else {
+      await alertOps("webhook_failed", { eventId: row.providerEventId, error: safeError(error), attempts: row.attempts });
+    }
     return unavailable ? "retry" : "error";
   }
 }
@@ -238,8 +293,17 @@ async function handleEvent(
   const kind = classifyEvent(event.type);
   if (kind === "ignored") return { status: "ignored", note: `unhandled:${event.type}`.slice(0, 80), kind };
 
-  const sub = await findSubscriptionFor(event.data);
-  if (!sub) return { status: "ignored", note: "no_matching_subscription", kind };
+  const found = await findSubscriptionFor(event.data);
+  if (found.kind === "none") return { status: "ignored", note: "no_matching_subscription", kind };
+
+  // Several live subscriptions share the card (an upgrade in flight): the
+  // event cannot be attributed by guessing. Each candidate reads its own
+  // charges from the provider instead, which attributes them correctly.
+  if (found.kind === "ambiguous") {
+    for (const candidate of found.candidates) await reconcileSubscription(adapter, candidate.id, now);
+    return { status: "processed", note: "ambiguous_card:reconciled", kind };
+  }
+  const sub = found.subscription;
 
   const ctx = { now, eventId: rowId };
   let outcome: LifecycleOutcome;
@@ -257,7 +321,12 @@ async function handleEvent(
     });
   } else {
     const charge = chargeFacts(event.data);
-    if (!charge) return { status: "ignored", note: "no_charge_in_event", kind, subscriptionId: sub.id };
+    if (!charge) {
+      // The event names no charge (the provider documents the family, not each
+      // payload). Read the subscription and its charges from the provider.
+      const note = await reconcileSubscription(adapter, sub.id, now);
+      return { status: "processed", note: `no_charge_in_event:${note}`.slice(0, 80), kind, subscriptionId: sub.id };
+    }
     // The next billing date comes from the subscription, not the event.
     const state =
       kind === "charge_succeeded" && sub.providerSubscriptionId
@@ -273,6 +342,7 @@ async function handleEvent(
   }
 
   await stopAtProvider(adapter, outcome.cancelAtProvider, now);
+  if (outcome.review) await alertOps("review_needed", { subscriptionId: sub.id, reason: outcome.review });
   return { status: "processed", note: outcome.note, kind, subscriptionId: sub.id };
 }
 
@@ -281,13 +351,18 @@ async function handleEvent(
  * the checkout id we put in the metadata, then by a charge we already
  * recorded, then by the card it was charged to.
  */
-async function findSubscriptionFor(data: Record<string, unknown>) {
+type Found =
+  | { kind: "one"; subscription: Subscription }
+  | { kind: "ambiguous"; candidates: Subscription[] }
+  | { kind: "none" };
+
+async function findSubscriptionFor(data: Record<string, unknown>): Promise<Found> {
   const ids = collectIds(data);
   if (ids.subscriptions.length) {
     const bySub = await prisma.subscription.findFirst({
       where: { provider: "culqi", providerSubscriptionId: { in: ids.subscriptions } },
     });
-    if (bySub) return bySub;
+    if (bySub) return { kind: "one", subscription: bySub };
   }
 
   const checkoutId = str(asRecord(data.metadata).checkout_id);
@@ -298,7 +373,7 @@ async function findSubscriptionFor(data: Record<string, unknown>) {
     });
     if (checkout?.subscriptionId) {
       const byCheckout = await prisma.subscription.findUnique({ where: { id: checkout.subscriptionId } });
-      if (byCheckout) return byCheckout;
+      if (byCheckout) return { kind: "one", subscription: byCheckout };
     }
   }
 
@@ -310,16 +385,24 @@ async function findSubscriptionFor(data: Record<string, unknown>) {
     });
     if (payment?.subscriptionId) {
       const byPayment = await prisma.subscription.findUnique({ where: { id: payment.subscriptionId } });
-      if (byPayment) return byPayment;
+      if (byPayment) return { kind: "one", subscription: byPayment };
     }
   }
 
+  // Last resort: the card. During an upgrade the old and the new subscription
+  // share it, so more than one live candidate is reported, never guessed.
   if (ids.cards.length) {
-    return prisma.subscription.findFirst({
-      where: { provider: "culqi", providerCardId: { in: ids.cards } },
-      // The live one first, then the newest.
-      orderBy: [{ endedAt: { sort: "desc", nulls: "first" } }, { createdAt: "desc" }],
+    const byCard = await prisma.subscription.findMany({
+      where: { provider: "culqi", providerCardId: { in: ids.cards }, endedAt: null },
+      orderBy: { createdAt: "desc" },
     });
+    if (byCard.length === 1) return { kind: "one", subscription: byCard[0] };
+    if (byCard.length > 1) return { kind: "ambiguous", candidates: byCard };
+    const ended = await prisma.subscription.findFirst({
+      where: { provider: "culqi", providerCardId: { in: ids.cards } },
+      orderBy: { createdAt: "desc" },
+    });
+    if (ended) return { kind: "one", subscription: ended };
   }
-  return null;
+  return { kind: "none" };
 }
