@@ -14,12 +14,17 @@ import type { Prisma } from "@prisma/client";
  * `plan` and `billingStatus` are on the list for the same reason as the
  * category: they are what FoodFlow sold, not a preference the venue sets. A
  * restaurant that could write its own `plan` could grant itself every module.
+ * `billingSource` and `accessUntil` are the other half of that decision (see
+ * lib/subscriptions/entitlement.ts): only lib/subscriptions and the platform
+ * admin's manual grant write them.
  */
 export const PROTECTED_RESTAURANT_FIELDS = [
   "categoryId",
   "menuTemplateOverride",
   "plan",
   "billingStatus",
+  "billingSource",
+  "accessUntil",
   "ownerId",
 ] as const;
 
