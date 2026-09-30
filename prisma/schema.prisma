@@ -131,6 +131,20 @@ enum CheckoutStatus {
   canceled
 }
 
+/// Why a checkout exists: a first purchase, or a plan change on the card the
+/// venue already has at the provider.
+enum CheckoutPurpose {
+  new
+  upgrade
+  downgrade
+}
+
+enum SubscriptionPaymentStatus {
+  succeeded
+  failed
+  refunded
+}
+
 enum WebhookEventStatus {
   received
   processing
@@ -301,6 +315,24 @@ model Subscription {
   canceledAt         DateTime?
   endedAt            DateTime?
 
+  /// When the provider confirmed it (trial started or first charge paid).
+  /// Null while `pending`.
+  activatedAt            DateTime?
+  /// When we stopped it at the provider. Can precede `endedAt`: a cancelled
+  /// subscription keeps the month already paid.
+  providerCanceledAt     DateTime?
+  lastPaymentAt          DateTime?
+  /// A downgrade waiting for the end of the paid period.
+  pendingPlan            Plan?
+  pendingPlanEffectiveAt DateTime?
+  /// The subscription this one takes over from on activation (plan change).
+  replacesSubscriptionId String?
+  /// Set on anything a person must look at: a refund, a charge after the end,
+  /// a charge for an amount the catalogue does not know. Access never changes
+  /// on its own for these.
+  needsReview            Boolean   @default(false)
+  reviewReason           String?
+
   // Brand and last four only, as the provider reports them. Never more.
   cardBrand String?
   cardLast4 String?
@@ -309,10 +341,37 @@ model Subscription {
   updatedAt DateTime @updatedAt
 
   checkouts SubscriptionCheckout[]
+  payments  SubscriptionPayment[]
 
   @@unique([provider, providerSubscriptionId])
   @@index([restaurantId, createdAt])
   @@index([status])
+  @@index([providerCardId])
+  @@index([pendingPlanEffectiveAt])
+}
+
+/// Every charge the provider reports for a subscription — paid, refused or
+/// refunded. Unique per provider charge id, so a redelivered event cannot
+/// count a payment twice. Outlives the subscription and the restaurant.
+model SubscriptionPayment {
+  id                String                    @id @default(cuid())
+  subscriptionId    String?
+  subscription      Subscription?             @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  restaurantId      String?
+  provider          SubscriptionProvider
+  providerPaymentId String
+  status            SubscriptionPaymentStatus
+  amountCents       Int
+  currency          String
+  occurredAt        DateTime
+  /// Machine code only (e.g. "insufficient_funds"); never a card detail.
+  failureCode       String?
+  eventId           String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@unique([provider, providerPaymentId])
+  @@index([subscriptionId, occurredAt])
 }
 
 /// One attempt to buy a plan. The price is computed on the server when the
@@ -328,7 +387,8 @@ model SubscriptionCheckout {
   // Chosen by the owner, repeated per request: the same key returns the same
   // attempt instead of opening a second one.
   idempotencyKey String
-  status         CheckoutStatus @default(created)
+  status         CheckoutStatus  @default(created)
+  purpose        CheckoutPurpose @default(new)
 
   plan           Plan
   provider       SubscriptionProvider
@@ -368,11 +428,13 @@ model SubscriptionCheckout {
   subscriptionId String?
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
-  failureCode String?
-  expiresAt   DateTime
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  failureCode      String?
+  expiresAt        DateTime
+  completedAt      DateTime?
+  /// Last time the server asked the provider about this attempt.
+  lastReconciledAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@unique([restaurantId, idempotencyKey])
   @@index([restaurantId, status])
@@ -393,6 +455,9 @@ model SubscriptionWebhookEvent {
   payloadHash     String
   payload         Json?
   attempts        Int                  @default(0)
+  /// A delivery being processed holds this so a concurrent redelivery waits.
+  lockedUntil     DateTime?
+  subscriptionId  String?
   error           String?
   receivedAt      DateTime             @default(now())
   processedAt     DateTime?
