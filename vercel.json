@@ -13,6 +13,10 @@
     {
       "path": "/api/cron/billing/backup-cdrs",
       "schedule": "20 7 * * *"
+    },
+    {
+      "path": "/api/cron/subscriptions",
+      "schedule": "30 7 * * *"
     }
   ]
 }
