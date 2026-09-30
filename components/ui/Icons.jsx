@@ -324,6 +324,30 @@ export function IconWhatsApp({ className = "h-5 w-5" }) {
   );
 }
 
+/** Instagram, in the family stroke: rounded frame, lens, flash dot. */
+export function IconInstagram({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.2 6.8h.01" strokeWidth="2.2" />
+    </svg>
+  );
+}
+
+/**
+ * TikTok. The note is one continuous stroke, so it stays recognisable at the
+ * 16–20px it is used at without needing the filled brand artwork.
+ */
+export function IconTikTok({ className = "h-5 w-5" }) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M14 3.5v11.2a3.7 3.7 0 1 1-3.7-3.7" />
+      <path d="M14 3.5c.3 2.4 1.9 4.2 4.5 4.4" />
+    </svg>
+  );
+}
+
 /**
  * Complaints book. Drawn in the family stroke rather than shipped as
  * INDECOPI's official artwork, which is their trademark and has to come from

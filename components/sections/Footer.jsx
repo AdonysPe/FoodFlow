@@ -3,9 +3,12 @@
 import Link from "next/link";
 import Container from "@/components/ui/Container";
 import { LogoMark } from "@/components/ui/Logo";
-import { IconClaimsBook, IconMail } from "@/components/ui/Icons";
+import { IconClaimsBook, IconInstagram, IconMail, IconTikTok } from "@/components/ui/Icons";
 import { LEGAL_HOLDER } from "@/lib/legal/holder";
+import { SOCIAL_LINKS } from "@/lib/social";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+
+const SOCIAL_ICONS = { instagram: IconInstagram, tiktok: IconTikTok };
 
 /**
  * Everything a Peruvian consumer has to be able to find without hunting:
@@ -101,6 +104,34 @@ export default function Footer() {
                 </dd>
               </div>
             </dl>
+
+            <div className="mt-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cream/40">
+                {t.footer.followUs}
+              </p>
+              <ul className="mt-3 flex flex-wrap gap-2.5">
+                {SOCIAL_LINKS.map((s) => {
+                  const Icon = SOCIAL_ICONS[s.id];
+                  return (
+                    <li key={s.id}>
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${s.label} ${s.handle}`}
+                        className="group inline-flex h-11 items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.04] pl-3.5 pr-4 text-[13px] font-medium text-cream/75 transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-400/40 hover:bg-accent-400/[0.06] hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400"
+                      >
+                        <Icon className="h-[18px] w-[18px] text-accent-ink transition-transform duration-300 group-hover:scale-110" />
+                        <span>{s.label}</span>
+                        <span aria-hidden className="text-cream/40">
+                          {s.handle}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
 
           {/* ------------------------------------------------------------ nav */}
