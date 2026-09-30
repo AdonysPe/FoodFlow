@@ -1,10 +1,16 @@
 // Subscription settings read from the environment.
 //
-// FAILS CLOSED, like lib/api/cron.ts. Checkout is off unless
-// SUBSCRIPTIONS_ENABLED is "true", and even then it refuses to run with a
-// missing key, a public/secret key pair from different modes, a plan id from
-// the other mode, or live keys without the separate SUBSCRIPTIONS_ALLOW_LIVE
-// switch. A deploy that cannot charge is better than one that charges wrong.
+// FAILS CLOSED, like lib/api/cron.ts. Two levels:
+//
+//   readCulqiKeys()   — enough to TALK to Culqi: process webhooks, renewals,
+//                       cancellations. Independent of SUBSCRIPTIONS_ENABLED:
+//                       switching new checkouts off must not strand the venues
+//                       that are already paying.
+//   readCulqiConfig() — enough to SELL: keys + SUBSCRIPTIONS_ENABLED + the six
+//                       plan ids.
+//
+// Both refuse a missing key, a public/secret pair from different modes, and
+// live keys without the separate SUBSCRIPTIONS_ALLOW_LIVE switch.
 //
 // Server only: reads secrets. Never import from a client component.
 
@@ -13,13 +19,21 @@ import { PLANS } from "@/lib/plans";
 
 export type ProviderMode = "test" | "live";
 
-export type CulqiConfig = {
+export type CulqiKeys = {
   mode: ProviderMode;
   secretKey: string;
   publicKey: string;
+};
+
+export type CulqiConfig = CulqiKeys & {
   /** Plan ids at Culqi, per plan, with and without the free trial. */
   planIds: Record<PlanValue, { regular: string; trial: string }>;
 };
+
+export type KeysResult =
+  | { ok: true; keys: CulqiKeys }
+  | { ok: false; reason: "absent" }
+  | { ok: false; reason: "misconfigured"; problems: string[] };
 
 export type ConfigResult =
   | { ok: true; config: CulqiConfig }
@@ -39,12 +53,12 @@ function modeOf(value: string, prefix: "sk" | "pk" | "pln"): ProviderMode | null
   return null;
 }
 
-export function readCulqiConfig(): ConfigResult {
-  if (!subscriptionsEnabled()) return { ok: false, reason: "disabled" };
-
-  const problems: string[] = [];
+export function readCulqiKeys(): KeysResult {
   const secretKey = env("CULQI_SECRET_KEY");
   const publicKey = env("CULQI_PUBLIC_KEY");
+  if (!secretKey && !publicKey) return { ok: false, reason: "absent" };
+
+  const problems: string[] = [];
   const secretMode = modeOf(secretKey, "sk");
   const publicMode = modeOf(publicKey, "pk");
 
@@ -57,6 +71,23 @@ export function readCulqiConfig(): ConfigResult {
   if (mode === "live" && env("SUBSCRIPTIONS_ALLOW_LIVE") !== "true") {
     problems.push("Llaves live sin SUBSCRIPTIONS_ALLOW_LIVE=true");
   }
+
+  if (problems.length > 0) return { ok: false, reason: "misconfigured", problems };
+  return { ok: true, keys: { mode, secretKey, publicKey } };
+}
+
+/**
+ * @param requireEnabled false only for work on subscriptions that already
+ *   exist (a scheduled downgrade reaching its date): that must happen even
+ *   while new checkouts are switched off.
+ */
+export function readCulqiConfig({ requireEnabled = true }: { requireEnabled?: boolean } = {}): ConfigResult {
+  if (requireEnabled && !subscriptionsEnabled()) return { ok: false, reason: "disabled" };
+
+  const keys = readCulqiKeys();
+  const problems: string[] =
+    keys.ok ? [] : keys.reason === "absent" ? ["CULQI_SECRET_KEY y CULQI_PUBLIC_KEY ausentes"] : keys.problems;
+  const mode = keys.ok ? keys.keys.mode : modeOf(env("CULQI_SECRET_KEY"), "sk") ?? "test";
 
   const planIds = {} as CulqiConfig["planIds"];
   for (const plan of PLANS) {
@@ -77,6 +108,17 @@ export function readCulqiConfig(): ConfigResult {
     planIds[plan] = { regular, trial };
   }
 
-  if (problems.length > 0) return { ok: false, reason: "misconfigured", problems };
-  return { ok: true, config: { mode, secretKey, publicKey, planIds } };
+  if (problems.length > 0 || !keys.ok) return { ok: false, reason: "misconfigured", problems };
+  return { ok: true, config: { ...keys.keys, planIds } };
+}
+
+/**
+ * Shared secret Culqi must present on every webhook delivery. Culqi does not
+ * publish a signature scheme for its webhooks, so this authenticates the
+ * caller and the event is then re-read from Culqi's API before anything is
+ * trusted (lib/subscriptions/webhooks.ts). At least 32 characters.
+ */
+export function readWebhookSecret(): string | null {
+  const secret = env("CULQI_WEBHOOK_SECRET");
+  return secret.length >= 32 ? secret : null;
 }

@@ -6,7 +6,7 @@
 // docs/SUSCRIPCIONES-CONTRATO.md (§10).
 
 import { z } from "zod";
-import { PLANS, type PlanValue } from "@/lib/plans";
+import { PLANS, type FeatureValue, type PlanValue } from "@/lib/plans";
 import type { PriceSummary } from "@/lib/subscriptions/pricing";
 import type {
   AccessMode,
@@ -35,6 +35,13 @@ export const SUBSCRIPTION_ERROR_CODES = [
   "card_declined",
   "rate_limited",
   "internal",
+  // Fase 3: cancel and plan change.
+  "no_active_subscription",
+  "already_canceled",
+  "manual_subscription",
+  "same_plan",
+  "change_pending",
+  "downgrade_blocked",
 ] as const;
 export type SubscriptionErrorCode = (typeof SUBSCRIPTION_ERROR_CODES)[number];
 
@@ -67,9 +74,34 @@ export const SUBSCRIPTION_ERROR_MESSAGES: Record<SubscriptionErrorCode, string> 
   card_declined: "La tarjeta fue rechazada. Prueba con otra tarjeta.",
   rate_limited: "Demasiados intentos. Espera unos minutos.",
   internal: "Algo salió mal de nuestro lado. Inténtalo de nuevo.",
+  no_active_subscription: "Este restaurante no tiene una suscripción con tarjeta activa.",
+  already_canceled: "La suscripción ya está cancelada. Seguirás con acceso hasta el fin del período pagado.",
+  manual_subscription:
+    "Tu plan lo gestiona el equipo de FoodFlow. Escríbenos por WhatsApp para cambiarlo o cancelarlo.",
+  same_plan: "Ya estás en ese plan.",
+  change_pending: "Ya hay un cambio de plan en curso para este restaurante.",
+  downgrade_blocked:
+    "Tienes más usuarios de los que permite ese plan. Quita mozos en Equipo antes de bajar de plan.",
 };
 
 // --------------------------------------------------------------- statuses
+
+export const CHECKOUT_PURPOSES = ["new", "upgrade", "downgrade"] as const;
+export type CheckoutPurposeValue = (typeof CHECKOUT_PURPOSES)[number];
+
+/**
+ * `failureCode` values a checkout can end with:
+ * - card_declined         the card (or its first charge) was refused
+ * - canceled_at_provider  the provider cancelled it before it activated
+ * - not_created           the provider never created it (lost response)
+ * - unknown_outcome       still `processing`: the server is confirming
+ */
+export const CHECKOUT_FAILURE_CODES = [
+  "card_declined",
+  "canceled_at_provider",
+  "not_created",
+  "unknown_outcome",
+] as const;
 
 export const CHECKOUT_STATUSES = [
   "created",
@@ -172,6 +204,37 @@ export const confirmCheckoutInputSchema = z
   .strict();
 export type ConfirmCheckoutInput = z.input<typeof confirmCheckoutInputSchema>;
 
+export const CANCEL_REASONS = ["price", "not_using", "missing_feature", "closing", "other"] as const;
+
+export const cancelSubscriptionInputSchema = z
+  .object({
+    restaurantId: z.string().cuid(),
+    confirm: z.literal(true),
+    reason: z.enum(CANCEL_REASONS).optional(),
+  })
+  .strict();
+export type CancelSubscriptionInput = z.input<typeof cancelSubscriptionInputSchema>;
+
+export const previewPlanChangeInputSchema = z
+  .object({
+    restaurantId: z.string().cuid(),
+    targetPlan: z.enum(PLANS),
+  })
+  .strict();
+export type PreviewPlanChangeInput = z.input<typeof previewPlanChangeInputSchema>;
+
+export const changePlanInputSchema = z
+  .object({
+    restaurantId: z.string().cuid(),
+    targetPlan: z.enum(PLANS),
+    /** A fresh `crypto.randomUUID()` per change, reused on retry. */
+    idempotencyKey: z.string().uuid(),
+    /** The owner saw the preview and accepts it. */
+    confirm: z.literal(true),
+  })
+  .strict();
+export type ChangePlanInput = z.input<typeof changePlanInputSchema>;
+
 // ----------------------------------------------------------------- outputs
 
 /**
@@ -232,6 +295,12 @@ export type ConfirmCheckoutOutput =
 export type CheckoutStatusOutput = {
   checkoutId: string;
   status: CheckoutStatusValue;
+  /**
+   * Fase 3. "new" for a first purchase; plan changes poll the same way.
+   * Always sent by the server; optional in the type only so UI code that
+   * builds a provisional status locally keeps compiling.
+   */
+  purpose?: CheckoutPurposeValue;
   plan: PlanValue;
   trialDays: number;
   /** Machine code of the last failure, e.g. "card_declined". */
@@ -262,6 +331,10 @@ export type SubscriptionView = {
     reason: EntitlementReason;
     until: string | null;
   };
+  /**
+   * The subscription that decides the plan now (activated, not ended); if
+   * there is none, the most recent one.
+   */
   subscription: {
     id: string;
     plan: PlanValue;
@@ -271,8 +344,59 @@ export type SubscriptionView = {
     currentPeriodEnd: string | null;
     cancelAtPeriodEnd: boolean;
     card: { brand: string | null; last4: string | null };
+    // Fase 3 ----------------------------------------------------------------
+    /** Null until the provider confirmed it (trial started or first payment). */
+    activatedAt: string | null;
+    /** Until when this subscription pays for access. */
+    accessUntil: string | null;
+    canceledAt: string | null;
+    /** A scheduled downgrade. */
+    pendingChange: { plan: PlanValue; effectiveAt: string } | null;
+    lastPayment: {
+      status: "succeeded" | "failed" | "refunded";
+      grossCents: number;
+      at: string;
+      failureCode: string | null;
+    } | null;
   } | null;
+  /** Fase 3. What the owner can do right now (always false for managers). */
+  actions: { canCancel: boolean; canChangePlan: boolean };
   openCheckout: { id: string; status: CheckoutStatusValue; plan: PlanValue; expiresAt: string } | null;
   trial: { eligible: boolean; days: number };
   offers: PlanOffer[];
 };
+
+// ------------------------------------------------------ Fase 3 outputs
+
+export type CancelSubscriptionOutput = {
+  status: BillingStatusValue;
+  cancelAtPeriodEnd: true;
+  /** Access continues until then; null if it already ended. */
+  accessUntil: string | null;
+};
+
+export type PlanChangePreview = {
+  currentPlan: PlanValue;
+  targetPlan: PlanValue;
+  direction: "upgrade" | "downgrade";
+  /** Upgrade: once the first charge of the new plan is confirmed. Downgrade: end of the paid period. */
+  effectiveAt: string;
+  /** What is charged right away (upgrade only; no proration in v1). */
+  chargeNow: PriceSummary | null;
+  newPrice: PriceSummary;
+  /** Upgrading during the free trial ends it and charges the new plan. */
+  endsTrial: boolean;
+  /** Downgrades stop the current renewal at the provider; they cannot be undone. */
+  irreversible: boolean;
+  losesFeatures: FeatureValue[];
+  blockers: { code: "staff_over_limit"; current: number; max: number }[];
+};
+
+export type ChangePlanOutput =
+  | {
+      /** Poll `getSubscriptionCheckoutStatus(checkoutId)`, as for a purchase. */
+      kind: "checkout";
+      checkoutId: string;
+      status: CheckoutStatusValue;
+    }
+  | { kind: "scheduled"; effectiveAt: string };

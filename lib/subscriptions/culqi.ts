@@ -13,6 +13,10 @@
 //                                           → 201 saved, 200 + action_code
 //                                             "REVIEW" = 3-D Secure needed
 //   POST /v2/recurrent/subscriptions/create card_id, plan_id, tyc
+//   GET  /v2/recurrent/subscriptions/{id}   read a subscription
+//   GET  /v2/recurrent/subscriptions?plan_id= list (lost-response recovery)
+//   DELETE /v2/recurrent/subscriptions/{id} cancel — immediate, irreversible
+//   GET  /v2/events/{id}                    the event as Culqi stored it
 //
 // The card itself never passes through here: the browser tokenizes it in
 // Culqi Checkout and we only ever see the single-use `tkn_…` id.
@@ -29,6 +33,7 @@ import {
   type SaveCardResult,
   type SubscriptionProviderAdapter,
 } from "@/lib/subscriptions/provider";
+import { asRecord, normalizeSubscription, providerDate, str } from "@/lib/subscriptions/events";
 
 const BASE_URL = "https://api.culqi.com/v2";
 const TIMEOUT_MS = 15_000;
@@ -37,13 +42,7 @@ type CulqiBody = Record<string, unknown>;
 
 type CulqiResponse = { status: number; body: CulqiBody };
 
-function asRecord(value: unknown): CulqiBody {
-  return value && typeof value === "object" && !Array.isArray(value) ? (value as CulqiBody) : {};
-}
-
-function str(value: unknown): string | null {
-  return typeof value === "string" && value.length > 0 ? value : null;
-}
+const idPath = (id: string) => encodeURIComponent(id);
 
 export function createCulqiAdapter(
   secretKey: string,
@@ -51,7 +50,7 @@ export function createCulqiAdapter(
 ): SubscriptionProviderAdapter {
   async function call(
     operation: string,
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "DELETE",
     path: string,
     body?: CulqiBody
   ): Promise<CulqiResponse> {
@@ -90,6 +89,17 @@ export function createCulqiAdapter(
         ? "card_error"
         : (str(res.body.code) ?? str(res.body.type))
     );
+  }
+
+  async function getSubscription(subscriptionId: string) {
+    const res = await call(
+      "subscription.get",
+      "GET",
+      `/recurrent/subscriptions/${idPath(subscriptionId)}`
+    );
+    if (res.status === 404) return null;
+    if (res.status !== 200) throw rejected("subscription.get", res);
+    return normalizeSubscription(res.body);
   }
 
   return {
@@ -197,6 +207,59 @@ export function createCulqiAdapter(
         };
       }
       throw rejected("subscription.create", res);
+    },
+
+    async getEvent(eventId) {
+      const res = await call("event.get", "GET", `/events/${idPath(eventId)}`);
+      if (res.status === 404) return null;
+      if (res.status !== 200) throw rejected("event.get", res);
+      const id = str(res.body.id);
+      const type = str(res.body.type);
+      if (!id || !type) return null;
+      return {
+        id,
+        type,
+        createdAt: providerDate(res.body.creation_date),
+        data: asRecord(res.body.data),
+      };
+    },
+
+    getSubscription,
+
+    async cancelSubscription(subscriptionId) {
+      const res = await call(
+        "subscription.cancel",
+        "DELETE",
+        `/recurrent/subscriptions/${idPath(subscriptionId)}`
+      );
+      if (res.status === 200 || res.status === 204) return "canceled";
+      // Already gone or already cancelled: confirm it before calling it done.
+      if (res.status === 404 || res.status === 400) {
+        const current = await getSubscription(subscriptionId);
+        if (!current || current.status === "canceled") return "already_canceled";
+      }
+      throw rejected("subscription.cancel", res);
+    },
+
+    async findSubscription({ planId, cardId, createdAfter }) {
+      const res = await call(
+        "subscription.list",
+        "GET",
+        `/recurrent/subscriptions?plan_id=${idPath(planId)}&limit=100`
+      );
+      if (res.status !== 200) throw rejected("subscription.list", res);
+      const list = Array.isArray(res.body.data) ? res.body.data : [];
+      const earliest = createdAfter.getTime() - 5 * 60 * 1000;
+      return (
+        list
+          .map((item) => normalizeSubscription(asRecord(item)))
+          .find(
+            (sub) =>
+              sub != null &&
+              sub.cardId === cardId &&
+              (sub.createdAt == null || sub.createdAt.getTime() >= earliest)
+          ) ?? null
+      );
     },
   };
 }
