@@ -100,7 +100,7 @@ const FIRST_SHEET_MM = 212;
 const NEXT_SHEET_MM = 234;
 const HEADING_MM = 17;
 const PHOTO_ROW_MM = 32;
-const WIDE_CARD_MM = 38;
+const WIDE_CARD_MM = 50;
 const TEXT_ROW_MM = 18;
 const TEXT_SEPARATOR_MM = 11;
 
@@ -230,7 +230,7 @@ function PhotoDish({ item, wide, onOpen }) {
           src={item.photoUrl}
           alt=""
           fill
-          sizes={wide ? "(max-width: 600px) 92px, 240px" : "(max-width: 600px) 92px, 110px"}
+          sizes={wide ? "(max-width: 600px) 100vw, 240px" : "(max-width: 600px) 120px, 110px"}
           className={styles.photo}
           loading="eager"
         />
@@ -299,6 +299,10 @@ function SectionNav({ sections }) {
   };
 
   return (
+    // Fixed, not sticky: the document's body is its own scroll container (it
+    // clips overflow-x), and a sticky element only sticks to the nearest one.
+    // The slot keeps the space the bar would take in the flow.
+    <div className={styles.navSlot}>
     <nav className={styles.nav} aria-label="Secciones de la carta">
       <div className={styles.navBar} ref={barRef}>
         {sections.map((section) => (
@@ -315,6 +319,7 @@ function SectionNav({ sections }) {
         ))}
       </div>
     </nav>
+    </div>
   );
 }
 
@@ -387,7 +392,7 @@ export default function PhysicalCartaView({ initial }) {
                 seen.add(chunk.sectionId);
                 return (
                   <section
-                    className={styles.section}
+                    className={`${styles.section} ${chunk.continued ? styles.cont : ""}`}
                     key={chunk.id}
                     id={first ? `cat-${chunk.sectionId}` : undefined}
                     data-cat={chunk.sectionId}
