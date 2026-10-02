@@ -21,6 +21,7 @@
   --grain: radial-gradient(ellipse at 9% 7%, rgb(169 102 53 / .10), transparent 27%), radial-gradient(ellipse at 96% 95%, rgb(119 89 52 / .09), transparent 25%), repeating-linear-gradient(93deg, transparent 0 17px, rgb(111 87 49 / .025) 18px, transparent 19px 43px), url("/carta/paper-fibers.svg");
   --photo-radius: 42% 58% 46% 54% / 13% 17% 14% 15%;
   --thumb-radius: 18px 28px 18px 28px;
+  --thumb-radius-land: 14px 24px 14px 24px;
   min-height: 100vh;
   padding: 32px 16px 48px;
   background: var(--surround);
@@ -134,7 +135,7 @@
    odd one out spans the full width, so the grid never shows a hole. */
 .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 11mm; row-gap: 5mm; }
 .card { display: flex; align-items: center; gap: 4.2mm; min-width: 0; break-inside: avoid; }
-.wide { grid-column: 1 / -1; gap: 6mm; padding: 2mm 0; border-block: 1px solid color-mix(in srgb, var(--section-rule) 35%, transparent); }
+.wide { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 11mm; align-items: center; padding: 2mm 0; border-block: 1px solid color-mix(in srgb, var(--section-rule) 35%, transparent); }
 .thumb {
   position: relative;
   flex: none;
@@ -151,13 +152,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 .thumb:focus-visible { outline: 2px solid var(--section); outline-offset: 5px; }
-.wide .thumb { width: 60mm; height: 30mm; border-radius: var(--photo-radius); }
+.wide .thumb { width: 100%; height: 40mm; border-radius: var(--photo-radius); }
+.wide .cardBody { padding-inline: 3mm; text-align: center; }
 .photo { object-fit: cover; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
 .cardBody { flex: 1; min-width: 0; }
 .cardBody h3, .line h3 { font-size: 13.5px; font-weight: 700; line-height: 1.24; color: var(--ink); }
 .wide .cardBody h3 { font-family: var(--font-bricolage), Georgia, serif; font-size: 17px; letter-spacing: -.01em; }
 .cardBody .description { margin-top: 1.2mm; }
-.wide .cardBody .description { font-size: 12.5px; max-width: 78mm; }
+.wide .cardBody .description { font-size: 12.5px; }
 .cardBody .price { display: block; margin-top: 1.8mm; font-size: 13.5px; }
 .wide .cardBody .price { font-size: 15px; }
 .price { flex: none; font-size: 12.5px; font-weight: 700; color: var(--price); white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -189,7 +191,8 @@
 .leader { flex: 1; min-width: 10px; height: 1px; margin-bottom: 4px; border-bottom: 1.5px dotted color-mix(in srgb, var(--section-rule) 80%, transparent); }
 
 /* Section jump bar — screen only. */
-.nav { position: sticky; top: 10px; z-index: 20; width: min(100%, 210mm); margin: -10px auto 18px; }
+.navSlot { height: 30px; }
+.nav { position: fixed; inset: 10px 0 auto; z-index: 20; width: min(calc(100% - 32px), 210mm); margin-inline: auto; }
 .navBar {
   display: flex;
   gap: 4px;
@@ -287,34 +290,56 @@
 
 @media (max-width: 600px) {
   .stage { padding: 0; background: var(--paper); }
-  .nav { top: 0; width: 100%; margin: 0; }
+  .navSlot { height: 46px; }
+  .nav { inset: 0 0 auto; width: 100%; }
   .navBar { padding: 8px 12px; gap: 6px; border-width: 0 0 1px; border-radius: 0; box-shadow: 0 6px 16px rgb(57 35 20 / .08); }
-  .sheet { min-height: 0; margin-bottom: 0; box-shadow: none; border-bottom: 1px solid var(--mobile-rule); }
-  .inner { min-height: 0; padding: 28px 20px 26px; }
-  .header { padding-bottom: 23px; }
+  .chip { padding: 8px 14px; font-size: 13px; }
+
+  /* One continuous scroll: the sheets are an A4 idea, so the repeated masthead,
+     page footer and "continuación" headings of a split category stay out. */
+  .sheet { min-height: 0; margin-bottom: 0; box-shadow: none; }
+  .inner { min-height: 0; padding: 24px 20px 0; }
+  .sheet + .sheet .inner { padding-top: 16px; }
+  .sheet + .sheet .continuation { display: none; }
+  .sheet:not(:last-child) .footer { display: none; }
+  .sheet:last-child .inner { padding-bottom: 26px; }
+  .sheet + .sheet .section:first-child:not(.cont) { padding-top: 12px; }
+  .cont .sectionHeading { display: none; }
+  .section { margin-bottom: 25px; scroll-margin-top: 58px; }
+  .sheet:not(:last-child) .section:last-child { margin-bottom: 0; }
+
+  .header { padding-bottom: 20px; }
   .eyebrow { margin-top: 27px; font-size: 8px; }
   .header h1 { font-size: clamp(32px, 10vw, 44px); }
   .tagline { font-size: 14px; }
-  .continuation h1 { font-size: 30px; }
-  .section { margin-bottom: 25px; scroll-margin-top: 58px; }
   .sectionHeading { margin-bottom: 15px; }
-  .sectionHeading h2 { font-size: 17px; }
+  .sectionHeading h2 { font-size: 18px; }
   .cards, .lines { grid-template-columns: minmax(0, 1fr); }
-  .cards { row-gap: 16px; }
+  .cards { row-gap: 18px; }
   .lines { row-gap: 14px; }
   .afterCards { margin-top: 18px; padding-top: 16px; }
-  .card, .wide { gap: 14px; padding: 0; border: 0; }
-  .thumb, .wide .thumb { width: 92px; height: 92px; border-radius: var(--thumb-radius); }
-  .cardBody h3, .line h3, .wide .cardBody h3 { font-family: inherit; font-size: 14px; letter-spacing: 0; }
-  .description, .wide .cardBody .description { margin-top: 3px; max-width: none; font-size: 11.5px; }
-  .cardBody .price, .wide .cardBody .price { margin-top: 5px; font-size: 13.5px; }
+
+  /* Landscape thumbnails: food is photographed wide, and a square crop cuts it. */
+  .card { gap: 14px; }
+  .thumb { width: 116px; height: 87px; border-radius: var(--thumb-radius-land); }
+  .cardBody h3, .line h3 { font-size: 14.5px; }
+  .description { margin-top: 3px; font-size: 12px; }
+  .cardBody .price { margin-top: 5px; font-size: 14px; }
+
+  /* The odd dish out becomes a centred feature: big landscape photo, text below. */
+  .wide { display: flex; flex-direction: column; align-items: stretch; gap: 14px; padding: 0; border: 0; }
+  .wide .thumb { width: 100%; height: auto; aspect-ratio: 16 / 10; }
+  .wide .cardBody { padding: 0 8px; }
+  .wide .cardBody h3 { font-size: 19px; }
+  .wide .cardBody .description { max-width: none; font-size: 12.5px; }
+  .wide .cardBody .price { font-size: 15.5px; }
   .dialogBody h2 { font-size: 22px; }
 }
 
 @media print {
   @page { size: A4 portrait; margin: 0; }
   .stage { padding: 0; background: transparent; }
-  .nav, .dialog { display: none; }
+  .navSlot, .dialog { display: none; }
   .card, .line { animation: none; }
   .thumb { cursor: auto; }
   .sheet { width: 210mm; min-height: 297mm; height: auto; margin: 0; overflow: visible; box-shadow: none; break-after: page; page-break-after: always; }
