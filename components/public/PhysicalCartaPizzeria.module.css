@@ -20,5 +20,6 @@
   --mobile-rule: #e5d5c3;
   --photo-radius: 18px 18px 8px 8px;
   --thumb-radius: 999px 999px 12px 12px;
+  --thumb-radius-land: 46px 46px 10px 10px;
   --grain: radial-gradient(ellipse at 12% 8%, rgb(242 198 109 / .12), transparent 25%), radial-gradient(ellipse at 92% 94%, rgb(63 107 58 / .07), transparent 24%), url("/carta/paper-fibers.svg");
 }
