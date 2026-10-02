@@ -19,5 +19,6 @@
   --page-number: #80624c;
   --mobile-rule: #e8d7bf;
   --photo-radius: 6px;
+  --thumb-radius: 4px;
   --grain: linear-gradient(135deg, rgb(122 31 31 / .025) 25%, transparent 25%) 0 0 / 28px 28px, linear-gradient(315deg, rgb(122 31 31 / .025) 25%, transparent 25%) 0 0 / 28px 28px, url("/carta/paper-fibers.svg");
 }
