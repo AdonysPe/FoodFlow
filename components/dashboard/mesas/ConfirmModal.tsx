@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { EASE } from "@/lib/motion";
 
@@ -12,18 +12,23 @@ export default function ConfirmModal({
   message,
   confirmLabel = "Eliminar",
   cancelLabel = "Cancelar",
+  pendingLabel = "Eliminando…",
   pending = false,
   onConfirm,
   onCancel,
+  children,
 }: {
   open: boolean;
   title: string;
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  pendingLabel?: string;
   pending?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Extra detail shown between the message and the buttons. */
+  children?: ReactNode;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -61,6 +66,7 @@ export default function ConfirmModal({
               {title}
             </h2>
             <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{message}</p>
+            {children}
             <div className="mt-6 flex justify-end gap-2.5">
               <button
                 type="button"
@@ -76,7 +82,7 @@ export default function ConfirmModal({
                 disabled={pending}
                 className="rounded-lg bg-accent-500 px-4 py-2 text-[13px] font-semibold text-fg hover:bg-accent-600 disabled:opacity-40"
               >
-                {pending ? "Eliminando…" : confirmLabel}
+                {pending ? pendingLabel : confirmLabel}
               </button>
             </div>
           </m.div>
