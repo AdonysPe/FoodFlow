@@ -86,6 +86,39 @@ export function ConsentCheckbox({ id, checked, onChange, error, errorMessage, ch
   );
 }
 
+type RememberCheckboxProps = {
+  id: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+  label: string;
+  hint?: string;
+};
+
+// An opt-in, never pre-ticked: staying signed in is a decision about one
+// device, and the safe default on a shared tablet is to forget. Same box as the
+// consent checkbox above so the two sit together in the auth forms, but this
+// one carries no legal meaning and nothing about it is required.
+export function RememberCheckbox({ id, checked, onChange, disabled, label, hint }: RememberCheckboxProps) {
+  return (
+    <div>
+      <label htmlFor={id} className={`flex items-start gap-3 text-[13.5px] font-medium leading-snug text-fg/80 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+        <input
+          id={id}
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.checked)}
+          aria-describedby={hint ? `${id}-hint` : undefined}
+          className="mt-px h-[18px] w-[18px] shrink-0 cursor-pointer accent-accent-400 disabled:cursor-not-allowed"
+        />
+        <span>{label}</span>
+      </label>
+      {hint ? <p id={`${id}-hint`} className="mt-1 pl-[30px] text-[12px] leading-5 text-faint">{hint}</p> : null}
+    </div>
+  );
+}
+
 export function AuthAlert({ message }: { message: string }) {
   return <AnimatePresence initial={false}>{message ? <m.p role="alert" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="rounded-xl bg-accent-500/[0.09] px-3.5 py-3 text-[13px] leading-5 text-accent-ink ring-1 ring-inset ring-accent-500/20">{message}</m.p> : null}</AnimatePresence>;
 }
