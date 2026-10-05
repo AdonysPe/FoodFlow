@@ -18,6 +18,9 @@ const schema = z
   .object({
     email: z.email().trim().toLowerCase().max(255),
     password: z.string().min(1).max(72),
+    // "Mantener sesión iniciada en este dispositivo". Optional so an older
+    // cached form that does not send it still signs in, as a plain session.
+    remember: z.boolean().optional(),
   })
   .strict();
 
@@ -49,6 +52,7 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return invalidCredentials();
   const { email, password } = parsed.data;
+  const remember = parsed.data.remember === true;
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
@@ -140,12 +144,13 @@ export async function POST(request: NextRequest) {
     email: activeUser.email,
     role: activeUser.role,
     sessionVersion: activeUser.sessionVersion,
+    remember,
   });
-  await setSessionCookie(token);
+  await setSessionCookie(token, remember);
   await logAudit({
     action: "auth.login",
     actor: { id: activeUser.id, email: activeUser.email },
-    after: { role: activeUser.role },
+    after: { role: activeUser.role, remember },
   });
 
   return NextResponse.json(

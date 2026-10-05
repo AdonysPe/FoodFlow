@@ -11,7 +11,7 @@ import { PLANS, type PlanValue } from "@/lib/plans";
 import type { ActionResult } from "@/lib/actions/auth";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
-import { createSessionToken, setSessionCookie } from "@/lib/auth/session";
+import { createSessionToken, readSessionPayload, setSessionCookie } from "@/lib/auth/session";
 import { buildWhatsAppUrl } from "@/lib/contact";
 
 const createRestaurantSchema = z.object({
@@ -45,14 +45,18 @@ export async function selectActiveRestaurant(
 
   if (!allowed) return { ok: false, error: "No tienes acceso a ese restaurante." };
 
+  // Switching venue re-signs the token; it must keep the length of the session
+  // the person chose at login, not quietly turn it into a different one.
+  const remember = (await readSessionPayload())?.remember === true;
   const token = await createSessionToken({
     sub: user.id,
     email: user.email,
     role: user.role,
     sessionVersion: user.sessionVersion,
     restaurantId: parsed.data,
+    remember,
   });
-  await setSessionCookie(token);
+  await setSessionCookie(token, remember);
   revalidatePath("/dashboard", "layout");
 
   return { ok: true, data: undefined };
