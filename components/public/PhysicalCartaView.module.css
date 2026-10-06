@@ -20,6 +20,8 @@
   --mobile-rule: #d7c5a8;
   --grain: radial-gradient(ellipse at 9% 7%, rgb(169 102 53 / .10), transparent 27%), radial-gradient(ellipse at 96% 95%, rgb(119 89 52 / .09), transparent 25%), repeating-linear-gradient(93deg, transparent 0 17px, rgb(111 87 49 / .025) 18px, transparent 19px 43px), url("/carta/paper-fibers.svg");
   --photo-radius: 42% 58% 46% 54% / 13% 17% 14% 15%;
+  --thumb-radius: 18px 28px 18px 28px;
+  --thumb-radius-land: 14px 24px 14px 24px;
   min-height: 100vh;
   padding: 32px 16px 48px;
   background: var(--surround);
@@ -127,23 +129,135 @@
 }
 .sectionFlourish { color: var(--flourish); font-size: 9px; transform: rotate(10deg); }
 .sectionLine { flex: 1; height: 1px; margin-left: 1mm; background: linear-gradient(90deg, var(--section-rule), transparent); opacity: .65; }
-.dishes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12mm; row-gap: 6mm; }
-.dish { min-width: 0; break-inside: avoid; }
-.dishTop { display: flex; justify-content: space-between; align-items: baseline; gap: 3mm; }
-.dish h3 { font-size: 13.5px; font-weight: 700; line-height: 1.24; color: var(--ink); }
+.continued { flex: none; font-family: var(--font-bricolage), Georgia, serif; font-size: 11px; font-style: italic; color: var(--tagline); }
+
+/* Photo dishes: a thumbnail beside the text. Every card owns its slot, and an
+   odd one out spans the full width, so the grid never shows a hole. */
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 11mm; row-gap: 5mm; }
+.card { display: flex; align-items: center; gap: 4.2mm; min-width: 0; break-inside: avoid; }
+.wide { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 11mm; align-items: center; padding: 2mm 0; border-block: 1px solid color-mix(in srgb, var(--section-rule) 35%, transparent); }
+.thumb {
+  position: relative;
+  flex: none;
+  width: 27mm;
+  height: 27mm;
+  padding: 0;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: var(--photo-border);
+  border: 2px solid var(--photo-border);
+  border-radius: var(--thumb-radius);
+  box-shadow: 0 0 0 2.5px var(--paper), 0 0 0 3.5px color-mix(in srgb, var(--section-rule) 70%, transparent), 0 4px 10px rgb(71 42 25 / .14);
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+.thumb:focus-visible { outline: 2px solid var(--section); outline-offset: 5px; }
+.wide .thumb { width: 100%; height: 40mm; border-radius: var(--photo-radius); }
+.wide .cardBody { padding-inline: 3mm; text-align: center; }
+.photo { object-fit: cover; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
+.cardBody { flex: 1; min-width: 0; }
+.cardBody h3, .line h3 { font-size: 13.5px; font-weight: 700; line-height: 1.24; color: var(--ink); }
+.wide .cardBody h3 { font-family: var(--font-bricolage), Georgia, serif; font-size: 17px; letter-spacing: -.01em; }
+.cardBody .description { margin-top: 1.2mm; }
+.wide .cardBody .description { font-size: 12.5px; }
+.cardBody .price { display: block; margin-top: 1.8mm; font-size: 13.5px; }
+.wide .cardBody .price { font-size: 15px; }
 .price { flex: none; font-size: 12.5px; font-weight: 700; color: var(--price); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .description { margin-top: 1mm; font-size: 11.5px; line-height: 1.38; color: var(--description); }
 .soldOut { margin-top: 1mm; font-family: var(--font-bricolage), Georgia, serif; font-size: 10px; font-style: italic; color: var(--sold); }
-.photoWrap {
-  position: relative;
-  height: 31mm;
-  margin-bottom: 2.3mm;
-  overflow: hidden;
-  border: 2px solid var(--photo-border);
-  border-radius: var(--photo-radius);
-  box-shadow: 0 3px 9px rgb(71 42 25 / .11);
+.ribbon {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3px 0 4px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--sold);
+  background: rgb(255 255 255 / .88);
 }
-.photo { object-fit: cover; }
+.out .photo { filter: grayscale(.9) brightness(1.05); opacity: .7; }
+.out h3, .out .price { color: var(--description); }
+.out .price { text-decoration: line-through; text-decoration-thickness: 1px; }
+
+/* Dishes without a photograph: the classic printed line, name ····· price. */
+.lines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12mm; row-gap: 4.2mm; }
+.afterCards { margin-top: 5.5mm; padding-top: 5mm; border-top: 1px dotted color-mix(in srgb, var(--section-rule) 70%, transparent); }
+.line { min-width: 0; break-inside: avoid; }
+.line:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.lineTop { display: flex; align-items: flex-end; gap: 2mm; }
+.lineTop h3 { min-width: 0; }
+.leader { flex: 1; min-width: 10px; height: 1px; margin-bottom: 4px; border-bottom: 1.5px dotted color-mix(in srgb, var(--section-rule) 80%, transparent); }
+
+/* Section jump bar — screen only. */
+.navSlot { height: 30px; }
+.nav { position: fixed; inset: 10px 0 auto; z-index: 20; width: min(calc(100% - 32px), 210mm); margin-inline: auto; }
+.navBar {
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid color-mix(in srgb, var(--section-rule) 45%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgb(57 35 20 / .13), 0 1px 2px rgb(57 35 20 / .1);
+}
+.navBar::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--section);
+  border-radius: 999px;
+  transition: background-color .25s ease, color .25s ease;
+}
+.chip:hover { background: color-mix(in srgb, var(--section) 10%, transparent); }
+.chip:focus-visible { outline: 2px solid var(--section); outline-offset: 1px; }
+.chipActive, .chipActive:hover { background: var(--section); color: var(--paper); }
+
+/* The photograph, large, for the diner who wants to see what arrives. */
+.dialog {
+  width: min(92vw, 520px);
+  margin: auto;
+  max-width: none;
+  padding: 0;
+  overflow: visible;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+}
+.dialog::backdrop { background: rgb(30 18 10 / .62); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.dialogCard { position: relative; overflow: hidden; background: var(--paper); border-radius: 20px; box-shadow: 0 30px 80px rgb(20 10 5 / .45); }
+.dialogPhoto { position: relative; aspect-ratio: 4 / 3; background: var(--photo-border); }
+.dialogBody { padding: 18px 22px 22px; }
+.dialogBody h2 { font-family: var(--font-bricolage), Georgia, serif; font-size: 25px; font-weight: 700; line-height: 1.12; letter-spacing: -.02em; color: var(--title); }
+.dialogBody .description { margin-top: 6px; font-size: 14px; line-height: 1.45; }
+.dialogBody .price { display: block; margin-top: 12px; font-size: 20px; }
+.dialogClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
+  background: rgb(255 255 255 / .9);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgb(0 0 0 / .25);
+}
+.dialogClose:focus-visible { outline: 2px solid var(--section); outline-offset: 2px; }
 .empty { padding: 12mm 0; text-align: center; font-family: var(--font-bricolage), Georgia, serif; font-style: italic; color: var(--tagline); }
 
 .footer { display: flex; align-items: center; gap: 4mm; margin-top: 3mm; }
@@ -151,29 +265,83 @@
 .footerMotif { width: 35px; height: 18px; stroke: var(--motif); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
 .pageNumber { font-family: var(--font-bricolage), Georgia, serif; font-size: 10px; letter-spacing: .12em; color: var(--page-number); }
 
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .thumb:hover .photo { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dialog[open] .dialogCard { animation: pop .32s cubic-bezier(.2, .8, .2, 1) both; }
+  .dialog[open]::backdrop { animation: veil .25s ease both; }
+  @supports (animation-timeline: view()) {
+    .card, .line {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+  }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes veil { from { opacity: 0; } to { opacity: 1; } }
+
+@media (min-width: 601px) {
+  .section { scroll-margin-top: 78px; }
+}
+
 @media (max-width: 600px) {
   .stage { padding: 0; background: var(--paper); }
-  .sheet { min-height: 0; margin-bottom: 0; box-shadow: none; border-bottom: 1px solid var(--mobile-rule); }
-  .inner { min-height: 0; padding: 28px 22px 26px; }
-  .header { padding-bottom: 23px; }
+  .navSlot { height: 46px; }
+  .nav { inset: 0 0 auto; width: 100%; }
+  .navBar { padding: 8px 12px; gap: 6px; border-width: 0 0 1px; border-radius: 0; box-shadow: 0 6px 16px rgb(57 35 20 / .08); }
+  .chip { padding: 8px 14px; font-size: 13px; }
+
+  /* One continuous scroll: the sheets are an A4 idea, so the repeated masthead,
+     page footer and "continuación" headings of a split category stay out. */
+  .sheet { min-height: 0; margin-bottom: 0; box-shadow: none; }
+  .inner { min-height: 0; padding: 24px 20px 0; }
+  .sheet + .sheet .inner { padding-top: 16px; }
+  .sheet + .sheet .continuation { display: none; }
+  .sheet:not(:last-child) .footer { display: none; }
+  .sheet:last-child .inner { padding-bottom: 26px; }
+  .sheet + .sheet .section:first-child:not(.cont) { padding-top: 12px; }
+  .cont .sectionHeading { display: none; }
+  .section { margin-bottom: 25px; scroll-margin-top: 58px; }
+  .sheet:not(:last-child) .section:last-child { margin-bottom: 0; }
+
+  .header { padding-bottom: 20px; }
   .eyebrow { margin-top: 27px; font-size: 8px; }
   .header h1 { font-size: clamp(32px, 10vw, 44px); }
   .tagline { font-size: 14px; }
-  .continuation h1 { font-size: 30px; }
-  .section { margin-bottom: 25px; }
   .sectionHeading { margin-bottom: 15px; }
-  .sectionHeading h2 { font-size: 17px; }
-  .dishes { column-gap: 17px; row-gap: 17px; }
-  .dishTop { display: block; }
-  .dish h3 { font-size: 13px; }
-  .price { display: block; margin-top: 3px; font-size: 11px; }
-  .description { margin-top: 4px; font-size: 11px; }
-  .photoWrap { height: 90px; }
+  .sectionHeading h2 { font-size: 18px; }
+  .cards, .lines { grid-template-columns: minmax(0, 1fr); }
+  .cards { row-gap: 18px; }
+  .lines { row-gap: 14px; }
+  .afterCards { margin-top: 18px; padding-top: 16px; }
+
+  /* Landscape thumbnails: food is photographed wide, and a square crop cuts it. */
+  .card { gap: 14px; }
+  .thumb { width: 116px; height: 87px; border-radius: var(--thumb-radius-land); }
+  .cardBody h3, .line h3 { font-size: 14.5px; }
+  .description { margin-top: 3px; font-size: 12px; }
+  .cardBody .price { margin-top: 5px; font-size: 14px; }
+
+  /* The odd dish out becomes a centred feature: big landscape photo, text below. */
+  .wide { display: flex; flex-direction: column; align-items: stretch; gap: 14px; padding: 0; border: 0; }
+  .wide .thumb { width: 100%; height: auto; aspect-ratio: 16 / 10; }
+  .wide .cardBody { padding: 0 8px; }
+  .wide .cardBody h3 { font-size: 19px; }
+  .wide .cardBody .description { max-width: none; font-size: 12.5px; }
+  .wide .cardBody .price { font-size: 15.5px; }
+  .dialogBody h2 { font-size: 22px; }
 }
 
 @media print {
   @page { size: A4 portrait; margin: 0; }
   .stage { padding: 0; background: transparent; }
+  .navSlot, .dialog { display: none; }
+  .card, .line { animation: none; }
+  .thumb { cursor: auto; }
   .sheet { width: 210mm; min-height: 297mm; height: auto; margin: 0; overflow: visible; box-shadow: none; break-after: page; page-break-after: always; }
   .sheet:last-child { break-after: auto; page-break-after: auto; }
   .inner { min-height: 297mm; height: auto; }
