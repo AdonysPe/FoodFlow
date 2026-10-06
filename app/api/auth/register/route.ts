@@ -90,8 +90,13 @@ export async function POST(request: NextRequest) {
       role: result.user.role,
       sessionVersion: result.user.sessionVersion,
       restaurantId: result.restaurant.id,
+      // Someone who has just created their restaurant is on their own device
+      // and about to spend an hour setting it up; signing them out when the tab
+      // closes would be a poor welcome. Same session they had before the
+      // login screen grew its checkbox.
+      remember: true,
     });
-    await setSessionCookie(token);
+    await setSessionCookie(token, true);
     await logAudit({
       action: "auth.register",
       actor: { id: result.user.id, email: result.user.email },
