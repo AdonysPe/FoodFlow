@@ -53,34 +53,41 @@ export async function POST(request: NextRequest) {
   }
 
   const { email, code, password } = parsed.data;
-  const user = await prisma.user.findUnique({ where: { email } });
   const now = new Date();
-  if (
-    !user?.verificationCode ||
-    !user.verificationCodeExpiresAt ||
-    user.verificationCodeExpiresAt <= now ||
-    user.passwordResetAttempts >= maxOtpAttempts()
-  ) {
-    return invalidCode();
-  }
 
-  if (!verifyOtpHash(code, user.verificationCode)) {
-    const attempts = user.passwordResetAttempts + 1;
-    await prisma.user.updateMany({
-      where: { id: user.id, verificationCode: user.verificationCode },
-      data: {
-        passwordResetAttempts: attempts,
-        ...(attempts >= maxOtpAttempts()
-          ? { verificationCode: null, verificationCodeExpiresAt: null }
-          : {}),
-      },
-    });
+  // One attempt is spent BEFORE the code is looked at, in a single statement.
+  // Reading the counter, comparing, then writing "read + 1" let guesses sent
+  // together all read 0 and all write 1, so a burst was counted as one try and
+  // the three-attempt cap could be outrun. Postgres locks the row for the
+  // statement and a second concurrent UPDATE re-checks the WHERE against the
+  // first one's result, so at most `maxOtpAttempts()` guesses ever get past
+  // here per code, however many arrive at once (same idea as the login lock).
+  const reserved = await prisma.$queryRaw<{ id: string; code: string; attempts: number }[]>`
+    UPDATE "User"
+    SET "password_reset_attempts" = "password_reset_attempts" + 1
+    WHERE "email" = ${email}
+      AND "verification_code" IS NOT NULL
+      AND "verification_code_expires_at" > ${now}
+      AND "password_reset_attempts" < ${maxOtpAttempts()}
+    RETURNING "id", "verification_code" AS "code", "password_reset_attempts" AS "attempts"
+  `;
+  const attempt = reserved[0];
+  if (!attempt) return invalidCode();
+
+  if (!verifyOtpHash(code, attempt.code)) {
+    // The last attempt is gone: retire the code instead of leaving it around.
+    if (Number(attempt.attempts) >= maxOtpAttempts()) {
+      await prisma.user.updateMany({
+        where: { id: attempt.id, verificationCode: attempt.code },
+        data: { verificationCode: null, verificationCodeExpiresAt: null },
+      });
+    }
     return invalidCode();
   }
 
   const passwordHash = await hashPassword(password);
   const updated = await prisma.user.updateMany({
-    where: { id: user.id, verificationCode: user.verificationCode },
+    where: { id: attempt.id, verificationCode: attempt.code },
     data: {
       passwordHash,
       verificationCode: null,
@@ -98,7 +105,7 @@ export async function POST(request: NextRequest) {
   await clearSessionCookie();
   await logAudit({
     action: "auth.password_reset",
-    actor: { id: user.id, email: user.email },
+    actor: { id: attempt.id, email },
   });
   return NextResponse.json(
     { ok: true, data: { message: "Contraseña actualizada." } },

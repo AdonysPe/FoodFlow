@@ -16,6 +16,30 @@ import {
 import type { ActionResult } from "@/lib/actions/auth";
 import { restaurantEntitlement } from "@/lib/subscriptions/access";
 
+// The plan whose seat cap applies right now. A downgrade that is only
+// scheduled already lowers the ceiling: otherwise the owner could fill the
+// higher plan's seats while waiting for the date, and nothing would trim them
+// when it lands.
+async function seatCapPlan(restaurantId: string, current: PlanValue): Promise<PlanValue> {
+  const pending = await prisma.subscription.findFirst({
+    where: {
+      restaurantId,
+      endedAt: null,
+      status: { not: "cancelled" },
+      pendingPlan: { not: null },
+    },
+    select: { pendingPlan: true },
+  });
+  const next = pending?.pendingPlan as PlanValue | null | undefined;
+  return next && PLAN_MAX_USERS[next] < PLAN_MAX_USERS[current] ? next : current;
+}
+
+function seatLimitMessage(cap: PlanValue, current: PlanValue): string {
+  return cap === current
+    ? `Tu plan ${PLAN_LABELS[current]} llega hasta ${PLAN_MAX_USERS[current]} usuarios (dueño incluido). Quita a alguien o sube de plan.`
+    : `Tienes un cambio al plan ${PLAN_LABELS[cap]} programado y llega hasta ${PLAN_MAX_USERS[cap]} usuarios (dueño incluido). Quita a alguien o cancela el cambio.`;
+}
+
 const EQUIPO_PATH = "/dashboard/app/equipo";
 
 const emailSchema = z.object({
@@ -59,14 +83,12 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
       error: `El plan ${PLAN_LABELS[plan]} es de un solo usuario. Sube a ${PLAN_LABELS[firstPlanWith("staff")]} para agregar mozos.`,
     };
   }
+  const capPlan = await seatCapPlan(restaurant.id, plan);
   const currentStaff = await prisma.staffMembership.count({
     where: { restaurantId: restaurant.id },
   });
-  if (staffSeatsLeft(plan, currentStaff) <= 0) {
-    return {
-      ok: false,
-      error: `Tu plan ${PLAN_LABELS[plan]} llega hasta ${PLAN_MAX_USERS[plan]} usuarios (dueño incluido). Quita a alguien o sube de plan.`,
-    };
+  if (staffSeatsLeft(capPlan, currentStaff) <= 0) {
+    return { ok: false, error: seatLimitMessage(capPlan, plan) };
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -80,14 +102,29 @@ export async function addStaffMember(input: { email: string }): Promise<ActionRe
       data: { email, role: "restaurant_staff", requiresPasswordSetup: true },
     }));
 
-  const already = await prisma.staffMembership.findUnique({
-    where: { restaurantId_userId: { restaurantId: restaurant.id, userId: staffUser.id } },
+  // The check above only spares the common case. Two invites sent together
+  // would both read the same count, so the authoritative one runs under a lock
+  // on the venue: every invite for it waits its turn and counts again.
+  const outcome = await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "Restaurant" WHERE "id" = ${restaurant.id} FOR UPDATE`;
+    const seated = await tx.staffMembership.count({ where: { restaurantId: restaurant.id } });
+    if (staffSeatsLeft(capPlan, seated) <= 0) return "full" as const;
+    const already = await tx.staffMembership.findUnique({
+      where: { restaurantId_userId: { restaurantId: restaurant.id, userId: staffUser.id } },
+    });
+    if (already) return "already" as const;
+    await tx.staffMembership.create({
+      data: { restaurantId: restaurant.id, userId: staffUser.id },
+    });
+    return "added" as const;
   });
-  if (already) return { ok: false, error: "Esa persona ya está en el equipo." };
-
-  await prisma.staffMembership.create({
-    data: { restaurantId: restaurant.id, userId: staffUser.id },
-  });
+  if (outcome !== "added") {
+    // An account created a moment ago for this invite must not outlive it.
+    if (!existing) await prisma.user.delete({ where: { id: staffUser.id } }).catch(() => {});
+    return outcome === "already"
+      ? { ok: false, error: "Esa persona ya está en el equipo." }
+      : { ok: false, error: seatLimitMessage(capPlan, plan) };
+  }
 
   await logAudit({
     action: "staff.add",
