@@ -2,6 +2,7 @@ import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import ExportDataButton from "@/components/dashboard/ExportDataButton";
 import SubscriptionCheckoutPanel from "@/components/dashboard/SubscriptionCheckoutPanel";
+import RestaurantNameCard from "@/components/dashboard/RestaurantNameCard";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 
 export const metadata = {
@@ -27,7 +28,7 @@ const SETTINGS = [
 ] as const;
 
 export default async function SettingsPage() {
-  const { restaurant } = await requireClientRestaurant();
+  const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return null;
 
   return (
@@ -40,6 +41,9 @@ export default async function SettingsPage() {
           Cuenta, suscripción, datos y conexiones del local activo.
         </p>
       </div>
+
+      {/* Keyed by venue: switching restaurants must not carry a half-typed name over. */}
+      <RestaurantNameCard key={restaurant.id} currentName={restaurant.name} canEdit={isOwner} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <GlassCard className="p-5 sm:p-6" hoverLift={false}>
