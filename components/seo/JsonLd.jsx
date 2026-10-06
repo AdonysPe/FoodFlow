@@ -1,5 +1,6 @@
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { CONTACT_EMAIL, WHATSAPP_NUMBER } from "@/lib/contact";
+import { SOCIAL_LINKS } from "@/lib/social";
 import {
   ORG_DESCRIPTION,
   REVIEWS,
@@ -115,6 +116,7 @@ const organization = {
   name: SITE_NAME,
   url: BASE,
   email: CONTACT_EMAIL,
+  sameAs: SOCIAL_LINKS.map((s) => s.href),
   logo: {
     "@type": "ImageObject",
     url: `${BASE}/icon.svg`,
