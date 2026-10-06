@@ -138,5 +138,5 @@ export const POST = withApi(
       cdr: cdr ? toDTO(cdr) : null,
     };
   },
-  { rateLimit: EMISSION_RATE_LIMIT, requireBillingConfig: true }
+  { feature: "orders", rateLimit: EMISSION_RATE_LIMIT, requireBillingConfig: true }
 );

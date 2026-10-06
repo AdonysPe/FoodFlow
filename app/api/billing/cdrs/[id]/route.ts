@@ -28,4 +28,4 @@ export const GET = withApi(async (request, ctx) => {
     ...toDTO(cdr),
     ...(includeXml ? { xmlContent: cdr.xmlContent } : {}),
   };
-});
+}, { feature: "orders" });

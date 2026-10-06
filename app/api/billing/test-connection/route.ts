@@ -88,5 +88,5 @@ export const POST = withApi(
     });
     return { ...result, savedResult: true };
   },
-  { ownerOnly: true, rateLimit: { bucket: "billing-test", max: 20, windowMs: 60 * 60 * 1000 } }
+  { ownerOnly: true, feature: "orders", rateLimit: { bucket: "billing-test", max: 20, windowMs: 60 * 60 * 1000 } }
 );

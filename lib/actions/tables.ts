@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { generateTableCode } from "@/lib/tableCode";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { featureRefusal } from "@/lib/auth/plan";
 import type { ActionResult } from "@/lib/actions/auth";
 import { TABLE_SHAPES, TABLE_ZONES } from "@/lib/tableMeta";
 
@@ -35,6 +36,8 @@ export async function createTable(
 ): Promise<ActionResult<{ id: string }>> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = tableSchema.safeParse(input);
   if (!parsed.success) {
@@ -74,6 +77,8 @@ export async function createTable(
 export async function updateTable(id: string, input: TableInput): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = tableSchema.safeParse(input);
   if (!parsed.success) {
@@ -97,6 +102,8 @@ export async function updateTablePosition(
 ): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = positionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Posición no válida." };
@@ -121,6 +128,8 @@ export async function setTableOccupancy(
 ): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const existing = await requireOwnedTable(id, restaurant.id);
   if (!existing) return { ok: false, error: "Mesa no encontrada." };
@@ -137,6 +146,8 @@ export async function setTableOccupancy(
 export async function deleteTable(id: string): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const existing = await requireOwnedTable(id, restaurant.id);
   if (!existing) return { ok: false, error: "Mesa no encontrada." };

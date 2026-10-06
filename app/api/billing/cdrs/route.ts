@@ -62,7 +62,7 @@ export const GET = withApi(async (request, ctx) => {
   }
 
   return result;
-});
+}, { feature: "orders" });
 
 function endOfDay(date: Date, raw: string): Date {
   if (raw.length > 10) return date;

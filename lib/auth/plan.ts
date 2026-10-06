@@ -1,7 +1,25 @@
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
-import { type FeatureValue, type PlanValue } from "@/lib/plans";
-import { restaurantEntitlement } from "@/lib/subscriptions/access";
+import { FEATURE_LABELS, type FeatureValue, type PlanValue } from "@/lib/plans";
+import { restaurantEntitlement, type EntitlementColumns } from "@/lib/subscriptions/access";
 import { entitlementAllows } from "@/lib/subscriptions/entitlement";
+
+// The same decision the pages make, for the code a page cannot protect: a
+// Server Action is a POST endpoint of its own and a billing route is a plain
+// fetch, so neither is stopped by the page that happens to render the upsell.
+// Returns the sentence to show when the venue may not use `feature` (the plan
+// does not include it, or the billing state is locked) and null when it may.
+// Actions turn it into `{ ok: false, error }`; routes into a 403.
+export function featureRefusal(
+  restaurant: EntitlementColumns,
+  feature: FeatureValue
+): string | null {
+  const entitlement = restaurantEntitlement(restaurant);
+  if (entitlementAllows(entitlement, feature)) return null;
+  const label = FEATURE_LABELS[feature];
+  return entitlement.mode === "locked"
+    ? `El acceso a ${label} está pausado: revisa el estado de cobro del restaurante.`
+    : `Tu plan no incluye ${label}.`;
+}
 
 // Resolves the signed-in owner's restaurant and checks the plan in one call.
 // A page renders the upsell screen when `allowed` is false — the module is

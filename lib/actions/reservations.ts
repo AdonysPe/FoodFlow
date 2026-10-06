@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { featureRefusal } from "@/lib/auth/plan";
 import type { ActionResult } from "@/lib/actions/auth";
 import {
   RESERVATION_STATUSES,
@@ -98,6 +99,8 @@ export async function createReservation(
 ): Promise<ActionResult<{ id: string }>> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = baseReservationSchema.safeParse(input);
   if (!parsed.success) {
@@ -161,6 +164,8 @@ export async function updateReservation(
 ): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const existing = await requireOwnedReservation(id, restaurant.id);
   if (!existing) return { ok: false, error: "Reserva no encontrada." };
@@ -222,6 +227,8 @@ export async function updateReservationStatus(
 ): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = z.enum(RESERVATION_STATUSES).safeParse(rawStatus);
   if (!parsed.success) return { ok: false, error: "Estado no válido." };
@@ -261,6 +268,8 @@ export async function updateReservationStatus(
 export async function deleteReservation(id: string): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "tables");
+  if (refused) return { ok: false, error: refused };
 
   const existing = await requireOwnedReservation(id, restaurant.id);
   if (!existing) return { ok: false, error: "Reserva no encontrada." };

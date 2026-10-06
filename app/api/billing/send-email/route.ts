@@ -79,5 +79,5 @@ export const POST = withApi(
 
     return { sentAt: result.at.toISOString(), to: result.to };
   },
-  { ownerOnly: true, rateLimit: { bucket: "billing-email", max: 30, windowMs: 60 * 60 * 1000 } }
+  { ownerOnly: true, feature: "orders", rateLimit: { bucket: "billing-email", max: 30, windowMs: 60 * 60 * 1000 } }
 );

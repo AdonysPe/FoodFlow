@@ -28,7 +28,7 @@ export const GET = withApi(
       ...config,
     };
   },
-  { ownerOnly: true }
+  { ownerOnly: true, feature: "orders" }
 );
 
 const text = (max: number) => z.string().trim().max(max);
@@ -101,5 +101,5 @@ export const POST = withApi(
 
     return { restaurantId: ctx.restaurantId, ...result.config };
   },
-  { ownerOnly: true, rateLimit: { bucket: "billing-config", max: 60, windowMs: 60 * 60 * 1000 } }
+  { ownerOnly: true, feature: "orders", rateLimit: { bucket: "billing-config", max: 60, windowMs: 60 * 60 * 1000 } }
 );

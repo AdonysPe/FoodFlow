@@ -28,6 +28,9 @@ import { prisma } from "@/lib/db/prisma";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 import { rateLimit } from "@/lib/security/rateLimit";
 import { checkEmissionReadiness } from "@/lib/billing/config-service";
+import type { FeatureValue } from "@/lib/plans";
+import { featureRefusal } from "@/lib/auth/plan";
+import { ENTITLEMENT_SELECT, type EntitlementColumns } from "@/lib/subscriptions/access";
 import { ApiError, fail, logBilling, newRequestId, ok } from "@/lib/api/respond";
 
 export type ApiActor = {
@@ -55,6 +58,12 @@ export type GuardOptions = {
   requireBillingConfig?: boolean;
   /** Exige que sea el dueño, no un mozo. */
   ownerOnly?: boolean;
+  /**
+   * El módulo de pago al que pertenece la ruta. Una ruta no la protege la
+   * página que muestra el upsell: se llama con un fetch. Si el plan no lo
+   * incluye o el cobro está bloqueado, responde 403 antes del handler.
+   */
+  feature?: FeatureValue;
 };
 
 type Handler<T> = (
@@ -76,7 +85,14 @@ type RouteArgs = { params: Promise<Record<string, string>> };
  * válido. Lo que decide es siempre la fila, no la afirmación.
  */
 async function resolveActor(): Promise<
-  | { ok: true; actor: ApiActor; restaurantId: string; restaurantName: string; isOwner: boolean }
+  | {
+      ok: true;
+      actor: ApiActor;
+      restaurantId: string;
+      restaurantName: string;
+      isOwner: boolean;
+      entitlement: EntitlementColumns;
+    }
   | { ok: false; reason: "no_session" | "no_restaurant" }
 > {
   const store = await cookies();
@@ -91,11 +107,11 @@ async function resolveActor(): Promise<
     prisma.restaurant.findMany({
       where: { ownerId: payload.sub },
       orderBy: { createdAt: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, ...ENTITLEMENT_SELECT },
     }),
     prisma.staffMembership.findMany({
       where: { userId: payload.sub },
-      select: { restaurant: { select: { id: true, name: true } } },
+      select: { restaurant: { select: { id: true, name: true, ...ENTITLEMENT_SELECT } } },
       orderBy: { createdAt: "asc" },
     }),
   ]);
@@ -117,6 +133,7 @@ async function resolveActor(): Promise<
     restaurantId: venue.id,
     restaurantName: venue.name,
     isOwner: user.role === "restaurant_owner",
+    entitlement: venue,
   };
 }
 
@@ -140,7 +157,7 @@ export function withApi<T>(handler: Handler<T>, options: GuardOptions = {}) {
         : fail("forbidden", "Tu cuenta no está vinculada a un restaurante.", requestId);
     }
 
-    const { actor, restaurantId, restaurantName, isOwner } = resolved;
+    const { actor, restaurantId, restaurantName, isOwner, entitlement } = resolved;
 
     if (options.ownerOnly && !isOwner) {
       logBilling("warn", "api.denied", {
@@ -154,6 +171,20 @@ export function withApi<T>(handler: Handler<T>, options: GuardOptions = {}) {
         "Solo el dueño de la cuenta puede cambiar la configuración de facturación.",
         requestId
       );
+    }
+
+    if (options.feature) {
+      const refused = featureRefusal(entitlement, options.feature);
+      if (refused) {
+        logBilling("warn", "api.denied", {
+          requestId,
+          path,
+          restaurantId,
+          reason: "feature_not_available",
+          feature: options.feature,
+        });
+        return fail("forbidden", refused, requestId);
+      }
     }
 
     const params = args?.params ? await args.params : {};

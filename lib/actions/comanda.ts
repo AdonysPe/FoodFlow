@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireComandaRestaurant } from "@/lib/auth/restaurant";
+import { featureRefusal } from "@/lib/auth/plan";
 import { PAYMENT_METHODS, needsCashSplit } from "@/lib/paymentMeta";
 import { nextReceiptNumber } from "@/lib/db/receiptSettings";
 import { emitForOrder, type EmissionOutcome } from "@/lib/billing/emission";
@@ -59,6 +60,8 @@ export async function sendComanda(
 ): Promise<ActionResult<{ orderId: string; round: number; appended: boolean }>> {
   const { user, restaurant } = await requireComandaRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  const refused = featureRefusal(restaurant, "comanda");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = sendSchema.safeParse(input);
   if (!parsed.success) {
@@ -240,6 +243,8 @@ export async function payOrder(
 ): Promise<ActionResult<PayOrderResult>> {
   const { restaurant } = await requireComandaRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  const refused = featureRefusal(restaurant, "comanda");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = paySchema.safeParse(input);
   if (!parsed.success) {
@@ -321,6 +326,8 @@ export async function retryEmission(
 ): Promise<ActionResult<EmissionOutcome>> {
   const { restaurant } = await requireComandaRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  const refused = featureRefusal(restaurant, "comanda");
+  if (refused) return { ok: false, error: refused };
 
   const order = await prisma.order.findFirst({
     where: { id: orderId, restaurantId: restaurant.id },
@@ -345,6 +352,8 @@ export async function retryEmission(
 export async function voidOrder(orderId: string): Promise<ActionResult> {
   const { restaurant } = await requireComandaRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  const refused = featureRefusal(restaurant, "comanda");
+  if (refused) return { ok: false, error: refused };
 
   const order = await prisma.order.findFirst({
     where: { id: orderId, restaurantId: restaurant.id },

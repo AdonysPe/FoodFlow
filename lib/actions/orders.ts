@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { featureRefusal } from "@/lib/auth/plan";
 import type { ActionResult } from "@/lib/actions/auth";
 
 const orderItemSchema = z.object({
@@ -63,6 +64,8 @@ export async function createOrder(input: {
 }): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  const refused = featureRefusal(restaurant, "orders");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = createOrderSchema.safeParse(input);
   if (!parsed.success) {
@@ -127,6 +130,10 @@ export async function createOrder(input: {
 export async function updateOrderStatus(orderId: string, rawStatus: string): Promise<ActionResult> {
   const { restaurant } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "No hay un restaurante vinculado a tu cuenta." };
+  // The kitchen board and the orders queue both move statuses; Servicio opens
+  // both together, so one feature covers either screen.
+  const refused = featureRefusal(restaurant, "orders");
+  if (refused) return { ok: false, error: refused };
 
   const parsed = statusSchema.safeParse(rawStatus);
   if (!parsed.success) return { ok: false, error: "Estado no válido." };
@@ -174,7 +181,7 @@ export type KitchenOrder = {
 // kitchen board can poll for fresh orders without a full page navigation.
 export async function getKitchenOrders(): Promise<KitchenOrder[]> {
   const { restaurant } = await requireClientRestaurant();
-  if (!restaurant) return [];
+  if (!restaurant || featureRefusal(restaurant, "kitchen")) return [];
 
   const orders = await prisma.order.findMany({
     where: {

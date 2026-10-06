@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
+import { featureRefusal } from "@/lib/auth/plan";
 import type { ActionResult } from "@/lib/actions/auth";
 import { billingCryptoReady, encryptSecret, tryDecryptSecret } from "@/lib/billing/crypto";
 import { inspectCertificate } from "@/lib/billing/certificate";
@@ -81,6 +82,8 @@ export async function saveBillingSettings(
 ): Promise<ActionResult<{ updatedAt: string }>> {
   const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  const refused = featureRefusal(restaurant, "orders");
+  if (refused) return { ok: false, error: refused };
   // Billing credentials are the owner's alone — a restaurant_admin passes
   // requireClientRestaurant() same as the owner, so this has to be checked
   // separately, same as app/api/restaurants/[id]/billing-config/route.ts.
@@ -225,6 +228,8 @@ export async function uploadCertificate(
 ): Promise<ActionResult<CertificateUploadResult>> {
   const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  const refused = featureRefusal(restaurant, "orders");
+  if (refused) return { ok: false, error: refused };
   if (!isOwner) {
     return { ok: false, error: "Solo el dueño de la cuenta puede cambiar la configuración de facturación." };
   }
@@ -331,6 +336,8 @@ export async function testOseConnection(): Promise<
 > {
   const { restaurant, isOwner } = await requireClientRestaurant();
   if (!restaurant) return { ok: false, error: "Tu cuenta no está vinculada a un restaurante." };
+  const refused = featureRefusal(restaurant, "orders");
+  if (refused) return { ok: false, error: refused };
   if (!isOwner) {
     return { ok: false, error: "Solo el dueño de la cuenta puede cambiar la configuración de facturación." };
   }
