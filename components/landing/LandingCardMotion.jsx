@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 
-const TARGETS = ".lb-story-card, .lb-mod-big, .lb-mod-small, .lb-pilot-card, .lb-plan, .lb-stepper";
+const TARGETS = ".lb-hero, .lb-story-card, .lb-mod-big, .lb-mod-small, .lb-pilot-card, .lb-plan, .lb-stepper";
 
-/** Start each illustration when it is read, and preserve its place offscreen. */
+/** Run illustrations and the hero background in view, preserving their place offscreen. */
 export default function LandingCardMotion() {
   useEffect(() => {
     const cards = [...document.querySelectorAll(`.lb #main :is(${TARGETS})`)];
