@@ -1625,3 +1625,44 @@
   .lb .lb-faq { gap: 28px; }
   .lb .lb-faq-item button { font-size: 17px; }
 }
+
+/* ------------------------------------------------------------------
+   /calculadora — design B ("Noche"): the calculator's own pieces.
+   Cards, fields and the floating "your own ordering site" demo.
+------------------------------------------------------------------ */
+.lb .lb-calc-card { flex: 1 1 440px; min-width: 0; box-sizing: border-box; border-radius: 30px; padding: 36px; display: flex; flex-direction: column; gap: 30px; background: rgba(243,239,230,0.045); border: 1px solid rgba(243,239,230,0.1); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); -webkit-backdrop-filter: saturate(150%) blur(24px); backdrop-filter: saturate(150%) blur(24px); }
+.lb .lb-calc-field { display: flex; flex-direction: column; gap: 8px; }
+.lb .lb-calc-hint { font-size: 13px; color: #a39b90; }
+.lb .lb-calc-field .lb-calc-hint:last-child { line-height: 1.4; }
+.lb .lb-calc-input { display: flex; align-items: center; gap: 10px; box-sizing: border-box; height: 56px; padding: 0 18px; border-radius: 18px; background: rgba(12,9,8,0.65); border: 1px solid rgba(243,239,230,0.14); transition: border-color .25s, box-shadow .25s; }
+.lb .lb-calc-input--lg { height: 60px; }
+.lb .lb-calc-input:focus-within { border-color: rgba(255,90,51,0.7); box-shadow: 0 0 0 4px rgba(255,90,51,0.14); }
+.lb .lb-calc-input input { flex: 1; min-width: 0; width: 100%; background: transparent; border: 0; outline: none; color: var(--lb-ink); font: inherit; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.lb .lb-calc-input--lg input { font-size: 24px; }
+.lb .lb-calc-input input::placeholder { color: #6f675e; font-weight: 500; }
+.lb .lb-range { width: 100%; height: 28px; margin: 0; accent-color: #ff5a33; }
+
+.lb .lb-calc-result { flex: 1 1 440px; min-width: 0; box-sizing: border-box; border-radius: 30px; padding: 36px; display: flex; flex-direction: column; gap: 18px; background: #f3efe6; color: #1c1a18; box-shadow: 0 50px 100px -40px rgba(255,90,51,0.45); }
+.lb .lb-calc-stat { flex: 1 1 160px; min-width: 0; border-radius: 18px; background: #fff; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.lb .lb-split { display: flex; height: 38px; border-radius: 12px; overflow: hidden; font-size: 13px; font-weight: 600; }
+.lb .lb-calc-cta { margin-top: auto; border: 0; background: #d4401d; color: #fff; padding: 16px 20px; border-radius: 999px; font-size: 16px; font-weight: 600; min-height: 48px; transition: background .25s, transform .25s; }
+.lb .lb-calc-cta:hover { background: #e24a26; transform: translateY(-1px); }
+.lb .lb-calc-links { max-width: 760px; margin: 14px auto 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 28px; }
+.lb .lb-calc-links a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: var(--lb-accent-ink); text-align: center; }
+.lb .lb-calc-links a:hover { color: #ff9a7d; }
+.lb .lb-calc-item { display: flex; gap: 14px; padding: 16px 0; border-top: 1px solid rgba(243,239,230,0.08); }
+
+.lb .lb-float { animation: lbk-float 7s ease-in-out infinite; }
+@keyframes lbk-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.lb .lb-site { position: relative; width: 100%; max-width: 440px; box-sizing: border-box; border-radius: 26px; background: #16110f; border: 1px solid rgba(243,239,230,0.1); overflow: hidden; box-shadow: 0 60px 120px -50px rgba(255,90,51,0.4); }
+.lb .wi { animation-duration: 9s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out; }
+.lb .wi1 { animation-name: lbk-wi1; } @keyframes lbk-wi1 { 0%,10% { background: transparent; } 14%,92% { background: rgba(255,90,51,0.12); } 96%,100% { background: transparent; } }
+.lb .wi2 { animation-name: lbk-wi2; } @keyframes lbk-wi2 { 0%,30% { background: transparent; } 34%,92% { background: rgba(255,90,51,0.12); } 96%,100% { background: transparent; } }
+.lb .wi3 { animation-name: lbk-wi3; } @keyframes lbk-wi3 { 0%,50% { background: transparent; } 54%,92% { background: rgba(255,90,51,0.12); } 96%,100% { background: transparent; } }
+.lb .wbar { animation-name: lbk-wbar; } @keyframes lbk-wbar { 0%,58% { opacity: 0; transform: translateY(16px); } 64%,92% { opacity: 1; transform: none; } 96%,100% { opacity: 0; transform: translateY(16px); } }
+
+@media (max-width: 640px) {
+  .lb .lb-calc-card, .lb .lb-calc-result { padding: 26px 22px; border-radius: 26px; }
+  .lb .lb-calc-card { gap: 24px; }
+  .lb .lb-calc-links { flex-direction: column; align-items: center; }
+}
