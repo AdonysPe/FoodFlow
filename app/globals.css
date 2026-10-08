@@ -1080,6 +1080,7 @@
   --lb-accent-ink: #ff7a57;
   --lb-accent-deep: #d4401d;
   --lb-mint: #3ddc97;
+  --lb-header-height: 61px;
   font-family: var(--font-sans);
   color: var(--lb-ink);
   background: var(--lb-bg);
@@ -1109,7 +1110,7 @@
   backdrop-filter: saturate(165%) blur(24px);
   border-bottom: 1px solid var(--lb-line);
 }
-.lb-nav { max-width: 1160px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.lb-nav { max-width: 1160px; margin: 0 auto; padding: 0 24px; height: calc(var(--lb-header-height) - 1px); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .lb-logo { display: flex; align-items: center; gap: 8px; color: var(--lb-ink); font-family: var(--font-display); font-weight: 650; font-size: 19px; letter-spacing: -0.03em; }
 .lb-logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lb-accent); display: inline-block; }
 .lb-nav-links { display: flex; align-items: center; gap: 28px; font-size: 13px; }
@@ -1137,14 +1138,35 @@
 .lb-mobile-menu .lb-pill-btn { margin-top: 14px; padding: 14px; font-size: 16px; }
 
 /* ------------------------------------------------------------- hero */
-.lb-hero { position: relative; padding: 104px 24px 96px; text-align: center; isolation: isolate; }
+.lb-hero {
+  --hero-gap: clamp(10px, 2.2svh, 28px);
+  position: relative;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--lb-header-height));
+  min-height: calc(100svh - var(--lb-header-height));
+  padding: clamp(16px, 3svh, 40px) max(24px, env(safe-area-inset-left)) clamp(16px, 3svh, 40px) max(24px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hero-gap);
+  text-align: center;
+  isolation: isolate;
+  scroll-margin-top: var(--lb-header-height);
+}
+.lb-hero-copy { display: flex; flex-direction: column; align-items: center; gap: var(--hero-gap); width: 100%; min-width: 0; }
+.lb-hero .lb-badge, .lb-hero .lb-hero-sub, .lb-hero .lb-hero-ctas { margin: 0; }
+.lb-hero .lb-h1 { font-size: clamp(44px, min(9vw, 13svh), 136px); }
+.lb-hero .lb-hero-sub { font-size: clamp(16px, 2.7svh, 20px); text-wrap: pretty; }
+.lb-hero .lb-pill-btn--lg { min-height: 44px; padding: clamp(10px, 1.8svh, 15px) 28px; }
+.lb-hero .lb-text-link { min-height: 44px; }
 .lb-hero-bg { position: absolute; z-index: -2; inset: 0; overflow: hidden; pointer-events: none; }
 .lb-orb1 { position: absolute; left: 8%; top: 40px; width: 560px; height: 420px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,90,51,0.16), rgba(255,90,51,0) 100%); filter: blur(40px); animation: lb-orb1 22s ease-in-out infinite; }
 .lb-orb2 { position: absolute; right: 6%; top: 120px; width: 620px; height: 460px; border-radius: 50%; background: radial-gradient(closest-side, rgba(176,98,60,0.18), rgba(176,98,60,0) 100%); filter: blur(46px); animation: lb-orb2 26s ease-in-out infinite; }
 @keyframes lb-orb1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(120px,40px) scale(1.15); } }
 @keyframes lb-orb2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-140px,-30px) scale(.9); } }
 .lb-floor {
-  position: absolute; left: -30%; right: -30%; top: 330px; height: 900px; perspective: 900px; perspective-origin: 50% 0%;
+  position: absolute; left: -30%; right: -30%; top: 42%; height: 900px; perspective: 900px; perspective-origin: 50% 0%;
   -webkit-mask-image: radial-gradient(ellipse 55% 70% at 50% 18%, #000 25%, transparent 75%);
   mask-image: radial-gradient(ellipse 55% 70% at 50% 18%, #000 25%, transparent 75%);
 }
@@ -1157,9 +1179,9 @@
 @keyframes lb-gridflow { from { background-position: 50% 0; } to { background-position: 50% 72px; } }
 .lb-trail { position: absolute; top: 0; left: calc(50% - 36px + var(--n, 0) * 72px); width: 2px; height: 90px; margin-left: -1px; border-radius: 2px; background: linear-gradient(to bottom, rgba(255,90,51,0), #ff5a33); box-shadow: 0 0 12px rgba(255,90,51,0.6); animation: lb-trail 7s cubic-bezier(.5,0,.6,1) infinite; }
 @keyframes lb-trail { 0% { transform: translateY(-100px); opacity: 0; } 10% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(820px); opacity: 0; } }
-.lb-horizon { position: absolute; left: 15%; right: 15%; top: 330px; height: 1px; background: linear-gradient(90deg, rgba(255,90,51,0), rgba(255,90,51,0.55), rgba(255,90,51,0)); animation: lb-horizon 6s ease-in-out infinite; }
+.lb-horizon { position: absolute; left: 15%; right: 15%; top: 42%; height: 1px; background: linear-gradient(90deg, rgba(255,90,51,0), rgba(255,90,51,0.55), rgba(255,90,51,0)); animation: lb-horizon 6s ease-in-out infinite; }
 @keyframes lb-horizon { 0%,100% { opacity: .35; transform: scaleX(.8); } 50% { opacity: .9; transform: scaleX(1); } }
-.lb-glow { position: absolute; z-index: -1; left: 50%; top: 360px; width: 900px; max-width: 160vw; height: 520px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255,90,51,0.38), rgba(255,90,51,0.08) 60%, rgba(255,90,51,0) 100%); filter: blur(30px); animation: lb-glow 9s ease-in-out infinite; }
+.lb-glow { position: absolute; z-index: -1; left: 50%; top: 45%; width: 900px; max-width: 160vw; height: 520px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255,90,51,0.38), rgba(255,90,51,0.08) 60%, rgba(255,90,51,0) 100%); filter: blur(30px); animation: lb-glow 9s ease-in-out infinite; }
 @keyframes lb-glow { 0%,100% { transform: translate(-50%,0) scale(1); opacity: .55; } 50% { transform: translate(-50%,-30px) scale(1.12); opacity: .8; } }
 
 .lb-badge { margin: 0 0 28px; display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: #d7d0c5; background: rgba(243,239,230,0.06); border: 1px solid rgba(243,239,230,0.1); padding: 7px 14px; border-radius: 999px; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
@@ -1178,7 +1200,7 @@
 
 /* the kitchen pass */
 .lb-pass {
-  position: relative; max-width: 1160px; margin: 84px auto 0; height: 300px; border-radius: 32px;
+  position: relative; width: 100%; max-width: 1160px; margin: 0; height: clamp(164px, 27svh, 300px); flex-shrink: 0; border-radius: 32px;
   background: rgba(243,239,230,0.045); border: 1px solid rgba(243,239,230,0.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 40px 90px -40px rgba(0,0,0,0.8);
   -webkit-backdrop-filter: saturate(150%) blur(26px); backdrop-filter: saturate(150%) blur(26px); overflow: hidden;
@@ -1405,7 +1427,6 @@
   /* Kitchen pass on a narrow rail: four 220px tickets are closer together
      than they are wide (spacing = (rail + 260) / 4), so they merged into one
      band. Two smaller tickets, half a loop apart, never touch. */
-  .lb-pass { height: 280px; }
   .lb-ticket-card { width: 168px; padding: 12px 13px; gap: 5px; }
   .lb-ticket-line { font-size: 13px; }
   .lb-ticket--extra { display: none; }
@@ -1413,7 +1434,7 @@
   .lb-pass-divider { top: 54px; }
   /* The floor and its trails anchor to the bottom, behind the pass, instead
      of streaking across the copy; outer trails fall outside the mask. */
-  .lb-floor, .lb-horizon { top: calc(100% - 520px); }
+  .lb-floor, .lb-horizon { top: 42%; }
   .lb-trail--far { display: none; }
   .lb-nav-links, .lb-nav-right .lb-nav-signin { display: none; }
   .lb-menu-btn { display: inline-flex; }
@@ -1425,12 +1446,19 @@
   .lb-nav { padding: 0 16px; gap: 12px; }
   .lb-nav-right .lb-pill-btn--sm { display: none; }
   .lb-mobile-menu { padding: 8px 16px 20px; }
-  .lb-hero { padding: 72px 16px 72px; }
-  .lb-hero-sub { font-size: 17px; }
+  .lb-hero { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
+  .lb-hero .lb-badge { font-size: 12px; padding: 6px 10px; }
+  .lb-hero .lb-h1 { font-size: clamp(44px, min(13vw, 10svh), 64px); }
+  .lb-hero .lb-hero-sub { font-size: 16px; }
+  .lb-hero .lb-hero-ctas { flex-direction: row; gap: 12px; }
+  .lb-hero .lb-hero-ctas .lb-pill-btn--lg { width: auto; padding-inline: 16px; font-size: 14px; }
+  .lb-hero .lb-text-link { font-size: 14px; }
   .lb-hero-ctas { gap: 18px; flex-direction: column; }
   .lb-hero-ctas .lb-pill-btn--lg { width: 100%; max-width: 340px; }
-  .lb-pass { margin-top: 56px; border-radius: 24px; }
-  .lb-pass-stages { font-size: 10px; letter-spacing: 0.04em; }
+  .lb-pass { border-radius: 24px; }
+  .lb-pass-stages { top: 16px; font-size: 10px; letter-spacing: 0.04em; }
+  .lb-pass-divider { top: 40px; }
+  .lb-pass-legend { bottom: 12px; gap: 10px; font-size: 10px; padding-inline: 8px; }
   .lb-marquee-track { font-size: 22px; gap: 40px; }
   .lb-section { padding: 96px 16px 24px; }
   .lb-head-row { gap: 18px; }
@@ -1450,6 +1478,34 @@
 }
 @media (max-width: 380px) {
   .lb-phone { width: 210px; }
+}
+
+/* A short landscape viewport has more room beside the copy than below it.
+   Keep readable controls and tickets instead of shrinking the whole section. */
+@media (min-width: 640px) and (max-height: 500px) {
+  .lb-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; padding-block: 12px; }
+  .lb-hero-copy { --hero-gap: 10px; }
+  .lb-hero .lb-h1 { font-size: clamp(36px, 6vw, 56px); }
+  .lb-hero .lb-badge { font-size: 11px; padding: 5px 10px; }
+  .lb-hero .lb-hero-sub { font-size: 14px; line-height: 1.4; max-width: 440px; }
+  .lb-hero .lb-hero-ctas { flex-direction: row; gap: 12px; }
+  .lb-hero .lb-hero-ctas .lb-pill-btn--lg { width: auto; font-size: 14px; padding: 10px 16px; }
+  .lb-hero .lb-text-link { font-size: 14px; }
+  .lb-pass { height: clamp(164px, 55svh, 240px); }
+  .lb-pass-legend { bottom: 18px; }
+}
+
+/* Compact help controls keep the first-screen demonstration unobstructed. */
+@media (max-width: 900px), (max-height: 740px) {
+  .lb .marketing-chat-launcher { width: 44px; height: 44px; padding: 4px; right: 12px; bottom: 12px; }
+  .lb .marketing-chat-launcher-label { display: none; }
+  .lb .marketing-whatsapp-launcher { width: 44px; height: 44px; right: auto; left: 12px; bottom: 12px; }
+}
+
+@media (max-width: 639px) and (max-height: 600px) {
+  .lb-hero { --hero-gap: 8px; padding-top: 8px; padding-bottom: max(60px, env(safe-area-inset-bottom)); }
+  .lb-hero .lb-hero-sub { line-height: 1.4; }
+  .lb-pass { height: 156px; }
 }
 
 /* ---------------------------------------------------- reduced motion

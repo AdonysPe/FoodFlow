@@ -65,52 +65,53 @@ export default function Hero() {
       </div>
       <div className="lb-glow" aria-hidden />
 
-      <p className="lb-badge lb-rise">
-        <span className="lb-dot lb-pulse" aria-hidden />
-        {h.badge}
-      </p>
+      <div className="lb-hero-copy">
+        <p className="lb-badge lb-rise">
+          <span className="lb-dot lb-pulse" aria-hidden />
+          {h.badge}
+        </p>
 
-      <h1 className="lb-h1">
-        {first.map(({ w, d }, i) => (
-          <span key={`a${i}`}>
-            <span className="lb-word" style={{ animationDelay: `${d}s` }}>
-              {w}
-            </span>{" "}
-          </span>
-        ))}
-        <br />
-        {second.map(({ w, d }, i) => (
-          <span key={`b${i}`}>
-            <span className="lb-word" style={{ animationDelay: `${d}s`, color: "#8a8278" }}>
-              {w}
-              {i === second.length - 1 && <span style={{ color: "#ff5a33" }}>.</span>}
+        <h1 className="lb-h1">
+          {first.map(({ w, d }, i) => (
+            <span key={`a${i}`}>
+              <span className="lb-word" style={{ animationDelay: `${d}s` }}>
+                {w}
+              </span>{" "}
             </span>
-            {i < second.length - 1 ? " " : ""}
-          </span>
-        ))}
-      </h1>
+          ))}
+          <br />
+          {second.map(({ w, d }, i) => (
+            <span key={`b${i}`}>
+              <span className="lb-word" style={{ animationDelay: `${d}s`, color: "#8a8278" }}>
+                {w}
+                {i === second.length - 1 && <span style={{ color: "#ff5a33" }}>.</span>}
+              </span>
+              {i < second.length - 1 ? " " : ""}
+            </span>
+          ))}
+        </h1>
 
-      <p className="lb-hero-sub lb-rise" style={{ animationDelay: ".75s" }}>
-        {h.sub}
-      </p>
+        <p className="lb-hero-sub lb-rise" style={{ animationDelay: ".75s" }}>
+          {h.sub}
+        </p>
 
-      <div className="lb-hero-ctas lb-rise" style={{ animationDelay: ".9s" }}>
-        <button type="button" className="lb-pill-btn lb-pill-btn--lg" onClick={onReserve}>
-          {h.cta}
-        </button>
-        {/* The demo video opens from here: same dialog as before the redesign. */}
-        <button
-          type="button"
-          className="lb-text-link"
-          onClick={() => setDemoOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={demoOpen}
-        >
-          {h.secondary}
-          <IconPlay className="h-[18px] w-[18px]" />
-        </button>
+        <div className="lb-hero-ctas lb-rise" style={{ animationDelay: ".9s" }}>
+          <button type="button" className="lb-pill-btn lb-pill-btn--lg" onClick={onReserve}>
+            {h.cta}
+          </button>
+          {/* The demo video opens from here: same dialog as before the redesign. */}
+          <button
+            type="button"
+            className="lb-text-link"
+            onClick={() => setDemoOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={demoOpen}
+          >
+            {h.secondary}
+            <IconPlay className="h-[18px] w-[18px]" />
+          </button>
+        </div>
       </div>
-
       <div className="lb-pass lb-rise" style={{ animationDelay: "1s" }} role="img" aria-label={pass.aria}>
         <div className="lb-pass-stages">
           {pass.stages.map((stage, i) => (

@@ -188,7 +188,8 @@ export default function ChatWidget() {
             whileHover={{ y: -3 }}
             whileTap={{ scale: 0.97 }}
             aria-haspopup="dialog"
-            className="liquid-soft group fixed bottom-5 right-5 z-[70] flex items-center gap-2.5 rounded-full py-2.5 pl-2.5 pr-5 text-[14.5px] font-semibold text-cream/90 transition-colors duration-300 hover:bg-cream/[0.1] hover:text-fg sm:bottom-6 sm:right-6"
+            aria-label={c.launcher}
+            className="marketing-chat-launcher liquid-soft group fixed bottom-5 right-5 z-[70] flex items-center gap-2.5 rounded-full py-2.5 pl-2.5 pr-5 text-[14.5px] font-semibold text-cream/90 transition-colors duration-300 hover:bg-cream/[0.1] hover:text-fg sm:bottom-6 sm:right-6"
           >
             <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-chat-500/18 ring-1 ring-inset ring-chat-400/35">
               <IconChat className="h-4 w-4 text-chat-ink" />
@@ -197,7 +198,7 @@ export default function ChatWidget() {
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-chat-400" />
               </span>
             </span>
-            {c.launcher}
+            <span className="marketing-chat-launcher-label">{c.launcher}</span>
           </motion.button>
         )}
       </AnimatePresence>
