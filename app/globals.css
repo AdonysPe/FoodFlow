@@ -1081,6 +1081,7 @@
   --lb-accent-deep: #d4401d;
   --lb-mint: #3ddc97;
   --lb-header-height: 61px;
+  padding-top: var(--lb-header-height);
   font-family: var(--font-sans);
   color: var(--lb-ink);
   background: var(--lb-bg);
@@ -1102,18 +1103,21 @@
 
 /* -------------------------------------------------------------- nav */
 .lb-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 40;
   background: rgba(12, 9, 8, 0.62);
   -webkit-backdrop-filter: saturate(165%) blur(24px);
   backdrop-filter: saturate(165%) blur(24px);
   border-bottom: 1px solid var(--lb-line);
 }
+.lb-header.is-open { z-index: 78; }
 .lb-nav { max-width: 1160px; margin: 0 auto; padding: 0 24px; height: calc(var(--lb-header-height) - 1px); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .lb-logo { display: flex; align-items: center; gap: 8px; color: var(--lb-ink); font-family: var(--font-display); font-weight: 650; font-size: 19px; letter-spacing: -0.03em; }
 .lb-logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lb-accent); display: inline-block; }
-.lb-nav-links { display: flex; align-items: center; gap: 28px; font-size: 13px; }
+.lb-nav-links { display: flex; align-items: center; gap: clamp(12px, 1.8vw, 24px); font-size: 13px; white-space: nowrap; }
 .lb-nav-links a { color: #cfc7bb; transition: color .2s; }
 .lb-nav-links a:hover { color: var(--lb-ink); }
 .lb-nav-right { display: flex; align-items: center; gap: 14px; }
@@ -1129,6 +1133,14 @@
 .lb-menu-btn { display: none; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--lb-line); background: rgba(243, 239, 230, 0.04); color: var(--lb-ink); align-items: center; justify-content: center; }
 .lb-mobile-menu {
   display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: calc(100svh - var(--lb-header-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgba(12, 9, 8, 0.96);
   border-top: 1px solid var(--lb-line);
   padding: 12px 24px 22px;
   flex-direction: column;
@@ -1438,6 +1450,11 @@
   .lb-section { padding-top: 120px; }
   .lb-reserve { padding: 140px 24px 110px; }
 }
+@media (max-width: 1024px) {
+  .lb-nav-links { display: none; }
+  .lb-menu-btn { display: inline-flex; }
+  .lb-header.is-open .lb-mobile-menu { display: flex; }
+}
 @media (max-width: 900px) {
   /* Kitchen pass on a narrow rail: four 220px tickets are closer together
      than they are wide (spacing = (rail + 260) / 4), so they merged into one
@@ -1449,9 +1466,6 @@
   .lb-pass-divider { top: 54px; }
   /* Outer trails stay outside the narrow viewport's mask. */
   .lb-trail--far { display: none; }
-  .lb-nav-links, .lb-nav-right .lb-nav-signin { display: none; }
-  .lb-menu-btn { display: inline-flex; }
-  .lb-header.is-open .lb-mobile-menu { display: flex; }
   .lb-stepper { display: none; }
   .lb-story-cards { margin-top: 48px; }
 }

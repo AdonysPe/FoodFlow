@@ -7,20 +7,21 @@ import { IconMenu, IconX } from "@/components/ui/Icons";
 import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-// Paired with t.landing.nav.links by index.
-const HREFS = ["#pantallas", "#modulos", "#piloto", "#planes"];
+// Same destinations and translated labels as the site's shared navbar.
+const HREFS = ["/#features", "/#product", "/calculadora", "/precios", "/preguntas", "/nosotros"];
 
 /**
  * The home page's own header, as the prototype draws it: wordmark with the
- * vermilion dot, four in-page links, Entrar, and the Reservar pill. Two
+ * vermilion dot, the six original links, Entrar, and the Reservar pill. Two
  * things the prototype leaves out are kept so no flow breaks: the language
- * switch, and a menu for phones (below 900px the links fold into it).
+ * switch, and a menu for phones and tablets (up to 1024px).
  *
  * "Reservar" opens the same lead form the rest of the site uses.
  */
 export default function LandingNav() {
   const { t } = useLanguage();
   const nav = t.landing.nav;
+  const links = t.nav.links.map((label, i) => ({ label, href: HREFS[i] }));
   const { openLeadForm } = useLeadCapture();
   const [open, setOpen] = useState(false);
 
@@ -29,7 +30,7 @@ export default function LandingNav() {
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => e.key === "Escape" && setOpen(false);
-    const onResize = () => window.innerWidth > 900 && setOpen(false);
+    const onResize = () => window.innerWidth > 1024 && setOpen(false);
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", onResize);
     return () => {
@@ -52,10 +53,10 @@ export default function LandingNav() {
         </a>
 
         <div className="lb-nav-links">
-          {nav.links.map((label, i) => (
-            <a key={i} href={HREFS[i]}>
+          {links.map(({ label, href }) => (
+            <Link key={href} href={href} prefetch={false}>
               {label}
-            </a>
+            </Link>
           ))}
           <Link href="/login">{nav.signIn}</Link>
         </div>
@@ -79,10 +80,10 @@ export default function LandingNav() {
       </nav>
 
       <div id="lb-mobile-menu" className="lb-mobile-menu">
-        {nav.links.map((label, i) => (
-          <a key={i} href={HREFS[i]} onClick={() => setOpen(false)}>
+        {links.map(({ label, href }) => (
+          <Link key={href} href={href} prefetch={false} onClick={() => setOpen(false)}>
             {label}
-          </a>
+          </Link>
         ))}
         <Link href="/login" onClick={() => setOpen(false)}>
           {nav.signIn}
