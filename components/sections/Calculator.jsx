@@ -1,17 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useId, useMemo, useState } from "react";
-import { AnimatePresence, m as motion } from "framer-motion";
-import Container from "@/components/ui/Container";
-import Button from "@/components/ui/Button";
-import SectionHeading from "@/components/ui/SectionHeading";
-import Reveal from "@/components/ui/Reveal";
-import { IconArrowRight, IconCheck } from "@/components/ui/Icons";
 import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { formatCurrency, formatSoles } from "@/lib/format";
-import { EASE } from "@/lib/motion";
+import { formatCurrency } from "@/lib/format";
 
 const COMMISSION_MIN = 20;
 const COMMISSION_MAX = 35;
@@ -27,17 +21,29 @@ function groupDigits(value) {
   return value > 0 ? value.toLocaleString("es-PE") : "";
 }
 
+/** "Tu propia web de pedidos, con tu nombre" → two lines, the second muted. */
+function splitTitle(title) {
+  const at = title.indexOf(", ");
+  return at === -1 ? [title, ""] : [`${title.slice(0, at)},`, `${title.slice(at + 2)}.`];
+}
+
 /**
- * The lead magnet: what delivery apps take, in the visitor's own numbers.
+ * /calculadora, design B ("Noche"), as approved in the prototype: the
+ * headline, the two cards (your numbers / what you lose), the note and its two
+ * guide links, the "your own ordering site" demo, and the closing call.
  *
- * The result is live and costs nothing — no name, no email, no sign-up. Only
- * once someone has seen their own figure does the form appear, carrying that
- * figure with it so the first WhatsApp message already has the number in it.
+ * The lead magnet works as before. The result is live and free — no name, no
+ * email — and starts empty on purpose: the figure travels to the lead form
+ * (`source: "calculadora"`, `loss`) and scores the lead, so it must be one
+ * the visitor typed, never an example. "Quiero recuperarlo" only exists once
+ * there is a result.
+ *
+ * `as` is forwarded so /calculadora keeps the h1.
  */
-// `as` is forwarded so /calculadora can claim the h1; h2 anywhere else.
-export default function Calculator({ as }) {
+export default function Calculator({ as: Heading = "h1" }) {
   const { t } = useLanguage();
-  const copy = t.calculator;
+  const c = t.calculator;
+  const web = t.customSite;
   const { openLeadForm } = useLeadCapture();
 
   const [sales, setSales] = useState(0);
@@ -51,232 +57,279 @@ export default function Calculator({ as }) {
 
   const { monthly, yearly, perOrder } = useMemo(() => {
     const month = sales * (commission / 100);
-    return {
-      monthly: month,
-      yearly: month * 12,
-      perOrder: orders > 0 ? month / orders : null,
-    };
+    return { monthly: month, yearly: month * 12, perOrder: orders > 0 ? month / orders : null };
   }, [sales, commission, orders]);
-
   const hasResult = sales > 0;
-  const fill = ((commission - COMMISSION_MIN) / (COMMISSION_MAX - COMMISSION_MIN)) * 100;
+  const [webTitle, webTitleMuted] = splitTitle(web.title);
 
   return (
-    <section
-      id="calculadora"
-      className="relative scroll-mt-24 overflow-x-clip pt-32 pb-20 sm:pt-40 sm:pb-24"
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-16 -z-10 h-[26rem] w-[48rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,90,51,0.1),transparent_65%)] blur-3xl"
-      />
+    <>
+      {/* ------------------------------------------------------------ hero */}
+      <section className="lb-pr-hero" style={{ paddingTop: 96 }}>
+        <div className="lb-glow" aria-hidden style={{ top: 20, height: 520 }} />
+        <p className="lb-eyebrow-accent lb-rise">{c.eyebrow}</p>
+        <Heading className="lb-pr-h1" style={{ fontSize: "clamp(44px, 6.6vw, 96px)", lineHeight: 0.95, maxWidth: 980 }}>
+          {c.line1.map((w, i) => (
+            <span key={`a${i}`}>
+              <span className="lb-word" style={{ animationDelay: `${0.05 + i * 0.1}s` }}>
+                {w}
+              </span>{" "}
+            </span>
+          ))}
+          <br />
+          {c.line2.map((w, i) => (
+            <span key={`b${i}`}>
+              <span className="lb-word" style={{ animationDelay: `${0.4 + i * 0.1}s`, color: "#8a8278" }}>
+                {w}
+              </span>{" "}
+            </span>
+          ))}
+          {c.line3.map((w, i) => (
+            <span key={`c${i}`}>
+              <span className="lb-word" style={{ animationDelay: `${0.7 + i * 0.1}s` }}>
+                {w}
+                {i === c.line3.length - 1 && <span style={{ color: "#ff5a33" }}>?</span>}
+              </span>
+              {i < c.line3.length - 1 ? " " : ""}
+            </span>
+          ))}
+        </Heading>
+        <p className="lb-pr-sub lb-rise" style={{ animationDelay: ".9s", maxWidth: 600, fontSize: 19 }}>
+          {c.description}
+        </p>
+      </section>
 
-      <Container>
-        <SectionHeading
-          as={as}
-          eyebrow={copy.eyebrow}
-          title={copy.title}
-          description={copy.description}
-        />
+      {/* ----------------------------------------------------------- cards */}
+      <section className="lb-pr-block" style={{ paddingTop: 64 }}>
+        <div className="lb-row lb-rise" style={{ alignItems: "stretch", animationDelay: "1s" }}>
+          <div className="lb-calc-card">
+            <span className="lb-eyebrow">{c.yourNumbers}</span>
 
-        <div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:mt-14 lg:grid-cols-2">
-          {/* ------------------------------------------------ your numbers */}
-          <Reveal>
-            <div className="h-full rounded-3xl border border-cream/10 bg-ink-800/60 p-6 shadow-card sm:p-7">
-              <div>
-                <label
-                  htmlFor={salesId}
-                  className="text-[13px] font-semibold text-cream/75"
-                >
-                  {copy.salesLabel}
-                </label>
-                <div className="relative mt-1.5">
-                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[15px] font-medium text-cream/55">
-                    S/
-                  </span>
-                  <input
-                    id={salesId}
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    placeholder="12,000"
-                    value={groupDigits(sales)}
-                    onChange={(e) => setSales(toAmount(e.target.value))}
-                    className="h-12 w-full rounded-xl border border-cream/12 bg-ink-950/80 pl-11 pr-3.5 text-[17px] font-semibold text-cream tabular-nums placeholder:font-normal placeholder:text-cream/30 outline-none transition-colors duration-200 focus:border-accent-400/60"
-                  />
-                </div>
-                <p className="mt-1.5 text-[12.5px] text-cream/55">{copy.salesHint}</p>
-              </div>
-
-              <div className="mt-6">
-                <div className="flex items-baseline justify-between gap-3">
-                  <label
-                    htmlFor={commissionId}
-                    className="text-[13px] font-semibold text-cream/75"
-                  >
-                    {copy.commissionLabel}
-                  </label>
-                  <output
-                    htmlFor={commissionId}
-                    className="font-display text-[19px] font-bold tabular-nums text-accent-ink"
-                  >
-                    {commission}%
-                  </output>
-                </div>
+            <div className="lb-calc-field">
+              <label htmlFor={salesId} style={{ fontSize: 15, fontWeight: 600 }}>
+                {c.salesLabel}
+              </label>
+              <div className="lb-calc-input lb-calc-input--lg">
+                <span style={{ fontSize: 18, color: "#a39b90", fontWeight: 600 }}>S/</span>
                 <input
-                  id={commissionId}
-                  type="range"
-                  min={COMMISSION_MIN}
-                  max={COMMISSION_MAX}
-                  step={1}
-                  value={commission}
-                  onChange={(e) => setCommission(Number(e.target.value))}
-                  style={{ "--pct": `${fill}%` }}
-                  className="range-accent mt-1"
+                  id={salesId}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="12,000"
+                  value={groupDigits(sales)}
+                  onChange={(e) => setSales(toAmount(e.target.value))}
                 />
-                <div className="flex justify-between text-[11.5px] font-medium text-cream/35">
-                  <span>{COMMISSION_MIN}%</span>
-                  <span>{COMMISSION_MAX}%</span>
-                </div>
-                <p className="mt-1.5 text-[12.5px] text-cream/55">
-                  {copy.commissionHint}
-                </p>
               </div>
+              <span className="lb-calc-hint">{c.salesHint}</span>
+            </div>
 
-              <div className="mt-6">
-                <label
-                  htmlFor={ordersId}
-                  className="flex items-baseline justify-between gap-2 text-[13px] font-semibold text-cream/75"
-                >
-                  {copy.ordersLabel}
-                  <span className="text-[11.5px] font-medium uppercase tracking-[0.12em] text-cream/55">
-                    {copy.ordersOptional}
-                  </span>
+            <div className="lb-calc-field">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+                <label htmlFor={commissionId} style={{ fontSize: 15, fontWeight: 600 }}>
+                  {c.commissionLabel}
                 </label>
+                <output htmlFor={commissionId} className="lb-display" style={{ fontSize: 30, letterSpacing: "-0.04em", color: "#ff5a33" }}>
+                  {commission}%
+                </output>
+              </div>
+              <input
+                id={commissionId}
+                type="range"
+                min={COMMISSION_MIN}
+                max={COMMISSION_MAX}
+                step={1}
+                value={commission}
+                onChange={(e) => setCommission(Number(e.target.value))}
+                className="lb-range"
+              />
+              <div className="lb-calc-hint" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <span>{COMMISSION_MIN}%</span>
+                <span style={{ textAlign: "center" }}>{c.commissionHint}</span>
+                <span>{COMMISSION_MAX}%</span>
+              </div>
+            </div>
+
+            <div className="lb-calc-field">
+              <label htmlFor={ordersId} style={{ fontSize: 15, fontWeight: 600 }}>
+                {c.ordersLabel} <span style={{ fontWeight: 400, color: "#8a8278" }}>· {c.ordersOptional}</span>
+              </label>
+              <div className="lb-calc-input">
                 <input
                   id={ordersId}
-                  type="text"
                   inputMode="numeric"
                   autoComplete="off"
                   placeholder="320"
                   value={groupDigits(orders)}
                   onChange={(e) => setOrders(toAmount(e.target.value))}
-                  className="mt-1.5 h-12 w-full rounded-xl border border-cream/12 bg-ink-950/80 px-3.5 text-[17px] font-semibold text-cream tabular-nums placeholder:font-normal placeholder:text-cream/30 outline-none transition-colors duration-200 focus:border-accent-400/60"
                 />
-                <p className="mt-1.5 text-[12.5px] text-cream/55">{copy.ordersHint}</p>
               </div>
+              <span className="lb-calc-hint">{c.ordersHint}</span>
             </div>
-          </Reveal>
+          </div>
 
-          {/* ----------------------------------------------------- the bill */}
-          <Reveal delay={0.1}>
-            <div className="flex h-full flex-col rounded-3xl border border-accent-400/35 bg-accent-400/[0.06] p-6 shadow-lift sm:p-7">
-              <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/55">
-                {copy.resultLabel}
-              </p>
-
-              <div className="mt-5 flex-1">
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {hasResult ? (
-                    <motion.div
-                      key="figures"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, ease: EASE }}
-                    >
-                      <p className="font-display text-[2.6rem] font-extrabold leading-none tracking-[-0.04em] tabular-nums text-accent-ink sm:text-[3.1rem]">
-                        {formatSoles(monthly)}
-                      </p>
-                      <p className="mt-1 text-[14px] font-medium text-cream/60">
-                        {copy.perMonth}
-                      </p>
-
-                      <p className="mt-5 font-display text-[1.6rem] font-bold leading-none tracking-[-0.03em] tabular-nums text-fg sm:text-[1.8rem]">
-                        {formatSoles(yearly)}
-                      </p>
-                      <p className="mt-1 text-[14px] font-medium text-cream/60">
-                        {copy.perYear}
-                      </p>
-
-                      {perOrder !== null && (
-                        <motion.p
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.35, ease: EASE }}
-                          className="mt-5 text-[13.5px] leading-relaxed text-cream/65"
-                        >
-                          {/* cents matter here: the whole point is how
-                              small a number gets taken from each order */}
-                          {copy.perOrder.replace("{amount}", formatCurrency(perOrder))}
-                        </motion.p>
-                      )}
-                    </motion.div>
-                  ) : (
-                    <motion.p
-                      key="empty"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3, ease: EASE }}
-                      className="text-[15px] leading-relaxed text-cream/55"
-                    >
-                      {copy.empty}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
+          <div className="lb-calc-result" aria-live="polite">
+            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "#5f5a54", textTransform: "uppercase" }}>
+              {c.resultLabel}
+            </span>
+            {!hasResult ? (
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontSize: 18, color: "#5f5a54", minHeight: 220 }}>
+                {c.empty}
               </div>
-
-              <p className="mt-7 flex items-start gap-2.5 border-t border-cream/12 pt-5 text-[14.5px] font-semibold leading-snug text-fg">
-                <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-mint-ink" />
-                {copy.foodflow}
-              </p>
-
-              <Button
-                type="button"
-                size="lg"
-                disabled={!hasResult}
-                onClick={() =>
-                  openLeadForm({
-                    source: "calculadora",
-                    loss: { mensual: Math.round(monthly), anual: Math.round(yearly) },
-                  })
-                }
-                className="mt-5 w-full"
-                icon={
-                  <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                }
-              >
-                {copy.cta}
-              </Button>
-
-              <p className="mt-3 text-center text-[12.5px] text-cream/55">
-                {copy.ctaNote}
-              </p>
-            </div>
-          </Reveal>
+            ) : (
+              <>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span className="lb-display lb-swap" key={Math.round(monthly)} style={{ fontSize: "clamp(44px, 5vw, 78px)", letterSpacing: "-0.06em", lineHeight: 0.95, color: "#c9391a" }}>
+                    {formatCurrency(monthly)}
+                  </span>
+                  <span style={{ fontSize: 15, color: "#5f5a54" }}>{c.perMonth}</span>
+                </div>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <div className="lb-calc-stat">
+                    <span style={{ fontSize: 13, color: "#5f5a54" }}>{c.perYear}</span>
+                    <span className="lb-display lb-swap" key={Math.round(yearly)} style={{ fontSize: 28, letterSpacing: "-0.04em" }}>
+                      {formatCurrency(yearly)}
+                    </span>
+                  </div>
+                  <div className="lb-calc-stat">
+                    <span style={{ fontSize: 13, color: "#5f5a54" }}>{c.perOrder}</span>
+                    <span className="lb-display lb-swap" key={perOrder === null ? "-" : Math.round(perOrder * 100)} style={{ fontSize: 28, letterSpacing: "-0.04em" }}>
+                      {perOrder === null ? "—" : formatCurrency(perOrder)}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+                  <span style={{ fontSize: 13, color: "#5f5a54" }}>{c.split.label}</span>
+                  <div className="lb-split" style={{ background: "#e1dbd4" }}>
+                    <div style={{ display: "flex", alignItems: "center", paddingLeft: 12, background: "#d4401d", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", transition: "width .5s cubic-bezier(.2,.8,.2,1)", width: `${commission}%` }}>
+                      {c.split.app.replace("{n}", String(commission))}
+                    </div>
+                    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 12, color: "#1c1a18", whiteSpace: "nowrap" }}>
+                      {c.split.keep.replace("{n}", String(100 - commission))}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 13, color: "#5f5a54" }}>{c.split.withFoodflow}</span>
+                  <div className="lb-split" style={{ background: "#1c1a18", color: "#f3efe6", justifyContent: "space-between", alignItems: "center", padding: "0 12px" }}>
+                    <span>{c.split.zero}</span>
+                    <span>{c.split.all}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="lb-calc-cta"
+                  onClick={() =>
+                    openLeadForm({
+                      source: "calculadora",
+                      loss: { mensual: Math.round(monthly), anual: Math.round(yearly) },
+                    })
+                  }
+                >
+                  {c.cta}
+                </button>
+                <span style={{ textAlign: "center", fontSize: 12, color: "#5f5a54" }}>{c.ctaNote}</span>
+              </>
+            )}
+          </div>
         </div>
 
-        <Reveal delay={0.16}>
-          <p className="mx-auto mt-8 max-w-2xl text-center text-[12.5px] leading-relaxed text-cream/55">
-            {copy.disclaimer}
-          </p>
-        </Reveal>
+        <p style={{ maxWidth: 760, margin: "24px auto 0", textAlign: "center", fontSize: 13, lineHeight: 1.55, color: "#8a8278" }}>{c.disclaimer}</p>
+        <div className="lb-calc-links">
+          <Link href="/comisiones-rappi-pedidosya">{c.guideLink} ›</Link>
+          <Link href="/alternativa-a-rappi">{t.rappiAlternative.eyebrow} ›</Link>
+        </div>
+      </section>
 
-        {/* Someone who just saw their own number is the reader most likely to
-            want the breakdown behind it, so the bridge sits right here. */}
-        <Reveal delay={0.2}>
-          <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-3 text-center">
-            <Link
-              href="/comisiones-rappi-pedidosya"
-              className="text-[13.5px] text-accent-ink underline decoration-accent-400/40 underline-offset-4 transition-colors hover:text-fg"
-            >
-              {copy.guideLink}
-            </Link>
-            <Link href="/alternativa-a-rappi" className="text-[13.5px] text-accent-ink underline decoration-accent-400/40 underline-offset-4 transition-colors hover:text-fg">
-              {t.rappiAlternative.eyebrow}
-            </Link>
+      {/* ------------------------------------------------- your own site */}
+      <section className="lb-pr-block" style={{ paddingTop: 150 }}>
+        <div style={{ display: "flex", gap: 56, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ flex: "1 1 440px", minWidth: 0, display: "flex", flexDirection: "column", gap: 18 }}>
+            <span className="lb-eyebrow-accent lb-reveal" style={{ margin: 0 }}>
+              {web.eyebrow} · {web.productName}
+            </span>
+            <h2 className="lb-h2 lb-reveal" style={{ fontSize: "clamp(40px, 5vw, 68px)" }}>
+              {webTitle}
+              <br />
+              <span>{webTitleMuted}</span>
+            </h2>
+            <p className="lb-reveal" style={{ margin: 0, fontSize: 18, lineHeight: 1.55, color: "#b9b1a5", maxWidth: 480 }}>
+              {web.description}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
+              {web.items.map((item, i) => (
+                <div key={i} className="lb-reveal lb-calc-item" style={{ borderBottom: i === web.items.length - 1 ? "1px solid rgba(243,239,230,0.08)" : undefined }}>
+                  <span className="lb-mono" style={{ fontSize: 13, color: "#ff7a57" }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <span style={{ fontSize: 17, fontWeight: 600 }}>{item.title}</span>
+                    <span style={{ fontSize: 15, lineHeight: 1.5, color: "#b9b1a5" }}>{item.copy}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: 13, color: "#8a8278" }}>{web.footnote}</span>
           </div>
-        </Reveal>
-      </Container>
-    </section>
+
+          <div style={{ flex: "1 1 400px", minWidth: 0, display: "flex", justifyContent: "center" }}>
+            <div className="lb-float lb-site">
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "12px 14px", borderBottom: "1px solid rgba(243,239,230,0.07)" }}>
+                {[0, 1, 2].map((d) => (
+                  <span key={d} style={{ width: 9, height: 9, borderRadius: "50%", background: "#3a302b" }} />
+                ))}
+                <span className="lb-mono" style={{ marginLeft: 10, flex: 1, minWidth: 0, textAlign: "center", fontSize: 11, color: "#a39b90", background: "#0c0908", borderRadius: 8, padding: "5px 6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {web.demo.browserUrl}
+                </span>
+              </div>
+              <div style={{ position: "relative", height: 150 }}>
+                <Image src="/demo/carta/lomo-saltado.webp" alt="" fill sizes="(max-width: 640px) calc(100vw - 32px), 440px" loading="lazy" decoding="async" style={{ objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(22,17,15,0) 30%, #16110f 100%)" }} />
+                <div style={{ position: "absolute", left: 18, right: 18, bottom: 12, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span className="lb-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
+                    {web.demo.brand}
+                  </span>
+                  <span style={{ fontSize: 12, color: "#cfc7bb" }}>
+                    {web.demo.tagline} · {web.demo.rating}
+                  </span>
+                </div>
+              </div>
+              <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, background: "#f3efe6", color: "#0c0908", padding: "6px 12px", borderRadius: 999 }}>{web.demo.ctaMenu}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, border: "1px solid rgba(243,239,230,0.2)", padding: "6px 12px", borderRadius: 999 }}>{web.demo.ctaReserve}</span>
+                </div>
+                {web.demo.items.map((item, i) => (
+                  <div key={i} className={`wi wi${i + 1}`} style={{ display: "flex", justifyContent: "space-between", fontSize: 14, padding: 10, borderRadius: 12 }}>
+                    <span>{item.name}</span>
+                    <span style={{ color: "#cfc7bb" }}>{item.price}</span>
+                  </div>
+                ))}
+                <div className="wi wbar" style={{ marginTop: 6, background: "#ff5a33", color: "#0c0908", borderRadius: 14, padding: "12px 14px", display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 600 }}>
+                  <span>{web.demo.orderBar}</span>
+                  <span>{web.demo.orderButton}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------- close */}
+      <section className="lb-reserve">
+        <div className="lb-reserve-glow" aria-hidden />
+        <h2 className="lb-h2-xl lb-reveal" style={{ fontSize: "clamp(44px, 7vw, 100px)", lineHeight: 0.95 }}>
+          {c.closing.line1}
+          <br />
+          <span>{c.closing.line2}</span>
+        </h2>
+        <div className="lb-hero-ctas lb-reveal">
+          <button type="button" className="lb-pill-btn lb-pill-btn--lg" onClick={() => openLeadForm({ source: "web_form" })}>
+            {c.closing.cta}
+          </button>
+          <Link href="/precios" className="lb-text-link">
+            {c.closing.plans}
+          </Link>
+        </div>
+        <p style={{ margin: "56px 0 0", fontSize: 12, color: "#8a8278" }}>{c.trademarks}</p>
+      </section>
+    </>
   );
 }
