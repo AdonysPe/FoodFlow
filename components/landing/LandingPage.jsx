@@ -88,7 +88,7 @@ function Pilot({ p }) {
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {p.chips.map((chip, i) => (
-                <span key={i} className="lb-chip pv chip48" style={{ animationDelay: `${i * 0.35}s` }}>
+                <span key={i} className="lb-chip pv chip48" style={{ animationDelay: `${i * 0.28}s` }}>
                   <Check width={3} size={12} />
                   {chip}
                 </span>

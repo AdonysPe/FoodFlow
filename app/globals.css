@@ -1213,13 +1213,13 @@
 @keyframes lb-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .lb-dash { animation: lb-dash 1.2s linear infinite; }
 @keyframes lb-dash { to { stroke-dashoffset: -24; } }
-.lb-ticket { position: absolute; top: 50%; margin-top: -46px; left: -260px; animation: lb-pass 14s linear infinite; }
+.lb-ticket { position: absolute; top: 50%; margin-top: -46px; left: -260px; animation: lb-pass 11.2s linear infinite; }
 @keyframes lb-pass { 0% { left: -260px; opacity: 0; } 6% { opacity: 1; } 92% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
 .lb-ticket-card { width: 220px; box-sizing: border-box; text-align: left; background: #f3efe6; color: #1c1a18; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 20px 40px -18px rgba(0,0,0,0.7); }
 .lb-ticket-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 13px; font-weight: 600; text-transform: uppercase; }
 .lb-ticket-line { font-size: 14px; }
 .lb-ticket-line.is-note { color: #736d66; }
-.lb-state { width: 9px; height: 9px; border-radius: 50%; animation: lb-state 14s linear infinite; }
+.lb-state { width: 9px; height: 9px; border-radius: 50%; animation: lb-state 11.2s linear infinite; }
 @keyframes lb-state { 0%,36% { background: #6f675e; } 40%,72% { background: #f3efe6; box-shadow: 0 0 0 1px #c9c1b6; } 76%,100% { background: #ff5a33; } }
 .lb-pass-legend { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; gap: 18px; font-size: 12px; color: var(--lb-mute); flex-wrap: wrap; padding: 0 16px; }
 .lb-pass-legend span { display: inline-flex; align-items: center; gap: 6px; }
@@ -1297,8 +1297,8 @@
 .lb-mini-table.is-free { border: 1px solid rgba(243,239,230,0.2); color: #a39b90; }
 .lb-pay-row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 8px; }
 
-/* the 12-second story clock */
-.lb .sb { animation-duration: 12s; animation-iteration-count: infinite; animation-timing-function: cubic-bezier(.45,0,.2,1); animation-fill-mode: both; }
+/* the 9.6-second story clock */
+.lb .sb { animation-duration: 9.6s; animation-iteration-count: infinite; animation-timing-function: cubic-bezier(.45,0,.2,1); animation-fill-mode: both; }
 .lb .hl1 { opacity: 0; animation-name: lbk-hl1; } @keyframes lbk-hl1 { 0%,24% { opacity: 1; } 28%,100% { opacity: 0; } }
 .lb .hl2 { opacity: 0; animation-name: lbk-hl2; } @keyframes lbk-hl2 { 0%,25% { opacity: 0; } 29%,56% { opacity: 1; } 60%,100% { opacity: 0; } }
 .lb .hl3 { opacity: 0; animation-name: lbk-hl3; } @keyframes lbk-hl3 { 0%,57% { opacity: 0; } 61%,94% { opacity: 1; } 98%,100% { opacity: 0; } }
@@ -1336,7 +1336,7 @@
 .lb-table-card img { width: 100%; height: 70px; object-fit: cover; display: block; }
 .lb-sold { position: absolute; left: 6px; top: 6px; background: rgba(12,9,8,0.85); color: #f3efe6; font-size: 10px; font-weight: 600; padding: 3px 7px; border-radius: 999px; }
 
-.lb .cyc { animation-duration: 8s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: cubic-bezier(.45,0,.2,1); }
+.lb .cyc { animation-duration: 6.4s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: cubic-bezier(.45,0,.2,1); }
 .lb .knob { animation-name: lbk-knob; } @keyframes lbk-knob { 0%,35% { transform: translateX(20px); } 42%,85% { transform: translateX(0); } 92%,100% { transform: translateX(20px); } }
 .lb .track { background: #3a302b; animation-name: lbk-track; } @keyframes lbk-track { 0%,35% { background: #ff5a33; } 42%,85% { background: #3a302b; } 92%,100% { background: #ff5a33; } }
 .lb .dish { animation-name: lbk-dish; } @keyframes lbk-dish { 0%,40% { opacity: 1; filter: none; } 48%,85% { opacity: .4; filter: grayscale(1); } 92%,100% { opacity: 1; filter: none; } }
@@ -1349,8 +1349,8 @@
 .lb .tb.is-busy { background: #f3efe6; color: #0c0908; border-color: #f3efe6; }
 .lb .tbn { font-family: var(--font-mono); font-size: 15px; font-weight: 600; line-height: 1; }
 .lb .tbs { font-size: 10px; opacity: .7; white-space: nowrap; }
-.lb .tbl { animation: lbk-tbl 9s ease-in-out infinite both; } @keyframes lbk-tbl { 0%,30% { background: #f3efe6; border-color: #f3efe6; color: #0c0908; } 36%,62% { background: #ff5a33; border-color: #ff5a33; color: #0c0908; } 68%,100% { background: transparent; border-color: rgba(243,239,230,0.22); color: #a39b90; } }
-.lb .fd { animation-duration: 9s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out; }
+.lb .tbl { animation: lbk-tbl 7.2s ease-in-out infinite both; } @keyframes lbk-tbl { 0%,30% { background: #f3efe6; border-color: #f3efe6; color: #0c0908; } 36%,62% { background: #ff5a33; border-color: #ff5a33; color: #0c0908; } 68%,100% { background: transparent; border-color: rgba(243,239,230,0.22); color: #a39b90; } }
+.lb .fd { animation-duration: 7.2s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out; }
 .lb .fd1 { animation-name: lbk-fd1; } @keyframes lbk-fd1 { 0%,30% { opacity: 1; } 33%,97% { opacity: 0; } 100% { opacity: 1; } }
 .lb .fd2 { opacity: 0; animation-name: lbk-fd2; } @keyframes lbk-fd2 { 0%,33% { opacity: 0; } 36%,62% { opacity: 1; } 65%,100% { opacity: 0; } }
 .lb .fd3 { opacity: 0; animation-name: lbk-fd3; } @keyframes lbk-fd3 { 0%,65% { opacity: 0; } 68%,94% { opacity: 1; } 97%,100% { opacity: 0; } }
@@ -1360,7 +1360,7 @@
 .lb-legend span { display: inline-flex; align-items: center; gap: 8px; }
 .lb-legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; box-sizing: border-box; }
 
-.lb .rc { animation-duration: 9s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out; }
+.lb .rc { animation-duration: 7.2s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out; }
 .lb .vA { animation-name: lbk-vA; } @keyframes lbk-vA { 0%,30% { opacity: 1; } 32%,98% { opacity: 0; } 100% { opacity: 1; } }
 .lb .vB { opacity: 0; animation-name: lbk-vB; } @keyframes lbk-vB { 0%,32% { opacity: 0; } 34%,63% { opacity: 1; } 65%,100% { opacity: 0; } }
 .lb .vC { opacity: 0; animation-name: lbk-vC; } @keyframes lbk-vC { 0%,65% { opacity: 0; } 67%,96% { opacity: 1; } 98%,100% { opacity: 0; } }
@@ -1373,12 +1373,12 @@
 .lb .rB { animation-name: lbk-rB; } @keyframes lbk-rB { 0%,31% { background: #0c0908; } 34%,63% { background: #2f2622; } 66%,100% { background: #0c0908; } }
 .lb .rC { animation-name: lbk-rC; } @keyframes lbk-rC { 0%,64% { background: #0c0908; } 67%,96% { background: #2f2622; } 99%,100% { background: #0c0908; } }
 
-.lb .wc { animation-duration: 8s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out; }
+.lb .wc { animation-duration: 6.4s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: ease-in-out; }
 .lb .wA { background: #f3efe6; color: #0c0908; animation-name: lbk-wA; } @keyframes lbk-wA { 0%,45% { background: #f3efe6; color: #0c0908; } 50%,95% { background: transparent; color: #a39b90; } 100% { background: #f3efe6; color: #0c0908; } }
 .lb .wB { color: #a39b90; animation-name: lbk-wB; } @keyframes lbk-wB { 0%,45% { background: transparent; color: #a39b90; } 50%,95% { background: #f3efe6; color: #0c0908; } 100% { background: transparent; color: #a39b90; } }
 .lb .wpress { animation-name: lbk-wpress; } @keyframes lbk-wpress { 0%,57% { transform: scale(1); } 60% { transform: scale(.95); } 63%,100% { transform: scale(1); } }
 .lb .wtoast { opacity: 0; animation-name: lbk-wtoast; } @keyframes lbk-wtoast { 0%,61% { opacity: 0; transform: translateY(12px); } 65%,90% { opacity: 1; transform: none; } 94%,100% { opacity: 0; transform: translateY(12px); } }
-.lb .nowline { left: 40%; animation: lbk-nowline 12s linear infinite; } @keyframes lbk-nowline { from { left: 0%; } to { left: 100%; } }
+.lb .nowline { left: 40%; animation: lbk-nowline 9.6s linear infinite; } @keyframes lbk-nowline { from { left: 0%; } to { left: 100%; } }
 .lb-book-track { position: relative; flex: 1; height: 30px; border-radius: 8px; background: var(--lb-card); }
 .lb-book { position: absolute; top: 3px; bottom: 3px; border-radius: 6px; font-size: 10px; display: flex; align-items: center; padding: 0 6px; white-space: nowrap; overflow: hidden; }
 .lb-book-label { width: 48px; flex-shrink: 0; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: #d7d0c5; text-transform: uppercase; }
@@ -1388,7 +1388,7 @@
 .lb-pilot-card.is-light { background: #f3efe6; color: #1c1a18; }
 .lb-pilot-card.is-dark { background: var(--lb-card); border: 1px solid var(--lb-line); }
 .lb-big-num { font-family: var(--font-display); font-size: clamp(96px, 13vw, 184px); line-height: 0.82; letter-spacing: -0.07em; font-weight: 650; }
-.lb .pv { animation-duration: 8s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: cubic-bezier(.45,0,.2,1); }
+.lb .pv { animation-duration: 6.4s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: cubic-bezier(.45,0,.2,1); }
 .lb .f48 { transform-origin: left; animation-name: lbk-f48; } @keyframes lbk-f48 { 0%,8% { transform: scaleX(0); } 80%,92% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
 .lb-node { position: absolute; top: 0; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 600; background: #1c1a18; color: #f3efe6; }
 .lb .n48a { animation-name: lbk-n48a; } @keyframes lbk-n48a { 0%,6% { background: #e1dbd4; color: #5f5a54; } 9%,94% { background: #1c1a18; color: #f3efe6; } 100% { background: #e1dbd4; color: #5f5a54; } }
@@ -1400,7 +1400,7 @@
 .lb-steps3 > div { display: flex; flex-direction: column; gap: 3px; }
 .lb-steps3 > div:nth-child(2) { text-align: center; }
 .lb-steps3 > div:nth-child(3) { text-align: right; }
-.lb .lg { animation-duration: 9s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: cubic-bezier(.2,.7,.2,1); }
+.lb .lg { animation-duration: 7.2s; animation-iteration-count: infinite; animation-fill-mode: both; animation-timing-function: cubic-bezier(.2,.7,.2,1); }
 .lb .lr1 { animation-name: lbk-lr1; } @keyframes lbk-lr1 { 0%,4% { opacity: 0; transform: translateY(10px); } 8%,92% { opacity: 1; transform: none; } 97%,100% { opacity: 0; } }
 .lb .lr2 { animation-name: lbk-lr2; } @keyframes lbk-lr2 { 0%,19% { opacity: 0; transform: translateY(10px); } 23%,92% { opacity: 1; transform: none; } 97%,100% { opacity: 0; } }
 .lb .lr3 { animation-name: lbk-lr3; } @keyframes lbk-lr3 { 0%,34% { opacity: 0; transform: translateY(10px); } 38%,92% { opacity: 1; transform: none; } 97%,100% { opacity: 0; } }

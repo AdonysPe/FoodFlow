@@ -10,7 +10,7 @@ const PHOTO = {
 
 /**
  * "Tres pantallas. Un solo pedido." — one order (Mesa 07) followed across the
- * guest's phone, the kitchen screen and the owner's dashboard. One 12-second
+ * guest's phone, the kitchen screen and the owner's dashboard. One 9.6-second
  * CSS clock drives all three. Every figure is demo data and says so.
  *
  * Keeps the #product anchor the demo video's footer link and the shared

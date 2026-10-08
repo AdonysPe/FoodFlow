@@ -22,12 +22,12 @@ function Check({ color = "#d4401d", size = 14, width = 2.6 }) {
 const ROOM = [
   { s: "busy", seats: 2 },
   { s: "busy", seats: 4 },
-  { s: "anim", seats: 4, delay: "-6s" },
+  { s: "anim", seats: 4, delay: "-4.8s" },
   { s: "free", seats: 2 },
   { s: "anim", seats: 4, delay: "0s", focus: true },
   { s: "free", seats: 6 },
   { s: "busy", seats: 4 },
-  { s: "anim", seats: 2, delay: "-3s" },
+  { s: "anim", seats: 2, delay: "-2.4s" },
   { s: "free", seats: 2 },
   { s: "busy", seats: 4 },
   { s: "busy", seats: 4 },
@@ -120,8 +120,8 @@ function MenuTile({ c }) {
                 {table}
               </span>
               <div style={{ position: "relative", borderRadius: 10, overflow: "hidden" }}>
-                <Image className="cyc dish" src={PHOTO.arroz} alt="" width={160} height={70} sizes="(max-width: 640px) 28vw, (max-width: 1040px) 26vw, 160px" loading="lazy" decoding="async" style={{ animationDelay: `${0.1 + i * 0.2}s` }} />
-                <span className="lb-sold cyc badge" style={{ animationDelay: `${0.1 + i * 0.2}s` }}>
+                <Image className="cyc dish" src={PHOTO.arroz} alt="" width={160} height={70} sizes="(max-width: 640px) 28vw, (max-width: 1040px) 26vw, 160px" loading="lazy" decoding="async" style={{ animationDelay: `${0.08 + i * 0.16}s` }} />
+                <span className="lb-sold cyc badge" style={{ animationDelay: `${0.08 + i * 0.16}s` }}>
                   {c.soldOut}
                 </span>
               </div>

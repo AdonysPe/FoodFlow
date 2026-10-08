@@ -30,7 +30,7 @@ const TRAILS = [
   { n: 4, delay: "-2.6s", duration: "8.5s" },
   { n: 6, delay: "-6.2s", duration: "8.5s", far: true },
 ];
-const TICKET_DELAYS = ["-1s", "-4.5s", "-8s", "-11.5s"];
+const TICKET_DELAYS = ["-0.8s", "-3.6s", "-6.4s", "-9.2s"];
 
 export default function Hero() {
   const { t } = useLanguage();
