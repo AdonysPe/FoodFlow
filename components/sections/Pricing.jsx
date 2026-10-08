@@ -1,233 +1,262 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { m as motion } from "framer-motion";
-import Container from "@/components/ui/Container";
-import PointerGlow from "@/components/ui/PointerGlow";
-import Button from "@/components/ui/Button";
-import SectionHeading from "@/components/ui/SectionHeading";
-import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
-import { IconArrowRight, IconCheck } from "@/components/ui/Icons";
+import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
+import { PLANS, PLAN_MONTHLY_NET_CENTS } from "@/lib/plans";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { EASE, scaleIn } from "@/lib/motion";
 
-// `as` is forwarded so /precios can claim the h1; it stays h2 anywhere else.
-export default function Pricing({ as }) {
-  const { t } = useLanguage();
-  // Same source as the chat and the closing block: prices are written once.
-  const plans = t.chat.plans.items;
-
-  return (
-    <section id="pricing" className="relative scroll-mt-24 overflow-x-clip py-24 sm:py-28">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-10 -z-10 h-[26rem] w-[52rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,90,51,0.08),transparent_65%)] blur-3xl"
-      />
-
-      <Container>
-        <SectionHeading
-          as={as}
-          eyebrow={t.pricing.eyebrow}
-          title={t.pricing.title}
-          description={t.pricing.description}
-        />
-
-        <FounderBanner copy={t.pricing.founder} />
-
-        {/* Narrower than the container: three cards across the full 1280 read
-            as three posters, not as a table you can compare down. */}
-        <RevealGroup className="mx-auto mt-8 grid max-w-5xl gap-4 sm:mt-10 lg:grid-cols-3">
-          {plans.map((plan, planIndex) => (
-            <RevealItem key={plan.name} variants={scaleIn}>
-              <article
-                className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 sm:p-6 ${
-                  plan.badge
-                    ? "border-accent-400/45 bg-accent-400/[0.06] shadow-lift"
-                    : "border-cream/10 bg-ink-800/70 shadow-card hover:border-cream/20"
-                }`}
-              >
-                <PointerGlow radius={320} />
-                <div className="relative flex items-center gap-2.5">
-                  <h3 className="font-display text-[17.5px] font-bold text-fg">
-                    {plan.name}
-                  </h3>
-                  {plan.badge && (
-                    <span className="rounded-full bg-accent-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-on-accent">
-                      {t.pricing.popular}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-[13px] text-cream/55">{plan.tagline}</p>
-
-                <p className="mt-5 flex items-baseline gap-1">
-                  <span className="font-display text-[2rem] font-extrabold tracking-[-0.03em] text-fg">
-                    {plan.price}
-                  </span>
-                  <span className="text-[13.5px] font-medium text-cream/50">
-                    {plan.period}
-                  </span>
-                  <span className="text-[11.5px] font-normal text-cream/50">
-                    + IGV
-                  </span>
-                </p>
-
-                <ul className="mt-5 flex-1 space-y-2 border-t border-cream/10 pt-5">
-                  {plan.features.map((feature, featureIndex) => {
-                    // On every plan after the first, the opening bullet is the
-                    // "everything in the plan before" line — the hinge of the
-                    // comparison, so it carries more weight than the rest.
-                    const isInherited = planIndex > 0 && featureIndex === 0;
-
-                    return (
-                      <li
-                        key={feature}
-                        className={`flex gap-2.5 text-[13.5px] leading-snug ${
-                          isInherited ? "font-semibold text-cream/90" : "text-cream/75"
-                        }`}
-                      >
-                        <IconCheck
-                          className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
-                            isInherited ? "text-accent-ink" : "text-accent-icon"
-                          }`}
-                        />
-                        {feature}
-                      </li>
-                    );
-                  })}
-                </ul>
-
-                <Button
-                  type="button"
-                  variant={plan.badge ? "primary" : "secondary"}
-                  size="md"
-                  className="mt-6 w-full"
-                  onClick={() => {
-                    const planKey = plan.name.toLowerCase();
-                    window.location.href = `/register?plan=${encodeURIComponent(planKey)}`;
-                  }}
-                  icon={
-                    <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  }
-                >
-                  {t.pricing.cta}
-                </Button>
-              </article>
-            </RevealItem>
-          ))}
-        </RevealGroup>
-
-        {/* The two objections that come up before price ever does: what it
-            runs on, and how their customers actually pay. */}
-        <Reveal delay={0.08}>
-          <ul className="mx-auto mt-4 grid max-w-5xl gap-3 sm:grid-cols-2">
-            {t.pricing.keyNotes.map((note) => (
-              <li
-                key={note}
-                className="flex gap-2.5 rounded-xl border border-cream/10 bg-ink-800/50 px-4 py-3.5 text-[13.5px] leading-relaxed text-cream/75"
-              >
-                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-ink" />
-                {note}
-              </li>
-            ))}
-          </ul>
-        </Reveal>
-
-        <Reveal delay={0.1}>
-          <div className="mx-auto mt-5 max-w-5xl">
-            <p className="text-[13px] text-cream/55">{t.pricing.taxNote}</p>
-            <p className="mt-1.5 text-[13px] font-medium text-accent-ink">
-              {t.pricing.savingsNote}
-            </p>
-          </div>
-        </Reveal>
-
-        {/* add-ons: the "and if I need one more waiter?" answer */}
-        <Reveal delay={0.12}>
-          <div className="mx-auto mt-12 max-w-5xl rounded-2xl border border-cream/10 bg-ink-800/60 p-6 shadow-card sm:p-7">
-            <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/50">
-              {t.pricing.addonsLabel}
-            </p>
-
-            <div className="mt-5 grid gap-5 sm:grid-cols-3">
-              {t.pricing.addons.map((addon, i) => (
-                <motion.div
-                  key={addon.name}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ duration: 0.5, ease: EASE, delay: i * 0.08 }}
-                >
-                  <p className="flex items-baseline gap-1">
-                    <span className="font-display text-[19px] font-bold text-accent-ink">
-                      {addon.price}
-                    </span>
-                    <span className="text-[12.5px] text-cream/50">{addon.unit}</span>
-                  </p>
-                  <p className="mt-1.5 text-[14.5px] font-semibold text-fg">
-                    {addon.name}
-                  </p>
-                  <p className="mt-1 text-[13.5px] leading-relaxed text-cream/55">
-                    {addon.copy}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-
-            <p className="mt-6 border-t border-cream/10 pt-5 text-[13px] text-cream/50">
-              {t.pricing.note}
-            </p>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.16}>
-          <div className="mx-auto mt-8 flex max-w-5xl flex-wrap justify-center gap-x-6 gap-y-3 text-[14px]">
-            <Link href="/carta-digital-qr" className="font-semibold text-accent-ink hover:text-fg">{t.qrMenu.eyebrow}</Link>
-            <Link href="/web-de-pedidos" className="font-semibold text-accent-ink hover:text-fg">{t.orderingSite.eyebrow}</Link>
-          </div>
-        </Reveal>
-      </Container>
-    </section>
-  );
-}
+const IGV = 1.18;
 
 /**
- * The scarcity line, directly above the prices — the one place a visitor is
- * already weighing cost against what they get, which is where the founder
- * terms change the answer.
+ * /precios, design B ("Noche"), as approved in the prototype: the headline,
+ * a "find your plan" panel (team size, analytics, with/without IGV), the
+ * three plan cards, the four promises, the comparison table, the questions
+ * and the closing call.
+ *
+ * Flows kept:
+ *   - prices come from lib/plans.ts, the figure checkout charges, so the page
+ *     cannot drift from what is billed (lib/plans.test.ts guards the copy);
+ *   - each plan button still goes to /register?plan=<carta|servicio|negocio>;
+ *   - "Reserva tu piloto" opens the shared lead form.
+ *
+ * `as` is forwarded so /precios keeps the h1.
  */
-function FounderBanner({ copy }) {
+export default function Pricing({ as: Heading = "h1" }) {
+  const { t } = useLanguage();
+  const p = t.pricing.page;
+  const { openLeadForm } = useLeadCapture();
+
+  const [igv, setIgv] = useState(false);
+  const [team, setTeam] = useState(1); // 0 = just me, 1 = 2 to 10, 2 = over 10
+  const [stats, setStats] = useState(false);
+  const [openFaq, setOpenFaq] = useState(0);
+
+  // The plan that fits the answers: analytics or a big team needs Negocio,
+  // a team needs Servicio, a one-person shop needs Carta.
+  const rec = stats || team === 2 ? 2 : team === 1 ? 1 : 0;
+  const net = PLANS.map((key) => PLAN_MONTHLY_NET_CENTS[key] / 100);
+  const shown = (n) => (igv ? (n * IGV).toFixed(2) : String(n));
+
   return (
-    <Reveal delay={0.14}>
-      <div className="relative mx-auto mt-10 max-w-5xl overflow-hidden rounded-2xl border border-accent-400/40 bg-accent-400/[0.07] px-5 py-5 shadow-accent sm:mt-12 sm:px-7 sm:py-6">
-        <span
-          aria-hidden
-          className="sweep-sheen pointer-events-none absolute inset-0 opacity-[0.14]"
-        />
-
-        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
-          <div className="lg:shrink-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-ink-950/45 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.16em] text-accent-label ring-1 ring-inset ring-accent-400/30">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-300/80" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent-300" />
-              </span>
-              {copy.label}
+    <>
+      {/* ------------------------------------------------------------ hero */}
+      <section className="lb-pr-hero">
+        <div className="lb-glow" aria-hidden style={{ top: 40, height: 460 }} />
+        <p className="lb-eyebrow-accent lb-rise">{p.eyebrow}</p>
+        <Heading className="lb-pr-h1">
+          {p.line1.map((w, i) => (
+            <span key={`a${i}`}>
+              <span className="lb-word" style={{ animationDelay: `${0.05 + i * 0.1}s` }}>
+                {w}
+              </span>{" "}
             </span>
-            <p className="mt-2.5 font-display text-[21px] font-extrabold leading-tight tracking-[-0.02em] text-fg sm:text-[23px]">
-              {copy.headline}
-            </p>
-          </div>
+          ))}
+          <br />
+          {p.line2.map((w, i) => (
+            <span key={`b${i}`}>
+              <span className="lb-word" style={{ animationDelay: `${0.5 + i * 0.1}s`, color: "#8a8278" }}>
+                {w}
+                {i === p.line2.length - 1 && <span style={{ color: "#ff5a33" }}>.</span>}
+              </span>
+              {i < p.line2.length - 1 ? " " : ""}
+            </span>
+          ))}
+        </Heading>
+        <p className="lb-pr-sub lb-rise" style={{ animationDelay: ".85s" }}>
+          {p.sub}
+        </p>
+      </section>
 
-          <ul className="grid gap-2 text-[13.5px] leading-snug text-cream/85 sm:grid-cols-3 lg:flex-1 lg:border-l lg:border-accent-400/25 lg:pl-8">
-            {copy.perks.map((perk) => (
-              <li key={perk} className="flex gap-2">
-                <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-ink" />
-                {perk}
-              </li>
-            ))}
-          </ul>
+      {/* ---------------------------------------------------------- finder */}
+      <section className="lb-pr-block" style={{ paddingTop: 64 }}>
+        <div className="lb-finder lb-rise" style={{ animationDelay: "1s" }}>
+          <span className="lb-display lb-finder-title">{p.finder.title}</span>
+          <div className="lb-finder-group">
+            <span id="lb-team-label" style={{ fontSize: 14, color: "#b9b1a5" }}>
+              {p.finder.teamLabel}
+            </span>
+            <div className="lb-seg" role="group" aria-labelledby="lb-team-label">
+              {p.finder.team.map((label, i) => (
+                <button key={i} type="button" aria-pressed={team === i} className={team === i ? "is-on" : ""} onClick={() => setTeam(i)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button type="button" role="switch" aria-checked={stats} className="lb-switch-row" onClick={() => setStats((v) => !v)}>
+            <span className={`lb-toggle${stats ? " is-on" : ""}`}>
+              <i />
+            </span>
+            {p.finder.stats}
+          </button>
+          <div className="lb-seg lb-seg--end" role="group" aria-label={p.finder.taxLabel}>
+            <button type="button" aria-pressed={!igv} className={!igv ? "is-on" : ""} onClick={() => setIgv(false)}>
+              {p.finder.net}
+            </button>
+            <button type="button" aria-pressed={igv} className={igv ? "is-on" : ""} onClick={() => setIgv(true)}>
+              {p.finder.gross}
+            </button>
+          </div>
         </div>
-      </div>
-    </Reveal>
+      </section>
+
+      {/* ----------------------------------------------------------- plans */}
+      <section className="lb-pr-block" style={{ paddingTop: 28 }}>
+        <div className="lb-row" style={{ alignItems: "stretch" }}>
+          {p.plans.map((plan, i) => {
+            const on = rec === i;
+            const popular = i === 1 && !on;
+            return (
+              <article key={plan.name} className={`lb-pr-card${on ? " is-rec" : ""}`}>
+                <div className="lb-pr-card-head">
+                  <span className="lb-display" style={{ fontSize: 24, letterSpacing: "-0.03em" }}>
+                    {plan.name}
+                  </span>
+                  {on && (
+                    <span className="lb-pr-tag is-solid lb-pop">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                      {p.recommended}
+                    </span>
+                  )}
+                  {popular && <span className="lb-pr-tag">{p.popular}</span>}
+                </div>
+                <span className="lb-pr-pitch">{plan.pitch}</span>
+                <div className="lb-pr-price lb-swap" key={`${i}${igv}`}>
+                  <span style={{ fontSize: 22, fontWeight: 600 }}>S/</span>
+                  <span className="lb-display lb-pr-num">{shown(net[i])}</span>
+                  <span className="lb-pr-muted">{p.perMonth}</span>
+                </div>
+                <span className="lb-pr-muted" style={{ fontSize: 13 }}>
+                  {igv ? p.taxGross.replace("{net}", String(net[i])) : p.taxNet}
+                </span>
+                <Link href={`/register?plan=${encodeURIComponent(PLANS[i])}`} className="lb-pr-cta">
+                  {p.cta.replace("{plan}", plan.name)}
+                </Link>
+                <hr className="lb-pr-rule" />
+                <span className="lb-mono lb-pr-muted" style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                  {plan.users}
+                </span>
+                {plan.features.map((feature) => (
+                  <div key={feature} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 15, lineHeight: 1.4 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={on ? "#d4401d" : "#ff5a33"} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ flexShrink: 0, marginTop: 2 }}>
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------- strip */}
+      <section className="lb-pr-block" style={{ paddingTop: 72 }}>
+        <div className="lb-pr-strip lb-reveal">
+          {p.strip.map((item, i) => (
+            <div key={i}>
+              <span className="lb-display" style={{ fontSize: 40, letterSpacing: "-0.05em", lineHeight: 1 }}>
+                {item.big}
+                <span style={{ fontSize: item.unit === "%" ? 40 : 20, color: item.unit === "%" ? "#ff5a33" : "#a39b90" }}>{item.unit}</span>
+              </span>
+              <span style={{ fontSize: 15, color: "#b9b1a5" }}>{item.copy}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* --------------------------------------------------------- compare */}
+      <section className="lb-pr-block" style={{ paddingTop: 140 }}>
+        <h2 className="lb-h2 lb-reveal" style={{ fontSize: "clamp(36px, 5vw, 64px)", marginBottom: 36 }}>
+          {p.compare.title}
+          <span>{p.compare.muted}</span>
+        </h2>
+        <div className="lb-table-wrap lb-reveal">
+          <div className="lb-table">
+            <div className="lb-trow lb-thead">
+              <span style={{ color: "#a39b90", fontWeight: 500 }}>{p.compare.module}</span>
+              {p.plans.map((plan, i) => (
+                <span key={plan.name} style={{ textAlign: "center", color: rec === i ? "#ff7a57" : "#f3efe6" }}>
+                  {plan.name}
+                </span>
+              ))}
+            </div>
+            {p.rows.map((row) => (
+              <div key={row.label} className="lb-trow">
+                <span style={{ color: "#d7d0c5" }}>{row.label}</span>
+                {row.cells.map((cell, i) => (
+                  <span key={i} className="lb-tcell" style={{ background: rec === i ? "rgba(255,90,51,0.1)" : "transparent" }}>
+                    {cell === true ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f3efe6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label={p.compare.included}>
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                    ) : cell === false ? (
+                      <span style={{ color: "#6f675e" }} role="img" aria-label={p.compare.notIncluded}>
+                        —
+                      </span>
+                    ) : (
+                      <span style={{ fontWeight: 550 }}>{cell}</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- faq */}
+      <section className="lb-pr-block" style={{ paddingTop: 140 }}>
+        <div className="lb-faq">
+          <h2 className="lb-h2 lb-reveal" style={{ flex: "1 1 300px", fontSize: "clamp(36px, 5vw, 64px)", lineHeight: 1 }}>
+            {p.faqTitle}
+            <br />
+            <span>{p.faqMuted}</span>
+          </h2>
+          <div className="lb-faq-list">
+            {p.faqs.map((f, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={i} className="lb-faq-item">
+                  <button type="button" aria-expanded={open} onClick={() => setOpenFaq(open ? -1 : i)}>
+                    <span>{f.q}</span>
+                    <span className="lb-faq-plus" style={{ transform: open ? "rotate(45deg)" : "none" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </span>
+                  </button>
+                  {open && <p className="lb-open">{f.a}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------- close */}
+      <section className="lb-reserve" id="empezar">
+        <div className="lb-reserve-glow" aria-hidden />
+        <h2 className="lb-h2-xl lb-reveal" style={{ fontSize: "clamp(48px, 7.5vw, 108px)" }}>
+          {p.closing.lead}
+          <br />
+          <span>{p.plans[rec].name}.</span>
+        </h2>
+        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#b9b1a5" }}>
+          {p.closing.copy}
+        </p>
+        <div className="lb-hero-ctas lb-reveal">
+          <button type="button" className="lb-pill-btn lb-pill-btn--lg" onClick={() => openLeadForm({ source: "web_form" })}>
+            {p.closing.cta}
+          </button>
+          <Link href="/" className="lb-text-link">
+            {p.closing.back}
+          </Link>
+        </div>
+      </section>
+    </>
   );
 }
