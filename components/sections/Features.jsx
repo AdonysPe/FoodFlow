@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import Image from "next/image";
 
 const PHOTO = {
   ceviche: "/demo/carta/ceviche.webp",
@@ -82,7 +83,7 @@ function MenuTile({ c }) {
           <span>{c.panel}</span>
         </div>
         <div className="lb-menu-row">
-          <img src={PHOTO.ceviche} alt={c.dishes[0]} />
+          <Image src={PHOTO.ceviche} alt={c.dishes[0]} width={36} height={36} sizes="36px" loading="lazy" decoding="async" />
           <span style={{ flex: 1, fontSize: 14, fontWeight: 550 }}>{c.dishes[0]}</span>
           <span style={{ fontSize: 12, color: "#a39b90" }}>{c.available}</span>
           <span className="lb-switch" style={{ background: "#ff5a33" }}>
@@ -90,7 +91,7 @@ function MenuTile({ c }) {
           </span>
         </div>
         <div className="lb-menu-row" style={{ border: "1px solid rgba(255,90,51,0.35)" }}>
-          <img src={PHOTO.arroz} alt={c.dishes[1]} />
+          <Image src={PHOTO.arroz} alt={c.dishes[1]} width={36} height={36} sizes="36px" loading="lazy" decoding="async" />
           <span style={{ flex: 1, fontSize: 14, fontWeight: 550 }}>{c.dishes[1]}</span>
           <span className="lb-stack" style={{ justifyItems: "end", fontSize: 12 }}>
             <span className="cyc lbl1" style={{ color: "#a39b90" }}>
@@ -119,7 +120,7 @@ function MenuTile({ c }) {
                 {table}
               </span>
               <div style={{ position: "relative", borderRadius: 10, overflow: "hidden" }}>
-                <img className="cyc dish" src={PHOTO.arroz} alt="" style={{ animationDelay: `${0.1 + i * 0.2}s` }} />
+                <Image className="cyc dish" src={PHOTO.arroz} alt="" width={160} height={70} sizes="(max-width: 640px) 28vw, (max-width: 1040px) 26vw, 160px" loading="lazy" decoding="async" style={{ animationDelay: `${0.1 + i * 0.2}s` }} />
                 <span className="lb-sold cyc badge" style={{ animationDelay: `${0.1 + i * 0.2}s` }}>
                   {c.soldOut}
                 </span>
@@ -264,7 +265,7 @@ function WebTile({ c }) {
           </div>
           {c.items.map((item, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
-              <img src={photos[i]} alt="" style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover" }} />
+              <Image src={photos[i]} alt="" width={30} height={30} sizes="30px" loading="lazy" decoding="async" style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover" }} />
               <span style={{ flex: 1 }}>{item.name}</span>
               <span style={{ color: "#a39b90" }}>{item.price}</span>
             </div>

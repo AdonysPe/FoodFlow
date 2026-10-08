@@ -1256,9 +1256,6 @@
 .lb :is(.lb-story-card, .lb-mod-big, .lb-mod-small, .lb-pilot-card, .lb-plan) {
   animation: none;
 }
-.lb :is(.lb-story-card, .lb-mod-big, .lb-mod-small, .lb-pilot-card, .lb-plan)[data-lb-seen="true"] {
-  animation: lb-rise .6s cubic-bezier(.16, 1, .3, 1) both;
-}
 
 /* ------------------------------------------------- "Tres pantallas" */
 .lb-stepper { position: relative; margin-top: 72px; height: 70px; }

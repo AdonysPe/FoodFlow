@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import Image from "next/image";
 
 const PHOTO = {
   ceviche: "/demo/carta/ceviche.webp",
@@ -99,7 +100,7 @@ function Phone({ phone }) {
           </span>
           {phone.items.map((item, i) => (
             <div key={i} className="lb-phone-item">
-              <img src={photos[i]} alt={item.name} />
+              <Image src={photos[i]} alt={item.name} width={40} height={40} sizes="40px" loading="lazy" decoding="async" />
               <span style={{ flex: 1, fontSize: 13, fontWeight: 550 }}>{item.name}</span>
               <span style={{ fontSize: 12, color: "#a39b90" }}>{item.price}</span>
             </div>

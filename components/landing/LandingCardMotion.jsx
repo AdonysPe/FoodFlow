@@ -12,8 +12,7 @@ export default function LandingCardMotion() {
 
     const update = (card) => {
       const active = visible.has(card) && !document.hidden;
-      card.dataset.lbActive = String(active);
-      if (active) card.dataset.lbSeen = "true";
+      if (card.dataset.lbActive !== String(active)) card.dataset.lbActive = String(active);
     };
 
     // Content stays visible, including when IntersectionObserver is unavailable.
@@ -24,11 +23,11 @@ export default function LandingCardMotion() {
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(({ target, isIntersecting, intersectionRatio }) => {
-        if (isIntersecting && intersectionRatio >= 0.12) visible.add(target);
+        if (isIntersecting && intersectionRatio >= 0.01) visible.add(target);
         else visible.delete(target);
         update(target);
       });
-    }, { threshold: [0, 0.12], rootMargin: "-64px 0px -6% 0px" });
+    }, { threshold: [0, 0.01], rootMargin: "-64px 0px 0px 0px" });
 
     cards.forEach((card) => observer.observe(card));
     const onVisibilityChange = () => cards.forEach(update);
@@ -39,7 +38,6 @@ export default function LandingCardMotion() {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       cards.forEach((card) => {
         delete card.dataset.lbActive;
-        delete card.dataset.lbSeen;
       });
     };
   }, []);

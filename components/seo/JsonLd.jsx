@@ -229,8 +229,8 @@ function softwareApplication() {
     applicationSubCategory: "Restaurant Management Software",
     operatingSystem: "Web",
     inLanguage: ["es", "en"],
-    description: es.hero.subheadline,
-    featureList: es.features.items.map((f) => f.title),
+    description: es.landing.hero.sub,
+    featureList: ["menu", "room", "team", "web", "bookings"].map((key) => es.landing.modules[key].title),
     publisher: { "@id": ORG_ID },
     offers: {
       "@type": "AggregateOffer",
