@@ -68,7 +68,7 @@ export default function Calculator({ as: Heading = "h1" }) {
       <section className="lb-pr-hero" style={{ paddingTop: 96 }}>
         <div className="lb-glow" aria-hidden style={{ top: 20, height: 520 }} />
         <p className="lb-eyebrow-accent lb-rise">{c.eyebrow}</p>
-        <Heading className="lb-pr-h1" style={{ fontSize: "clamp(44px, 6.6vw, 96px)", lineHeight: 0.95, maxWidth: 980 }}>
+        <Heading className="lb-pr-h1">
           {c.line1.map((w, i) => (
             <span key={`a${i}`}>
               <span className="lb-word" style={{ animationDelay: `${0.05 + i * 0.1}s` }}>
