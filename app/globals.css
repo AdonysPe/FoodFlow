@@ -1140,7 +1140,7 @@
 /* ------------------------------------------------------------- hero */
 .lb-hero {
   --hero-gap: clamp(10px, 2.2svh, 28px);
-  --hero-floor-start: 22%;
+  --hero-floor-start: 0px;
   position: relative;
   box-sizing: border-box;
   min-height: calc(100vh - var(--lb-header-height));
