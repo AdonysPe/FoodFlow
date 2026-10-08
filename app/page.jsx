@@ -8,6 +8,7 @@ import Features from "@/components/sections/Features";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingPage from "@/components/landing/LandingPage";
 import LandingFooter from "@/components/landing/LandingFooter";
+import LandingCardMotion from "@/components/landing/LandingCardMotion";
 
 // The B design's type pair, loaded for the home page alone. The wrapper
 // below re-points the theme's font roles to them (the `.lb` block at the end of globals.css), so every
@@ -48,6 +49,7 @@ export default function Page() {
     <div data-theme="dark" className={`${display.variable} ${text.variable} ${mono.variable} lb`}>
       <SiteShell intro navbar={<LandingNav />} footer={<LandingFooter />}>
         <HomeJsonLd />
+        <LandingCardMotion />
         <Hero />
         <Marquee />
         <Showcase />
