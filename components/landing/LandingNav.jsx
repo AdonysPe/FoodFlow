@@ -47,10 +47,10 @@ export default function LandingNav() {
   return (
     <header className={`lb-header${open ? " is-open" : ""}`}>
       <nav className="lb-nav" aria-label="Principal">
-        <a href="#inicio" className="lb-logo" onClick={() => setOpen(false)}>
+        <Link href="/#inicio" className="lb-logo" onClick={() => setOpen(false)}>
           FoodFlow
           <span className="lb-logo-dot" aria-hidden />
-        </a>
+        </Link>
 
         <div className="lb-nav-links">
           {links.map(({ label, href }) => (
