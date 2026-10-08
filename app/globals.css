@@ -1546,3 +1546,82 @@
   .lb #main *, .lb #main *::before, .lb #main *::after { animation: none !important; }
   .lb .lb-ticket, .lb .lb-trail { display: none; }
 }
+
+/* ------------------------------------------------------------------
+   /precios — design B ("Noche"): the pricing page's own pieces.
+   Same `.lb` wrapper, tokens and reduced-motion handling as the home page.
+------------------------------------------------------------------ */
+.lb .lb-pop { animation: lbk-pop .5s cubic-bezier(.2,.9,.3,1.3) both; }
+@keyframes lbk-pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+.lb .lb-swap { animation: lbk-swap .45s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lbk-swap { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
+.lb .lb-open { animation: lbk-open .4s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lbk-open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+.lb .lb-pr-hero { position: relative; isolation: isolate; padding: 96px 24px 0; text-align: center; }
+.lb .lb-eyebrow-accent { margin: 0 0 24px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; color: var(--lb-accent-ink); text-transform: uppercase; }
+.lb .lb-pr-h1 { margin: 0 auto; max-width: 980px; font-family: var(--font-display); font-size: clamp(52px, 8vw, 120px); line-height: 0.92; letter-spacing: -0.055em; font-weight: 650; }
+.lb .lb-pr-sub { margin: 28px auto 0; max-width: 540px; font-size: 20px; line-height: 1.5; color: var(--lb-dim); }
+.lb .lb-pr-block { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+.lb .lb-finder { display: flex; align-items: center; flex-wrap: wrap; gap: 22px 34px; padding: 22px 26px; border-radius: 26px; background: rgba(243,239,230,0.045); border: 1px solid rgba(243,239,230,0.1); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); -webkit-backdrop-filter: saturate(150%) blur(24px); backdrop-filter: saturate(150%) blur(24px); }
+.lb .lb-finder-title { font-size: 22px; letter-spacing: -0.03em; }
+.lb .lb-finder-group { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.lb .lb-seg { display: inline-flex; background: rgba(243,239,230,0.07); border-radius: 999px; padding: 4px; gap: 2px; }
+.lb .lb-seg--end { margin-left: auto; }
+.lb .lb-seg button { min-height: 40px; border: 0; border-radius: 999px; padding: 0 15px; font-size: 14px; font-weight: 550; background: transparent; color: #cfc7bb; transition: background .25s, color .25s; }
+.lb .lb-seg button.is-on { background: #f3efe6; color: #0c0908; }
+.lb .lb-switch-row { display: inline-flex; align-items: center; gap: 12px; border: 0; background: transparent; color: var(--lb-ink); font-size: 14px; min-height: 44px; padding: 6px 0; }
+.lb .lb-toggle { width: 46px; height: 26px; border-radius: 999px; padding: 3px; box-sizing: border-box; background: rgba(243,239,230,0.16); transition: background .25s; flex-shrink: 0; }
+.lb .lb-toggle i { display: block; width: 20px; height: 20px; border-radius: 50%; background: #f3efe6; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.lb .lb-toggle.is-on { background: #ff5a33; }
+.lb .lb-toggle.is-on i { transform: translateX(20px); }
+
+.lb .lb-pr-card { flex: 1 1 320px; min-width: 0; box-sizing: border-box; border-radius: 30px; padding: 34px; display: flex; flex-direction: column; gap: 12px; background: var(--lb-card); color: var(--lb-ink); border: 1px solid var(--lb-line); transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s, background .4s; }
+.lb .lb-pr-card.is-rec { background: #f3efe6; color: #1c1a18; border-color: #f3efe6; transform: translateY(-8px); box-shadow: 0 50px 100px -40px rgba(255,90,51,0.5); }
+.lb .lb-pr-card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 28px; flex-wrap: wrap; }
+.lb .lb-pr-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 550; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(243,239,230,0.1); color: #a39b90; }
+.lb .lb-pr-tag.is-solid { background: #ff5a33; border-color: #ff5a33; color: #0c0908; font-weight: 600; }
+.lb .lb-pr-pitch { font-size: 15px; line-height: 1.45; color: #a39b90; min-height: 44px; }
+.lb .lb-pr-card.is-rec .lb-pr-pitch, .lb .lb-pr-card.is-rec .lb-pr-muted { color: #5f5a54; }
+.lb .lb-pr-muted { color: #a39b90; }
+.lb .lb-pr-price { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+.lb .lb-pr-num { font-size: 76px; letter-spacing: -0.06em; line-height: 0.9; }
+.lb .lb-pr-cta { display: block; margin-top: 14px; text-align: center; padding: 14px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; color: var(--lb-ink); border: 1px solid rgba(243,239,230,0.2); transition: background .25s; }
+.lb .lb-pr-cta:hover { background: rgba(243,239,230,0.08); }
+.lb .lb-pr-card.is-rec .lb-pr-cta { background: #d4401d; border-color: #d4401d; color: #fff; }
+.lb .lb-pr-card.is-rec .lb-pr-cta:hover { background: #e24a26; }
+.lb .lb-pr-rule { height: 1px; margin: 8px 0; border: 0; background: rgba(243,239,230,0.1); }
+.lb .lb-pr-card.is-rec .lb-pr-rule { background: #e1dbd4; }
+.lb .lb-pr-card.is-rec .lb-pr-tag:not(.is-solid) { border-color: #e1dbd4; color: #5f5a54; }
+
+.lb .lb-pr-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: rgba(243,239,230,0.08); border: 1px solid rgba(243,239,230,0.08); border-radius: 26px; overflow: hidden; }
+.lb .lb-pr-strip > div { background: var(--lb-bg); padding: 28px; display: flex; flex-direction: column; gap: 8px; }
+
+.lb .lb-table-wrap { overflow-x: auto; border-radius: 26px; background: var(--lb-card); border: 1px solid var(--lb-line); }
+.lb .lb-table { min-width: 680px; padding: 8px 32px 16px; }
+.lb .lb-trow { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); padding: 15px 0; border-bottom: 1px solid rgba(243,239,230,0.06); font-size: 15px; align-items: center; }
+.lb .lb-thead { padding: 22px 0 14px; border-bottom-color: rgba(243,239,230,0.1); font-size: 14px; font-weight: 600; }
+.lb .lb-tcell { display: flex; justify-content: center; border-radius: 10px; padding: 4px 0; transition: background .3s; }
+
+.lb .lb-faq { display: flex; gap: 48px; flex-wrap: wrap; }
+.lb .lb-faq-list { flex: 2 1 560px; display: flex; flex-direction: column; border-top: 1px solid rgba(243,239,230,0.1); }
+.lb .lb-faq-item { border-bottom: 1px solid rgba(243,239,230,0.1); }
+.lb .lb-faq-item button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; background: transparent; border: 0; color: var(--lb-ink); text-align: left; padding: 22px 0; min-height: 44px; font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
+.lb .lb-faq-plus { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: rgba(243,239,230,0.07); display: flex; align-items: center; justify-content: center; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+.lb .lb-faq-item p { margin: -6px 0 22px; max-width: 620px; font-size: 16px; line-height: 1.55; color: var(--lb-dim); }
+
+@media (max-width: 640px) {
+  .lb .lb-pr-hero { padding: 64px 16px 0; }
+  .lb .lb-pr-sub { font-size: 17px; }
+  .lb .lb-pr-block { padding: 0 16px; }
+  .lb .lb-finder { padding: 18px; gap: 16px; }
+  .lb .lb-seg--end { margin-left: 0; }
+  .lb .lb-pr-card { padding: 26px; }
+  .lb .lb-pr-card.is-rec { transform: none; }
+  .lb .lb-pr-num { font-size: 64px; }
+  .lb .lb-pr-strip > div { padding: 22px; }
+  .lb .lb-table { padding: 4px 20px 12px; min-width: 620px; }
+  .lb .lb-faq { gap: 28px; }
+  .lb .lb-faq-item button { font-size: 17px; }
+}
