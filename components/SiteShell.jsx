@@ -23,8 +23,11 @@ import Footer from "@/components/sections/Footer";
  *
  * The theme lives above this, in the root layout, so /login and the dashboard
  * are on the same switch without going through the marketing shell.
+ *
+ * `navbar` and `footer` let a page bring its own (the home page does, for its
+ * B design); every other page leaves them out and gets the shared ones.
  */
-export default function SiteShell({ children, intro = false }) {
+export default function SiteShell({ children, intro = false, navbar = null, footer = null }) {
   return (
     <LanguageProvider>
       <MotionProvider>
@@ -32,9 +35,9 @@ export default function SiteShell({ children, intro = false }) {
           <LeadCaptureProvider>
             {intro && <IntroOverlay />}
             <ScrollProgress />
-            <Navbar />
+            {navbar ?? <Navbar />}
             <PageTransition>{children}</PageTransition>
-            <Footer />
+            {footer ?? <Footer />}
             <DeferredMarketingWidgets />
           </LeadCaptureProvider>
         </ChatProvider>

@@ -1,20 +1,17 @@
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import SiteShell from "@/components/SiteShell";
 import { HomeJsonLd } from "@/components/seo/JsonLd";
-import LandingHero from "@/components/landing/LandingHero";
-import LandingMarquee from "@/components/landing/LandingMarquee";
-import LandingFlow from "@/components/landing/LandingFlow";
-import LandingFeatures from "@/components/landing/LandingFeatures";
-import LandingShowcase from "@/components/landing/LandingShowcase";
-import LandingOffer from "@/components/landing/LandingOffer";
-import LandingCustomSite from "@/components/landing/LandingCustomSite";
-import LandingLeadCapture from "@/components/landing/LandingLeadCapture";
-import LandingCTA from "@/components/landing/LandingCTA";
-import "./landing-b.css";
+import Hero from "@/components/sections/Hero";
+import Marquee from "@/components/sections/Marquee";
+import Showcase from "@/components/sections/Showcase";
+import Features from "@/components/sections/Features";
+import LandingNav from "@/components/landing/LandingNav";
+import LandingPage from "@/components/landing/LandingPage";
+import LandingFooter from "@/components/landing/LandingFooter";
 
 // The B design's type pair, loaded for the home page alone. The wrapper
-// below re-points the theme's font roles to them (see landing-b.css), so
-// every other route keeps the site's current faces untouched.
+// below re-points the theme's font roles to them (the `.lb` block at the end of globals.css), so every
+// other route keeps the site's current faces untouched.
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-lb-display",
@@ -39,28 +36,23 @@ export const metadata = {
 };
 
 /**
- * Home page, B design ("Noche"). Same shell (navbar, footer, chat, WhatsApp,
- * lead modal, cookie banner, intro curtain) and the same anchors the rest of
- * the site links to — #features, #product, #customer-site, #contacto, #cta —
- * so every existing link and flow lands where it did. The sections are the
- * B versions in components/landing/; the originals in components/sections/
- * are left as they were, and the shared ones (LeadCapture, CTA) keep serving
- * the other pages.
+ * Home page, design B ("Noche"), as approved in the prototype. It keeps the
+ * shared shell — chat, WhatsApp button, lead form, exit intent, cookie
+ * banner, intro curtain — and brings its own header and footer.
+ *
+ * data-theme="dark" pins the page to the night design whatever theme the
+ * visitor chose elsewhere; the rest of the site still follows their choice.
  */
 export default function Page() {
   return (
-    <div className={`${display.variable} ${text.variable} ${mono.variable} landing-b`}>
-      <SiteShell intro>
+    <div data-theme="dark" className={`${display.variable} ${text.variable} ${mono.variable} lb`}>
+      <SiteShell intro navbar={<LandingNav />} footer={<LandingFooter />}>
         <HomeJsonLd />
-        <LandingHero />
-        <LandingMarquee />
-        <LandingFlow />
-        <LandingFeatures />
-        <LandingShowcase />
-        <LandingOffer />
-        <LandingCustomSite />
-        <LandingLeadCapture />
-        <LandingCTA />
+        <Hero />
+        <Marquee />
+        <Showcase />
+        <Features />
+        <LandingPage />
       </SiteShell>
     </div>
   );
