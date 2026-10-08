@@ -1,105 +1,244 @@
 "use client";
 
 import Image from "next/image";
-import Container from "@/components/ui/Container";
-import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
-import { IconCheck } from "@/components/ui/Icons";
+import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { buildWhatsAppUrl } from "@/lib/contact";
 
-// `as` lets /nosotros claim the h1; h2 anywhere else.
-export default function About({ as: Heading = "h2" }) {
+const CHECK_PROPS = {
+  width: 22,
+  height: 22,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.9,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  "aria-hidden": true,
+};
+
+/** Icons for the commitment cards, in the order of `t.about.commitment`. */
+const COMMITMENT_ICONS = [
+  { tone: "teal", node: <path d="M4 19.5l1.4-4A8 8 0 1 1 8.6 18.6z" /> },
+  { tone: "zero" },
+  {
+    tone: "cream",
+    node: (
+      <>
+        <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5" />
+        <path d="M5 19.5h14" />
+      </>
+    ),
+  },
+  {
+    tone: "accent",
+    node: (
+      <>
+        <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" />
+        <circle cx="12" cy="10" r="2.3" />
+      </>
+    ),
+  },
+];
+
+/**
+ * /nosotros, design B ("Noche"), as approved in the prototype: the headline,
+ * the founder's portrait and story, "that Friday" against "with FoodFlow", the
+ * quote lighting up word by word, the four commitments, and the closing call.
+ *
+ * Copy is `t.about`. The portrait is the real photo, and the story keeps the
+ * founder's own words. `as` is forwarded so /nosotros keeps the h1.
+ */
+export default function About({ as: Heading = "h1" }) {
   const { t } = useLanguage();
   const a = t.about;
+  const { openLeadForm } = useLeadCapture();
+  const whatsappUrl = buildWhatsAppUrl(a.closing.whatsappMessage);
+  const [lead, ...rest] = a.body;
 
   return (
-    <section
-      id="nosotros"
-      className="relative scroll-mt-24 overflow-x-clip pt-32 pb-20 sm:pt-40 sm:pb-24"
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1/3 -z-10 h-[24rem] bg-[radial-gradient(45%_60%_at_30%_50%,rgba(255,90,51,0.07),transparent_70%)] blur-3xl"
-      />
-
-      <Container>
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          {/* portrait slot — a face is the point of this section */}
-          <Reveal className="lg:col-span-5">
-            <figure className="relative mx-auto max-w-sm">
-              <div className="liquid relative aspect-[4/5] overflow-hidden rounded-3xl shadow-lift">
-                {/* warm light behind the figure: the glass needs something to
-                    refract, and it lifts the portrait off the near-black panel */}
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-[radial-gradient(72%_58%_at_50%_26%,rgba(255,90,51,0.20),transparent_72%)]"
-                />
-                <Image
-                  src="/Founder.jpg"
-                  alt={a.photoAlt}
-                  width={968}
-                  height={1032}
-                  sizes="(min-width: 1024px) 24rem, 20rem"
-                  className="relative h-full w-full object-cover"
-                  priority
-                />
-              </div>
-              <figcaption className="mt-4 text-center">
-                <span className="block text-[13.5px] text-cream/55">{a.signature}</span>
-                <span className="mt-1.5 block text-[12.5px] leading-relaxed text-cream/55">
-                  {a.photoNote}
-                </span>
-              </figcaption>
-            </figure>
-          </Reveal>
-
-          <div className="lg:col-span-7">
-            <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-cream/10 bg-cream/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-ink">
-                {a.eyebrow}
+    <>
+      {/* ------------------------------------------------------------ hero */}
+      <section id="nosotros" className="lb-pr-hero lb-pr-hero--left">
+        <div className="lb-pr-block lb-pr-block--flush">
+          <p className="lb-eyebrow-accent lb-rise">{a.eyebrow}</p>
+          <Heading className="lb-pr-h1">
+            {a.line1.map((w, i) => (
+              <span key={`a${i}`}>
+                <span className="lb-word" style={{ animationDelay: `${0.05 + i * 0.07}s` }}>
+                  {w}
+                </span>{" "}
               </span>
-            </Reveal>
-
-            <Reveal delay={0.06}>
-              <Heading className="mt-5 font-display text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-balance text-gradient sm:text-4xl">
-                {a.title}
-              </Heading>
-            </Reveal>
-
-            {a.body.map((paragraph, i) => (
-              <Reveal key={i} delay={0.12 + i * 0.06}>
-                <p className="mt-5 max-w-xl text-pretty text-[15.5px] leading-relaxed text-cream/66 sm:text-base">
-                  {paragraph}
-                </p>
-              </Reveal>
             ))}
+            <br />
+            {a.line2.map((w, i) => {
+              const last = i === a.line2.length - 1;
+              return (
+                <span key={`b${i}`}>
+                  <span className="lb-word" style={{ animationDelay: `${0.52 + i * 0.07}s`, color: "#8a8278" }}>
+                    {w}
+                    {last && <span style={{ color: "#ff5a33" }}>.</span>}
+                  </span>
+                  {last ? "" : " "}
+                </span>
+              );
+            })}
+          </Heading>
+        </div>
+      </section>
 
-            <Reveal delay={0.3}>
-              <blockquote className="mt-9 border-l-2 border-accent-400 pl-5">
-                <p className="font-display text-[21px] font-semibold leading-snug tracking-[-0.02em] text-fg sm:text-[23px]">
-                  {a.quote}
-                </p>
-              </blockquote>
-            </Reveal>
+      {/* -------------------------------------------------------- the story */}
+      <section className="lb-pr-block" style={{ paddingTop: 72 }}>
+        <div className="lb-ab-story">
+          <div className="lb-ab-portrait lb-rise" style={{ animationDelay: ".5s" }}>
+            <div className="lb-glow lb-ab-portrait-glow" aria-hidden />
+            <div className="lb-float lb-ab-photo">
+              <Image
+                src="/Founder.jpg"
+                alt={a.photoAlt}
+                width={968}
+                height={1032}
+                sizes="(min-width: 1024px) 440px, 90vw"
+                style={{ width: "100%", height: "auto", aspectRatio: "4 / 5", objectFit: "cover", display: "block" }}
+                priority
+              />
+            </div>
+            <div className="lb-ab-caption">
+              <span style={{ fontSize: 15, fontWeight: 600 }}>{a.signature}</span>
+              <span style={{ fontSize: 12, lineHeight: 1.45, color: "#cfc7bb" }}>{a.photoNote}</span>
+            </div>
+          </div>
 
-            <Reveal delay={0.24}>
-              <p className="mt-9 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-cream/50">
-                {a.commitmentLabel}
+          <div className="lb-ab-text">
+            <p className="lb-rise" style={{ margin: 0, fontSize: 22, lineHeight: 1.5, letterSpacing: "-0.01em", animationDelay: ".6s" }}>
+              {lead}
+            </p>
+            {rest.map((paragraph, i) => (
+              <p key={i} className="lb-rise" style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: "#b9b1a5", animationDelay: `${0.7 + i * 0.1}s` }}>
+                {paragraph}
               </p>
-            </Reveal>
-
-            <RevealGroup className="mt-4 space-y-2.5" gap={0.08}>
-              {a.commitment.map((item, i) => (
-                <RevealItem key={i}>
-                  <p className="flex gap-2.5 text-[15px] leading-snug text-cream/80">
-                    <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent-icon" />
-                    {item}
-                  </p>
-                </RevealItem>
-              ))}
-            </RevealGroup>
+            ))}
           </div>
         </div>
-      </Container>
-    </section>
+      </section>
+
+      {/* ------------------------------------------ before / with FoodFlow */}
+      <section className="lb-pr-block" style={{ paddingTop: 140 }}>
+        <div className="lb-row" style={{ alignItems: "stretch" }}>
+          <div className="lb-reveal lb-ab-panel lb-ab-panel--dark">
+            <span className="lb-eyebrow">{a.before.label}</span>
+            <div className="lb-ab-mess">
+              <div className="mess m1 lb-ab-note">
+                <span style={{ fontWeight: 600 }}>{a.before.notebook}</span>
+                {a.before.notes.map((line, i) => (
+                  <span key={i} style={{ display: "block", textDecoration: i === 1 ? "line-through" : undefined }}>
+                    {line}
+                  </span>
+                ))}
+              </div>
+              <div className="mess m2 lb-ab-chats">
+                {a.before.chats.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </div>
+              <div className="mess m3 lb-ab-tablet">
+                <span className="lb-ab-battery" aria-hidden>
+                  <span className="batt" />
+                </span>
+                <span style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{a.before.tablet}</span>
+                  <span style={{ fontSize: 11, color: "#a39b90" }}>{a.before.battery}</span>
+                </span>
+              </div>
+            </div>
+            <span style={{ fontSize: 15, color: "#b9b1a5" }}>{a.before.caption}</span>
+          </div>
+
+          <div className="lb-reveal lb-ab-panel lb-ab-panel--light">
+            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "#5f5a54", textTransform: "uppercase" }}>
+              {a.after.label}
+            </span>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
+              {a.after.rows.map((row, i) => (
+                <div key={row.tag} className={`q q${i + 1} lb-ab-row`}>
+                  <span className="lb-mono" style={{ fontSize: 13, fontWeight: 600, minWidth: 52 }}>
+                    {row.tag}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 14 }}>{row.text}</span>
+                  <span className={`lb-ab-status lb-ab-status--${i}`}>{row.status}</span>
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: 15, color: "#4a4540" }}>{a.after.caption}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------- quote */}
+      <section className="lb-pr-block" style={{ paddingTop: 150 }}>
+        <blockquote className="lb-ab-quote">
+          <span style={{ color: "#ff5a33" }}>“</span>
+          {a.quote.split(" ").map((word, i, all) => (
+            <span key={i}>
+              <span className="lit" style={{ animationDelay: `${i * 0.25}s` }}>
+                {word}
+              </span>
+              {i < all.length - 1 ? " " : ""}
+            </span>
+          ))}
+          <span style={{ color: "#ff5a33" }}>”</span>
+        </blockquote>
+      </section>
+
+      {/* ------------------------------------------------------ commitments */}
+      <section className="lb-pr-block" style={{ paddingTop: 150 }}>
+        <h2 className="lb-reveal lb-ab-h2">
+          {a.commitmentLabel}
+          <span style={{ color: "#ff5a33" }}>.</span>
+        </h2>
+        <div className="lb-ab-cards">
+          {a.commitment.map((item, i) => {
+            const icon = COMMITMENT_ICONS[i];
+            return (
+              <div key={i} className="lb-reveal lb-ab-card">
+                {icon?.tone === "zero" ? (
+                  <span className="lb-display" style={{ fontSize: 44, letterSpacing: "-0.05em", lineHeight: 1 }}>
+                    0<span style={{ color: "#ff5a33" }}>%</span>
+                  </span>
+                ) : icon ? (
+                  <span className={`lb-ab-icon lb-ab-icon--${icon.tone}`}>
+                    <svg {...CHECK_PROPS}>{icon.node}</svg>
+                  </span>
+                ) : null}
+                <span style={{ marginTop: "auto", fontSize: 17, lineHeight: 1.45 }}>{item}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------- close */}
+      <section className="lb-reserve">
+        <div className="lb-reserve-glow" aria-hidden />
+        <h2 className="lb-h2-xl lb-reveal" style={{ fontSize: "clamp(44px, 7vw, 100px)", lineHeight: 0.95 }}>
+          {a.closing.line1}
+          <br />
+          <span>{a.closing.line2}</span>
+        </h2>
+        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#b9b1a5" }}>
+          {a.closing.description}
+        </p>
+        <div className="lb-hero-ctas lb-reveal">
+          <button type="button" className="lb-pill-btn lb-pill-btn--lg" onClick={() => openLeadForm({ source: "web_form" })}>
+            {a.closing.cta}
+          </button>
+          {whatsappUrl && (
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="lb-text-link" style={{ color: "#5fd6c5" }}>
+              {a.closing.whatsapp}
+            </a>
+          )}
+        </div>
+      </section>
+    </>
   );
 }
