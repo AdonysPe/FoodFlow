@@ -1,8 +1,16 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import AuthPageShell from "@/components/auth/AuthPageShell";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import MotionProvider from "@/components/MotionProvider";
 import LoginFlow from "@/components/dashboard/LoginFlow";
 import { getCurrentUser } from "@/lib/auth/current-user";
+
+// The B design's type pair, as on the home page: loaded for this route only,
+// and re-pointed to the theme's font roles by the `.lb` block at the end of
+// globals.css.
+const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-lb-display", display: "swap" });
+const text = Geist({ subsets: ["latin"], variable: "--font-lb-text", display: "swap" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-lb-mono", display: "swap" });
 
 export const metadata = {
   title: "Entrar",
@@ -31,11 +39,16 @@ export default async function LoginPage({
     redirect(wanted && /^\/dashboard(\/|$)/.test(wanted) ? wanted : "/dashboard");
   }
 
+  // Design B ("Noche"): the screen is pinned to the night theme and draws its
+  // own header, so it does not use `AuthPageShell` (register, forgot and reset
+  // still do).
   return (
-    <AuthPageShell>
-      <Suspense fallback={null}>
-        <LoginFlow />
-      </Suspense>
-    </AuthPageShell>
+    <div data-theme="dark" className={`${display.variable} ${text.variable} ${mono.variable} lb lb-lg-page`}>
+      <MotionProvider>
+        <Suspense fallback={null}>
+          <LoginFlow />
+        </Suspense>
+      </MotionProvider>
+    </div>
   );
 }
