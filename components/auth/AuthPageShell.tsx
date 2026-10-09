@@ -1,53 +1,118 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import MotionProvider from "@/components/MotionProvider";
-import { LogoMark } from "@/components/ui/Logo";
-import { IconArrowRight, IconCheck, IconKitchen, IconOrders } from "@/components/ui/Icons";
-import ThemeToggle from "@/components/ui/ThemeToggle";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 
-const flow = [
-  { label: "Pedido recibido", detail: "Mesa 04 · 3 productos", icon: IconOrders, tone: "text-accent-icon bg-accent-400/10" },
-  { label: "En preparación", detail: "Cocina sincronizada", icon: IconKitchen, tone: "text-warn-ink bg-warn/10" },
-  { label: "Listo para servir", detail: "El equipo recibe el aviso", icon: IconCheck, tone: "text-mint-ink bg-mint/10" },
+// The B design's type pair, as on the home page: loaded for the auth routes
+// only, and re-pointed to the theme's font roles by the `.lb` block at the end
+// of globals.css.
+const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-lb-display", display: "swap" });
+const text = Geist({ subsets: ["latin"], variable: "--font-lb-text", display: "swap" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-lb-mono", display: "swap" });
+
+/** What an order goes through, looped on the left of every auth screen. */
+const STEPS = [
+  {
+    label: "Pedido recibido",
+    detail: "Mesa 04 · 3 productos",
+    tone: "accent",
+    width: 1.9,
+    icon: (
+      <>
+        <path d="M6 3.5h12v17l-3-2-3 2-3-2-3 2z" />
+        <path d="M9 8.5h6M9 12.5h6" />
+      </>
+    ),
+  },
+  {
+    label: "En preparación",
+    detail: "Cocina sincronizada",
+    tone: "cream",
+    width: 1.9,
+    icon: (
+      <>
+        <path d="M5 11h14v3a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6z" />
+        <path d="M9 7c0-1 1-1.5 1-2.5M13 7c0-1 1-1.5 1-2.5" />
+      </>
+    ),
+  },
+  {
+    label: "Listo para servir",
+    detail: "El equipo recibe el aviso",
+    tone: "mint",
+    width: 2.2,
+    icon: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  },
 ];
 
+/**
+ * The frame of every auth screen (login, register, forgot and reset password),
+ * design B ("Noche"): pinned to the night theme, its own header, the looping
+ * order on the left (hidden below 1040px so the form comes first on a phone)
+ * and the screen's card on the right. The card brings its own entrance.
+ *
+ * Server component: everything here is CSS-driven, so the screens that use it
+ * stay free to be client components.
+ */
 export default function AuthPageShell({ children }: { children: ReactNode }) {
   return (
-    <MotionProvider>
-      <main className="auth-surface relative min-h-screen overflow-hidden bg-ink-950 text-fg">
-        <div className="pointer-events-none absolute inset-0 auth-ambient" aria-hidden />
-        <header className="relative z-20 mx-auto flex h-20 w-full max-w-[1320px] items-center justify-between px-5 sm:px-8 lg:h-24 lg:px-10">
-          <Link href="/" className="group inline-flex items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 focus-visible:ring-offset-4 focus-visible:ring-offset-ink-950" aria-label="Ir al inicio de FoodFlow">
-            <LogoMark className="h-9 w-9 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105" />
-            <span className="font-display text-[1.05rem] font-bold tracking-[-0.025em] text-fg">FoodFlow</span>
+    <div data-theme="dark" className={`${display.variable} ${text.variable} ${mono.variable} lb lb-lg-page`}>
+      <div className="lb-lg">
+        <div className="lb-glow lb-lg-glow" aria-hidden />
+
+        <header className="lb-lg-header">
+          <Link href="/" className="lb-lg-logo" aria-label="Ir al inicio de FoodFlow">
+            FoodFlow<span aria-hidden />
           </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-[13px] font-medium text-muted outline-none transition-colors hover:bg-fg/[0.05] hover:text-fg focus-visible:ring-2 focus-visible:ring-accent-400/70 sm:px-4">
-              <IconArrowRight className="h-3.5 w-3.5 rotate-180" />
-              <span className="hidden sm:inline">Volver al inicio</span><span className="sm:hidden">Volver</span>
-            </Link>
-            <ThemeToggle />
-          </div>
+          <Link href="/" className="lb-lg-back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+            Volver al inicio
+          </Link>
         </header>
-        <div className="relative z-10 mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-[1320px] items-center gap-12 px-5 pb-12 sm:px-8 lg:min-h-[calc(100vh-6rem)] lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.78fr)] lg:px-10 lg:pb-20 xl:gap-20">
-          <section className="hidden max-w-[620px] lg:block" aria-label="Así funciona FoodFlow">
-            <h2 className="max-w-[12ch] font-display text-[clamp(2.9rem,4.8vw,4.9rem)] font-bold leading-[0.98] tracking-[-0.038em] text-fg">Cada pedido, en su lugar.</h2>
-            <p className="mt-6 max-w-[52ch] text-[1.02rem] leading-7 text-muted">Entra y toma el control de tu carta, las mesas y la cocina desde una sola operación.</p>
-            <div className="auth-flow relative mt-12 max-w-[520px]" aria-label="Flujo de un pedido">
-              <div className="absolute bottom-8 left-[23px] top-8 w-px bg-fg/[0.08]" aria-hidden><span className="auth-flow-signal absolute left-1/2 top-0 h-14 w-px -translate-x-1/2 bg-accent-400" /></div>
-              <ol className="relative space-y-3">
-                {flow.map(({ label, detail, icon: Icon, tone }, index) => (
-                  <li key={label} className="auth-flow-step flex items-center gap-4 rounded-2xl px-3 py-3.5" style={{ animationDelay: `${index * 1.6}s` }}>
-                    <span className={`relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-xl ${tone}`}><Icon className="h-5 w-5" /></span>
-                    <span className="min-w-0"><span className="block text-[14px] font-semibold text-fg">{label}</span><span className="mt-0.5 block text-[12.5px] text-faint">{detail}</span></span>
+
+        <main id="main" className="lb-lg-body">
+          <section className="lb-lg-pitch" aria-label="Así funciona FoodFlow">
+            <h2 className="lb-pr-h1 lb-lg-title">
+              <span className="lb-word" style={{ animationDelay: ".05s" }}>Cada</span>{" "}
+              <span className="lb-word" style={{ animationDelay: ".15s" }}>pedido,</span>
+              <br />
+              <span className="lb-word" style={{ animationDelay: ".3s", color: "#8a8278" }}>en</span>{" "}
+              <span className="lb-word" style={{ animationDelay: ".4s", color: "#8a8278" }}>su</span>{" "}
+              <span className="lb-word" style={{ animationDelay: ".5s", color: "#8a8278" }}>
+                lugar<span style={{ color: "#ff5a33" }}>.</span>
+              </span>
+            </h2>
+            <p className="lb-rise lb-lg-lead" style={{ animationDelay: ".65s" }}>
+              Entra y toma el control de tu carta, las mesas y la cocina desde una sola operación.
+            </p>
+            <div className="lb-rise lb-lg-flow" style={{ animationDelay: ".8s" }} aria-label="Flujo de un pedido">
+              <div className="lb-lg-rail" aria-hidden>
+                <span className="sig" />
+              </div>
+              <ol>
+                {STEPS.map((step, index) => (
+                  <li key={step.label} className={`lb-lg-st lb-lg-st${index + 1}`}>
+                    <span className={`lb-lg-step-icon lb-lg-step-icon--${step.tone}`}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={step.width} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        {step.icon}
+                      </svg>
+                    </span>
+                    <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      <span style={{ fontSize: 15, fontWeight: 600 }}>{step.label}</span>
+                      <span style={{ fontSize: 13, color: "#a39b90" }}>{step.detail}</span>
+                    </span>
                   </li>
                 ))}
               </ol>
             </div>
           </section>
-          <div className="mx-auto w-full max-w-[500px]">{children}</div>
-        </div>
-      </main>
-    </MotionProvider>
+
+          <div className="lb-rise lb-lg-side" style={{ animationDelay: ".3s" }}>
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
