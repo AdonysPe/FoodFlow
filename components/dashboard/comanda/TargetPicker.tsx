@@ -25,11 +25,14 @@ export default function TargetPicker({
   openTabs,
   onPickTable,
   onPickOther,
+  selected = null,
 }: {
   tables: ComandaTableDTO[];
   openTabs: OpenTabDTO[];
   onPickTable: (t: ComandaTableDTO) => void;
   onPickOther: (kind: "pickup" | "delivery") => void;
+  /** Desktop keeps this list on screen, so it marks what is being worked on. */
+  selected?: { kind: "table"; id: string } | { kind: "pickup" } | { kind: "delivery" } | null;
 }) {
   const tabByTable = useMemo(() => new Map(openTabs.map((t) => [t.tableId, t])), [openTabs]);
 
@@ -75,11 +78,11 @@ export default function TargetPicker({
       )}
 
       <div className="lbd-cm-channels">
-        <button type="button" className="lbd-cm-channel" onClick={() => onPickOther("pickup")}>
+        <button type="button" className={`lbd-cm-channel${selected?.kind === "pickup" ? " is-selected" : ""}`} onClick={() => onPickOther("pickup")}>
           <span>Para llevar</span>
           <small>Sin mesa</small>
         </button>
-        <button type="button" className="lbd-cm-channel" onClick={() => onPickOther("delivery")}>
+        <button type="button" className={`lbd-cm-channel${selected?.kind === "delivery" ? " is-selected" : ""}`} onClick={() => onPickOther("delivery")}>
           <span>Delivery</span>
           <small>A domicilio</small>
         </button>
@@ -108,7 +111,7 @@ export default function TargetPicker({
                   const flag = tab ? KITCHEN_FLAG[tab.kitchenStatus] : undefined;
                   const look = tab?.kitchenStatus === "delivered" ? "cuenta" : t.state;
                   return (
-                    <button key={t.id} type="button" onClick={() => onPickTable(t)} data-look={look} className="lbd-cm-table">
+                    <button key={t.id} type="button" onClick={() => onPickTable(t)} data-look={look} className={`lbd-cm-table${selected?.kind === "table" && selected.id === t.id ? " is-selected" : ""}`}>
                       <span style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
                         <span className="lbd-display" style={{ fontSize: 20, letterSpacing: "-0.04em", lineHeight: 1 }}>
                           {t.name}

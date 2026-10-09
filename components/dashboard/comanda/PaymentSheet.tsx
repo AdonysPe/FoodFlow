@@ -234,7 +234,7 @@ export default function PaymentSheet({
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: "8px 16px 190px" }}>
+      <div className="lbd-cm-pad" style={{ flex: 1, padding: "8px 16px 190px" }}>
         <div className="lbd-cm-total-card">
           <p className="lbd-cm-eyebrow" style={{ margin: 0 }}>
             Total a cobrar

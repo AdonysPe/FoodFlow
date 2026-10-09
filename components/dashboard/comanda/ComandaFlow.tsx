@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, m } from "framer-motion";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
@@ -19,6 +19,7 @@ import TargetPicker from "./TargetPicker";
 import ItemPicker from "./ItemPicker";
 import CartBar from "./CartBar";
 import TableAccount from "./TableAccount";
+import ComandaSummary, { type SummaryLine } from "./ComandaSummary";
 import PaymentSheet from "./PaymentSheet";
 import PaymentDone, { type SettledTab } from "./PaymentDone";
 
@@ -31,6 +32,23 @@ export type Target =
   | { kind: "delivery" };
 
 type Step = "target" | "items" | "account" | "pay" | "done";
+
+/** The desktop layout starts here; below it the flow runs one step at a time. */
+const WIDE_QUERY = "(min-width: 1100px)";
+
+function useWide() {
+  // False until mounted so the server and the first client render agree; a
+  // desktop swaps to the three columns right after.
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(WIDE_QUERY);
+    setWide(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setWide(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return wide;
+}
 
 export default function ComandaFlow({
   tables,
@@ -68,6 +86,7 @@ export default function ComandaFlow({
   // Survives the refresh that follows a charge, which is the point of it.
   const [settled, setSettled] = useState<SettledTab | null>(null);
   const [isSending, startSending] = useTransition();
+  const wide = useWide();
 
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const tabByTable = useMemo(
@@ -90,6 +109,15 @@ export default function ComandaFlow({
     }
     return { count: c, total: t };
   }, [cart, itemById]);
+
+  const summaryLines: SummaryLine[] = useMemo(
+    () =>
+      Object.entries(cart).flatMap(([id, line]) => {
+        const item = itemById.get(id);
+        return item ? [{ id, name: item.name, price: item.price, qty: line.qty, note: line.note }] : [];
+      }),
+    [cart, itemById]
+  );
 
   function goTo(next: Step, dir: 1 | -1) {
     setDirection(dir);
@@ -172,6 +200,90 @@ export default function ComandaFlow({
       else resetToTarget();
       router.refresh();
     });
+  }
+
+  const targetLabel =
+    target?.kind === "table" ? target.name : target?.kind === "delivery" ? "Delivery" : "Para llevar";
+
+  // ------------------------------------------------- desktop: three columns
+  // The destination, the carta and the account side by side, so a waiter at a
+  // till never leaves the screen to add a round or charge a table.
+  if (wide) {
+    return (
+      <div className="lbd-cm-flow lbd-cm-wide">
+        <section className="lbd-cm-wcol" aria-label="Destino">
+          <div className="lbd-cm-wpad">
+            <TargetPicker tables={tables} openTabs={openTabs} onPickTable={chooseTable} onPickOther={chooseOther} selected={target} />
+          </div>
+        </section>
+
+        <section className="lbd-cm-wcol" aria-label="Carta">
+          {target ? (
+            <ItemPicker
+              targetLabel={targetLabel}
+              roundNumber={target.kind === "table" ? nextRound : 1}
+              categories={categories}
+              items={items}
+              frequent={frequent}
+              cart={cart}
+              onBack={resetToTarget}
+              onSetQty={setQty}
+              onSetNote={setNote}
+              hideChange
+            />
+          ) : (
+            <p className="lbd-cm-wempty">Elige una mesa, para llevar o delivery para ver la carta.</p>
+          )}
+        </section>
+
+        <section className="lbd-cm-wcol lbd-cm-wcol--glass" aria-label="Cuenta">
+          {step === "pay" && activeTab ? (
+            <PaymentSheet
+              tab={activeTab}
+              venueName={venueName}
+              autoPrint={receiptSettings.autoPrint}
+              receiptSettings={receiptSettings}
+              billing={billing}
+              onBack={() => goTo("account", -1)}
+              onPaid={(paid) => {
+                setSettled(paid);
+                goTo("done", 1);
+                router.refresh();
+              }}
+            />
+          ) : step === "done" && settled ? (
+            <PaymentDone
+              settled={settled}
+              onDone={() => {
+                pushToast(`Cobrado · ${settled.methodLabel} · ${settled.tableName}`, "success");
+                resetToTarget();
+              }}
+            />
+          ) : target ? (
+            <ComandaSummary
+              targetLabel={targetLabel}
+              tab={activeTab}
+              nextRound={nextRound}
+              lines={summaryLines}
+              sending={isSending}
+              askName={!activeTab}
+              customerName={customerName}
+              onCustomerNameChange={setCustomerName}
+              onQty={setQty}
+              onSend={send}
+              onCharge={() => goTo("pay", 1)}
+              onVoided={() => {
+                pushToast("Cuenta anulada. Mesa libre.", "success");
+                resetToTarget();
+                router.refresh();
+              }}
+            />
+          ) : (
+            <p className="lbd-cm-wempty">La cuenta aparece aquí cuando eliges dónde.</p>
+          )}
+        </section>
+      </div>
+    );
   }
 
   return (

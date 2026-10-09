@@ -85,6 +85,7 @@ export default function ItemPicker({
   onBack,
   onSetQty,
   onSetNote,
+  hideChange = false,
 }: {
   targetLabel: string;
   roundNumber: number;
@@ -95,6 +96,8 @@ export default function ItemPicker({
   onBack: () => void;
   onSetQty: (itemId: string, qty: number) => void;
   onSetNote: (itemId: string, note: string) => void;
+  /** Desktop: the destination is always one click away on the left. */
+  hideChange?: boolean;
 }) {
   const hasOrphans = items.some((i) => i.categoryId == null);
   const tabs = useMemo(() => {
@@ -137,9 +140,11 @@ export default function ItemPicker({
             <span style={{ fontSize: 13, color: "#a39b90" }}>{roundLabel ? `${roundLabel} · nueva` : "Nuevo pedido"}</span>
             <h1 className="lbd-display lbd-cm-h1 lbd-trunc">{targetLabel}</h1>
           </div>
-          <button type="button" onClick={onBack} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ flexShrink: 0 }}>
-            Cambiar
-          </button>
+          {!hideChange && (
+            <button type="button" onClick={onBack} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ flexShrink: 0 }}>
+              Cambiar
+            </button>
+          )}
         </div>
 
         <div className="lbd-cm-search">
@@ -195,7 +200,7 @@ export default function ItemPicker({
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: "4px 16px 220px" }}>
+      <div className="lbd-cm-pad" style={{ flex: 1, padding: "4px 16px 220px" }}>
         {shown.length === 0 ? (
           <p className="lbd-ov-empty" style={{ padding: "32px 0", textAlign: "center", fontSize: 14 }}>
             {needle ? "No hay platos con ese nombre." : "No hay platos disponibles en esta categoría."}
