@@ -104,36 +104,26 @@ export default function CertificateCard({
   return (
     <div className="flex flex-col gap-4">
       {/* ------------------------------------------------------ what is on file */}
-      <div
-        className={`rounded-xl border px-4 py-3.5 ${
-          state === "valid"
-            ? "border-ok/30 bg-ok/[0.07]"
-            : state === "expiring"
-              ? "border-warn/30 bg-warn/[0.07]"
-              : state === "expired"
-                ? "border-accent-400/35 bg-accent-400/[0.08]"
-                : "border-fg/[0.1] bg-fg/[0.03]"
-        }`}
-      >
+      <div className="lbd-bl-cert" data-state={state}>
         {state === "none" ? (
-          <p className="text-[13px] font-medium text-muted">
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 550, color: "#cfc7bb" }}>
             No has subido tu certificado.
           </p>
         ) : (
           <>
-            <p className="text-[13px] font-semibold text-fg">
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
               {state === "expired"
                 ? "Tu certificado venció"
                 : state === "unknown"
                   ? "Certificado guardado"
                   : `Certificado válido hasta ${formatBillingDate(cert.expiresAt)}`}
             </p>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-faint">
+            <p className="lbd-bl-help" style={{ marginTop: 2 }}>
               {[cert.fileName, cert.subject].filter(Boolean).join(" · ")}
               {state === "expiring" && remaining != null && (
                 <>
                   {" · "}
-                  <span className="text-warn-ink">
+                  <span style={{ color: "#ff9a7d" }}>
                     vence en {remaining} {remaining === 1 ? "día" : "días"}
                   </span>
                 </>
@@ -145,7 +135,8 @@ export default function CertificateCard({
               type="button"
               onClick={drop}
               disabled={isPending}
-              className="mt-2 text-[12px] font-medium text-faint underline underline-offset-2 hover:text-accent-label disabled:opacity-40"
+              className="lbd-bl-link"
+              style={{ marginTop: 8 }}
             >
               Eliminar certificado
             </button>
@@ -161,7 +152,7 @@ export default function CertificateCard({
       )}
 
       {/* ------------------------------------------------------------- upload */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="lbd-bl-grid2">
         <Field
           htmlFor="cert-file"
           label={cert.fileName ? "Reemplazar certificado" : "Certificado digital"}
@@ -175,7 +166,7 @@ export default function CertificateCard({
             type="file"
             accept=".pfx,.p12,application/x-pkcs12"
             onChange={(e) => pick(e.target.files?.[0] ?? null)}
-            className="block w-full cursor-pointer rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-3 py-2.5 text-[12.5px] text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-fg/[0.08] file:px-3 file:py-1.5 file:text-[12.5px] file:font-medium file:text-fg/80"
+            className="lbd-bl-file"
           />
         </Field>
 
@@ -197,14 +188,12 @@ export default function CertificateCard({
               type="button"
               onClick={() => setVisible((v) => !v)}
               aria-pressed={visible}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[11.5px] font-medium text-faint hover:bg-fg/[0.08] hover:text-fg/70"
+              className="lbd-bl-mini absolute right-2 top-1/2 -translate-y-1/2"
             >
               {visible ? "Ocultar" : "Mostrar"}
             </button>
           </div>
-          <p className="mt-1.5 text-[11.5px] text-faint">
-            Se guarda cifrada junto al certificado.
-          </p>
+          <p className="lbd-bl-help">Se guarda cifrada junto al certificado.</p>
         </div>
       </div>
 
@@ -213,11 +202,12 @@ export default function CertificateCard({
           type="button"
           onClick={submit}
           disabled={!file || !password || isPending}
-          className="rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-4 py-2.5 text-[13.5px] font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
+          className="lbd-btn lbd-btn--solid"
         >
+          {isPending && <span className="lbd-bl-spin is-dark" aria-hidden />}
           {isPending ? "Subiendo…" : "Subir certificado"}
         </button>
-        <p className="text-[12px] text-faint">
+        <p className="lbd-bl-help" style={{ margin: 0 }}>
           Obtén tu certificado digital en SUNAT con tu RUC. Es gratuito.
         </p>
       </div>

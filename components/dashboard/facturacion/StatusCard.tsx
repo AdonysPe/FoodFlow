@@ -2,30 +2,18 @@
 
 import { formatBillingDate, type BillingReadiness, type ChecklistItem } from "@/lib/billing/settings";
 
-const HEADLINE: Record<BillingReadiness, { icon: string; title: string; skin: string }> = {
-  complete: {
-    icon: "✓",
-    title: "Configuración completa · listo para emitir",
-    skin: "border-ok/30 bg-ok/[0.07] text-ok-ink",
-  },
-  incomplete: {
-    icon: "!",
-    title: "Configuración incompleta · faltan campos",
-    skin: "border-warn/30 bg-warn/[0.07] text-warn-ink",
-  },
-  unset: {
-    icon: "×",
-    title: "Sin configurar",
-    skin: "border-fg/[0.1] bg-fg/[0.03] text-muted",
-  },
+const HEADLINE: Record<BillingReadiness, { title: string; dot: string; bg: string; bd: string }> = {
+  complete: { title: "Configuración completa · listo para emitir", dot: "#3ddc97", bg: "rgba(61,220,151,0.06)", bd: "rgba(61,220,151,0.28)" },
+  incomplete: { title: "Configuración incompleta · faltan campos", dot: "#ff5a33", bg: "rgba(255,90,51,0.06)", bd: "rgba(255,90,51,0.28)" },
+  unset: { title: "Sin configurar", dot: "#6f675e", bg: "rgba(243,239,230,0.03)", bd: "rgba(243,239,230,0.08)" },
 };
 
 /**
- * Componente 3 — el estado de la configuración.
+ * The state of the configuration, design B.
  *
  * Deliberately the first thing on the page: an owner who opened this screen is
- * asking one question ("¿ya puedo emitir?") and the four lines below answer it
- * without expanding a single section.
+ * asking one question ("¿ya puedo emitir?") and the progress bar and the four
+ * lines below answer it without expanding a single section.
  */
 export default function StatusCard({
   readiness,
@@ -46,64 +34,47 @@ export default function StatusCard({
   const head = HEADLINE[readiness];
 
   return (
-    <section className={`rounded-2xl border p-5 ${head.skin}`}>
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-fg/[0.08] text-[15px] font-bold"
-        >
-          {head.icon}
+    <section className="lbd-bl-status lbd-rise" style={{ background: head.bg, borderColor: head.bd, animationDelay: ".04s" }} aria-label="Estado de la facturación">
+      <div className="lbd-bl-status-main">
+        <span className="lbd-mono lbd-bl-eyebrow">¿YA PUEDO EMITIR?</span>
+        <span className="lbd-bl-status-title lbd-display">
+          <i style={{ background: head.dot }} aria-hidden />
+          {head.title}
         </span>
-        <h3 className="text-[14.5px] font-semibold">{head.title}</h3>
+        <div style={{ display: "flex", gap: 4, marginTop: 4 }} aria-hidden>
+          {items.map((item) => (
+            <span key={item.key} style={{ flex: 1, height: 5, borderRadius: 5, transition: "background .4s", background: item.done ? "#3ddc97" : "rgba(243,239,230,0.1)" }} />
+          ))}
+        </div>
+        <ul className="lbd-bl-checks">
+          {items.map((item) => (
+            <li key={item.key}>
+              <button type="button" onClick={() => onJump(item.key)} title={item.detail}>
+                <span aria-hidden className="lbd-bl-check" data-done={item.done}>
+                  {item.done ? "✓" : "×"}
+                </span>
+                {item.label}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
-
-      <ul className="mt-4 grid gap-1.5 sm:grid-cols-2">
-        {items.map((item) => (
-          <li key={item.key}>
-            <button
-              type="button"
-              onClick={() => onJump(item.key)}
-              className="flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-fg/[0.05]"
-            >
-              <span
-                aria-hidden
-                className={`mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                  item.done ? "bg-ok/20 text-ok-ink" : "bg-fg/[0.08] text-faint"
-                }`}
-              >
-                {item.done ? "✓" : "×"}
-              </span>
-              <span className="min-w-0">
-                <span
-                  className={`block text-[12.5px] font-medium ${
-                    item.done ? "text-fg/70" : "text-fg/85"
-                  }`}
-                >
-                  {item.label}
-                </span>
-                <span className="mt-0.5 block text-[11.5px] leading-snug text-faint">
-                  {item.detail}
-                </span>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-fg/[0.07] pt-3.5 text-[11.5px]">
+      <dl className="lbd-bl-status-meta">
         <div>
-          <dt className="text-faint">Última actualización</dt>
-          <dd className="mt-0.5 font-medium text-muted">
-            {updatedAt ? formatBillingDate(updatedAt) : "Nunca"}
+          <dt>Próximo correlativo</dt>
+          <dd className="lbd-mono" style={{ fontSize: 18, fontWeight: 600 }}>
+            {nextDocument}
           </dd>
         </div>
         <div>
-          <dt className="text-faint">Cobros este mes</dt>
-          <dd className="mt-0.5 font-medium text-muted tabular-nums">{issuedThisMonth}</dd>
+          <dt>Cobros este mes</dt>
+          <dd className="lbd-display" style={{ fontSize: 22, fontWeight: 650 }}>
+            {issuedThisMonth}
+          </dd>
         </div>
         <div>
-          <dt className="text-faint">Próximo correlativo</dt>
-          <dd className="mt-0.5 font-mono font-medium text-muted">{nextDocument}</dd>
+          <dt>Última actualización</dt>
+          <dd style={{ fontSize: 14, fontWeight: 550 }}>{updatedAt ? formatBillingDate(updatedAt) : "Nunca"}</dd>
         </div>
       </dl>
     </section>

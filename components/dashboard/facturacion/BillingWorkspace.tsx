@@ -32,7 +32,7 @@ import { PAPER_LABELS, PAPER_WIDTHS, formatDocumentNo } from "@/lib/receipt";
 import { fieldClass, labelClass } from "@/components/dashboard/menu/ui";
 import CertificateCard from "./CertificateCard";
 import StatusCard from "./StatusCard";
-import TicketPreviewModal from "./TicketPreviewModal";
+import TicketPreview from "./TicketPreview";
 import { Callout, Help, Section, SecretField, TextField, Toggle } from "./ui";
 
 type SectionKey = "identity" | "certificate" | "ose" | "series" | "ticket";
@@ -90,7 +90,6 @@ export default function BillingWorkspace({
 
   const [error, setError] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ passed: boolean; message: string } | null>(null);
-  const [preview, setPreview] = useState(false);
   const [isSaving, startSaving] = useTransition();
   const [isTesting, startTesting] = useTransition();
   const sectionRefs = useRef<Partial<Record<SectionKey, HTMLDivElement | null>>>({});
@@ -213,8 +212,8 @@ export default function BillingWorkspace({
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <StatusCard
+    <>
+    <StatusCard
         readiness={readiness}
         items={items}
         updatedAt={value.updatedAt}
@@ -223,16 +222,19 @@ export default function BillingWorkspace({
         onJump={jump}
       />
 
+    <div className="lbd-bl-layout">
+    <div className="lbd-bl-form">
       {/* ============================================ 1 · datos del restaurante */}
       <div ref={(el) => void (sectionRefs.current.identity = el)}>
         <Section
-          title="1 · Datos del restaurante"
+          number={1}
+          title="Datos del restaurante"
           summary="El contribuyente que emite. Es lo que SUNAT lee en cada comprobante."
           status={items[0].done ? "done" : "pending"}
           open={open.identity}
           onToggle={() => toggle("identity")}
         >
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="lbd-bl-grid2">
             <TextField
               id="bl-ruc"
               label="RUC"
@@ -309,7 +311,8 @@ export default function BillingWorkspace({
       {/* ==================================================== 2 · certificado */}
       <div ref={(el) => void (sectionRefs.current.certificate = el)}>
         <Section
-          title="2 · Certificado digital"
+          number={2}
+          title="Certificado digital"
           summary="El .pfx que firma tus comprobantes. Lo obtienes gratis en SUNAT con tu RUC."
           status={items[1].done ? "done" : "pending"}
           open={open.certificate}
@@ -322,7 +325,8 @@ export default function BillingWorkspace({
       {/* =========================================================== 3 · OSE */}
       <div ref={(el) => void (sectionRefs.current.ose = el)}>
         <Section
-          title="3 · Conexión con tu OSE"
+          number={3}
+          title="Conexión con tu OSE"
           summary="Tu cuenta con el operador que envía los comprobantes a SUNAT."
           status={items[2].done ? "done" : "pending"}
           open={open.ose}
@@ -336,10 +340,10 @@ export default function BillingWorkspace({
               vigente con ellos antes de contratar.
             </Callout>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="lbd-bl-grid2">
               <div>
                 <label htmlFor="bl-provider" className={labelClass}>
-                  Proveedor OSE <span className="text-accent-label">*</span>
+                  Proveedor OSE <span style={{ color: "#ff7a57" }}>*</span>
                   <Help text="El OSE (u OSE/PSE) es quien valida y envía tus comprobantes a SUNAT. Debes tener una cuenta contratada con uno." />
                 </label>
                 <select
@@ -356,12 +360,12 @@ export default function BillingWorkspace({
                   ))}
                 </select>
                 {providerMeta?.site && (
-                  <p className="mt-1.5 text-[11.5px] text-faint">
+                  <p className="lbd-bl-help">
                     <a
                       href={providerMeta.site}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="underline underline-offset-2 hover:text-muted"
+                      style={{ textDecoration: "underline", textUnderlineOffset: 2 }}
                     >
                       Abrir {providerMeta.label}
                     </a>
@@ -426,12 +430,13 @@ export default function BillingWorkspace({
                 type="button"
                 onClick={test}
                 disabled={isTesting || dirty}
-                className="rounded-xl border border-fg/[0.12] bg-fg/[0.05] px-4 py-2.5 text-[13.5px] font-medium text-fg/75 transition-colors hover:bg-fg/[0.09] disabled:opacity-40"
+                className="lbd-btn lbd-btn--ghost"
               >
+                {isTesting && <span className="lbd-bl-spin" aria-hidden />}
                 {isTesting ? "Probando…" : "Probar conexión"}
               </button>
               {dirty && (
-                <p className="text-[12px] text-faint">
+                <p className="lbd-bl-help" style={{ margin: 0 }}>
                   Guarda los cambios antes de probar.
                 </p>
               )}
@@ -450,14 +455,15 @@ export default function BillingWorkspace({
       {/* ======================================================== 4 · series */}
       <div ref={(el) => void (sectionRefs.current.series = el)}>
         <Section
-          title="4 · Series y numeración"
+          number={4}
+          title="Series y numeración"
           summary="Cómo se numeran tus boletas, facturas y notas de crédito."
           status={items[3].done ? "done" : "pending"}
           open={open.series}
           onToggle={() => toggle("series")}
         >
           <div className="flex flex-col gap-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="lbd-bl-grid3">
               <SeriesPair
                 idPrefix="bl-boleta"
                 label="Boletas"
@@ -492,7 +498,7 @@ export default function BillingWorkspace({
               como está. Repetir un número hace que SUNAT rechace el comprobante.
               <br />
               Tu nota de venta interna sigue numerándose aparte, en{" "}
-              <span className="font-mono text-fg/70">
+              <span className="lbd-mono" style={{ color: "#cfc7bb" }}>
                 {formatDocumentNo(notaVentaSeries, notaVentaNext)}
               </span>
               .
@@ -504,19 +510,20 @@ export default function BillingWorkspace({
       {/* ======================================================== 5 · ticket */}
       <div ref={(el) => void (sectionRefs.current.ticket = el)}>
         <Section
-          title="5 · Personalización del ticket"
+          number={5}
+          title="Personalización del ticket"
           summary="Logo, mensaje al pie y cómo sale impreso en tu ticketera."
           status="optional"
           open={open.ticket}
           onToggle={() => toggle("ticket")}
         >
           <div className="flex flex-col gap-5">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="lbd-bl-grid2">
               <div>
                 <span className={labelClass}>Logo del restaurante</span>
                 <div className="flex items-center gap-3">
                   {value.logoDataUrl ? (
-                    <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-fg/[0.1] bg-white p-1">
+                    <span className="lbd-bl-logo">
                       {/* Data URL of the owner's own file: next/image would only
                           add a loader in front of bytes we already hold. */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -527,7 +534,7 @@ export default function BillingWorkspace({
                       />
                     </span>
                   ) : (
-                    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-fg/[0.15] text-[10px] text-faint">
+                    <span className="lbd-bl-logo is-empty">
                       sin logo
                     </span>
                   )}
@@ -537,20 +544,20 @@ export default function BillingWorkspace({
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
                       onChange={(e) => void pickLogo(e.target.files?.[0] ?? null)}
-                      className="block w-full cursor-pointer rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 py-2 text-[12px] text-muted file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-fg/[0.08] file:px-2 file:py-1 file:text-[12px] file:font-medium file:text-fg/80"
+                      className="lbd-bl-file"
                     />
                     {value.logoDataUrl && (
                       <button
                         type="button"
                         onClick={() => set("logoDataUrl", null)}
-                        className="mt-1.5 text-[11.5px] font-medium text-faint underline underline-offset-2 hover:text-accent-label"
+                        className="lbd-bl-link"
                       >
                         Quitar logo
                       </button>
                     )}
                   </div>
                 </div>
-                <p className="mt-1.5 text-[11.5px] leading-snug text-faint">
+                <p className="lbd-bl-help">
                   PNG o JPG, máx. 2 MB. Lo reducimos a {LOGO_MAX_PX} px y se imprime en
                   blanco y negro: un logo simple sale mucho mejor que uno con degradados.
                 </p>
@@ -567,7 +574,7 @@ export default function BillingWorkspace({
               />
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="lbd-bl-grid2">
               <Toggle
                 checked={value.showQr}
                 onChange={(v) => set("showQr", v)}
@@ -608,17 +615,14 @@ export default function BillingWorkspace({
                     type="button"
                     onClick={() => set("paperWidth", w)}
                     aria-pressed={value.paperWidth === w}
-                    className={`h-11 rounded-xl border text-[13px] font-semibold transition-colors ${
-                      value.paperWidth === w
-                        ? "border-accent-400/60 bg-accent-400/15 text-accent-label"
-                        : "border-fg/[0.1] bg-fg/[0.04] text-muted hover:text-fg/85"
-                    }`}
+                    className={`lbd-chip-btn${value.paperWidth === w ? " is-on" : ""}`}
+                    style={{ justifyContent: "center" }}
                   >
                     {w} mm
                   </button>
                 ))}
               </div>
-              <p className="mt-1.5 text-[11.5px] text-faint">{PAPER_LABELS[value.paperWidth]}</p>
+              <p className="lbd-bl-help">{PAPER_LABELS[value.paperWidth]}</p>
             </div>
           </div>
         </Section>
@@ -627,13 +631,9 @@ export default function BillingWorkspace({
       {error && <Callout tone="danger">{error}</Callout>}
 
       {/* ======================================================= las acciones */}
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center gap-2.5 border-t border-fg/[0.08] bg-ink-950/90 px-4 py-3.5 backdrop-blur-xl sm:-mx-6 sm:px-6">
-        <button
-          type="button"
-          onClick={save}
-          disabled={isSaving || !dirty}
-          className="rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-5 py-2.5 text-[14px] font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
-        >
+      <div className="lbd-bl-actions">
+        <button type="button" onClick={save} disabled={isSaving || !dirty} className="lbd-btn lbd-btn--solid">
+          {isSaving && <span className="lbd-bl-spin is-dark" aria-hidden />}
           {isSaving ? "Guardando…" : "Guardar configuración"}
         </button>
         <button
@@ -647,32 +647,17 @@ export default function BillingWorkspace({
             setError(null);
           }}
           disabled={!dirty || isSaving}
-          className="rounded-xl border border-fg/[0.12] bg-fg/[0.05] px-4 py-2.5 text-[13.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.09] disabled:opacity-40"
+          className="lbd-btn lbd-btn--ghost"
         >
           Cancelar
         </button>
-        <button
-          type="button"
-          onClick={() => setPreview(true)}
-          className="rounded-xl border border-fg/[0.12] bg-fg/[0.05] px-4 py-2.5 text-[13.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.09]"
-        >
-          Vista previa del ticket
-        </button>
-        {dirty && (
-          <span className="text-[12px] text-faint">Tienes cambios sin guardar.</span>
-        )}
+        {dirty && <span className="lbd-bl-help" style={{ margin: 0 }}>Tienes cambios sin guardar.</span>}
       </div>
-
-      {preview && (
-        <TicketPreviewModal
-          venueName={venueName}
-          settings={value}
-          notaVentaSeries={notaVentaSeries}
-          notaVentaNext={notaVentaNext}
-          onClose={() => setPreview(false)}
-        />
-      )}
     </div>
+
+    <TicketPreview venueName={venueName} settings={value} notaVentaSeries={notaVentaSeries} notaVentaNext={notaVentaNext} />
+    </div>
+    </>
   );
 }
 
@@ -694,9 +679,9 @@ function SeriesPair({
   onNext: (v: number) => void;
 }) {
   return (
-    <div className="rounded-xl border border-fg/[0.08] bg-fg/[0.02] p-4">
-      <p className="text-[13px] font-semibold text-fg/85">{label}</p>
-      <div className="mt-3 flex flex-col gap-3">
+    <div className="lbd-bl-series">
+      <p>{label}</p>
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12 }}>
         <TextField
           id={`${idPrefix}-series`}
           label="Serie"
@@ -718,9 +703,7 @@ function SeriesPair({
           maxLength={8}
         />
       </div>
-      <p className="mt-2.5 rounded-lg bg-fg/[0.04] px-2.5 py-1.5 text-center font-mono text-[12px] text-muted">
-        {formatElectronicNo(series, next)}
-      </p>
+      <p className="lbd-bl-series-no lbd-mono">{formatElectronicNo(series, next)}</p>
     </div>
   );
 }

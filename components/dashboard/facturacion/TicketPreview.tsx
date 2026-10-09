@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import ReceiptDoc from "@/components/dashboard/boleta/ReceiptDoc";
 import { buildReceipt } from "@/lib/receipt";
 import type { BillingSettingsDTO } from "@/lib/billing/settings";
@@ -15,7 +15,8 @@ const SAMPLE_LINES = [
 const SAMPLE_TOTAL = SAMPLE_LINES.reduce((s, l) => s + l.price * l.quantity, 0);
 
 /**
- * "Vista previa del ticket".
+ * "Vista previa del ticket", design B: the paper beside the form, redrawn as
+ * the owner types.
  *
  * Feeds the real renderer sample data — there is no second implementation of
  * the paper that could drift from what the printer receives. It previews the
@@ -23,30 +24,17 @@ const SAMPLE_TOTAL = SAMPLE_LINES.reduce((s, l) => s + l.price * l.quantity, 0);
  * is connected; the electronic heading only appears on a document SUNAT
  * actually accepted.
  */
-export default function TicketPreviewModal({
+export default function TicketPreview({
   venueName,
   settings,
   notaVentaSeries,
   notaVentaNext,
-  onClose,
 }: {
   venueName: string;
   settings: BillingSettingsDTO;
   notaVentaSeries: string;
   notaVentaNext: number;
-  onClose: () => void;
 }) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
   const receipt = useMemo(
     () =>
       buildReceipt(
@@ -91,39 +79,15 @@ export default function TicketPreviewModal({
   );
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Vista previa del ticket"
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink-950/80 px-4 py-10 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="w-full max-w-md rounded-2xl border border-fg/[0.1] bg-ink-900 p-5 shadow-lift">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-[15px] font-semibold text-fg">Vista previa del ticket</h2>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-faint">
-              Datos de ejemplo, al ancho real del rollo de {settings.paperWidth} mm.
-            </p>
-          </div>
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
-          >
-            Cerrar
-          </button>
-        </div>
-
-        <div className="mt-4 flex justify-center overflow-x-auto">
-          <div className="inline-block rounded-lg shadow-lift">
-            <ReceiptDoc receipt={receipt} />
-          </div>
-        </div>
+    <aside className="lbd-bl-preview" aria-label="Vista previa del ticket">
+      <span className="lbd-mono lbd-bl-eyebrow">VISTA PREVIA DEL TICKET</span>
+      <div className="lbd-bl-paper">
+        <ReceiptDoc receipt={receipt} />
       </div>
-    </div>
+      <span className="lbd-bl-preview-note">
+        Datos de ejemplo, al ancho real del rollo de {settings.paperWidth} mm.{" "}
+        {settings.autoPrint ? "Se imprime solo al confirmar el pago." : "Impresión manual desde el pedido."}
+      </span>
+    </aside>
   );
 }

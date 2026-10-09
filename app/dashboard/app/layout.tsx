@@ -7,7 +7,7 @@ import type { PlanValue } from "@/lib/plans";
 import { restaurantEntitlement } from "@/lib/subscriptions/access";
 
 const CLIENT_TITLES: Record<string, string> = {
-  "web-pedidos": "Web de pedidos",
+  "web-pedidos": "",
   // The Resumen draws its own greeting, so the strip above it stays empty.
   overview: "",
   orders: "",
@@ -17,13 +17,13 @@ const CLIENT_TITLES: Record<string, string> = {
   // segment, so it needs its own entry or it falls back to "Dashboard".
   qr: "QR de mesas",
   // Same reason as the QR sheet: a settings page nested one level deeper.
-  facturacion: "Facturación electrónica",
+  facturacion: "",
   // The public carta's settings, nested under /menu.
   carta: "",
   menu: "",
   customers: "",
   equipo: "",
-  analytics: "Análisis",
+  analytics: "",
   configuracion: "",
 };
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requirePlanFeature } from "@/lib/auth/plan";
 import PlanGate from "@/components/dashboard/PlanGate";
+import PageHeader from "@/components/dashboard/PageHeader";
 import BillingWorkspace from "@/components/dashboard/facturacion/BillingWorkspace";
 import { readBillingConfig } from "@/lib/db/billing";
 
@@ -35,41 +36,22 @@ export default async function BillingSettingsPage() {
   const config = await readBillingConfig(restaurant.id);
 
   return (
-    <div className="flex flex-col gap-7">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
-            Facturación electrónica
-          </h2>
-          <p className="mt-0.5 max-w-2xl text-[13px] leading-relaxed text-faint">
-            Tu conexión con SUNAT y lo que se imprime al cobrar una mesa. Se configura una
-            vez y sale igual en cada cobro, en efectivo, tarjeta o Yape.
-          </p>
-        </div>
-        <Link
-          href="/dashboard/app/orders"
-          className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-2 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-        >
-          Volver a pedidos
+    <div className="lbd-pg">
+      <PageHeader eyebrow="CONFIGURACIÓN · FACTURACIÓN" title="Facturación electrónica" description="Tu conexión con SUNAT y lo que se imprime al cobrar una mesa. Se configura una vez y sale igual en cada cobro, en efectivo, tarjeta o Yape.">
+        <Link href="/dashboard/app/configuracion" className="lbd-btn lbd-btn--ghost lbd-btn--sm">
+          Volver a Configuración
         </Link>
-      </div>
+      </PageHeader>
 
       {/* The one thing an owner must not misunderstand about this screen. */}
-      <div className="rounded-2xl border border-warn/25 bg-warn/[0.07] p-5">
-        <h3 className="text-[13.5px] font-semibold text-warn-ink">
-          Tu cuenta con el OSE es tuya, y hoy el ticket es una nota de venta
-        </h3>
-        <div className="mt-1.5 flex max-w-3xl flex-col gap-2 text-[12.5px] leading-relaxed text-muted">
-          <p>
-            FoodFlow guarda tu configuración y arma el comprobante, pero la cuenta con el
-            OSE la contratas y la pagas tú directamente con el proveedor. Nadie más en
-            FoodFlow ve tu certificado ni tus credenciales: quedan cifradas y aisladas de
-            los demás restaurantes.
+      <div className="lbd-bl-callout lbd-rise" data-tone="warn" style={{ animationDelay: ".02s" }}>
+        <strong>Tu cuenta con el OSE es tuya, y hoy el ticket es una nota de venta</strong>
+        <div>
+          <p style={{ margin: 0 }}>
+            FoodFlow guarda tu configuración y arma el comprobante, pero la cuenta con el OSE la contratas y la pagas tú directamente con el proveedor. Nadie más en FoodFlow ve tu certificado ni tus credenciales: quedan cifradas y aisladas de los demás restaurantes.
           </p>
-          <p>
-            Mientras el envío al OSE no esté activo, cada cobro imprime la nota de venta
-            interna con tu numeración correlativa, y el ticket lo dice al pie. Un
-            comprobante solo se llama boleta o factura electrónica cuando SUNAT lo aceptó.
+          <p style={{ margin: "8px 0 0" }}>
+            Mientras el envío al OSE no esté activo, cada cobro imprime la nota de venta interna con tu numeración correlativa, y el ticket lo dice al pie. Un comprobante solo se llama boleta o factura electrónica cuando SUNAT lo aceptó.
           </p>
         </div>
       </div>
@@ -86,25 +68,22 @@ export default async function BillingSettingsPage() {
         issuedThisMonth={config.issuedThisMonth}
       />
 
-      <section className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5">
-        <h3 className="text-[14px] font-semibold text-fg">Conectar tu ticketera</h3>
-        <p className="mt-1 text-[12.5px] text-faint">
-          FoodFlow imprime por el navegador, así que sirve cualquier ticketera térmica que
-          ya esté instalada en la caja. No hace falta comprar hardware nuevo.
+      <section className="lbd-card lbd-bl-printer">
+        <h2 className="lbd-cf-h" style={{ fontSize: 22 }}>
+          Conectar tu ticketera
+        </h2>
+        <p className="lbd-cf-p">
+          FoodFlow imprime por el navegador, así que sirve cualquier ticketera térmica que ya esté instalada en la caja. No hace falta comprar hardware nuevo.
         </p>
-        <ol className="mt-4 flex flex-col gap-3">
+        <ol className="lbd-bl-steps">
           {PRINTER_STEPS.map((step, i) => (
-            <li key={step.title} className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-fg/[0.12] bg-fg/[0.04] text-[12px] font-semibold text-muted">
+            <li key={step.title}>
+              <span aria-hidden className="lbd-bl-badge lbd-mono">
                 {i + 1}
               </span>
-              <span className="min-w-0">
-                <span className="block text-[13.5px] font-medium text-fg/85">
-                  {step.title}
-                </span>
-                <span className="mt-0.5 block text-[12.5px] leading-relaxed text-faint">
-                  {step.body}
-                </span>
+              <span>
+                <strong>{step.title}</strong>
+                <small>{step.body}</small>
               </span>
             </li>
           ))}

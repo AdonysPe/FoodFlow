@@ -5,7 +5,7 @@ import { fieldClass, labelClass } from "@/components/dashboard/menu/ui";
 import type { FieldCheck } from "@/lib/billing/validation";
 
 /**
- * Form primitives for Configuración → Facturación.
+ * Form primitives for Configuración → Facturación, design B.
  *
  * The page is long and mostly made of fields that are wrong until they are
  * right, so validation lives in the field itself: a rule function comes in,
@@ -16,7 +16,10 @@ import type { FieldCheck } from "@/lib/billing/validation";
 
 // ---------------------------------------------------------------- accordion
 
+const STATE_LABEL = { done: "Listo", pending: "Pendiente", optional: "Opcional" } as const;
+
 export function Section({
+  number,
   title,
   summary,
   status,
@@ -24,58 +27,38 @@ export function Section({
   onToggle,
   children,
 }: {
+  /** The step, drawn in the round badge until the section is done. */
+  number: number;
   title: string;
   summary: string;
-  /** Dot in the header: what the owner still owes this section. */
+  /** What the owner still owes this section. */
   status: "done" | "pending" | "optional";
   open: boolean;
   onToggle: () => void;
   children: ReactNode;
 }) {
   const panelId = useId();
-  const dot =
-    status === "done"
-      ? "bg-ok"
-      : status === "pending"
-        ? "bg-accent-400"
-        : "bg-fg/20";
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-fg/[0.08] bg-fg/[0.02]">
-      <h3>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={open}
-          aria-controls={panelId}
-          className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-fg/[0.03]"
-        >
-          <span
-            aria-hidden
-            className={`h-2 w-2 shrink-0 rounded-full ${dot}`}
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block text-[14px] font-semibold text-fg">{title}</span>
-            <span className="mt-0.5 block text-[12.5px] leading-relaxed text-faint">
-              {summary}
-            </span>
+    <section className={`lbd-card lbd-bl-sec${open ? " is-open" : ""}`}>
+      <h3 style={{ margin: 0 }}>
+        <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={panelId} className="lbd-bl-sec-head">
+          <span aria-hidden className="lbd-bl-badge lbd-mono" data-state={status}>
+            {status === "done" ? "✓" : number}
           </span>
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            className={`h-4 w-4 shrink-0 text-faint transition-transform duration-200 ${
-              open ? "rotate-180" : ""
-            }`}
-          >
+          <span className="lbd-bl-sec-text">
+            <strong>{title}</strong>
+            <small>{summary}</small>
+          </span>
+          <span className="lbd-bl-state" data-state={status}>
+            {STATE_LABEL[status]}
+          </span>
+          <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: "transform .3s", transform: open ? "rotate(180deg)" : "none" }}>
             <path d="m6 9 6 6 6-6" />
           </svg>
         </button>
       </h3>
-      <div id={panelId} hidden={!open} className="border-t border-fg/[0.06] px-5 py-5">
+      <div id={panelId} hidden={!open} className="lbd-bl-sec-body lbd-swap">
         {children}
       </div>
     </section>
@@ -105,15 +88,15 @@ export function Field({
     <div className={className}>
       <label htmlFor={htmlFor} className={labelClass}>
         {label}
-        {required && <span className="ml-1 text-accent-label">*</span>}
+        {required && <span style={{ marginLeft: 4, color: "#ff7a57" }}>*</span>}
       </label>
       {children}
       {error ? (
-        <p role="alert" className="mt-1.5 text-[11.5px] leading-snug text-accent-label">
+        <p role="alert" className="lbd-bl-help" style={{ color: "#ffb39e" }}>
           {error}
         </p>
       ) : hint ? (
-        <p className="mt-1.5 text-[11.5px] leading-snug text-faint">{hint}</p>
+        <p className="lbd-bl-help">{hint}</p>
       ) : null}
     </div>
   );
@@ -159,14 +142,7 @@ export function TextField({
   const error = touched && check ? check(value) : null;
 
   return (
-    <Field
-      htmlFor={id}
-      label={label}
-      hint={hint}
-      error={error}
-      required={required}
-      className={className}
-    >
+    <Field htmlFor={id} label={label} hint={hint} error={error} required={required} className={className}>
       <input
         id={id}
         value={value}
@@ -182,9 +158,7 @@ export function TextField({
           if (uppercase) next = next.toUpperCase();
           onChange(next);
         }}
-        className={`${fieldClass} ${mono ? "font-mono" : ""} ${
-          error ? "border-accent-400/60" : ""
-        } disabled:opacity-40`}
+        className={`${fieldClass} ${mono ? "font-mono" : ""} ${error ? "!border-[rgba(255,90,51,0.55)]" : ""} disabled:opacity-40`}
       />
     </Field>
   );
@@ -237,25 +211,15 @@ export function SecretField({
           placeholder={storedHint ?? placeholder}
           onBlur={() => setTouched(true)}
           onChange={(e) => onChange(e.target.value)}
-          className={`${fieldClass} pr-24 font-mono ${error ? "border-accent-400/60" : ""}`}
+          className={`${fieldClass} pr-24 font-mono ${error ? "!border-[rgba(255,90,51,0.55)]" : ""}`}
         />
         <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
           {storedHint && onClear && value === "" && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="rounded-md px-2 py-1 text-[11.5px] font-medium text-faint hover:bg-fg/[0.08] hover:text-fg/70"
-            >
+            <button type="button" onClick={onClear} className="lbd-bl-mini">
               Quitar
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setVisible((v) => !v)}
-            aria-label={visible ? "Ocultar" : "Mostrar"}
-            aria-pressed={visible}
-            className="rounded-md px-2 py-1 text-[11.5px] font-medium text-faint hover:bg-fg/[0.08] hover:text-fg/70"
-          >
+          <button type="button" onClick={() => setVisible((v) => !v)} aria-label={visible ? "Ocultar" : "Mostrar"} aria-pressed={visible} className="lbd-bl-mini">
             {visible ? "Ocultar" : "Mostrar"}
           </button>
         </div>
@@ -264,6 +228,7 @@ export function SecretField({
   );
 }
 
+/** An on/off row, drawn as the prototype's switch. */
 export function Toggle({
   checked,
   onChange,
@@ -277,24 +242,17 @@ export function Toggle({
   hint: string;
   disabled?: boolean;
 }) {
+  const on = checked && !disabled;
   return (
-    <label
-      className={`flex items-start gap-3 rounded-xl border border-fg/[0.08] bg-fg/[0.03] px-4 py-3 ${
-        disabled ? "opacity-50" : "cursor-pointer"
-      }`}
-    >
-      <input
-        type="checkbox"
-        checked={checked && !disabled}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent-500)]"
-      />
-      <span className="min-w-0">
-        <span className="block text-[13.5px] font-medium text-fg/85">{title}</span>
-        <span className="mt-0.5 block text-[12px] leading-relaxed text-faint">{hint}</span>
+    <button type="button" role="switch" aria-checked={on} disabled={disabled} onClick={() => onChange(!on)} className="lbd-bl-switch">
+      <span className="lbd-bl-switch-text">
+        <strong>{title}</strong>
+        <small>{hint}</small>
       </span>
-    </label>
+      <span className="lbd-bl-track" data-on={on}>
+        <i />
+      </span>
+    </button>
   );
 }
 
@@ -303,21 +261,11 @@ export function Help({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   return (
     <span className="relative inline-flex align-middle">
-      <button
-        type="button"
-        aria-label="Qué es esto"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        onBlur={() => setOpen(false)}
-        className="ml-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-fg/20 text-[9px] font-bold text-faint hover:border-fg/40 hover:text-fg/70"
-      >
+      <button type="button" aria-label="Qué es esto" aria-expanded={open} onClick={() => setOpen((v) => !v)} onBlur={() => setOpen(false)} className="lbd-bl-q">
         ?
       </button>
       {open && (
-        <span
-          role="tooltip"
-          className="absolute bottom-full left-1/2 z-30 mb-2 w-56 -translate-x-1/2 rounded-lg border border-fg/[0.12] bg-ink-900 px-3 py-2 text-[11.5px] leading-relaxed font-normal text-fg/70 shadow-lift"
-        >
+        <span role="tooltip" className="lbd-bl-tip">
           {text}
         </span>
       )}
@@ -334,19 +282,10 @@ export function Callout({
   title?: string;
   children: ReactNode;
 }) {
-  const skin = {
-    warn: "border-warn/25 bg-warn/[0.07] text-warn-ink",
-    info: "border-fg/[0.1] bg-fg/[0.03] text-fg/70",
-    ok: "border-ok/30 bg-ok/[0.08] text-ok-ink",
-    danger: "border-accent-400/30 bg-accent-400/10 text-accent-label",
-  }[tone];
-
   return (
-    <div className={`rounded-xl border p-4 ${skin}`}>
-      {title && <p className="text-[13px] font-semibold">{title}</p>}
-      <div className={`text-[12.5px] leading-relaxed ${title ? "mt-1 text-muted" : ""}`}>
-        {children}
-      </div>
+    <div className="lbd-bl-callout" data-tone={tone}>
+      {title && <strong>{title}</strong>}
+      <div>{children}</div>
     </div>
   );
 }
