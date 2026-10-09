@@ -1,6 +1,4 @@
 import Link from "next/link";
-import GlassCard from "@/components/ui/GlassCard";
-import { IconCheck, IconShield } from "@/components/ui/Icons";
 import PlanManagementButton from "@/components/dashboard/PlanManagementButton";
 import {
   FEATURE_LABELS,
@@ -14,77 +12,68 @@ import {
   type PlanValue,
 } from "@/lib/plans";
 
-export default function PlanGate({
-  feature,
-  plan,
-}: {
-  feature: FeatureValue;
-  plan: PlanValue;
-}) {
+/**
+ * What a module shows when the restaurant's plan does not include it, design
+ * B: the lock, what the module is for, the plan that opens it and what else
+ * that plan brings.
+ */
+export default function PlanGate({ feature, plan }: { feature: FeatureValue; plan: PlanValue }) {
   const needed = firstPlanWith(feature);
   const label = FEATURE_LABELS[feature];
   const alsoUnlocks = PLAN_FEATURES[needed]
     .filter((item) => item !== feature && !PLAN_FEATURES[plan].includes(item))
     .map((item) => FEATURE_LABELS[item]);
+
   return (
-    <div className="mx-auto flex max-w-lg flex-col items-center py-10 text-center sm:py-16">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-fg/[0.1] bg-fg/[0.04] text-faint">
-          <IconShield className="h-5 w-5" />
-        </span>
+    <div className="lbd-gate lbd-pop">
+      <span className="lbd-gate-lock" aria-hidden>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 11h14v9.5H5zM8 11V8a4 4 0 0 1 8 0v3" />
+        </svg>
+      </span>
 
-        <h1 className="mt-5 font-display text-[22px] font-bold tracking-[-0.02em] text-fg">
-          {label} viene con el plan {PLAN_LABELS[needed]}
-        </h1>
-        <p className="mt-2.5 text-[14px] leading-relaxed text-muted">
-          {FEATURE_PITCHES[feature]}
-        </p>
+      <h1 className="lbd-display lbd-gate-h">
+        {label} viene con el plan {PLAN_LABELS[needed]}
+      </h1>
+      <p className="lbd-gate-p">{FEATURE_PITCHES[feature]}</p>
 
-        <GlassCard className="mt-7 w-full p-5 text-left sm:p-6" hoverLift={false}>
-          <div className="flex items-baseline justify-between gap-3">
-            <div>
-              <p className="text-[15px] font-semibold text-fg/90">
-                Plan {PLAN_LABELS[needed]}
-              </p>
-              <p className="mt-0.5 text-[12.5px] text-faint">
-                {PLAN_TAGLINES[needed]}
-              </p>
-            </div>
-            <p className="shrink-0 font-display text-[20px] font-extrabold text-fg">
-              {PLAN_PRICES[needed]}
-              <span className="text-[13px] font-medium text-faint">/mes</span>
-            </p>
+      <div className="lbd-gate-plan">
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <strong>Plan {PLAN_LABELS[needed]}</strong>
+            <small>{PLAN_TAGLINES[needed]}</small>
           </div>
-
-          {alsoUnlocks.length > 0 && (
-            <>
-              <p className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-faint">
-                También se abre
-              </p>
-              <ul className="mt-2 flex flex-col gap-1.5">
-                {alsoUnlocks.map((name) => (
-                  <li key={name} className="flex items-center gap-2 text-[13.5px] text-fg/70">
-                    <IconCheck className="h-3.5 w-3.5 shrink-0 text-accent-icon" />
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </GlassCard>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <PlanManagementButton currentPlan={plan} suggestedPlan={needed} />
-          <Link
-            href="/dashboard/app/overview"
-            className="rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-5 py-2.5 text-[14px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg"
-          >
-            Volver al resumen
-          </Link>
+          <span className="lbd-display lbd-gate-price">
+            {PLAN_PRICES[needed]}
+            <small>/mes</small>
+          </span>
         </div>
 
-        <p className="mt-5 text-[12px] text-faint">
-          Tu plan actual es {PLAN_LABELS[plan]}.
-        </p>
+        {alsoUnlocks.length > 0 && (
+          <>
+            <span className="lbd-cm-eyebrow">También se abre</span>
+            <ul>
+              {alsoUnlocks.map((name) => (
+                <li key={name}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff5a33" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ flexShrink: 0, marginTop: 2 }}>
+                    <path d="M5 12.5l4.5 4.5L19 7.5" />
+                  </svg>
+                  {name}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+        <PlanManagementButton currentPlan={plan} suggestedPlan={needed} />
+        <Link href="/dashboard/app/overview" className="lbd-btn lbd-btn--ghost">
+          Volver al resumen
+        </Link>
+      </div>
+
+      <p style={{ margin: 0, fontSize: 12, color: "#8a8278" }}>Tu plan actual es {PLAN_LABELS[plan]}.</p>
     </div>
   );
 }

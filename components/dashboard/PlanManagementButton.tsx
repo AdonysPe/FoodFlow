@@ -58,7 +58,7 @@ export default function PlanManagementButton({
           <button
             type="button"
             onClick={openModal}
-            className="rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-5 py-2.5 text-[14px] font-semibold text-on-accent transition-opacity hover:opacity-90"
+            className="lbd-btn lbd-btn--solid"
           >
             Cambiar plan
           </button>
@@ -74,7 +74,7 @@ export default function PlanManagementButton({
         <button
           type="button"
           onClick={openModal}
-          className={`rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-5 py-2.5 text-[14px] font-semibold text-on-accent transition-opacity hover:opacity-90 ${className}`}
+          className={`lbd-btn lbd-btn--solid ${className}`}
         >
           Cambiar o Cancelar Plan
         </button>
