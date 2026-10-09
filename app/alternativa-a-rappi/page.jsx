@@ -1,8 +1,7 @@
 import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, RappiAlternativeJsonLd } from "@/components/seo/JsonLd";
 import RappiAlternative from "@/components/sections/RappiAlternative";
-import LeadCapture from "@/components/sections/LeadCapture";
-import CTA from "@/components/sections/CTA";
+import { PilotClosing } from "@/components/seo/Article";
 
 export const metadata = {
   title: "Alternativa a Rappi para restaurantes",
@@ -16,8 +15,7 @@ export default function RappiAlternativePage() {
       <RappiAlternativeJsonLd />
       <BreadcrumbJsonLd name="Alternativa a Rappi" path="/alternativa-a-rappi" />
       <RappiAlternative as="h1" />
-      <LeadCapture />
-      <CTA />
+      <PilotClosing />
     </SiteShell>
   );
 }

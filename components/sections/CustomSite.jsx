@@ -1,106 +1,67 @@
 "use client";
 
-import Container from "@/components/ui/Container";
-import PointerGlow from "@/components/ui/PointerGlow";
-import Reveal, { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import RestaurantSitePreview from "@/components/RestaurantSitePreview";
-import { IconMenuBook, IconCart, IconChat } from "@/components/ui/Icons";
+import { Card, CardText, Cards } from "@/components/seo/Article";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-// Icon is shared across languages; title/copy come from the dictionary by index.
-const ITEM_META = [{ icon: IconMenuBook }, { icon: IconCart }, { icon: IconChat }];
-
-export default function CustomSite({ as: Heading = "h2" }) {
+/**
+ * The head of /web-de-pedidos, design B: the title, the "0% de comisión"
+ * line and the three things the site does on the left; a phone with the
+ * customer's own site on the right. `as` is forwarded so the page keeps
+ * the h1.
+ */
+export default function CustomSite({ as: Heading = "h1" }) {
   const { t } = useLanguage();
-  const items = t.customSite.items.map((item, i) => ({ ...item, ...ITEM_META[i] }));
+  const c = t.customSite;
+  const words = c.title.split(" ");
 
   return (
-    <section
-      id="customer-site"
-      className="relative scroll-mt-24 overflow-x-clip py-20 sm:py-24"
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-[26rem] -translate-y-1/2 bg-[radial-gradient(circle,rgba(124,92,255,0.08),transparent_65%)] blur-3xl"
-      />
-
-      <Container>
-        <div className="grid items-start gap-14 lg:grid-cols-2 lg:gap-16">
-          {/* copy side */}
-          <div>
-            {/* product identity — a distinct sub-brand, not a footnote feature */}
-            <Reveal>
-              <div className="mb-4 flex flex-wrap items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-accent-300 to-accent-500 text-[10.5px] font-bold text-on-accent shadow-accent">
-                  FS
+    <section id="customer-site" className="lb-pr-hero lb-pr-hero--left">
+      <div className="lb-glow" aria-hidden style={{ top: 10, height: 460 }} />
+      <div className="lb-pr-block lb-ar-split">
+        <div className="lb-ar-split-text">
+          <p className="lb-eyebrow-accent lb-rise">
+            {c.productName} · {c.eyebrow}
+          </p>
+          <Heading className="lb-pr-h1">
+            {words.map((w, i) => (
+              <span key={i}>
+                <span className="lb-word" style={{ animationDelay: `${0.05 + i * 0.06}s` }}>
+                  {w}
                 </span>
-                <span className="font-display text-[15px] font-bold tracking-[-0.01em] text-fg">
-                  {t.customSite.productName}
-                </span>
-                <span className="rounded-full border border-cream/10 bg-cream/[0.03] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent-ink">
-                  {t.customSite.eyebrow}
-                </span>
-              </div>
-            </Reveal>
-            <Reveal delay={0.06}>
-              <Heading className="mt-5 font-display text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-balance text-gradient sm:text-4xl lg:text-[2.9rem]">
-                {t.customSite.title}
-              </Heading>
-            </Reveal>
-            <Reveal delay={0.12}>
-              <p className="mt-5 max-w-lg text-pretty text-[15px] leading-relaxed text-cream/66 sm:text-base">
-                {t.customSite.description}
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.16}>
-              <p className="mt-4 max-w-lg text-[15px] font-semibold leading-relaxed text-accent-ink">
-                {t.customSite.commission}
-              </p>
-            </Reveal>
-
-            <RevealGroup className="mt-10 space-y-3" gap={0.1}>
-              {items.map((item, i) => (
-                // Index key: see the comment in Features.jsx — a
-                // translated-text key would remount the card on every
-                // language toggle and strand it at opacity 0.
-                <RevealItem key={i}>
-                  <div className="group relative overflow-hidden rounded-2xl border border-cream/10 bg-cream/[0.02] p-5 transition-all duration-500 hover:border-cream/[0.14] hover:bg-cream/[0.04] sm:p-6">
-                    <PointerGlow radius={300} />
-                    <div className="relative flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cream/10 bg-linear-to-b from-cream/[0.1] to-cream/[0.02] text-accent-ink transition-all duration-500 group-hover:border-accent-400/30 group-hover:shadow-accent">
-                        <item.icon className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-display text-[17px] font-semibold tracking-[-0.015em] text-fg">
-                          {item.title}
-                        </h3>
-                        <p className="mt-2 text-[14px] leading-relaxed text-cream/62">
-                          {item.copy}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </RevealItem>
-              ))}
-            </RevealGroup>
-
-            <Reveal delay={0.1} className="mt-6">
-              <p className="text-[13.5px] leading-relaxed text-cream/50">
-                {t.customSite.footnote}
-              </p>
-            </Reveal>
-          </div>
-
-          {/* live demo */}
-          <Reveal delay={0.1} className="lg:sticky lg:top-28">
-            <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.16em] text-cream/55">
-              {t.customSite.productName} · {t.customSite.demo.brand}
-            </p>
-            <RestaurantSitePreview />
-          </Reveal>
+                {i < words.length - 1 ? " " : ""}
+              </span>
+            ))}
+            {!/[?!.…]$/.test(c.title) && <span style={{ color: "#ff5a33" }}>.</span>}
+          </Heading>
+          <p className="lb-ar-lead lb-rise" style={{ animationDelay: ".5s" }}>
+            {c.description}
+          </p>
+          <p className="lb-ar-lead lb-rise" style={{ animationDelay: ".6s", color: "#ff7a57", fontWeight: 550, marginTop: 14 }}>
+            {c.commission}
+          </p>
         </div>
-      </Container>
+
+        <div className="lb-ar-split-phone lb-rise" style={{ animationDelay: ".4s" }}>
+          <p className="lb-mono lb-ar-card-eyebrow" style={{ textAlign: "center", marginBottom: 16 }}>
+            {c.productName} · {c.demo.brand}
+          </p>
+          <RestaurantSitePreview />
+        </div>
+      </div>
+
+      <div className="lb-pr-block" style={{ paddingTop: 56 }}>
+        <Cards cols={3}>
+          {c.items.map((item, i) => (
+            <Card key={i} eyebrow={String(i + 1).padStart(2, "0")} title={item.title}>
+              <CardText>{item.copy}</CardText>
+            </Card>
+          ))}
+        </Cards>
+        <p className="lb-ar-fine" style={{ padding: 0, marginTop: 20 }}>
+          {c.footnote}
+        </p>
+      </div>
     </section>
   );
 }

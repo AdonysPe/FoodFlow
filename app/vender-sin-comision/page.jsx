@@ -1,8 +1,7 @@
 import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, SellDirectJsonLd } from "@/components/seo/JsonLd";
 import SellDirect from "@/components/sections/SellDirect";
-import LeadCapture from "@/components/sections/LeadCapture";
-import CTA from "@/components/sections/CTA";
+import { PilotClosing } from "@/components/seo/Article";
 
 // Pairs with /comisiones-rappi-pedidosya: that page is the diagnosis, this one
 // is what to do about it. They link to each other in both directions.
@@ -22,8 +21,7 @@ export default function SellDirectPage() {
         path="/vender-sin-comision"
       />
       <SellDirect as="h1" />
-      <LeadCapture />
-      <CTA />
+      <PilotClosing />
     </SiteShell>
   );
 }

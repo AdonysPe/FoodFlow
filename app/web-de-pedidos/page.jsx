@@ -2,8 +2,7 @@ import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, OrderingSiteJsonLd } from "@/components/seo/JsonLd";
 import CustomSite from "@/components/sections/CustomSite";
 import OrderingSite from "@/components/sections/OrderingSite";
-import LeadCapture from "@/components/sections/LeadCapture";
-import CTA from "@/components/sections/CTA";
+import { PilotClosing } from "@/components/seo/Article";
 
 export const metadata = {
   title: "Web de pedidos para restaurantes en Perú",
@@ -18,8 +17,7 @@ export default function OrderingSitePage() {
       <BreadcrumbJsonLd name="Web de pedidos" path="/web-de-pedidos" />
       <CustomSite as="h1" />
       <OrderingSite />
-      <LeadCapture />
-      <CTA />
+      <PilotClosing />
     </SiteShell>
   );
 }

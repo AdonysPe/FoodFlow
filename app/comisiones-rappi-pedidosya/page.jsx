@@ -1,8 +1,7 @@
 import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, CommissionsJsonLd } from "@/components/seo/JsonLd";
 import Commissions from "@/components/sections/Commissions";
-import LeadCapture from "@/components/sections/LeadCapture";
-import CTA from "@/components/sections/CTA";
+import { PilotClosing } from "@/components/seo/Article";
 
 // The slug names both apps because that is how the question gets typed. It is
 // the lowest-competition query this site can realistically win in Peru, and
@@ -23,8 +22,7 @@ export default function CommissionsPage() {
         path="/comisiones-rappi-pedidosya"
       />
       <Commissions as="h1" />
-      <LeadCapture />
-      <CTA />
+      <PilotClosing />
     </SiteShell>
   );
 }

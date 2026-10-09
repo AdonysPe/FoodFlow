@@ -1,8 +1,7 @@
 import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, QrMenuJsonLd } from "@/components/seo/JsonLd";
 import QrMenu from "@/components/sections/QrMenu";
-import LeadCapture from "@/components/sections/LeadCapture";
-import CTA from "@/components/sections/CTA";
+import { PilotClosing } from "@/components/seo/Article";
 
 export const metadata = {
   title: "Carta digital con QR para restaurantes",
@@ -16,8 +15,7 @@ export default function QrMenuPage() {
       <QrMenuJsonLd />
       <BreadcrumbJsonLd name="Carta digital con QR" path="/carta-digital-qr" />
       <QrMenu as="h1" />
-      <LeadCapture />
-      <CTA />
+      <PilotClosing />
     </SiteShell>
   );
 }

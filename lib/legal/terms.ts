@@ -48,9 +48,9 @@ export const TERMS_DOC: LegalDocument = {
       ],
     },
     {
-      title: "4. Garantía de prueba sin riesgo (primeros 30 días)",
+      title: "4. Garantía de devolución (primeros 30 días)",
       body: [
-        "Ofrecemos una garantía de prueba sin riesgo durante los primeros 30 días calendario contados desde la activación de tu cuenta. Si dentro de ese plazo decides que el servicio no te sirve, no pagas: te devolvemos íntegramente lo abonado por ese primer periodo.",
+        "Ofrecemos una garantía de devolución durante los primeros 30 días calendario contados desde la activación de tu cuenta. Es independiente de los 7 días gratis de tu primera suscripción. Si dentro de ese plazo decides que el servicio no te sirve, no pagas: te devolvemos íntegramente lo abonado por ese primer periodo.",
         "La garantía aplica únicamente si hubo uso activo del servicio durante esos 30 días. Entendemos por uso activo que tu carta haya sido cargada y que se hayan registrado pedidos, comandas o reportes en el panel. Es una condición razonable y con una sola finalidad: la garantía existe para que pruebes el producto de verdad, no para cubrir una cuenta que nunca llegó a usarse.",
         "La garantía cubre el primer periodo contratado y se ejerce una sola vez por cliente. Para solicitarla basta con escribirnos a " +
           LEGAL_HOLDER.email +
