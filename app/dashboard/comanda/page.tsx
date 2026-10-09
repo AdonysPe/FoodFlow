@@ -189,6 +189,7 @@ export default async function ComandaPage() {
     price: i.price,
     categoryId: i.categoryId,
     prepMin: i.prepMin,
+    photoUrl: i.photoUrl,
   }));
 
   // "Frecuentes": tally sold quantity by name over the last 30 days, then map

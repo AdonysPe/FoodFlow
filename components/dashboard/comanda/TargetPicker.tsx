@@ -1,28 +1,25 @@
 "use client";
 
 import { useMemo } from "react";
-import { TABLE_STATE_LABELS, TABLE_STATE_TONE } from "@/lib/tableMeta";
+import { TABLE_STATE_LABELS } from "@/lib/tableMeta";
 import { ZONE_LABELS_ES, type ComandaTableDTO, type OpenTabDTO } from "@/lib/comandaMeta";
-import { IconCart, IconReceipt, IconStore, IconUsers } from "@/components/ui/Icons";
 import { formatPrice } from "@/components/dashboard/menu/ui";
 
 /**
  * "Lista" is the one kitchen state a server must act on from this screen —
  * food is sitting on the pass. The rest stay quiet so it does not.
  */
-const KITCHEN_FLAG: Partial<
-  Record<OpenTabDTO["kitchenStatus"], { label: string; className: string }>
-> = {
-  preparing: {
-    label: "En cocina",
-    className: "bg-warn/15 text-warn-ink ring-warn/25",
-  },
-  ready: {
-    label: "Lista",
-    className: "bg-mint/15 text-mint-ink ring-mint/30",
-  },
+const KITCHEN_FLAG: Partial<Record<OpenTabDTO["kitchenStatus"], { label: string; tone: string }>> = {
+  preparing: { label: "En cocina", tone: "is-cooking" },
+  ready: { label: "Lista", tone: "is-ready" },
 };
 
+/**
+ * Step one of the comanda, design B: where is this order for? Takeaway and
+ * delivery on top, then the floor by zone. A table reads at a glance — an
+ * outline when free, solid when taken, vermilion when its account is waiting
+ * to be charged, dashed when a reservation holds it.
+ */
 export default function TargetPicker({
   tables,
   openTabs,
@@ -34,10 +31,7 @@ export default function TargetPicker({
   onPickTable: (t: ComandaTableDTO) => void;
   onPickOther: (kind: "pickup" | "delivery") => void;
 }) {
-  const tabByTable = useMemo(
-    () => new Map(openTabs.map((t) => [t.tableId, t])),
-    [openTabs]
-  );
+  const tabByTable = useMemo(() => new Map(openTabs.map((t) => [t.tableId, t])), [openTabs]);
 
   const zones = useMemo(() => {
     const groups = new Map<string, ComandaTableDTO[]>();
@@ -53,134 +47,86 @@ export default function TargetPicker({
   const readyCount = openTabs.filter((t) => t.kitchenStatus === "ready").length;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="font-display text-[21px] font-bold tracking-[-0.01em] text-fg">
-          ¿Para dónde es?
+    <div className="lbd-cm-col">
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <h1 className="lbd-display lbd-cm-h1">
+          ¿Para dónde es<span style={{ color: "#ff5a33" }}>?</span>
         </h1>
-        <p className="mt-0.5 text-[13px] text-faint">
-          Toca una mesa para abrir, añadir o cobrar.
-        </p>
+        <p style={{ margin: 0, fontSize: 14, color: "#a39b90" }}>Toca una mesa para abrir, añadir o cobrar.</p>
       </div>
 
       {/* the floor in one line: what is open, what it adds up to, and whether
           anything is waiting on the pass right now */}
       {openCount > 0 && (
-        <div className="flex items-center gap-4 rounded-2xl border border-fg/[0.08] bg-fg/[0.03] px-4 py-3">
+        <div className="lbd-cm-strip">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">
-              Cuentas abiertas
-            </p>
-            <p className="mt-0.5 font-display text-[19px] font-bold tabular-nums text-fg">
+            <p className="lbd-cm-eyebrow">Cuentas abiertas</p>
+            <p className="lbd-display" style={{ margin: "2px 0 0", fontSize: 22, letterSpacing: "-0.04em" }}>
               {openCount}
-              <span className="ml-2 text-[14px] font-medium text-muted">
-                {formatPrice(openTotal)}
-              </span>
+              <span style={{ marginLeft: 10, fontSize: 15, color: "#a39b90", letterSpacing: 0, fontFamily: "var(--font-sans)", fontWeight: 400 }}>{formatPrice(openTotal)}</span>
             </p>
           </div>
           {readyCount > 0 && (
-            <span className="ml-auto rounded-lg bg-mint/15 px-2.5 py-1.5 text-[12px] font-semibold text-mint-ink ring-1 ring-inset ring-mint/30">
+            <span className="lbd-cm-ready">
               {readyCount} {readyCount === 1 ? "lista" : "listas"} en cocina
             </span>
           )}
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <ChannelButton
-          label="Para llevar"
-          hint="Sin mesa"
-          icon={<IconCart className="h-[18px] w-[18px]" />}
-          onClick={() => onPickOther("pickup")}
-        />
-        <ChannelButton
-          label="Delivery"
-          hint="A domicilio"
-          icon={<IconStore className="h-[18px] w-[18px]" />}
-          onClick={() => onPickOther("delivery")}
-        />
+      <div className="lbd-cm-channels">
+        <button type="button" className="lbd-cm-channel" onClick={() => onPickOther("pickup")}>
+          <span>Para llevar</span>
+          <small>Sin mesa</small>
+        </button>
+        <button type="button" className="lbd-cm-channel" onClick={() => onPickOther("delivery")}>
+          <span>Delivery</span>
+          <small>A domicilio</small>
+        </button>
       </div>
 
       {tables.length === 0 ? (
-        <p className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-8 text-center text-[13.5px] text-faint">
-          Aún no hay mesas. Créalas en el módulo Mesas para tomar comandas de salón.
-        </p>
+        <p className="lbd-empty">Aún no hay mesas. Créalas en el módulo Mesas para tomar comandas de salón.</p>
       ) : (
         zones.map(([zone, zoneTables]) => {
           const busy = zoneTables.filter((t) => tabByTable.has(t.id)).length;
           return (
-            <div key={zone}>
-              <div className="mb-2.5 flex items-center gap-2.5">
-                <h2 className="text-[12px] font-semibold uppercase tracking-wide text-faint">
+            <div key={zone} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <h2 className="lbd-cm-eyebrow" style={{ margin: 0 }}>
                   {ZONE_LABELS_ES[zone] ?? zone}
                 </h2>
-                <span className="rounded-full bg-fg/[0.06] px-1.5 py-0.5 text-[10.5px] font-medium tabular-nums text-faint">
+                <span className="lbd-cm-count">
                   {busy}/{zoneTables.length}
                 </span>
-                <span className="h-px flex-1 bg-fg/[0.06]" />
+                <span style={{ flex: 1, height: 1, background: "rgba(243,239,230,0.07)" }} />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="lbd-cm-tables">
                 {zoneTables.map((t) => {
-                  const tone = TABLE_STATE_TONE[t.state];
                   const tab = tabByTable.get(t.id);
                   const flag = tab ? KITCHEN_FLAG[tab.kitchenStatus] : undefined;
-
+                  const look = tab?.kitchenStatus === "delivered" ? "cuenta" : t.state;
                   return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => onPickTable(t)}
-                      className="relative flex min-h-[108px] flex-col justify-between overflow-hidden rounded-2xl border p-3 text-left transition-transform active:scale-[0.98]"
-                      style={{ borderColor: tone.stroke, backgroundColor: tone.fill }}
-                    >
-                      {/* the state as a colour band down the edge, readable
-                          before any of the text is */}
-                      <span
-                        aria-hidden
-                        className="absolute inset-y-0 left-0 w-1"
-                        style={{ backgroundColor: tone.solid, opacity: 0.75 }}
-                      />
-
-                      <div className="flex items-start justify-between gap-2 pl-1.5">
-                        <span className="font-display text-[17px] font-bold leading-none text-fg">
+                    <button key={t.id} type="button" onClick={() => onPickTable(t)} data-look={look} className="lbd-cm-table">
+                      <span style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
+                        <span className="lbd-display" style={{ fontSize: 20, letterSpacing: "-0.04em", lineHeight: 1 }}>
                           {t.name}
                         </span>
-                        <span className="flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-faint">
-                          <IconUsers className="h-3 w-3" />
-                          {t.capacity}
+                        <span className="lbd-cm-seats">{t.capacity}p</span>
+                      </span>
+                      <span style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600 }}>
+                          {look === "cuenta" ? "Por cobrar" : TABLE_STATE_LABELS[t.state]}
+                          {tab && tab.roundNumber > 1 && <span style={{ opacity: 0.7, fontWeight: 400 }}> · R{tab.roundNumber}</span>}
                         </span>
-                      </div>
-
-                      <div className="pl-1.5">
-                        <span className="flex items-center gap-1.5 text-[11.5px] font-medium">
-                          <span style={{ color: tone.text }}>
-                            {TABLE_STATE_LABELS[t.state]}
-                          </span>
-                          {/* the round rides with the state so the money and
-                              the kitchen flag keep a line to themselves, even
-                              on a four-figure total */}
-                          {tab && tab.roundNumber > 1 && (
-                            <span className="text-faint">· R{tab.roundNumber}</span>
-                          )}
-                        </span>
-
                         {tab && (
-                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                            <span className="inline-flex items-center gap-1 rounded-md bg-black/30 px-1.5 py-0.5 text-[11.5px] font-bold tabular-nums text-fg">
-                              <IconReceipt className="h-3 w-3 opacity-70" />
-                              {formatPrice(tab.total)}
-                            </span>
-                            {flag && (
-                              <span
-                                className={`rounded-md px-1.5 py-0.5 text-[10.5px] font-semibold ring-1 ring-inset ${flag.className}`}
-                              >
-                                {flag.label}
-                              </span>
-                            )}
-                          </div>
+                          <span style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+                            <span className="lbd-cm-total">{formatPrice(tab.total)}</span>
+                            {flag && <span className={`lbd-cm-flag ${flag.tone}`}>{flag.label}</span>}
+                          </span>
                         )}
-                      </div>
+                      </span>
                     </button>
                   );
                 })}
@@ -190,33 +136,5 @@ export default function TargetPicker({
         })
       )}
     </div>
-  );
-}
-
-function ChannelButton({
-  label,
-  hint,
-  icon,
-  onClick,
-}: {
-  label: string;
-  hint: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-[76px] items-center gap-3 rounded-2xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-left transition-colors hover:bg-fg/[0.07] active:scale-[0.98]"
-    >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-fg/[0.06] text-muted">
-        {icon}
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-[15px] font-semibold text-fg/90">{label}</span>
-        <span className="block truncate text-[12px] text-faint">{hint}</span>
-      </span>
-    </button>
   );
 }

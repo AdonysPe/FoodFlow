@@ -175,7 +175,7 @@ export default function ComandaFlow({
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-53px)] flex-col">
+    <div className="lbd-cm-flow">
       <AnimatePresence mode="wait" initial={false}>
         {step === "target" && (
           <m.div
@@ -184,7 +184,7 @@ export default function ComandaFlow({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction === 1 ? -12 : 12 }}
             transition={{ duration: 0.22, ease: EASE }}
-            className="flex-1 px-4 py-5"
+            className="lbd-cm-step-wrap"
           >
             <TargetPicker
               tables={tables}

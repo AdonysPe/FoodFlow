@@ -2,49 +2,46 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import MotionProvider from "@/components/MotionProvider";
 import Toast from "@/components/dashboard/Toast";
+import { panelFontClasses } from "@/components/dashboard/fonts";
 import { requireComandaRestaurant } from "@/lib/auth/restaurant";
 import { logout } from "@/lib/actions/auth";
-import { IconLogout } from "@/components/ui/Icons";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 
+/**
+ * The waiter's frame, design B ("Noche"): a slim header with the venue and the
+ * way out, and a single column below. Same night ground and type as the panel,
+ * but no sidebar: it is the screen a phone holds during service.
+ */
 export default async function ComandaLayout({ children }: { children: ReactNode }) {
   const { user, restaurant, isOwner } = await requireComandaRestaurant();
 
   return (
     <MotionProvider>
-      <div className="min-h-screen bg-ink-950">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-fg/[0.07] bg-ink-950/85 px-4 py-3 backdrop-blur-xl">
-          <div className="flex items-center gap-2">
-            <span className="font-display text-[15px] font-extrabold tracking-[-0.02em] text-gradient-accent">
-              FoodFlow
-            </span>
-            <span className="truncate rounded-full border border-fg/[0.1] bg-fg/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-faint">
-              {restaurant?.name ?? "Comanda"}
-            </span>
+      <div data-theme="dark" className={`${panelFontClasses} lbd lbd-cm`}>
+        <div className="lbd-glow" aria-hidden />
+        <header className="lbd-cm-head">
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            <Link href={isOwner ? "/dashboard/app/overview" : "/dashboard/comanda"} className="lbd-cm-brand" aria-label="FoodFlow">
+              FoodFlow<span aria-hidden />
+            </Link>
+            <span className="lbd-cm-venue lbd-trunc">{restaurant?.name ?? "Comanda"}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <ThemeToggle />
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             {isOwner && (
-              <Link
-                href="/dashboard/app/overview"
-                className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
-              >
+              <Link href="/dashboard/app/overview" className="lbd-cm-link">
                 Panel
               </Link>
             )}
-            <span className="hidden text-[12px] text-faint sm:inline">{user.email}</span>
+            <span className="lbd-cm-email">{user.email}</span>
             <form action={logout}>
-              <button
-                type="submit"
-                aria-label="Cerrar sesión"
-                className="rounded-lg p-2 text-faint hover:bg-fg/[0.06] hover:text-fg/80"
-              >
-                <IconLogout className="h-[17px] w-[17px]" />
+              <button type="submit" aria-label="Cerrar sesión" title="Cerrar sesión" className="lbd-user-out">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10" />
+                </svg>
               </button>
             </form>
           </div>
         </header>
-        <main className="mx-auto max-w-2xl">{children}</main>
+        <main className="lbd-cm-main">{children}</main>
         <Toast />
       </div>
     </MotionProvider>

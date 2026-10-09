@@ -2,6 +2,10 @@
 
 import { formatPrice } from "@/components/dashboard/menu/ui";
 
+/**
+ * The floating glass bar at the foot of the item picker: how many dishes,
+ * what they add up to, and the one button that sends the round to the kitchen.
+ */
 export default function CartBar({
   count,
   total,
@@ -23,13 +27,13 @@ export default function CartBar({
   const disabled = count === 0 || sending;
 
   return (
-    <div className="sticky bottom-0 z-30 border-t border-fg/[0.08] bg-ink-950/90 px-4 py-3 backdrop-blur-xl">
+    <div className="lbd-cm-cart">
       {/* Asked here rather than up front: by now the server has the table in
           front of them and is about to send, and it stays optional so a busy
           service is never held up by a name nobody gave. */}
       {askName && (
-        <div className="mb-2.5">
-          <label htmlFor="comanda-customer" className="sr-only">
+        <div>
+          <label htmlFor="comanda-customer" className="lb-sr-only" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
             ¿A nombre de quién?
           </label>
           <input
@@ -41,27 +45,22 @@ export default function CartBar({
             autoComplete="off"
             enterKeyHint="done"
             placeholder="¿A nombre de quién? (opcional)"
-            className="h-10 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-3.5 text-[13.5px] text-fg placeholder:text-faint outline-none transition-colors focus:border-accent-400/50 focus:bg-fg/[0.06]"
+            className="lbd-input"
+            style={{ height: 42, fontSize: 14 }}
           />
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[13px] font-medium text-fg/85">
-            {count === 0 ? "Sin platos" : `${count} ${count === 1 ? "plato" : "platos"}`}
-          </p>
-          <p className="text-[12px] text-faint">{formatPrice(total)}</p>
-        </div>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onSend}
-          className="h-12 shrink-0 rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-6 text-[14px] font-bold text-on-accent transition-opacity active:scale-[0.98] disabled:opacity-40"
-        >
-          {sending ? "Enviando…" : "Enviar a cocina"}
-        </button>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px" }}>
+        <span style={{ fontSize: 14, color: "#cfc7bb" }}>{count === 0 ? "Pedido vacío" : `${count} ${count === 1 ? "plato" : "platos"}`}</span>
+        <span className="lbd-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
+          {formatPrice(total)}
+        </span>
       </div>
+
+      <button type="button" disabled={disabled} onClick={onSend} className="lbd-cm-send">
+        {sending ? "Enviando…" : "Enviar a cocina"}
+      </button>
     </div>
   );
 }

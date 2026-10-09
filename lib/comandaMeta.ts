@@ -23,6 +23,8 @@ export type ComandaItemDTO = {
   price: number;
   categoryId: string | null;
   prepMin: number | null;
+  /** The dish's photo from the menu, when it has one. */
+  photoUrl: string | null;
 };
 
 export type OpenTabLine = {

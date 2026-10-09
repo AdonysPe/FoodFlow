@@ -9,44 +9,23 @@ import type { Cart } from "./ComandaFlow";
 
 const OTHERS = "__others__";
 
-function Stepper({
-  qty,
-  onChange,
-}: {
-  qty: number;
-  onChange: (n: number) => void;
-}) {
-  if (qty === 0) {
-    return (
-      <button
-        type="button"
-        onClick={() => onChange(1)}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[19px] font-bold text-fg/70 transition-colors active:scale-95"
-        aria-label="Agregar"
-      >
-        +
-      </button>
-    );
-  }
+/** Lower-case and strip accents so "ceviche" finds "Cévíche". */
+function norm(text: string) {
+  return text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+function Stepper({ qty, name, onChange }: { qty: number; name: string; onChange: (n: number) => void }) {
   return (
-    <div className="flex shrink-0 items-center gap-1 rounded-xl border border-accent-400/30 bg-accent-400/[0.08] p-1">
-      <button
-        type="button"
-        onClick={() => onChange(qty - 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-[19px] font-bold text-muted active:scale-95"
-        aria-label="Quitar uno"
-      >
-        −
-      </button>
-      <span className="w-6 text-center font-display text-[16px] font-bold tabular-nums text-fg">
-        {qty}
-      </span>
-      <button
-        type="button"
-        onClick={() => onChange(qty + 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-400/20 text-[19px] font-bold text-accent-label active:scale-95"
-        aria-label="Agregar uno"
-      >
+    <div className={`lbd-cm-step${qty > 0 ? " is-on" : ""}`}>
+      {qty > 0 && (
+        <>
+          <button type="button" onClick={() => onChange(qty - 1)} aria-label={`Quitar uno de ${name}`}>
+            −
+          </button>
+          <span className="lbd-mono">{qty}</span>
+        </>
+      )}
+      <button type="button" onClick={() => onChange(qty + 1)} aria-label={`Agregar ${name}`} className="is-plus">
         +
       </button>
     </div>
@@ -58,42 +37,29 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="mt-2 rounded-lg border border-dashed border-fg/[0.14] px-2.5 py-1 text-[12px] font-medium text-faint transition-colors hover:border-accent-400/40 hover:text-accent-ink"
-      >
+      <button type="button" onClick={() => setOpen(true)} className="lbd-cm-addnote">
         + Nota para cocina
       </button>
     );
   }
 
   return (
-    <div className="mt-2.5 flex flex-col gap-2">
-      <input
-        autoFocus
-        value={note}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Nota para cocina…"
-        className="h-10 w-full rounded-lg border border-fg/[0.12] bg-ink-950/60 px-3 text-[13.5px] text-fg placeholder:text-faint outline-none focus:border-accent-400/50"
-      />
-      <div className="flex flex-wrap gap-1.5">
+    <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+      <input autoFocus value={note} onChange={(e) => onChange(e.target.value)} placeholder="Nota para cocina…" aria-label="Nota para cocina" className="lbd-input" style={{ height: 42, fontSize: 14 }} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {NOTE_CHIPS.map((chip) => {
           const active = note.toLowerCase().includes(chip);
           return (
             <button
               key={chip}
               type="button"
+              aria-pressed={active}
               onClick={() => {
                 const parts = note.split(",").map((p) => p.trim()).filter(Boolean);
                 if (active) onChange(parts.filter((p) => p.toLowerCase() !== chip).join(", "));
                 else onChange([...parts, chip].join(", "));
               }}
-              className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
-                active
-                  ? "bg-accent-400/20 text-accent-label ring-1 ring-inset ring-accent-400/30"
-                  : "border border-fg/[0.1] bg-fg/[0.03] text-muted hover:text-fg/80"
-              }`}
+              className={`lbd-cm-notechip${active ? " is-on" : ""}`}
             >
               {chip}
             </button>
@@ -104,6 +70,11 @@ function LineNote({ note, onChange }: { note: string; onChange: (v: string) => v
   );
 }
 
+/**
+ * Step two of the comanda, design B: the carta as a list a thumb can work.
+ * Search and category tabs on top, a photo and a pill stepper on every dish,
+ * and the kitchen note one tap away once a dish is picked.
+ */
 export default function ItemPicker({
   targetLabel,
   roundNumber,
@@ -133,11 +104,14 @@ export default function ItemPicker({
   }, [categories, hasOrphans]);
 
   const [activeTab, setActiveTab] = useState<string>(tabs[0]?.id ?? OTHERS);
+  const [query, setQuery] = useState("");
 
+  const needle = norm(query.trim());
   const shown = useMemo(() => {
+    if (needle) return items.filter((i) => norm(i.name).includes(needle));
     if (activeTab === OTHERS) return items.filter((i) => i.categoryId == null);
     return items.filter((i) => i.categoryId === activeTab);
-  }, [items, activeTab]);
+  }, [items, activeTab, needle]);
 
   // How many dishes are already picked in each tab, so nothing chosen two
   // categories ago is forgotten behind a tab the server is not looking at.
@@ -156,49 +130,38 @@ export default function ItemPicker({
   const roundLabel = roundNumber > 1 ? `Ronda ${roundNumber}` : null;
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="sticky top-[53px] z-20 border-b border-fg/[0.07] bg-ink-950/85 px-4 py-3 backdrop-blur-xl">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate font-display text-[17px] font-bold text-fg">
-              {targetLabel}
-            </span>
-            {roundLabel && (
-              <span className="shrink-0 rounded-md bg-accent-400/15 px-1.5 py-0.5 text-[11px] font-semibold text-accent-label ring-1 ring-inset ring-accent-400/25">
-                {roundLabel}
-              </span>
-            )}
+    <div style={{ display: "flex", flex: 1, flexDirection: "column" }}>
+      <div className="lbd-cm-sticky">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+            <span style={{ fontSize: 13, color: "#a39b90" }}>{roundLabel ? `${roundLabel} · nueva` : "Nuevo pedido"}</span>
+            <h1 className="lbd-display lbd-cm-h1 lbd-trunc">{targetLabel}</h1>
           </div>
-          <button
-            type="button"
-            onClick={onBack}
-            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
-          >
+          <button type="button" onClick={onBack} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ flexShrink: 0 }}>
             Cambiar
           </button>
         </div>
 
-        {frequent.length > 0 && (
-          <div className="-mx-4 mt-3 overflow-x-auto px-4">
-            <div className="flex w-max items-center gap-2">
-              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-faint">
+        <div className="lbd-cm-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="M20 20l-4-4" />
+          </svg>
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar en la carta" aria-label="Buscar plato" />
+        </div>
+
+        {frequent.length > 0 && !needle && (
+          <div className="lbd-cm-scroll">
+            <div style={{ display: "flex", width: "max-content", alignItems: "center", gap: 8 }}>
+              <span className="lbd-cm-eyebrow" style={{ flexShrink: 0 }}>
                 Frecuentes
               </span>
               {frequent.map((f) => {
                 const qty = cart[f.id]?.qty ?? 0;
                 return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => onSetQty(f.id, qty + 1)}
-                    className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors active:scale-95 ${
-                      qty > 0
-                        ? "bg-accent-400/15 text-accent-label ring-1 ring-inset ring-accent-400/30"
-                        : "border border-fg/[0.12] bg-fg/[0.04] text-fg/80"
-                    }`}
-                  >
+                  <button key={f.id} type="button" onClick={() => onSetQty(f.id, qty + 1)} className={`lbd-cm-pill${qty > 0 ? " is-accent" : ""}`}>
                     {f.name}
-                    {qty > 0 && <span className="ml-1.5 font-bold tabular-nums">{qty}</span>}
+                    {qty > 0 && <b className="lbd-mono">{qty}</b>}
                   </button>
                 );
               })}
@@ -206,35 +169,25 @@ export default function ItemPicker({
           </div>
         )}
 
-        <div className="-mx-4 mt-3 overflow-x-auto px-4">
-          <div className="flex w-max gap-1 rounded-xl border border-fg/[0.08] bg-fg/[0.03] p-1">
+        <div className="lbd-cm-scroll" role="tablist" aria-label="Categorías">
+          <div style={{ display: "flex", width: "max-content", gap: 6 }}>
             {tabs.map((t) => {
-              const active = t.id === activeTab;
+              const active = !needle && t.id === activeTab;
               const picked = pickedPerTab.get(t.id) ?? 0;
               return (
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => setActiveTab(t.id)}
-                  className={`relative shrink-0 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-                    active ? "text-fg" : "text-faint"
-                  }`}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    setQuery("");
+                    setActiveTab(t.id);
+                  }}
+                  className={`lbd-cm-tab${active ? " is-on" : ""}`}
                 >
-                  {active && (
-                    <m.span
-                      layoutId="comanda-tab"
-                      transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
-                      className="absolute inset-0 rounded-lg bg-fg/[0.1]"
-                    />
-                  )}
-                  <span className="relative flex items-center gap-1.5">
-                    {t.name}
-                    {picked > 0 && (
-                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-400 px-1 text-[10px] font-bold tabular-nums text-on-accent">
-                        {picked}
-                      </span>
-                    )}
-                  </span>
+                  {t.name}
+                  {picked > 0 && <b>{picked}</b>}
                 </button>
               );
             })}
@@ -242,77 +195,48 @@ export default function ItemPicker({
         </div>
       </div>
 
-      <div className="flex-1 px-4 py-3">
+      <div style={{ flex: 1, padding: "4px 16px 220px" }}>
         {shown.length === 0 ? (
-          <p className="py-10 text-center text-[13.5px] text-faint">
-            No hay platos disponibles en esta categoría.
+          <p className="lbd-ov-empty" style={{ padding: "32px 0", textAlign: "center", fontSize: 14 }}>
+            {needle ? "No hay platos con ese nombre." : "No hay platos disponibles en esta categoría."}
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {shown.map((item) => {
               const line = cart[item.id];
               const qty = line?.qty ?? 0;
               const picked = qty > 0;
 
               return (
-                <li
-                  key={item.id}
-                  className={`relative overflow-hidden rounded-2xl border p-3 transition-colors ${
-                    picked
-                      ? "border-accent-400/35 bg-accent-400/[0.07]"
-                      : "border-fg/[0.07] bg-fg/[0.02]"
-                  }`}
-                >
-                  {picked && (
-                    <span
-                      aria-hidden
-                      className="absolute inset-y-0 left-0 w-1 bg-accent-400"
-                    />
-                  )}
-
-                  <div className={`flex items-center justify-between gap-3 ${picked ? "pl-2" : ""}`}>
+                <li key={item.id} className={`lbd-cm-item${picked ? " is-picked" : ""}`}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     {/* the whole row adds one, so a busy server never has to
                         aim for the small button */}
-                    <button
-                      type="button"
-                      onClick={() => onSetQty(item.id, qty + 1)}
-                      className="min-w-0 flex-1 py-1 text-left"
-                    >
-                      <p className="text-[15px] font-medium leading-snug text-fg">
-                        {item.name}
-                      </p>
-                      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]">
-                        <span className="font-semibold tabular-nums text-fg/70">
-                          {formatPrice(item.price)}
+                    <button type="button" onClick={() => onSetQty(item.id, qty + 1)} className="lbd-cm-item-main" aria-label={`Agregar ${item.name}`}>
+                      {item.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.photoUrl} alt="" className="lbd-cm-photo" loading="lazy" />
+                      ) : (
+                        <span className="lbd-cm-photo lbd-cm-photo--blank" aria-hidden>
+                          {item.name.slice(0, 1).toUpperCase()}
                         </span>
-                        {item.prepMin != null && (
-                          <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
-                            {item.prepMin} min
-                          </span>
-                        )}
-                        {picked && (
-                          <span className="font-semibold tabular-nums text-accent-ink">
-                            = {formatPrice(item.price * qty)}
-                          </span>
-                        )}
-                      </p>
+                      )}
+                      <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                        <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", lineHeight: 1.25 }}>{item.name}</span>
+                        <span style={{ fontSize: 13, color: "#a39b90", display: "flex", flexWrap: "wrap", gap: "2px 8px" }}>
+                          <span>{formatPrice(item.price)}</span>
+                          {item.prepMin != null && <span>· {item.prepMin} min</span>}
+                          {picked && <span style={{ color: "#ff7a57", fontWeight: 600 }}>= {formatPrice(item.price * qty)}</span>}
+                        </span>
+                      </span>
                     </button>
-                    <Stepper qty={qty} onChange={(n) => onSetQty(item.id, n)} />
+                    <Stepper qty={qty} name={item.name} onChange={(n) => onSetQty(item.id, n)} />
                   </div>
 
                   <AnimatePresence initial={false}>
                     {picked && (
-                      <m.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2, ease: EASE }}
-                        className="overflow-hidden pl-2"
-                      >
-                        <LineNote
-                          note={line?.note ?? ""}
-                          onChange={(v) => onSetNote(item.id, v)}
-                        />
+                      <m.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: EASE }} style={{ overflow: "hidden", paddingLeft: 64 }}>
+                        <LineNote note={line?.note ?? ""} onChange={(v) => onSetNote(item.id, v)} />
                       </m.div>
                     )}
                   </AnimatePresence>
