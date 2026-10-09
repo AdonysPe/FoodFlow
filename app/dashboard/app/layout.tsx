@@ -1,8 +1,5 @@
 import type { ReactNode } from "react";
-import MotionProvider from "@/components/MotionProvider";
-import Sidebar from "@/components/dashboard/Sidebar";
-import Topbar from "@/components/dashboard/Topbar";
-import Toast from "@/components/dashboard/Toast";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import GlassCard from "@/components/ui/GlassCard";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
 import { logout } from "@/lib/actions/auth";
@@ -11,7 +8,8 @@ import { restaurantEntitlement } from "@/lib/subscriptions/access";
 
 const CLIENT_TITLES: Record<string, string> = {
   "web-pedidos": "Web de pedidos",
-  overview: "Resumen",
+  // The Resumen draws its own greeting, so the strip above it stays empty.
+  overview: "",
   orders: "Pedidos",
   kitchen: "Cocina",
   mesas: "Mesas",
@@ -60,22 +58,18 @@ export default async function ClientAppLayout({ children }: { children: ReactNod
   }
 
   return (
-    <MotionProvider>
-      <div className="min-h-screen bg-ink-950">
-        <Sidebar
-          userEmail={user.email}
-          variant="client"
-          badgeLabel={restaurant.name}
-          plan={(restaurantEntitlement(restaurant).effectivePlan ?? "carta") as PlanValue}
-          restaurants={restaurants.map((item) => ({ id: item.id, name: item.name }))}
-          activeRestaurantId={restaurant.id}
-        />
-        <div className="flex min-h-screen flex-col lg:pl-64">
-          <Topbar titles={CLIENT_TITLES} />
-          <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
-        </div>
-        <Toast />
-      </div>
-    </MotionProvider>
+    <DashboardShell
+      titles={CLIENT_TITLES}
+      home="/dashboard/app/overview"
+      userEmail={user.email}
+      role={user.role}
+      variant="client"
+      badgeLabel={restaurant.name}
+      plan={(restaurantEntitlement(restaurant).effectivePlan ?? "carta") as PlanValue}
+      restaurants={restaurants.map((item) => ({ id: item.id, name: item.name }))}
+      activeRestaurantId={restaurant.id}
+    >
+      {children}
+    </DashboardShell>
   );
 }

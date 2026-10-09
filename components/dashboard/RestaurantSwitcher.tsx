@@ -21,13 +21,8 @@ export default function RestaurantSwitcher({
   const pushToast = useDashboardStore((state) => state.pushToast);
   const [isPending, startTransition] = useTransition();
 
-  if (restaurants.length <= 1) {
-    return (
-      <span className="max-w-36 truncate rounded-full border border-fg/[0.1] bg-fg/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
-        {restaurants[0]?.name ?? "Sin local"}
-      </span>
-    );
-  }
+  // One venue needs no switcher: the sidebar already names it.
+  if (restaurants.length <= 1) return null;
 
   return (
     <select
@@ -45,7 +40,7 @@ export default function RestaurantSwitcher({
           router.refresh();
         });
       }}
-      className="min-w-0 max-w-40 rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2 py-1 text-[11px] font-semibold text-muted outline-none focus:border-accent-400/50 disabled:opacity-60"
+      className="lbd-switch"
     >
       {restaurants.map((restaurant) => (
         <option key={restaurant.id} value={restaurant.id}>
