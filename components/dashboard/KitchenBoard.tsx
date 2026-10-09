@@ -7,16 +7,19 @@ import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { orderOriginLabel, type OrderStatusValue } from "@/lib/orderMeta";
 import { ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import DeliveryDetails from "@/components/dashboard/DeliveryDetails";
+import PageHeader from "@/components/dashboard/PageHeader";
 import { formatCurrency, formatDurationMs } from "@/lib/format";
 import { EASE } from "@/lib/motion";
 
 type BoardStatus = "pending" | "preparing" | "ready";
 type BoardOrder = Omit<KitchenOrder, "status"> & { status: OrderStatusValue };
 
-const COLUMNS: { status: BoardStatus; label: string }[] = [
-  { status: "pending", label: "Pendiente" },
-  { status: "preparing", label: "En preparación" },
-  { status: "ready", label: "Lista" },
+// The prototype's three lanes: what just arrived, what is on the fire, and
+// what is waiting on the pass.
+const COLUMNS: { status: BoardStatus; label: string; dot: string; action: string; next: OrderStatusValue; empty: string }[] = [
+  { status: "pending", label: "Nuevos", dot: "#8a8278", action: "Empezar", next: "preparing", empty: "Sin pedidos nuevos" },
+  { status: "preparing", label: "En el fuego", dot: "#f3efe6", action: "Marcar listo", next: "ready", empty: "Nada en el fuego" },
+  { status: "ready", label: "Listos para salir", dot: "#ff5a33", action: "Marcar entregado", next: "delivered", empty: "Todo entregado" },
 ];
 
 const POLL_MS = 4000;
@@ -26,18 +29,14 @@ const POLL_MS = 4000;
 const WARN_MS = 8 * 60 * 1000;
 const LATE_MS = 15 * 60 * 1000;
 
-function ageTone(ms: number) {
-  if (ms >= LATE_MS) return "border-accent-400/50 bg-accent-400/15 text-accent-label";
-  if (ms >= WARN_MS) return "border-warn/40 bg-warn/12 text-warn-ink";
-  return "border-fg/[0.1] bg-fg/[0.05] text-fg/70";
-}
+const two = (n: number) => String(n).padStart(2, "0");
 
 /** Short, sayable ticket number — the same one the server sees on the comanda. */
 function ticketNumber(id: string) {
   return id.slice(-6).toUpperCase();
 }
 
-function OrderLines({ items }: { items: KitchenOrder["items"] }) {
+function OrderLines({ items, ready }: { items: KitchenOrder["items"]; ready: boolean }) {
   // Group by the round each line was sent in. Rounds only matter once a table
   // has had more than one send, so a single-round order renders as a plain list.
   const rounds = useMemo(() => {
@@ -54,48 +53,28 @@ function OrderLines({ items }: { items: KitchenOrder["items"] }) {
   const lastRound = rounds[rounds.length - 1]?.[0];
 
   return (
-    <div className="mt-3 flex flex-col gap-3">
+    <div className="lbd-kt-lines">
       {rounds.map(([round, lines]) => {
         const isNew = multi && round === lastRound;
         return (
           <div key={round}>
             {multi && (
-              <div className="mb-1.5 flex items-center gap-2">
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
-                    isNew ? "text-accent-ink" : "text-faint"
-                  }`}
-                >
-                  Ronda {round}
-                </span>
-                {isNew && (
-                  <span className="rounded-full bg-accent-400/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-accent-label ring-1 ring-inset ring-accent-400/30">
-                    Nueva
-                  </span>
-                )}
-                <span className="h-px flex-1 bg-fg/[0.07]" />
+              <div className="lbd-kt-round">
+                <span className={isNew ? "is-new" : undefined}>Ronda {round}</span>
+                {isNew && <em>Nueva</em>}
+                <i aria-hidden />
               </div>
             )}
-
-            <ul className="flex flex-col gap-2">
+            <ul>
               {lines.map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5">
-                  {/* the quantity is the number a chef counts pans by */}
-                  <span className="mt-px shrink-0 rounded-md border border-fg/[0.12] bg-fg/[0.07] px-1.5 py-0.5 font-mono text-[13px] font-bold tabular-nums text-fg">
-                    {item.quantity}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[14.5px] font-medium leading-snug text-fg">
-                      {item.name}
-                    </span>
-                    {/* A missed note is a remade plate, so it gets a filled
-                        chip instead of small italics under the line. */}
-                    {item.note && (
-                      <span className="mt-1 inline-block rounded-md bg-accent-400/15 px-2 py-0.5 text-[12px] font-semibold text-accent-label ring-1 ring-inset ring-accent-400/25">
-                        {item.note}
-                      </span>
-                    )}
-                  </span>
+                <li key={i}>
+                  <div className="lbd-kt-line">
+                    <span className="lbd-mono lbd-kt-qty">{item.quantity}×</span>
+                    <span className="lbd-kt-name">{item.name}</span>
+                  </div>
+                  {/* A missed note is a remade plate: it is the second loudest
+                      thing on the ticket, after the dish. */}
+                  {item.note && <span className={`lbd-kt-note${ready ? " is-ready" : ""}`}>{item.note}</span>}
                 </li>
               ))}
             </ul>
@@ -154,144 +133,146 @@ export default function KitchenBoard({ initialOrders }: { initialOrders: Kitchen
     setDraggingId(null);
   }
 
+  const counts = {
+    pending: orders.filter((o) => o.status === "pending").length,
+    preparing: orders.filter((o) => o.status === "preparing").length,
+    ready: orders.filter((o) => o.status === "ready").length,
+  };
+  const oldestMs =
+    now === null
+      ? null
+      : orders
+          .filter((o) => o.status === "pending" || o.status === "preparing")
+          .reduce<number | null>((max, o) => {
+            const age = now - new Date(o.createdAt).getTime();
+            return max === null || age > max ? age : max;
+          }, null);
+  const clock = now === null ? "--:--" : `${two(new Date(now).getHours())}:${two(new Date(now).getMinutes())}`;
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      {COLUMNS.map((col) => {
-        const columnOrders = orders.filter((o) => o.status === col.status);
-        return (
-          <div
-            key={col.status}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOverStatus(col.status);
-            }}
-            onDragLeave={() => setDragOverStatus((s) => (s === col.status ? null : s))}
-            onDrop={() => handleDrop(col.status)}
-            className={`flex min-h-[240px] flex-col gap-3 rounded-2xl border p-3 transition-colors ${
-              dragOverStatus === col.status
-                ? "border-accent-400/40 bg-accent-400/[0.04]"
-                : "border-fg/[0.06] bg-fg/[0.015]"
-            }`}
-          >
-            <div className="flex items-center justify-between px-1.5 py-1">
-              <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted">
-                {col.label}
-              </h3>
-              <span className="rounded-full bg-fg/[0.06] px-2 py-0.5 text-[11.5px] font-medium text-muted">
-                {columnOrders.length}
-              </span>
-            </div>
+    <div className="lbd-pg">
+      <PageHeader eyebrow="SERVICIO · COCINA" title="Cocina" description="Los pedidos llegan solos, en orden. Arrastra un ticket o toca su botón para avanzarlo.">
+        <span className="lbd-live">
+          <i className="lbd-pulse" aria-hidden />
+          En vivo
+        </span>
+        <span className="lbd-mono lbd-kb-clock" aria-label="Hora">
+          {clock}
+        </span>
+      </PageHeader>
 
-            <AnimatePresence initial={false}>
-              {columnOrders.map((order) => {
-                const ageMs = now === null ? 0 : now - new Date(order.createdAt).getTime();
-                const zone = order.tableZone
-                  ? ZONE_LABELS_ES[order.tableZone] ?? order.tableZone
-                  : null;
-                const late = now !== null && ageMs >= LATE_MS;
+      <div className="lbd-kb-kpis lbd-rise" style={{ animationDelay: ".06s" }}>
+        <div className="lbd-kb-kpi">
+          <span>En cola</span>
+          <strong className="lbd-display">{counts.pending}</strong>
+        </div>
+        <div className="lbd-kb-kpi">
+          <span>En el fuego</span>
+          <strong className="lbd-display">{counts.preparing}</strong>
+        </div>
+        <div className="lbd-kb-kpi">
+          <span>Listos para salir</span>
+          <strong className="lbd-display" style={{ color: "#ff7a57" }}>
+            {counts.ready}
+          </strong>
+        </div>
+        <div className="lbd-kb-kpi">
+          <span>Más antiguo</span>
+          <strong className="lbd-mono" style={{ fontSize: 22, fontWeight: 500, color: oldestMs !== null && oldestMs >= LATE_MS ? "#ff5a33" : "#f3efe6" }}>
+            {oldestMs === null ? "—" : formatDurationMs(oldestMs)}
+          </strong>
+        </div>
+      </div>
 
-                return (
-                  <m.div
-                    key={order.id}
-                    layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.25, ease: EASE }}
-                    draggable
-                    onDragStart={() => setDraggingId(order.id)}
-                    onDragEnd={() => setDraggingId(null)}
-                  >
-                    {/* A kitchen ticket, not a dashboard card: opaque paper,
-                        a hard top rule that turns red when the ticket is old,
-                        and the dish names as the biggest thing on it. */}
-                    <article
-                      className={`cursor-grab overflow-hidden rounded-2xl border bg-ink-900 shadow-card transition-colors active:cursor-grabbing ${
-                        draggingId === order.id ? "opacity-40" : ""
-                      } ${late ? "border-accent-400/40" : "border-fg/[0.09]"}`}
+      <div className="lbd-kb-board">
+        {COLUMNS.map((col) => {
+          const columnOrders = orders.filter((o) => o.status === col.status);
+          const ready = col.status === "ready";
+          return (
+            <section
+              key={col.status}
+              aria-label={col.label}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverStatus(col.status);
+              }}
+              onDragLeave={() => setDragOverStatus((s) => (s === col.status ? null : s))}
+              onDrop={() => handleDrop(col.status)}
+              className={`lbd-kb-col${dragOverStatus === col.status ? " is-over" : ""}`}
+            >
+              <div className="lbd-kb-col-head">
+                <span>
+                  <i style={{ background: col.dot }} aria-hidden />
+                  {col.label}
+                </span>
+                <span className="lbd-mono">{columnOrders.length}</span>
+              </div>
+
+              <AnimatePresence initial={false}>
+                {columnOrders.map((order) => {
+                  const ageMs = now === null ? 0 : now - new Date(order.createdAt).getTime();
+                  const zone = order.tableZone ? ZONE_LABELS_ES[order.tableZone] ?? order.tableZone : null;
+                  const late = !ready && now !== null && ageMs >= LATE_MS;
+                  const warn = !ready && now !== null && ageMs >= WARN_MS && !late;
+                  const pct = Math.min(100, Math.round((ageMs / LATE_MS) * 100));
+
+                  return (
+                    <m.div
+                      key={order.id}
+                      layout
+                      initial={{ opacity: 0, y: -14, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ duration: 0.4, ease: EASE }}
+                      draggable
+                      onDragStart={() => setDraggingId(order.id)}
+                      onDragEnd={() => setDraggingId(null)}
                     >
-                      <span
-                        aria-hidden
-                        className={`block h-1 w-full ${
-                          late
-                            ? "bg-accent-400"
-                            : ageMs >= WARN_MS
-                              ? "bg-warn/70"
-                              : "bg-fg/[0.08]"
-                        }`}
-                      />
-
-                      <div className="p-4">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="truncate font-display text-[19px] font-extrabold leading-tight tracking-[-0.02em] text-fg">
-                              {order.tableName ?? order.customerName}
-                            </p>
+                      <article className={`lbd-kt${ready ? " is-ready" : ""}${late ? " is-late" : ""}${draggingId === order.id ? " is-drag" : ""}`}>
+                        <div className="lbd-kt-head">
+                          <span style={{ display: "inline-flex", alignItems: "baseline", gap: 10, minWidth: 0 }}>
+                            <span className="lbd-display lbd-kt-label lbd-trunc">{order.tableName ?? order.customerName}</span>
                             {/* A table already says "dine-in", so the channel
                                 label only earns its place when there is no
                                 table: delivery and pickup. */}
-                            <p className="mt-0.5 truncate text-[11.5px] text-faint">
-                              {order.tableName
-                                ? (zone ?? "Salón")
-                                : orderOriginLabel(order.source, order.channel)}
-                            </p>
-                          </div>
-                          <span
-                            className={`shrink-0 rounded-lg border px-2 py-1 font-mono text-[13px] font-semibold tabular-nums ${ageTone(ageMs)}`}
-                          >
+                            <span className="lbd-kt-source lbd-trunc">{order.tableName ? (zone ?? "Salón") : orderOriginLabel(order.source, order.channel)}</span>
+                          </span>
+                          <span className="lbd-mono lbd-kt-time" style={{ color: late ? "#ff5a33" : warn ? "#ffb37a" : undefined }}>
                             {now === null ? "—" : formatDurationMs(ageMs)}
                           </span>
                         </div>
 
-                        {order.source === "online_store" && <DeliveryDetails order={order} className="mt-3" highlightNotes />}
-                        <OrderLines items={order.items} />
+                        <div className="lbd-kt-track">
+                          <div style={{ width: `${ready ? 100 : pct}%`, background: ready ? "#1c1a18" : late ? "#ff5a33" : "#f3efe6" }} />
+                        </div>
+
+                        {order.source === "online_store" && <DeliveryDetails order={order} className="lbd-kt-delivery" highlightNotes />}
+                        <OrderLines items={order.items} ready={ready} />
 
                         {/* the small print a chef never needs mid-service */}
-                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-fg/[0.07] pt-2.5 text-[11px] text-faint">
-                          <span className="truncate font-mono tracking-wide">
+                        <div className="lbd-kt-foot">
+                          <span className="lbd-mono lbd-trunc">
                             #{order.publicCode ?? ticketNumber(order.id)}
                             {order.serverName ? ` · ${order.serverName}` : ""}
                             {order.paid ? " · Pagado" : ""}
                           </span>
-                          <span className="shrink-0 tabular-nums">
-                            {formatCurrency(order.total)}
-                          </span>
+                          <span style={{ flexShrink: 0 }}>{formatCurrency(order.total)}</span>
                         </div>
 
-                        {col.status !== "ready" ? (
-                          <button
-                            type="button"
-                            disabled={isPending}
-                            onClick={() =>
-                              moveOrder(order.id, col.status === "pending" ? "preparing" : "ready")
-                            }
-                            className="mt-3 h-10 w-full rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[13px] font-semibold text-fg/85 transition-colors hover:bg-fg/[0.09] hover:text-fg disabled:opacity-40"
-                          >
-                            {col.status === "pending" ? "Empezar" : "Marcar lista"}
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            disabled={isPending}
-                            onClick={() => moveOrder(order.id, "delivered")}
-                            className="mt-3 h-10 w-full rounded-xl bg-linear-to-b from-accent-400 to-accent-600 text-[13px] font-bold text-on-accent disabled:opacity-40"
-                          >
-                            Entregar
-                          </button>
-                        )}
-                      </div>
-                    </article>
-                  </m.div>
-                );
-              })}
-            </AnimatePresence>
+                        <button type="button" disabled={isPending} onClick={() => moveOrder(order.id, col.next)} className={`lbd-kt-btn is-${col.status}`}>
+                          {col.action}
+                        </button>
+                      </article>
+                    </m.div>
+                  );
+                })}
+              </AnimatePresence>
 
-            {columnOrders.length === 0 && (
-              <p className="px-1.5 py-6 text-center text-[13px] text-faint">Sin pedidos</p>
-            )}
-          </div>
-        );
-      })}
+              {columnOrders.length === 0 && <div className="lbd-kb-empty">{col.empty}</div>}
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }

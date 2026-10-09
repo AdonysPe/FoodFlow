@@ -1,8 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import GlassCard from "@/components/ui/GlassCard";
-import Button from "@/components/ui/Button";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createOrder, type OrderChannel } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { CHANNEL_LABELS } from "@/lib/orderMeta";
@@ -10,6 +8,11 @@ import { formatCurrency } from "@/lib/format";
 
 export type MenuItemOption = { id: string; name: string; price: number };
 
+/**
+ * "Registrar pedido": the orange button in the screen's header and, once
+ * pressed, a glass dialog with the customer, the channel and the dishes.
+ * `createOrder` and its validation are the ones that were here.
+ */
 export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[] }) {
   const [open, setOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
@@ -19,6 +22,17 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    nameRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   const lineItems = useMemo(
     () =>
@@ -64,105 +78,84 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
     });
   }
 
-  if (!open) {
-    return (
-      <Button type="button" onClick={() => setOpen(true)} className="self-start">
-        Registrar pedido
-      </Button>
-    );
-  }
-
   return (
-    <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-[15px] font-semibold text-fg/90">Registrar pedido</h2>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="text-[13px] text-faint hover:text-fg/70"
-        >
-          Cancelar
-        </button>
-      </div>
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="lbd-cta">
+        Registrar pedido
+      </button>
 
-      {menuItems.length === 0 ? (
-        <p className="text-[14px] text-faint">
-          Primero agrega platos disponibles a la carta para registrar pedidos.
-        </p>
-      ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <input
-              required
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Nombre del cliente"
-              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
-            />
-            <input
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="Teléfono (opcional)"
-              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
-            />
-            <select
-              value={channel}
-              onChange={(e) => setChannel(e.target.value as OrderChannel)}
-              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg outline-none focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
-            >
-              {(Object.keys(CHANNEL_LABELS) as OrderChannel[]).map((c) => (
-                <option key={c} value={c} className="bg-ink-900">
-                  {CHANNEL_LABELS[c]}
-                </option>
-              ))}
-            </select>
-          </div>
+      {open && (
+        <div className="lbd-modal" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
+          <div className="lbd-modal-card lbd-pop" role="dialog" aria-modal="true" aria-labelledby="new-order-title">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              <h2 id="new-order-title" className="lbd-display" style={{ margin: 0, fontSize: 26, letterSpacing: "-0.04em" }}>
+                Registrar pedido
+              </h2>
+              <button type="button" onClick={() => setOpen(false)} className="lbd-btn lbd-btn--ghost lbd-btn--sm">
+                Cancelar
+              </button>
+            </div>
 
-          <div className="flex flex-col gap-2">
-            {menuItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-fg/[0.07] bg-fg/[0.02] px-4 py-2.5"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-[13.5px] text-fg/85">{item.name}</p>
-                  <p className="text-[12px] text-faint">{formatCurrency(item.price)}</p>
+            {menuItems.length === 0 ? (
+              <p style={{ margin: 0, fontSize: 14, color: "#a39b90" }}>Primero agrega platos disponibles a la carta para registrar pedidos.</p>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18, minHeight: 0 }}>
+                <div className="lbd-modal-fields">
+                  <input ref={nameRef} required value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Nombre del cliente" aria-label="Nombre del cliente" className="lbd-input" />
+                  <input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Teléfono (opcional)" aria-label="Teléfono" className="lbd-input" />
+                  <select value={channel} onChange={(e) => setChannel(e.target.value as OrderChannel)} aria-label="Canal" className="lbd-input">
+                    {(Object.keys(CHANNEL_LABELS) as OrderChannel[]).map((c) => (
+                      <option key={c} value={c}>
+                        {CHANNEL_LABELS[c]}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div className="flex shrink-0 items-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setQty(item.id, (quantities[item.id] ?? 0) - 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-muted hover:bg-fg/[0.06]"
-                  >
-                    −
-                  </button>
-                  <span className="w-5 text-center text-[13.5px] text-fg/85">
-                    {quantities[item.id] ?? 0}
+
+                <div className="lbd-modal-list">
+                  {menuItems.map((item) => {
+                    const qty = quantities[item.id] ?? 0;
+                    return (
+                      <div key={item.id} className={`lbd-modal-item${qty > 0 ? " is-on" : ""}`}>
+                        <div style={{ minWidth: 0 }}>
+                          <p className="lbd-trunc" style={{ margin: 0, fontSize: 14, fontWeight: 550 }}>
+                            {item.name}
+                          </p>
+                          <p style={{ margin: 0, fontSize: 12, color: "#a39b90" }}>{formatCurrency(item.price)}</p>
+                        </div>
+                        <div className="lbd-stepper">
+                          <button type="button" onClick={() => setQty(item.id, qty - 1)} aria-label={`Quitar uno de ${item.name}`} disabled={qty === 0}>
+                            −
+                          </button>
+                          <span className="lbd-mono">{qty}</span>
+                          <button type="button" onClick={() => setQty(item.id, qty + 1)} aria-label={`Agregar ${item.name}`}>
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {error && (
+                  <p role="alert" className="lbd-modal-error">
+                    {error}
+                  </p>
+                )}
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 14, color: "#a39b90" }}>
+                    Total <span className="lbd-display" style={{ marginLeft: 6, fontSize: 24, letterSpacing: "-0.04em", color: "#f3efe6" }}>{formatCurrency(total)}</span>
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setQty(item.id, (quantities[item.id] ?? 0) + 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-fg/[0.1] text-muted hover:bg-fg/[0.06]"
-                  >
-                    +
+                  <button type="submit" disabled={isPending} className="lbd-btn lbd-btn--solid" style={{ minWidth: 180 }}>
+                    {isPending ? "Registrando…" : "Registrar pedido"}
                   </button>
                 </div>
-              </div>
-            ))}
+              </form>
+            )}
           </div>
-
-          <div className="flex items-center justify-between border-t border-fg/[0.07] pt-4">
-            <span className="text-[14px] text-muted">
-              Total: <span className="font-semibold text-fg/90">{formatCurrency(total)}</span>
-            </span>
-            <Button type="submit" size="md" disabled={isPending}>
-              {isPending ? "Registrando…" : "Registrar pedido"}
-            </Button>
-          </div>
-        </form>
+        </div>
       )}
-
-      {error && <p className="mt-2.5 text-[13px] text-accent-icon">{error}</p>}
-    </GlassCard>
+    </>
   );
 }

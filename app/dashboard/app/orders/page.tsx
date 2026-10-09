@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { requirePlanFeature } from "@/lib/auth/plan";
+import PageHeader from "@/components/dashboard/PageHeader";
 import PlanGate from "@/components/dashboard/PlanGate";
 import OrdersTable, { type OrderRow } from "@/components/dashboard/OrdersTable";
 import NewOrderForm from "@/components/dashboard/NewOrderForm";
@@ -45,6 +46,7 @@ export default async function OrdersPage({
     prisma.order.findMany({
       where: { restaurantId: restaurant.id, createdAt: { gte: rangeStart(range) }, ...sourceFilter },
       orderBy: { createdAt: "desc" },
+      include: { table: { select: { name: true } } },
     }),
     prisma.menuItem.findMany({
       where: { restaurantId: restaurant.id, available: true },
@@ -58,6 +60,7 @@ export default async function OrdersPage({
     id: o.id,
     source: o.source,
     publicCode: o.publicToken?.slice(0, 10).toUpperCase() ?? null,
+    tableName: o.table?.name ?? null,
     customerPhone: o.customerPhone,
     fulfillmentAddress: o.fulfillmentAddress,
     deliveryZone: o.deliveryZone,
@@ -83,34 +86,45 @@ export default async function OrdersPage({
     }),
   }));
 
-  return (
-    <div className="flex flex-col gap-6">
-      <AutoRefresh intervalMs={8000} />
-      <NewOrderForm menuItems={menuItems} />
+  const SOURCES = [
+    ["all", "Todos"],
+    ["mesa", "Mesa"],
+    ["web", "Web"],
+    ["delivery", "Delivery"],
+    ["pickup", "Recojo"],
+  ] as const;
 
-      <div className="flex flex-wrap items-center gap-2">
-        {RANGES.map((r) => (
-          <Link
-            key={r.key}
-            href={`/dashboard/app/orders?range=${r.key}&source=${source}`}
-            className={`rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-              range === r.key
-                ? "bg-fg/[0.09] text-fg"
-                : "text-muted hover:bg-fg/[0.05] hover:text-fg/80"
-            }`}
-          >
-            {r.label}
-          </Link>
-        ))}
-        <Link
-          href="/dashboard/app/configuracion/facturacion"
-          className="ml-auto rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-muted transition-colors hover:bg-fg/[0.08] hover:text-fg"
-        >
-          Configurar facturación
+  return (
+    <div className="lbd-pg">
+      <AutoRefresh intervalMs={8000} />
+      <PageHeader eyebrow="SERVICIO · PEDIDOS" title="Pedidos" description="Salón, QR, web y delivery en una sola lista. Se actualiza sola.">
+        <span className="lbd-live">
+          <i className="lbd-pulse" aria-hidden />
+          En vivo
+        </span>
+        <NewOrderForm menuItems={menuItems} />
+      </PageHeader>
+
+      <div className="lbd-filters lbd-rise" style={{ animationDelay: ".04s" }}>
+        <nav className="lbd-seg" aria-label="Rango de fechas">
+          {RANGES.map((r) => (
+            <Link key={r.key} href={`/dashboard/app/orders?range=${r.key}&source=${source}`} aria-current={range === r.key ? "page" : undefined} className={range === r.key ? "is-on" : undefined}>
+              {r.label}
+            </Link>
+          ))}
+        </nav>
+        <nav className="lbd-seg" aria-label="Origen de pedidos">
+          {SOURCES.map(([key, label]) => (
+            <Link key={key} href={`/dashboard/app/orders?range=${range}&source=${key}`} aria-current={source === key ? "page" : undefined} className={source === key ? "is-on" : undefined}>
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <Link href="/dashboard/app/configuracion/facturacion" className="lbd-link" style={{ marginLeft: "auto" }}>
+          Configurar facturación ›
         </Link>
       </div>
 
-      <nav aria-label="Origen de pedidos" className="flex flex-wrap gap-2">{[["all", "Todos"], ["mesa", "Mesa"], ["web", "Web"], ["delivery", "Delivery"], ["pickup", "Recojo"]].map(([key, label]) => <Link key={key} href={`/dashboard/app/orders?range=${range}&source=${key}`} aria-current={source === key ? "page" : undefined} className={`rounded-lg px-4 py-2 text-sm ${source === key ? "bg-fg/10 text-fg" : "text-muted"}`}>{label}</Link>)}</nav>
       <OrdersTable orders={rows} venueName={restaurant.name} receiptSettings={receiptSettings} billing={billing} />
     </div>
   );
