@@ -1,69 +1,47 @@
 "use client";
 
-import { m } from "framer-motion";
 import type { MenuCategoryDTO } from "@/lib/menuMeta";
 
 export type CatFilter = string; // "all" | "none" | categoryId
 
+/**
+ * The categories rail, design B: a quiet list on the left of the grid with
+ * the dish count of each, the active one in cream. Hidden categories keep
+ * their strike-through so it is clear they are off the carta.
+ */
 export default function CategoryTabs({
   categories,
   orphanCount,
+  total,
   value,
   onChange,
+  onManage,
 }: {
   categories: MenuCategoryDTO[];
   orphanCount: number;
+  total: number;
   value: CatFilter;
   onChange: (v: CatFilter) => void;
+  onManage: () => void;
 }) {
-  const tabs: { id: CatFilter; label: string; count?: number; muted?: boolean }[] = [
-    { id: "all", label: "Todas" },
-    ...categories.map((c) => ({
-      id: c.id,
-      label: c.name,
-      count: c.itemCount,
-      muted: !c.active,
-    })),
+  const tabs: { id: CatFilter; label: string; count: number; muted?: boolean }[] = [
+    { id: "all", label: "Todas", count: total },
+    ...categories.map((c) => ({ id: c.id, label: c.name, count: c.itemCount, muted: !c.active })),
   ];
   if (orphanCount > 0) tabs.push({ id: "none", label: "Sin categoría", count: orphanCount });
 
   return (
-    <div className="-mx-1 overflow-x-auto px-1 pb-1">
-      <div className="flex w-max gap-1 rounded-xl border border-fg/[0.08] bg-fg/[0.03] p-1">
-        {tabs.map((t) => {
-          const active = t.id === value;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onChange(t.id)}
-              className={`relative shrink-0 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors duration-200 ${
-                active ? "text-fg" : "text-faint hover:text-fg/75"
-              }`}
-            >
-              {active && (
-                <m.span
-                  layoutId="menu-cat-tab"
-                  transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
-                  className="absolute inset-0 rounded-lg bg-fg/[0.1] shadow-[inset_0_1px_0_0_var(--spec),0_2px_8px_-2px_var(--drop-soft)]"
-                />
-              )}
-              <span className="relative flex items-center gap-1.5">
-                <span className={t.muted ? "line-through opacity-70" : ""}>{t.label}</span>
-                {t.count != null && (
-                  <span
-                    className={`rounded-full px-1.5 text-[10.5px] tabular-nums ${
-                      active ? "bg-fg/15 text-fg/70" : "bg-fg/[0.06] text-faint"
-                    }`}
-                  >
-                    {t.count}
-                  </span>
-                )}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+    <nav className="lbd-card lbd-rise lbd-me-rail" style={{ animationDelay: ".05s" }} aria-label="Categorías">
+      <span className="lbd-cm-eyebrow lbd-me-rail-title">Categorías</span>
+      {tabs.map((t) => (
+        <button key={t.id} type="button" onClick={() => onChange(t.id)} aria-pressed={t.id === value} className={`lbd-me-cat${t.id === value ? " is-on" : ""}`}>
+          <span className={t.muted ? "is-muted" : undefined}>{t.label}</span>
+          <span className="lbd-mono">{t.count}</span>
+        </button>
+      ))}
+      <button type="button" onClick={onManage} className="lbd-me-newcat">
+        Gestionar categorías
+      </button>
+    </nav>
   );
 }

@@ -58,44 +58,26 @@ export default async function MenuPage() {
   const published = Boolean(restaurant.slug && carta?.published);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="lbd-pg">
       {/* The bridge between the two halves of the module: what the venue keeps
           here, and what the diner sees. */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-fg/[0.08] bg-fg/[0.02] px-5 py-3.5">
-        <p className="flex items-center gap-2 text-[13px] text-muted">
-          <span
-            className={`h-2 w-2 shrink-0 rounded-full ${published ? "bg-mint" : "bg-fg/25"}`}
-            aria-hidden
-          />
+      <div className="lbd-me-banner lbd-rise">
+        <p style={{ margin: 0, display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#cfc7bb" }}>
+          <span aria-hidden style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0, background: published ? "#3ddc97" : "rgba(243,239,230,0.25)" }} />
           {published ? (
             <>
-              Tu carta está en línea en{" "}
-              <span className="font-mono text-fg/75">/carta/{restaurant.slug}</span>
+              Tu carta está en línea en <span className="lbd-mono" style={{ color: "#f3efe6" }}>/carta/{restaurant.slug}</span>
             </>
           ) : (
             "Tu carta pública todavía no está publicada."
           )}
         </p>
-        <div className="flex items-center gap-2">
-          {published && (
-            <Link
-              href={`/carta/${restaurant.slug}`}
-              target="_blank"
-              className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-            >
-              Ver carta
-            </Link>
-          )}
-          <Link
-            href="/dashboard/app/menu/carta"
-            className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-          >
-            {published ? "Configurar carta" : "Publicar mi carta"}
-          </Link>
-        </div>
+        <Link href="/dashboard/app/menu/carta" className="lbd-link">
+          {published ? "Configurar carta ›" : "Publicar mi carta ›"}
+        </Link>
       </div>
 
-      <MenuWorkspace categories={categoryDTOs} items={itemDTOs} />
+      <MenuWorkspace categories={categoryDTOs} items={itemDTOs} publishedSlug={published ? restaurant.slug : null} />
     </div>
   );
 }

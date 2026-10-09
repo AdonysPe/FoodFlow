@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { requirePlanFeature } from "@/lib/auth/plan";
+import PageHeader from "@/components/dashboard/PageHeader";
 import PlanGate from "@/components/dashboard/PlanGate";
 import CartaSettingsForm from "@/components/dashboard/menu/CartaSettingsForm";
 import { DEFAULT_HOURS, normalizeHours, slugifyVenue } from "@/lib/carta";
@@ -13,7 +14,7 @@ export default async function CartaSettingsPage() {
   if (!allowed) return <PlanGate feature="menu" plan={plan} />;
   if (!restaurant) return null;
 
-  const [carta, visibleDishes] = await Promise.all([
+  const [carta, visibleDishes, previewItems] = await Promise.all([
     prisma.cartaSettings.findUnique({
       where: { restaurantId: restaurant.id },
       select: {
@@ -32,6 +33,16 @@ export default async function CartaSettingsPage() {
         OR: [{ categoryId: null }, { category: { active: true } }],
       },
     }),
+    // A few real dishes for the phone that previews the carta.
+    prisma.menuItem.findMany({
+      where: {
+        restaurantId: restaurant.id,
+        OR: [{ categoryId: null }, { category: { active: true } }],
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      take: 3,
+      include: { category: { select: { name: true } } },
+    }),
   ]);
 
   // A venue that has never opened this page gets its own name as the proposed
@@ -41,86 +52,56 @@ export default async function CartaSettingsPage() {
   const publicPath = `/carta/${slug}`;
 
   return (
-    <div className="flex flex-col gap-7">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
-            Carta pública
-          </h2>
-          <p className="mt-0.5 max-w-2xl text-[13px] leading-relaxed text-faint">
-            La carta que ve tu comensal al escanear el QR. Toma los platos, precios y
-            fotos del módulo Menú: lo que cambies allí aparece aquí al instante, sin que
-            nadie recargue nada.
-          </p>
-        </div>
-        <Link
-          href="/dashboard/app/menu"
-          className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-2 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-        >
+    <div className="lbd-pg">
+      <PageHeader eyebrow="CARTA · CARTA PÚBLICA" title="Carta pública" description="La carta que ve tu comensal al escanear el QR. Toma los platos, precios y fotos del módulo Menú: lo que cambies allí aparece aquí al instante, sin que nadie recargue nada.">
+        <Link href="/dashboard/app/menu" className="lbd-btn lbd-btn--ghost lbd-btn--sm">
           Volver al menú
         </Link>
-      </div>
+      </PageHeader>
 
       {/* Status first: an owner opening this page is usually asking one
           question, and it is "is my carta up?". */}
-      <div
-        className={`flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border p-5 ${
-          live
-            ? "border-mint/25 bg-mint/[0.06]"
-            : "border-fg/[0.08] bg-fg/[0.02]"
-        }`}
-      >
-        <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-2 text-[13.5px] font-semibold text-fg">
-            <span
-              className={`h-2 w-2 rounded-full ${live ? "bg-mint" : "bg-fg/30"}`}
-              aria-hidden
-            />
+      <section className={`lbd-cp-banner lbd-rise${live ? " is-live" : ""}`} aria-label="Estado de la carta" style={{ animationDelay: ".04s" }}>
+        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 16, fontWeight: 600 }}>
+            <span className={live ? "lbd-pulse" : undefined} aria-hidden style={{ width: 9, height: 9, borderRadius: "50%", background: live ? "#3ddc97" : "#6f675e" }} />
             {live ? "Tu carta está en línea" : "Tu carta todavía no está publicada"}
-          </p>
-          <p className="mt-1 break-all font-mono text-[12.5px] text-muted">
+          </span>
+          <span className="lbd-mono" style={{ fontSize: 13, color: "#cfc7bb", wordBreak: "break-all" }}>
             {SITE_URL.replace(/^https?:\/\//, "")}
             {publicPath}
-          </p>
-          {visibleDishes === 0 && (
-            <p className="mt-2 text-[12.5px] text-accent-ink">
-              Aún no tienes platos visibles. Agrega al menos uno para poder publicar.
-            </p>
-          )}
+          </span>
+          {visibleDishes === 0 && <span style={{ fontSize: 13, color: "#ff9a7d" }}>Aún no tienes platos visibles. Agrega al menos uno para poder publicar.</span>}
         </div>
 
         {live && (
-          <div className="flex items-center gap-4">
-            <img
-              src={`/api/carta/${slug}/qr`}
-              alt={`Código QR de la carta de ${restaurant.name}`}
-              width={104}
-              height={104}
-              className="h-[104px] w-[104px] rounded-lg bg-white p-1.5"
-            />
-            <div className="flex flex-col gap-2">
-              <Link
-                href={publicPath}
-                target="_blank"
-                className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3.5 py-2 text-center text-[13px] font-semibold text-on-accent hover:opacity-90"
-              >
+          <div className="lbd-pop" style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/api/carta/${slug}/qr`} alt={`Código QR de la carta de ${restaurant.name}`} width={104} height={104} style={{ width: 104, height: 104, borderRadius: 12, background: "#f3efe6", padding: 8, boxSizing: "border-box" }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <Link href={publicPath} target="_blank" className="lbd-btn lbd-btn--cream lbd-btn--sm">
                 Ver mi carta
               </Link>
-              <a
-                href={`/api/carta/${slug}/qr`}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-2 text-center text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-              >
+              <a href={`/api/carta/${slug}/qr`} target="_blank" rel="noreferrer" className="lbd-btn lbd-btn--ghost lbd-btn--sm">
                 Descargar QR
               </a>
             </div>
           </div>
         )}
-      </div>
+      </section>
 
       <CartaSettingsForm
         siteUrl={SITE_URL}
+        venueName={restaurant.name}
+        previewDishes={previewItems.map((i) => ({
+          id: i.id,
+          name: i.name,
+          description: i.description,
+          price: i.price,
+          photoUrl: i.photoUrl,
+          available: i.available,
+          categoryName: i.category?.name ?? null,
+        }))}
         initial={{
           slug,
           published: carta?.published ?? false,
@@ -132,27 +113,6 @@ export default async function CartaSettingsPage() {
           hours: carta?.hours ? normalizeHours(carta.hours) : DEFAULT_HOURS,
         }}
       />
-
-      <section className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5">
-        <h3 className="text-[14px] font-semibold text-fg">Cómo se actualiza</h3>
-        <ul className="mt-3 flex flex-col gap-2.5 text-[12.5px] leading-relaxed text-muted">
-          <li>
-            <span className="font-medium text-fg/75">Al instante.</span> Cambias un precio
-            o marcas un plato como agotado en Menú y el teléfono del comensal se actualiza
-            solo, sin recargar, en un par de segundos.
-          </li>
-          <li>
-            <span className="font-medium text-fg/75">Aunque falle la conexión.</span> Si el
-            wifi del local se cae, la carta sigue consultando cada 30 segundos; y si el
-            comensal se queda sin datos, ve la última versión que cargó.
-          </li>
-          <li>
-            <span className="font-medium text-fg/75">Los agotados no desaparecen.</span> Se
-            muestran en gris con la etiqueta “Agotado”, para que el comensal sepa que el
-            plato existe y no te lo pida.
-          </li>
-        </ul>
-      </section>
     </div>
   );
 }

@@ -19,8 +19,8 @@ const CLIENT_TITLES: Record<string, string> = {
   // Same reason as the QR sheet: a settings page nested one level deeper.
   facturacion: "Facturación electrónica",
   // The public carta's settings, nested under /menu.
-  carta: "Carta pública",
-  menu: "Menú",
+  carta: "",
+  menu: "",
   customers: "Clientes",
   equipo: "Equipo",
   analytics: "Análisis",

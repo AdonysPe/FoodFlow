@@ -1,72 +1,33 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import Image from "next/image";
-import { IconGrip, IconMenuBook } from "@/components/ui/Icons";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import {
-  toggleMenuItemAvailable,
-  duplicateMenuItem,
-  deleteMenuItem,
-} from "@/lib/actions/menu";
+import { toggleMenuItemAvailable } from "@/lib/actions/menu";
 import type { MenuItemDTO } from "@/lib/menuMeta";
-import { formatPrice, ghostButtonClass, dangerButtonClass } from "./ui";
+import { formatPrice } from "./ui";
 
-function AvailabilityToggle({
-  available,
-  disabled,
-  onToggle,
-}: {
-  available: boolean;
-  disabled: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={available}
-      disabled={disabled}
-      onClick={onToggle}
-      className="group flex items-center gap-2 disabled:opacity-50"
-      title={available ? "Marcar como agotado" : "Marcar como disponible"}
-    >
-      <span
-        className={`relative h-[22px] w-[38px] shrink-0 rounded-full transition-colors duration-200 ${
-          available ? "bg-ok/80" : "bg-fg/[0.12]"
-        }`}
-      >
-        <span
-          className={`absolute top-[2px] left-0 h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ${
-            available ? "translate-x-[18px]" : "translate-x-[2px]"
-          }`}
-        />
-      </span>
-      <span
-        className={`shrink-0 text-[12.5px] font-medium ${
-          available ? "text-ok-ink" : "text-faint"
-        }`}
-      >
-        {available ? "Disponible" : "Agotado"}
-      </span>
-    </button>
-  );
-}
-
+/**
+ * One dish of the carta, design B. As a card (the grid) it is a photo, the
+ * name and price, and the availability switch; as a row (while ordering a
+ * category by dragging) it shrinks to the same facts on one line. Pressing it
+ * opens the dish in the editor beside the grid.
+ */
 export default function MenuItemCard({
   item,
   categoryActive,
   showCategory,
-  showGrip = false,
+  selected = false,
+  layout = "card",
   onEdit,
 }: {
   item: MenuItemDTO;
   categoryActive: boolean;
   showCategory: boolean;
-  showGrip?: boolean;
+  selected?: boolean;
+  layout?: "card" | "row";
   onEdit: () => void;
 }) {
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
 
@@ -87,111 +48,72 @@ export default function MenuItemCard({
     });
   }
 
-  function duplicate() {
-    startTransition(async () => {
-      const result = await duplicateMenuItem(item.id);
-      pushToast(result.ok ? "Plato duplicado." : result.error, result.ok ? "success" : "error");
-    });
-  }
+  const photo = item.photoUrl ? (
+    <Image src={item.photoUrl} alt="" fill sizes={layout === "row" ? "56px" : "240px"} className={`lbd-me-img${dimmed ? " is-dim" : ""}`} />
+  ) : (
+    <span className="lbd-me-noimg" aria-hidden title="Sin foto: no aparecerá con imagen en tu carta pública">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 6h16v12H4zM4 15l4-4 4 4 3-3 5 5" />
+      </svg>
+      {layout === "card" && "Sin foto"}
+    </span>
+  );
 
-  function remove() {
-    if (!confirmingDelete) {
-      setConfirmingDelete(true);
-      return;
-    }
-    startTransition(async () => {
-      const result = await deleteMenuItem(item.id);
-      pushToast(result.ok ? "Plato eliminado." : result.error, result.ok ? "success" : "error");
-      setConfirmingDelete(false);
-    });
+  const toggleSwitch = (
+    <button type="button" role="switch" aria-checked={item.available} disabled={isPending} onClick={toggle} className="lbd-me-switch" style={{ color: item.available ? "#cfc7bb" : "#ff7a57" }} title={item.available ? "Marcar como agotado" : "Marcar como disponible"}>
+      <span>{item.available ? "Disponible" : "Agotado hoy"}</span>
+      <i className={item.available ? "is-on" : undefined}>
+        <b />
+      </i>
+    </button>
+  );
+
+  if (layout === "row") {
+    return (
+      <div className={`lbd-me-row${selected ? " is-on" : ""}`}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden style={{ color: "#8a8278", flexShrink: 0 }}>
+          <circle cx="9" cy="6" r="1.6" />
+          <circle cx="15" cy="6" r="1.6" />
+          <circle cx="9" cy="12" r="1.6" />
+          <circle cx="15" cy="12" r="1.6" />
+          <circle cx="9" cy="18" r="1.6" />
+          <circle cx="15" cy="18" r="1.6" />
+        </svg>
+        <button type="button" onClick={onEdit} className="lbd-me-row-main" aria-label={`Editar ${item.name}`}>
+          <span className="lbd-me-thumb">{photo}</span>
+          <span style={{ minWidth: 0, textAlign: "left" }}>
+            <span className="lbd-trunc" style={{ display: "block", fontSize: 14, fontWeight: 600, color: dimmed ? "#8a8278" : "#f3efe6" }}>
+              {item.name}
+            </span>
+            <span style={{ fontSize: 12.5, color: "#a39b90" }}>{formatPrice(item.price)}</span>
+          </span>
+        </button>
+        {toggleSwitch}
+      </div>
+    );
   }
 
   return (
-    <div className="flex h-full gap-3 rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-3.5">
-      {showGrip && (
-        <span
-          aria-hidden
-          className="mt-0.5 shrink-0 self-start text-faint"
-          title="Arrastra para reordenar"
-        >
-          <IconGrip className="h-4 w-4" />
-        </span>
-      )}
-
-      {/* The same tile either way, so a carta with some photos and some gaps
-          still lines up. The book icon is what a diner would see missing. */}
-      {item.photoUrl ? (
-        <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-fg/[0.06] bg-fg/[0.03]">
-          <Image
-            src={item.photoUrl}
-            alt=""
-            fill
-            sizes="56px"
-            className={`object-cover ${dimmed ? "grayscale opacity-70" : ""}`}
-          />
-        </span>
-      ) : (
-        <div
-          aria-hidden
-          title="Sin foto: no aparecerá con imagen en tu carta pública"
-          className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-dashed border-fg/[0.12] bg-fg/[0.03] text-fg/20"
-        >
-          <IconMenuBook className="h-6 w-6" />
+    <article className={`lbd-me-card${selected ? " is-on" : ""}`}>
+      <button type="button" onClick={onEdit} aria-label={`Editar ${item.name}`} className="lbd-me-card-img">
+        {photo}
+        {!item.available && <span className="lbd-me-flag">Agotado</span>}
+        {hiddenByCategory && <span className="lbd-me-flag" style={{ left: "auto", right: 10 }}>Categoría oculta</span>}
+      </button>
+      <div className="lbd-me-card-body">
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+          <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", color: dimmed ? "#a39b90" : "#f3efe6" }}>{item.name}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: "nowrap" }}>{formatPrice(item.price)}</span>
         </div>
-      )}
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className={`truncate text-[14px] font-medium ${dimmed ? "text-faint" : "text-fg/85"}`}>
-              {item.name}
-            </p>
-            <p className="mt-0.5 text-[12.5px] text-faint">
-              {formatPrice(item.price)}
-              {item.prepMin != null ? ` · ${item.prepMin} min` : ""}
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap justify-end gap-1">
-            {showCategory && (
-              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
-                {item.categoryName ?? "Sin categoría"}
-              </span>
-            )}
-            {hiddenByCategory && (
-              <span className="rounded-md bg-fg/[0.06] px-1.5 py-0.5 text-[11px] text-faint">
-                categoría oculta
-              </span>
-            )}
-          </div>
-        </div>
-
-        {item.description && (
-          <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-faint">
-            {item.description}
-          </p>
+        {(showCategory || item.prepMin != null) && (
+          <span style={{ fontSize: 12, color: "#8a8278" }}>
+            {showCategory ? item.categoryName ?? "Sin categoría" : ""}
+            {showCategory && item.prepMin != null ? " · " : ""}
+            {item.prepMin != null ? `${item.prepMin} min` : ""}
+          </span>
         )}
-
-        <div className="mt-auto flex flex-col gap-2.5 pt-3">
-          <AvailabilityToggle available={item.available} disabled={isPending} onToggle={toggle} />
-          <div className="flex flex-wrap gap-1.5 border-t border-fg/[0.05] pt-2.5">
-            <button type="button" onClick={onEdit} className={ghostButtonClass}>
-              Editar
-            </button>
-            <button type="button" disabled={isPending} onClick={duplicate} className={ghostButtonClass}>
-              Duplicar
-            </button>
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={remove}
-              onBlur={() => setConfirmingDelete(false)}
-              className={confirmingDelete ? dangerButtonClass : ghostButtonClass}
-            >
-              {confirmingDelete ? "¿Confirmar?" : "Eliminar"}
-            </button>
-          </div>
-        </div>
+        {toggleSwitch}
       </div>
-    </div>
+    </article>
   );
 }
