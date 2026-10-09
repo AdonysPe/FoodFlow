@@ -8,8 +8,9 @@ import DeferredMarketingWidgets from "@/components/DeferredMarketingWidgets";
 import IntroOverlay from "@/components/IntroOverlay";
 import PageTransition from "@/components/PageTransition";
 import ScrollProgress from "@/components/ui/ScrollProgress";
-import Navbar from "@/components/sections/Navbar";
-import Footer from "@/components/sections/Footer";
+import LandingNav from "@/components/landing/LandingNav";
+import LandingFooter from "@/components/landing/LandingFooter";
+import { lbFontClasses } from "@/components/landing/lbFonts";
 
 /**
  * Everything every page shares: language, motion, the chat, the navbar and
@@ -24,24 +25,27 @@ import Footer from "@/components/sections/Footer";
  * The theme lives above this, in the root layout, so /login and the dashboard
  * are on the same switch without going through the marketing shell.
  *
- * `navbar` and `footer` let a page bring its own (the home page does, for its
- * B design); every other page leaves them out and gets the shared ones.
+ * Every marketing page is design B ("Noche"): the shell pins the night theme,
+ * loads the B type pair and brings the B header and footer, so a page only
+ * supplies its own sections.
  */
-export default function SiteShell({ children, intro = false, navbar = null, footer = null }) {
+export default function SiteShell({ children, intro = false }) {
   return (
+    <div data-theme="dark" className={`${lbFontClasses} lb`}>
     <LanguageProvider>
       <MotionProvider>
         <ChatProvider>
           <LeadCaptureProvider>
             {intro && <IntroOverlay />}
             <ScrollProgress />
-            {navbar ?? <Navbar />}
+            <LandingNav />
             <PageTransition>{children}</PageTransition>
-            {footer ?? <Footer />}
+            <LandingFooter />
             <DeferredMarketingWidgets />
           </LeadCaptureProvider>
         </ChatProvider>
       </MotionProvider>
     </LanguageProvider>
+    </div>
   );
 }

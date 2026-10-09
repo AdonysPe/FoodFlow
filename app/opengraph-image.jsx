@@ -104,7 +104,7 @@ export default async function OpengraphImage() {
             Programa piloto en Lima
           </div>
           <div style={{ display: "flex", fontSize: "26px", color: "rgba(243,239,230,0.55)" }}>
-            Sin comisión por pedido · 30 días sin costo
+            Sin comisión por pedido · 7 días gratis
           </div>
         </div>
       </div>
