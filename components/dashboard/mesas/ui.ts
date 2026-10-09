@@ -2,18 +2,18 @@
 // existing dashboard forms/tables so this module renders as one of them.
 
 export const fieldClass =
-  "h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-fg/30 outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10";
+  "h-11 w-full rounded-[14px] border border-[rgba(243,239,230,0.14)] bg-[rgba(12,9,8,0.65)] px-3.5 text-[14px] text-[#f3efe6] placeholder:text-[#6f675e] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[rgba(255,90,51,0.7)] focus:ring-4 focus:ring-[rgba(255,90,51,0.14)]";
 
 export const compactFieldClass =
-  "h-9 w-full rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 text-[13.5px] text-fg outline-none focus:border-accent-400/50";
+  "h-9 w-full rounded-[11px] border border-[rgba(243,239,230,0.14)] bg-[rgba(12,9,8,0.65)] px-3 text-[13.5px] text-[#f3efe6] outline-none focus:border-[rgba(255,90,51,0.7)]";
 
-export const labelClass = "mb-1.5 block text-[12px] font-medium text-fg/45";
+export const labelClass = "mb-1.5 block text-[12px] font-semibold text-[#cfc7bb]";
 
 export const ghostButtonClass =
-  "rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg disabled:opacity-40";
+  "inline-flex items-center justify-center rounded-full border border-[rgba(243,239,230,0.16)] bg-transparent px-3.5 py-1.5 text-[12.5px] font-semibold text-[#f3efe6] transition-colors hover:bg-[rgba(243,239,230,0.07)] disabled:opacity-40";
 
 export const accentButtonClass =
-  "rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3 py-1.5 text-[12.5px] font-semibold text-on-accent transition-colors hover:to-accent-500 disabled:opacity-40";
+  "inline-flex items-center justify-center rounded-full bg-[#ff5a33] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0c0908] transition-colors hover:bg-[#ff6c47] disabled:opacity-40";
 
 // "HH:MM" → "9:30 p. m." style label, matching lib/format's locale intent
 // but for a bare time string.
