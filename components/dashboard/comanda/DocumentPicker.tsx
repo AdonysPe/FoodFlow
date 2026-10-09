@@ -59,11 +59,11 @@ export default function DocumentPicker({
 
   return (
     <div>
-      <p className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-faint">
+      <p className="lbd-cm-eyebrow" style={{ margin: "0 0 8px" }}>
         Tipo de comprobante
       </p>
 
-      <div role="radiogroup" aria-label="Tipo de comprobante" className="grid grid-cols-3 gap-2">
+      <div role="radiogroup" aria-label="Tipo de comprobante" className="lbd-cm-docs">
         {OPTIONS.map((opt) => {
           const disabled = opt.value !== "nota_venta" && !electronicEnabled;
           const active = type === opt.value;
@@ -75,28 +75,23 @@ export default function DocumentPicker({
               aria-checked={active}
               disabled={disabled}
               onClick={() => onType(opt.value)}
-              className={`flex h-16 flex-col items-center justify-center rounded-xl border text-[14px] font-semibold transition-colors active:scale-[0.97] disabled:opacity-30 ${
-                active
-                  ? "border-accent-400/60 bg-accent-400/15 text-accent-label"
-                  : "border-fg/[0.1] bg-fg/[0.03] text-fg/70"
-              }`}
+              className={`lbd-cm-doc${active ? " is-on" : ""}`}
             >
               {opt.label}
-              <span className="mt-0.5 text-[11px] font-normal text-faint">{opt.sub}</span>
+              <span>{opt.sub}</span>
             </button>
           );
         })}
       </div>
 
       {type === "nota_venta" && (
-        <p className="mt-3 rounded-xl border border-fg/[0.08] bg-fg/[0.03] px-4 py-3 text-[12.5px] leading-relaxed text-faint">
-          Se imprime a nombre de <span className="font-medium text-fg/70">CONSUMIDOR FINAL</span>,
-          sin pedirle documento al comensal.
+        <p className="lbd-cm-note">
+          Se imprime a nombre de <strong>CONSUMIDOR FINAL</strong>, sin pedirle documento al comensal.
         </p>
       )}
 
       {type === "boleta" && (
-        <div className="mt-4 flex flex-col gap-3">
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           <TillField
             id="doc-dni"
             label="DNI del cliente"
@@ -135,7 +130,7 @@ export default function DocumentPicker({
       )}
 
       {type === "factura" && (
-        <div className="mt-4 flex flex-col gap-3">
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           <TillField
             id="doc-ruc"
             label="RUC del cliente"
@@ -216,9 +211,9 @@ function TillField({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-[12px] font-medium text-faint">
+      <label htmlFor={id} style={{ display: "block", marginBottom: 6, fontSize: 12.5, fontWeight: 600, color: "#d7d0c5" }}>
         {label}
-        {required && <span className="ml-1 text-accent-label">*</span>}
+        {required && <span style={{ marginLeft: 4, color: "#ff7a57" }}>*</span>}
       </label>
       <input
         id={id}
@@ -229,16 +224,15 @@ function TillField({
         inputMode={inputMode}
         placeholder={placeholder}
         aria-invalid={error ? true : undefined}
-        className={`h-12 w-full rounded-xl border bg-fg/[0.05] px-4 text-[15px] text-fg placeholder:text-faint outline-none transition-colors focus:border-accent-400/50 ${
-          error ? "border-accent-400/60" : "border-fg/[0.12]"
-        }`}
+        className="lbd-input"
+        style={{ height: 50, borderColor: error ? "rgba(255,90,51,0.6)" : undefined }}
       />
       {error ? (
-        <p role="alert" className="mt-1 text-[11.5px] text-accent-label">
+        <p role="alert" style={{ margin: "4px 0 0", fontSize: 12, color: "#ffb39e" }}>
           {error}
         </p>
       ) : hint ? (
-        <p className="mt-1 text-[11.5px] text-faint">{hint}</p>
+        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#8a8278" }}>{hint}</p>
       ) : null}
     </div>
   );

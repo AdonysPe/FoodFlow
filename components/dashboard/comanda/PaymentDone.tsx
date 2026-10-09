@@ -19,42 +19,31 @@ export type SettledTab = {
  * revalidates, the tab disappears from the list, and anything still reading
  * from it would render an empty screen with the ticket link on it.
  */
-export default function PaymentDone({
-  settled,
-  onDone,
-}: {
-  settled: SettledTab;
-  onDone: () => void;
-}) {
+export default function PaymentDone({ settled, onDone }: { settled: SettledTab; onDone: () => void }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 py-14 text-center">
-      <span className="flex h-16 w-16 items-center justify-center rounded-full bg-ok/15 text-[30px] font-bold text-ok-ink">
-        ✓
+    <div className="lbd-pop lbd-cm-done" role="status">
+      <span className="lbd-lg-done-mark" style={{ background: "#ff5a33", color: "#0c0908", width: 64, height: 64, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M5 12.5l4.5 4.5L19 7.5" />
+        </svg>
       </span>
-      <h2 className="mt-4 font-display text-[22px] font-extrabold tracking-[-0.02em] text-fg">
-        Cobrado
-      </h2>
-      <p className="mt-1 text-[14px] text-muted">
-        {settled.tableName} · {settled.methodLabel} · {formatPrice(settled.total)}
+      <h1 className="lbd-display" style={{ margin: 0, fontSize: 32, letterSpacing: "-0.045em" }}>
+        Cobrado · {formatPrice(settled.total)}
+      </h1>
+      <p style={{ margin: 0, fontSize: 14, color: "#b9b1a5" }}>
+        {settled.tableName} · {settled.methodLabel}
       </p>
       {settled.change > 0 && (
-        <p className="mt-4 rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 py-2.5 text-[15px] font-semibold text-fg">
-          Vuelto {formatPrice(settled.change)}
+        <p style={{ margin: 0, fontSize: 15 }}>
+          Vuelto <span className="lbd-mono" style={{ fontWeight: 600 }}>{formatPrice(settled.change)}</span>
         </p>
       )}
 
-      <div className="mt-8 flex w-full max-w-[320px] flex-col gap-2">
-        <Link
-          href={`/dashboard/boleta/${settled.orderId}?auto=1`}
-          className="flex h-12 w-full items-center justify-center rounded-xl bg-linear-to-b from-accent-400 to-accent-600 text-[15px] font-bold text-on-accent active:scale-[0.98]"
-        >
+      <div style={{ marginTop: 18, display: "flex", width: "100%", maxWidth: 320, flexDirection: "column", gap: 8 }}>
+        <Link href={`/dashboard/boleta/${settled.orderId}?auto=1`} className="lbd-cm-send" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           Imprimir boleta
         </Link>
-        <button
-          type="button"
-          onClick={onDone}
-          className="h-11 w-full rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[14px] font-medium text-fg/70 active:scale-[0.98]"
-        >
+        <button type="button" onClick={onDone} className="lbd-btn lbd-btn--ghost" style={{ minHeight: 48 }}>
           Listo, sin boleta
         </button>
       </div>

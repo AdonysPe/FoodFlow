@@ -17,10 +17,10 @@ const KITCHEN_LABELS: Record<OpenTabDTO["kitchenStatus"], string> = {
 // The kitchen state is the one thing a server checks at a glance, so it gets
 // a colour rather than another grey chip.
 const KITCHEN_TONE: Record<OpenTabDTO["kitchenStatus"], string> = {
-  pending: "border-fg/15 bg-fg/[0.06] text-muted",
-  preparing: "border-warn/35 bg-warn/10 text-warn-ink",
-  ready: "border-mint/40 bg-mint/10 text-mint-ink",
-  delivered: "border-fg/10 bg-fg/[0.04] text-faint",
+  pending: "",
+  preparing: "is-cooking",
+  ready: "is-ready",
+  delivered: "is-served",
 };
 
 /** Short, sayable ticket number — what a server reads out loud on the phone. */
@@ -29,13 +29,15 @@ function ticketNumber(orderId: string) {
 }
 
 function openedAtLabel(iso: string) {
-  return new Date(iso).toLocaleTimeString("es-PE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return new Date(iso).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
+/**
+ * The open account of a table, design B: a cream paper ticket on the night
+ * ground, grouped by round, with the two things a server does next — add
+ * dishes or charge — pinned to the foot. Printing the precuenta and voiding
+ * the account are here and unchanged.
+ */
 export default function TableAccount({
   tab,
   onBack,
@@ -63,17 +65,13 @@ export default function TableAccount({
     return [...map.entries()].sort((a, b) => a[0] - b[0]);
   }, [tab.lines]);
 
-  const dishCount = useMemo(
-    () => tab.lines.reduce((sum, l) => sum + l.quantity, 0),
-    [tab.lines]
-  );
+  const dishCount = useMemo(() => tab.lines.reduce((sum, l) => sum + l.quantity, 0), [tab.lines]);
 
   const multi = rounds.length > 1;
   const zone = tab.tableZone ? ZONE_LABELS_ES[tab.tableZone] ?? tab.tableZone : null;
   // The comanda stores the table name as the customer for a dine-in order, so
   // this only prints when someone actually put the account under a name.
-  const namedFor =
-    tab.customerName && tab.customerName !== tab.tableName ? tab.customerName : null;
+  const namedFor = tab.customerName && tab.customerName !== tab.tableName ? tab.customerName : null;
 
   function handleVoid() {
     if (!confirmingVoid) {
@@ -89,118 +87,84 @@ export default function TableAccount({
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="sticky top-[53px] z-20 border-b border-fg/[0.07] bg-ink-950/85 px-4 py-3 backdrop-blur-xl">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-[16px] font-bold text-fg">{tab.tableName}</span>
-            <span
-              className={`rounded-md border px-1.5 py-0.5 text-[11px] font-medium ${KITCHEN_TONE[tab.kitchenStatus]}`}
-            >
-              {KITCHEN_LABELS[tab.kitchenStatus]}
+    <div style={{ display: "flex", flex: 1, flexDirection: "column" }}>
+      <div className="lbd-cm-sticky">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a39b90" }}>
+              Cuenta abierta
+              <span className={`lbd-cm-flag ${KITCHEN_TONE[tab.kitchenStatus]}`}>{KITCHEN_LABELS[tab.kitchenStatus]}</span>
             </span>
+            <h1 className="lbd-display lbd-cm-h1 lbd-trunc">{tab.tableName}</h1>
           </div>
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
-          >
+          <button type="button" onClick={onBack} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ flexShrink: 0 }}>
             Mesas
           </button>
         </div>
       </div>
 
-      <div className="flex-1 px-4 py-4">
+      <div style={{ flex: 1, padding: "8px 16px 200px" }}>
         {/* ---------------------------------------------------- the ticket */}
-        <article className="overflow-hidden rounded-2xl border border-fg/[0.09] bg-ink-900 shadow-lift">
-          {/* header: who and where, plus the number the server reads out */}
-          <header className="px-4 pt-4 pb-3.5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent-ink">
-                  Comanda
-                </p>
-                <h2 className="mt-1 truncate font-display text-[22px] font-extrabold tracking-[-0.02em] text-fg">
+        <article className="lbd-cm-ticket">
+          <header>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+              <div style={{ minWidth: 0 }}>
+                <p className="lbd-cm-ticket-eyebrow">Comanda</p>
+                <h2 className="lbd-display lbd-trunc" style={{ margin: "2px 0 0", fontSize: 26, letterSpacing: "-0.04em" }}>
                   {tab.tableName}
                 </h2>
-                {zone && <p className="text-[12px] text-faint">{zone}</p>}
+                {zone && <p style={{ margin: 0, fontSize: 12, color: "#5f5a54" }}>{zone}</p>}
               </div>
-              <span className="shrink-0 rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2 py-1 font-mono text-[12px] tracking-wide text-muted">
-                #{ticketNumber(tab.orderId)}
-              </span>
+              <span className="lbd-mono lbd-cm-ticket-no">#{ticketNumber(tab.orderId)}</span>
             </div>
 
-            <dl className="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-2 text-[12px]">
+            <dl className="lbd-cm-ticket-meta">
               <div>
-                <dt className="text-faint">Abierta</dt>
-                <dd className="mt-0.5 font-medium tabular-nums text-fg/75">
-                  {openedAtLabel(tab.openedAt)}
-                </dd>
+                <dt>Abierta</dt>
+                <dd className="lbd-mono">{openedAtLabel(tab.openedAt)}</dd>
               </div>
               <div>
-                <dt className="text-faint">Mozo</dt>
-                <dd className="mt-0.5 truncate font-medium text-fg/75">
-                  {tab.serverName ?? "—"}
-                </dd>
+                <dt>Mozo</dt>
+                <dd className="lbd-trunc">{tab.serverName ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-faint">A nombre de</dt>
-                <dd className="mt-0.5 truncate font-medium text-fg/75">
-                  {namedFor ?? "—"}
-                </dd>
+                <dt>A nombre de</dt>
+                <dd className="lbd-trunc">{namedFor ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-faint">Rondas</dt>
-                <dd className="mt-0.5 font-medium tabular-nums text-fg/75">
-                  {tab.roundNumber}
-                </dd>
+                <dt>Rondas</dt>
+                <dd className="lbd-mono">{tab.roundNumber}</dd>
               </div>
             </dl>
           </header>
 
-          {/* perforation — the fold every paper ticket has */}
-          <div className="relative h-4">
-            <span className="absolute inset-x-4 top-1/2 border-t border-dashed border-fg/15" />
-            <span className="absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-ink-950" />
-            <span className="absolute -right-2 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-ink-950" />
-          </div>
+          <div className="lbd-cm-perf" aria-hidden />
 
           {/* lines, grouped by the round they were sent in */}
-          <div className="px-4 pb-1 pt-2">
+          <div style={{ padding: "4px 20px 4px" }}>
             {rounds.map(([round, lines], roundIndex) => (
-              <section key={round} className={roundIndex > 0 ? "mt-4" : ""}>
+              <section key={round} style={{ marginTop: roundIndex > 0 ? 16 : 0 }}>
                 {multi && (
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-faint">
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span className="lbd-cm-ticket-eyebrow" style={{ color: "#8a8278" }}>
                       Ronda {round}
                     </span>
-                    <span className="h-px flex-1 bg-fg/[0.07]" />
+                    <span style={{ flex: 1, height: 1, background: "#e1dbd4" }} />
                   </div>
                 )}
-
-                <ul className="flex flex-col gap-2.5">
+                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
                   {lines.map((l, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="mt-px shrink-0 rounded-md border border-fg/[0.1] bg-fg/[0.05] px-1.5 py-0.5 font-mono text-[12px] font-semibold tabular-nums text-fg/80">
-                        {l.quantity}
+                    <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                      <span className="lbd-mono" style={{ minWidth: 26, fontSize: 13, fontWeight: 600, color: "#5f5a54", paddingTop: 1 }}>
+                        {l.quantity}×
                       </span>
-
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[13.5px] leading-snug text-fg/85">
-                          {l.name}
-                        </span>
+                      <span style={{ minWidth: 0, flex: 1 }}>
+                        <span style={{ display: "block", fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{l.name}</span>
                         {/* unit price, so a corrected line can be checked */}
-                        <span className="mt-0.5 block text-[11.5px] tabular-nums text-faint">
-                          {formatPrice(l.price)} c/u
-                        </span>
-                        {l.note && (
-                          <span className="mt-1 inline-block rounded-md bg-accent-400/10 px-1.5 py-0.5 text-[11.5px] text-accent-label">
-                            {l.note}
-                          </span>
-                        )}
+                        <span style={{ display: "block", fontSize: 12, color: "#5f5a54" }}>{formatPrice(l.price)} c/u</span>
+                        {l.note && <span style={{ display: "block", marginTop: 2, fontSize: 13, fontWeight: 600, color: "#c9391a" }}>{l.note}</span>}
                       </span>
-
-                      <span className="shrink-0 pt-px font-mono text-[13px] tabular-nums text-fg/70">
+                      <span className="lbd-mono" style={{ flexShrink: 0, fontSize: 14 }}>
                         {formatPrice(l.price * l.quantity)}
                       </span>
                     </li>
@@ -211,59 +175,36 @@ export default function TableAccount({
           </div>
 
           {/* totals */}
-          <footer className="mt-4 border-t border-dashed border-fg/15 px-4 py-3.5">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[13px] font-semibold uppercase tracking-wide text-fg/70">
-                Total
-                <span className="ml-2 font-normal normal-case tracking-normal text-faint">
-                  {dishCount} {dishCount === 1 ? "plato" : "platos"}
-                </span>
+          <footer>
+            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              Total
+              <span style={{ marginLeft: 8, fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#5f5a54" }}>
+                {dishCount} {dishCount === 1 ? "plato" : "platos"}
               </span>
-              <span className="font-display text-[24px] font-extrabold tabular-nums tracking-[-0.02em] text-fg">
-                {formatPrice(tab.total)}
-              </span>
-            </div>
+            </span>
+            <span className="lbd-display" style={{ fontSize: 30, letterSpacing: "-0.045em", color: "#c9391a" }}>
+              {formatPrice(tab.total)}
+            </span>
           </footer>
         </article>
 
         {/* Precuenta: the same paper, printed before anyone pays, for the
             table that asks to check the bill first. It has no number and no
             payment on it, and says so. */}
-        <Link
-          href={`/dashboard/boleta/${tab.orderId}`}
-          className="mt-4 flex w-full items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.04] px-4 py-2.5 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.07] hover:text-fg"
-        >
+        <Link href={`/dashboard/boleta/${tab.orderId}`} className="lbd-btn lbd-btn--ghost" style={{ width: "100%", marginTop: 16 }}>
           Imprimir precuenta
         </Link>
 
-        <button
-          type="button"
-          onClick={handleVoid}
-          onBlur={() => setConfirmingVoid(false)}
-          disabled={isPending}
-          className={`mt-2 w-full rounded-xl px-4 py-2.5 text-[12.5px] font-medium transition-colors disabled:opacity-40 ${
-            confirmingVoid
-              ? "bg-accent-500 text-fg hover:bg-accent-600"
-              : "border border-fg/[0.1] bg-fg/[0.03] text-faint hover:text-fg/70"
-          }`}
-        >
+        <button type="button" onClick={handleVoid} onBlur={() => setConfirmingVoid(false)} disabled={isPending} className={`lbd-btn ${confirmingVoid ? "lbd-btn--solid" : "lbd-btn--ghost"}`} style={{ width: "100%", marginTop: 8, minHeight: 44, color: confirmingVoid ? undefined : "#a39b90" }}>
           {confirmingVoid ? "¿Anular la cuenta y liberar la mesa?" : "Anular cuenta"}
         </button>
       </div>
 
-      <div className="sticky bottom-0 z-30 flex gap-2 border-t border-fg/[0.08] bg-ink-950/90 px-4 py-3 backdrop-blur-xl">
-        <button
-          type="button"
-          onClick={onAddItems}
-          className="h-12 flex-1 rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[14px] font-semibold text-fg/80 active:scale-[0.98]"
-        >
+      <div className="lbd-cm-cart" style={{ flexDirection: "row", gap: 8 }}>
+        <button type="button" onClick={onAddItems} className="lbd-btn lbd-btn--ghost" style={{ flex: 1, minHeight: 54, borderRadius: 18 }}>
           + Añadir platos
         </button>
-        <button
-          type="button"
-          onClick={onCharge}
-          className="h-12 flex-1 rounded-xl bg-linear-to-b from-accent-400 to-accent-600 text-[14px] font-bold text-on-accent active:scale-[0.98]"
-        >
+        <button type="button" onClick={onCharge} className="lbd-cm-send" style={{ flex: 1 }}>
           Cobrar {formatPrice(tab.total)}
         </button>
       </div>

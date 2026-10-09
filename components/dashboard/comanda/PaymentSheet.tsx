@@ -221,62 +221,51 @@ export default function PaymentSheet({
   }
 
   return (
-    <div className="relative flex flex-1 flex-col">
-      <div className="sticky top-[53px] z-20 border-b border-fg/[0.07] bg-ink-950/85 px-4 py-3 backdrop-blur-xl">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[16px] font-bold text-fg">Cobrar · {tab.tableName}</span>
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
-          >
+    <div style={{ position: "relative", display: "flex", flex: 1, flexDirection: "column" }}>
+      <div className="lbd-cm-sticky">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+            <span style={{ fontSize: 13, color: "#a39b90" }}>Cobrar</span>
+            <h1 className="lbd-display lbd-cm-h1 lbd-trunc">{tab.tableName}</h1>
+          </div>
+          <button type="button" onClick={onBack} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ flexShrink: 0 }}>
             Atrás
           </button>
         </div>
       </div>
 
-      <div className="flex-1 px-4 py-5">
-        <div className="rounded-2xl border border-fg/[0.08] bg-fg/[0.02] p-5 text-center">
-          <p className="text-[12.5px] uppercase tracking-wide text-faint">Total a cobrar</p>
-          <p className="mt-1 font-display text-[2rem] font-extrabold text-fg">
+      <div style={{ flex: 1, padding: "8px 16px 190px" }}>
+        <div className="lbd-cm-total-card">
+          <p className="lbd-cm-eyebrow" style={{ margin: 0 }}>
+            Total a cobrar
+          </p>
+          <p className="lbd-display" style={{ margin: "4px 0 0", fontSize: 52, letterSpacing: "-0.055em", lineHeight: 1 }}>
             {formatPrice(tab.total)}
           </p>
         </div>
 
         {/* ------------------------------------------------------ componente 8 */}
         {!billing.ready && (
-          <div className="mt-4 rounded-xl border border-warn/25 bg-warn/[0.07] px-4 py-3">
-            <p className="text-[12.5px] font-semibold text-warn-ink">
-              Aún no puedes emitir boletas ni facturas
+          <div className="lbd-cm-warn">
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#ffb37a" }}>Aún no puedes emitir boletas ni facturas</p>
+            <p style={{ margin: "4px 0 0", fontSize: 12.5, lineHeight: 1.5, color: "#b9b1a5" }}>
+              Falta {billing.missing.join(", ")}. Este cobro se imprime como nota de venta interna, sin valor tributario.
             </p>
-            <p className="mt-1 text-[12px] leading-relaxed text-muted">
-              Falta {billing.missing.join(", ")}. Este cobro se imprime como nota de venta
-              interna, sin valor tributario.
-            </p>
-            <Link
-              href="/dashboard/app/configuracion/facturacion"
-              className="mt-2 inline-block text-[12px] font-medium text-warn-ink underline underline-offset-2"
-            >
-              Configurar facturación electrónica
+            <Link href="/dashboard/app/configuracion/facturacion" className="lbd-link" style={{ display: "inline-block", marginTop: 6, fontSize: 12.5 }}>
+              Configurar facturación electrónica ›
             </Link>
           </div>
         )}
 
-        <div className="mt-5">
-          <DocumentPicker
-            type={docType}
-            customer={customer}
-            onType={setDocType}
-            onCustomer={setCustomer}
-            electronicEnabled={billing.ready}
-          />
+        <div style={{ marginTop: 20 }}>
+          <DocumentPicker type={docType} customer={customer} onType={setDocType} onCustomer={setCustomer} electronicEnabled={billing.ready} />
         </div>
 
         {/* ----------------------------------------------------- forma de pago */}
-        <p className="mb-2 mt-6 text-[12px] font-semibold uppercase tracking-wide text-faint">
+        <p className="lbd-cm-eyebrow" style={{ margin: "24px 0 8px" }}>
           Forma de pago
         </p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="lbd-cm-methods">
           {PAYMENT_METHODS.map((m) => {
             const active = method === m;
             return (
@@ -288,11 +277,7 @@ export default function PaymentSheet({
                   if (!needsTenderedAmount(m) && !needsCashSplit(m)) setReceived("");
                 }}
                 aria-pressed={active}
-                className={`h-14 rounded-xl border px-2 text-[13.5px] font-semibold leading-tight transition-colors active:scale-[0.97] ${
-                  active
-                    ? "border-accent-400/60 bg-accent-400/15 text-accent-label"
-                    : "border-fg/[0.1] bg-fg/[0.03] text-fg/70"
-                }`}
+                className={`lbd-cm-method${active ? " is-on" : ""}`}
               >
                 {PAYMENT_METHOD_LONG_LABELS[m]}
               </button>
@@ -301,101 +286,47 @@ export default function PaymentSheet({
         </div>
 
         {(needsTenderedAmount(method) || needsCashSplit(method)) && (
-          <div className="mt-5">
-            <label
-              htmlFor="pay-received"
-              className="mb-1.5 block text-[12px] font-medium text-faint"
-            >
+          <div className="lbd-pop" style={{ marginTop: 20 }}>
+            <label htmlFor="pay-received" className="lbd-cm-eyebrow" style={{ display: "block", marginBottom: 8 }}>
               {needsCashSplit(method) ? "Parte pagada en efectivo" : "Monto recibido"}
             </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-faint">
-                S/
-              </span>
-              <input
-                id="pay-received"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.10"
-                autoFocus
-                value={received}
-                onChange={(e) => setReceived(e.target.value)}
-                placeholder="0.00"
-                className="h-14 w-full rounded-xl border border-fg/[0.12] bg-fg/[0.05] pl-11 pr-4 text-[18px] font-semibold text-fg outline-none focus:border-accent-400/50"
-              />
+            <div className="lbd-input lbd-cm-money">
+              <span>S/</span>
+              <input id="pay-received" type="number" inputMode="decimal" min="0" step="0.10" autoFocus value={received} onChange={(e) => setReceived(e.target.value)} placeholder="0.00" />
             </div>
 
             {needsTenderedAmount(method) && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {quick.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => setReceived(String(q))}
-                    className="rounded-full border border-fg/[0.12] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/75 active:scale-95"
-                  >
+                  <button key={q} type="button" onClick={() => setReceived(String(q))} className="lbd-cm-pill">
                     {formatPrice(q)}
                   </button>
                 ))}
               </div>
             )}
 
-            <div
-              className={`mt-4 flex items-center justify-between rounded-xl px-4 py-3 text-[14px] font-semibold ${
-                short || overSplit
-                  ? "bg-accent-500/10 text-accent-label"
-                  : hasReceived
-                    ? "bg-ok/10 text-ok-ink"
-                    : "bg-fg/[0.03] text-faint"
-              }`}
-            >
-              <span>
-                {overSplit
-                  ? "Excede el total"
-                  : short
-                    ? "Falta"
-                    : needsCashSplit(method)
-                      ? "Resto con otro medio"
-                      : "Vuelto"}
-              </span>
-              <span className="tabular-nums">
+            <div className={`lbd-cm-change${short || overSplit ? " is-bad" : hasReceived ? " is-ok" : ""}`}>
+              <span>{overSplit ? "Excede el total" : short ? "Falta" : needsCashSplit(method) ? "Resto con otro medio" : "Vuelto"}</span>
+              <span className="lbd-mono">
                 {hasReceived
-                  ? formatPrice(
-                      needsCashSplit(method)
-                        ? Math.max(0, Math.round((tab.total - receivedNum) * 100) / 100)
-                        : Math.abs(change)
-                    )
+                  ? formatPrice(needsCashSplit(method) ? Math.max(0, Math.round((tab.total - receivedNum) * 100) / 100) : Math.abs(change))
                   : formatPrice(0)}
               </span>
             </div>
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => setPreview(true)}
-          className="mt-5 w-full rounded-xl border border-fg/[0.12] bg-fg/[0.04] py-3 text-[13.5px] font-medium text-fg/70 active:scale-[0.99]"
-        >
+        <button type="button" onClick={() => setPreview(true)} className="lbd-btn lbd-btn--ghost" style={{ width: "100%", marginTop: 20 }}>
           Ver cómo saldrá el ticket
         </button>
       </div>
 
-      <div className="sticky bottom-0 z-30 border-t border-fg/[0.08] bg-ink-950/90 px-4 py-3 backdrop-blur-xl">
-        <button
-          type="button"
-          disabled={!canConfirm}
-          onClick={confirm}
-          className="h-12 w-full rounded-xl bg-linear-to-b from-accent-400 to-accent-600 text-[15px] font-bold text-on-accent transition-opacity active:scale-[0.98] disabled:opacity-40"
-        >
-          {isPending
-            ? "Cobrando…"
-            : electronic
-              ? `Cobrar y enviar a SUNAT · ${formatPrice(tab.total)}`
-              : `Cobrar e imprimir nota de venta · ${formatPrice(tab.total)}`}
+      <div className="lbd-cm-cart">
+        <button type="button" disabled={!canConfirm} onClick={confirm} className="lbd-cm-send">
+          {isPending ? "Cobrando…" : electronic ? `Cobrar y enviar a SUNAT · ${formatPrice(tab.total)}` : `Cobrar e imprimir nota de venta · ${formatPrice(tab.total)}`}
         </button>
         {customerProblem && method != null && (
-          <p role="alert" className="mt-2 text-center text-[12px] text-accent-label">
+          <p role="alert" style={{ margin: 0, textAlign: "center", fontSize: 12.5, color: "#ffb39e" }}>
             {customerProblem}
           </p>
         )}
