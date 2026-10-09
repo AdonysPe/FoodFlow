@@ -1,24 +1,16 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { AnimatePresence, m } from "framer-motion";
-import { IconX } from "@/components/ui/Icons";
+import Link from "next/link";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import { EASE } from "@/lib/motion";
 import { formatCurrency } from "@/lib/format";
-import {
-  SHAPE_LABELS,
-  ZONE_LABELS,
-  TABLE_STATE_LABELS,
-  TABLE_STATE_TONE,
-  type TableStateValue,
-} from "@/lib/tableMeta";
+import { SHAPE_LABELS, ZONE_LABELS, TABLE_STATE_LABELS, type TableStateValue } from "@/lib/tableMeta";
 import { setTableOccupancy } from "@/lib/actions/tables";
 import { createReservation } from "@/lib/actions/reservations";
 import type { TableDTO, ReservationDTO, OrderMiniDTO } from "./types";
 import ReservationStatusPill from "./ReservationStatusPill";
 import ReservationForm, { blankReservation } from "./ReservationForm";
-import { formatClock, endTimeLabel, ghostButtonClass, accentButtonClass } from "./ui";
+import { formatClock, endTimeLabel } from "./ui";
 
 const ORDER_STATUS_LABELS: Record<OrderMiniDTO["status"], string> = {
   pending: "Pendiente",
@@ -27,6 +19,13 @@ const ORDER_STATUS_LABELS: Record<OrderMiniDTO["status"], string> = {
   delivered: "Servida · por cobrar",
 };
 
+/**
+ * The selected table's card, design B: it used to slide in over the page; now
+ * it sits beside the plan, as the prototype draws it, so the room stays in
+ * view while a table is being read. Same content and same actions as before:
+ * the open tab, the table's QR, today's reservations, mark taken or free, and
+ * a new reservation.
+ */
 export default function TableDrawer({
   table,
   state,
@@ -60,260 +59,171 @@ export default function TableDrawer({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const open = Boolean(table);
-  const occupied = Boolean(table?.occupiedAt) || linkedOrders.length > 0;
-  const tone = table ? TABLE_STATE_TONE[state] : null;
+  if (!table) return null;
 
-  const dayReservations = table
-    ? reservations
-        .filter((r) => r.tableId === table.id && r.date === today)
-        .sort((a, b) => a.startTime.localeCompare(b.startTime))
-    : [];
+  const occupied = Boolean(table.occupiedAt) || linkedOrders.length > 0;
+  const bill = state === "ocupada" && linkedOrders.some((o) => o.status === "delivered");
+  const look = bill ? "cuenta" : state;
+  const stateLabel = bill ? "Por cobrar" : TABLE_STATE_LABELS[state];
+  const total = linkedOrders.reduce((sum, o) => sum + o.total, 0);
+
+  const dayReservations = reservations
+    .filter((r) => r.tableId === table.id && r.date === today)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   function toggleOccupancy(next: boolean) {
-    if (!table) return;
     startTransition(async () => {
-      const result = await setTableOccupancy(table.id, next);
+      const result = await setTableOccupancy(table!.id, next);
       pushToast(
-        result.ok
-          ? next
-            ? "Mesa marcada como ocupada."
-            : "Mesa marcada como libre."
-          : result.error,
+        result.ok ? (next ? "Mesa marcada como ocupada." : "Mesa marcada como libre.") : result.error,
         result.ok ? "success" : "error"
       );
     });
   }
 
   return (
-    <AnimatePresence>
-      {open && table && (
-        <>
-          <m.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: EASE }}
-            onClick={onClose}
-            className="fixed inset-0 z-40 bg-[var(--scrim)] backdrop-blur-sm"
-            aria-hidden
-          />
-          <m.aside
-            key="panel"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", bounce: 0, duration: 0.32 }}
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-fg/[0.08] bg-ink-950"
-            role="dialog"
-            aria-label={`Detalle de ${table.name}`}
-          >
-            <header className="flex items-start justify-between gap-3 border-b border-fg/[0.07] px-5 py-4">
-              <div>
-                <h2 className="font-display text-[18px] font-bold tracking-[-0.01em] text-fg">
-                  {table.name} · {table.capacity}
-                </h2>
-                <p className="mt-0.5 text-[12.5px] text-faint">
-                  {SHAPE_LABELS[table.shape]} · {ZONE_LABELS[table.zone]}
+    <aside key={table.id} className="lbd-card lbd-card--glass lbd-td lbd-swap" role="region" aria-label={`Detalle de ${table.name}`}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+          <span className="lbd-mono" style={{ fontSize: 11, letterSpacing: "0.08em", color: "#a39b90", textTransform: "uppercase" }}>
+            {ZONE_LABELS[table.zone]}
+          </span>
+          <span className="lbd-display lbd-trunc" style={{ fontSize: 34, letterSpacing: "-0.045em", lineHeight: 1 }}>
+            {table.name}
+          </span>
+          <span style={{ fontSize: 13, color: "#a39b90" }}>
+            {table.capacity} personas · {SHAPE_LABELS[table.shape].toLowerCase()}
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <span className={`lbd-td-state is-${look}`}>{stateLabel}</span>
+          <button type="button" onClick={onClose} aria-label="Cerrar detalle" className="lbd-td-x">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {linkedOrders.length > 0 ? (
+        <div className="lbd-td-box">
+          {linkedOrders.map((o) => (
+            <div key={o.id} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#a39b90", gap: 8 }}>
+                <span className="lbd-trunc">{o.customerName}</span>
+                <span style={{ flexShrink: 0 }}>{ORDER_STATUS_LABELS[o.status]}</span>
+              </div>
+              {o.items.map((it, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 14, gap: 8 }}>
+                  <span>
+                    {it.quantity} × {it.name}
+                  </span>
+                  <span style={{ color: "#cfc7bb", flexShrink: 0 }}>{formatCurrency(it.price * it.quantity)}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 8, borderTop: "1px solid rgba(243,239,230,0.08)" }}>
+            <span style={{ fontSize: 13, color: "#a39b90" }}>Consumo</span>
+            <span className="lbd-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
+              {formatCurrency(total)}
+            </span>
+          </div>
+        </div>
+      ) : occupied ? (
+        <div className="lbd-td-empty">Ocupada manualmente, sin comanda vinculada.</div>
+      ) : (
+        <div className="lbd-td-empty">Mesa libre y lista para sentar.</div>
+      )}
+
+      {dayReservations.length > 0 && (
+        <div className="lbd-td-res">
+          <span className="lbd-mono" style={{ fontSize: 11, letterSpacing: "0.08em", color: "#ff7a57", textTransform: "uppercase" }}>
+            Reservas de hoy
+          </span>
+          {dayReservations.map((r) => (
+            <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
+                  <span className="lbd-mono" style={{ color: "#ff7a57" }}>
+                    {formatClock(r.startTime)}
+                  </span>{" "}
+                  <span style={{ color: "#a39b90", fontWeight: 400 }}>– {endTimeLabel(r.startTime, r.durationMin)}</span>
+                </p>
+                <p className="lbd-trunc" style={{ margin: 0, fontSize: 12, color: "#a39b90" }}>
+                  {r.customerName} · {r.partySize} pers.
                 </p>
               </div>
+              <ReservationStatusPill status={r.status} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* The sticker on the table: what a diner scans to order their own next
+          round. White ground on purpose: a scanner needs the quiet zone light. */}
+      {table.publicCode && (
+        <div className="lbd-td-qr">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/api/qr/${table.publicCode}`} alt={`Código QR de ${table.name}`} width={84} height={84} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>QR de {table.name}</span>
+            <span className="lbd-mono" style={{ fontSize: 11, color: "#5f5a54", wordBreak: "break-all" }}>
+              {table.publicCode}
+            </span>
+            <span style={{ fontSize: 12, lineHeight: 1.4, color: "#5f5a54" }}>El comensal lo escanea y pide su ronda desde la mesa.</span>
+            <Link href="/dashboard/app/mesas/qr" style={{ fontSize: 12, fontWeight: 600, color: "#c9391a" }}>
+              Imprimir los QR
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
+        {creating ? (
+          <ReservationForm
+            tables={tables}
+            reservations={reservations}
+            initial={{ ...blankReservation(today), tableId: table.id }}
+            submitLabel="Crear reserva"
+            onSubmit={async (input) => {
+              const result = await createReservation(input);
+              if (result.ok) {
+                setCreating(false);
+                pushToast("Reserva creada.", "success");
+              }
+              return result;
+            }}
+            onCancel={() => setCreating(false)}
+          />
+        ) : (
+          <>
+            {occupied ? (
               <button
                 type="button"
-                onClick={onClose}
-                aria-label="Cerrar"
-                className="rounded-lg p-2 text-faint hover:bg-fg/[0.06] hover:text-fg/80"
+                disabled={isPending || linkedOrders.length > 0}
+                onClick={() => toggleOccupancy(false)}
+                className="lbd-btn lbd-btn--solid"
+                title={linkedOrders.length > 0 ? "Cierra la comanda para liberar la mesa" : undefined}
               >
-                <IconX className="h-5 w-5" />
+                Marcar libre
               </button>
-            </header>
-
-            <div className="flex-1 overflow-y-auto px-5 py-5">
-              <section>
-                <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
-                  Estado actual
-                </p>
-                <span
-                  className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] font-medium ring-1 ring-inset"
-                  style={{
-                    backgroundColor: tone!.fill,
-                    color: tone!.text,
-                    boxShadow: `inset 0 0 0 1px ${tone!.stroke}`,
-                  }}
-                >
-                  <span className="h-2 w-2 rounded-full bg-current" />
-                  {TABLE_STATE_LABELS[state]}
-                </span>
-              </section>
-
-              <section className="mt-6">
-                <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
-                  Comanda activa
-                </p>
-                {linkedOrders.length === 0 ? (
-                  <p className="mt-2 text-[13.5px] text-faint">
-                    {occupied
-                      ? "Ocupada manualmente, sin comanda vinculada."
-                      : "Sin comanda abierta."}
-                  </p>
-                ) : (
-                  <ul className="mt-2 flex flex-col gap-3">
-                    {linkedOrders.map((o) => (
-                      <li
-                        key={o.id}
-                        className="rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-3.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-[13.5px] font-medium text-fg/85">
-                            {o.customerName}
-                          </span>
-                          <span className="rounded-md bg-fg/[0.06] px-2 py-0.5 text-[11.5px] text-muted">
-                            {ORDER_STATUS_LABELS[o.status]}
-                          </span>
-                        </div>
-                        <ul className="mt-2 flex flex-col gap-0.5 text-[12.5px] text-muted">
-                          {o.items.map((it, i) => (
-                            <li key={i}>
-                              {it.quantity}× {it.name}
-                            </li>
-                          ))}
-                        </ul>
-                        <p className="mt-2 border-t border-fg/[0.06] pt-2 text-[13px] font-medium text-fg/80">
-                          {formatCurrency(o.total)}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-
-              {/* The sticker on the table: what a diner scans to order their
-                  own next round. */}
-              {table.publicCode && (
-                <section className="mt-6">
-                  <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
-                    QR de la mesa
-                  </p>
-                  <div className="mt-2 flex items-center gap-4 rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-3.5">
-                    {/* White ground on purpose: a scanner needs the quiet zone
-                        light no matter which theme the dashboard is in. */}
-                    <span className="shrink-0 rounded-lg bg-white p-1.5">
-                      <img
-                        src={`/api/qr/${table.publicCode}`}
-                        alt={`Código QR de ${table.name}`}
-                        width={76}
-                        height={76}
-                        className="block h-[76px] w-[76px]"
-                      />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-mono text-[13px] tracking-wide text-fg/70">
-                        {table.publicCode}
-                      </p>
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-faint">
-                        El comensal lo escanea y pide su ronda desde la mesa.
-                      </p>
-                      <a
-                        href={`/dashboard/app/mesas/qr`}
-                        className="mt-2 inline-block text-[12.5px] font-medium text-accent-ink underline-offset-4 hover:underline"
-                      >
-                        Imprimir los QR
-                      </a>
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              <section className="mt-6">
-                <p className="text-[12px] font-medium uppercase tracking-wide text-faint">
-                  Reservas de hoy
-                </p>
-                {dayReservations.length === 0 ? (
-                  <p className="mt-2 text-[13.5px] text-faint">Sin reservas para esta mesa hoy.</p>
-                ) : (
-                  <ul className="mt-2 flex flex-col gap-2">
-                    {dayReservations.map((r) => (
-                      <li
-                        key={r.id}
-                        className="flex items-center justify-between gap-2 rounded-xl border border-fg/[0.07] bg-fg/[0.02] px-3.5 py-2.5"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-medium text-fg/85">
-                            <span className="font-mono text-accent-ink">
-                              {formatClock(r.startTime)}
-                            </span>{" "}
-                            <span className="text-faint">
-                              – {endTimeLabel(r.startTime, r.durationMin)}
-                            </span>
-                          </p>
-                          <p className="mt-0.5 truncate text-[12px] text-muted">
-                            {r.customerName} · {r.partySize} pers.
-                          </p>
-                        </div>
-                        <ReservationStatusPill status={r.status} />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
+            ) : (
+              <button type="button" disabled={isPending} onClick={() => toggleOccupancy(true)} className="lbd-btn lbd-btn--solid">
+                Marcar ocupada
+              </button>
+            )}
+            <div style={{ display: "flex", gap: 8 }}>
+              <Link href="/dashboard/comanda" className="lbd-btn lbd-btn--ghost" style={{ flex: 1 }}>
+                Agregar pedido
+              </Link>
+              <button type="button" onClick={() => setCreating(true)} className="lbd-btn lbd-btn--ghost" style={{ flex: 1 }}>
+                Nueva reserva
+              </button>
             </div>
-
-            <footer className="border-t border-fg/[0.07] px-5 py-4">
-              {creating ? (
-                <ReservationForm
-                  tables={tables}
-                  reservations={reservations}
-                  initial={{ ...blankReservation(today), tableId: table.id }}
-                  submitLabel="Crear reserva"
-                  onSubmit={async (input) => {
-                    const result = await createReservation(input);
-                    if (result.ok) {
-                      setCreating(false);
-                      pushToast("Reserva creada.", "success");
-                    }
-                    return result;
-                  }}
-                  onCancel={() => setCreating(false)}
-                />
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {occupied ? (
-                    <button
-                      type="button"
-                      disabled={isPending || linkedOrders.length > 0}
-                      onClick={() => toggleOccupancy(false)}
-                      className={ghostButtonClass}
-                      title={
-                        linkedOrders.length > 0
-                          ? "Cierra la comanda para liberar la mesa"
-                          : undefined
-                      }
-                    >
-                      Marcar libre
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => toggleOccupancy(true)}
-                      className={accentButtonClass}
-                    >
-                      Marcar ocupada
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setCreating(true)}
-                    className={ghostButtonClass}
-                  >
-                    Nueva reserva
-                  </button>
-                </div>
-              )}
-            </footer>
-          </m.aside>
-        </>
-      )}
-    </AnimatePresence>
+          </>
+        )}
+      </div>
+    </aside>
   );
 }

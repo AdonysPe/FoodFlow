@@ -22,8 +22,8 @@ import type { OrderMiniDTO, ReservationDTO, TableDTO } from "./types";
 
 /** Only the two states a server has to act on get a colour. */
 const KITCHEN_TONE: Partial<Record<OrderMiniDTO["status"], { label: string; dot: string }>> = {
-  preparing: { label: "En cocina", dot: "bg-warn" },
-  ready: { label: "Lista", dot: "bg-mint" },
+  preparing: { label: "En cocina", dot: "is-cooking" },
+  ready: { label: "Lista", dot: "is-ready" },
 };
 
 function elapsedLabel(fromIso: string, nowMs: number): string {
@@ -103,69 +103,42 @@ export default function ServicePanel({
   const totalOpen = running.reduce((sum, o) => sum + o.total, 0);
 
   return (
-    <aside
-      aria-label="Servicio en curso"
-      className="flex flex-col gap-4 rounded-[20px] border border-fg/[0.08] bg-fg/[0.02] p-4"
-    >
+    <aside aria-label="Servicio en curso" className="lbd-card lbd-sv">
       {/* ------------------------------------------------------ en servicio */}
       <section>
-        <header className="flex items-baseline justify-between gap-2">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
-            En servicio
-          </h3>
-          <span className="text-[11.5px] tabular-nums text-faint">
-            {running.length > 0 ? formatPrice(totalOpen) : "—"}
-          </span>
+        <header className="lbd-sv-head">
+          <h3>En servicio</h3>
+          <span>{running.length > 0 ? formatPrice(totalOpen) : "—"}</span>
         </header>
 
         {running.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-dashed border-fg/[0.1] px-3 py-4 text-center text-[12.5px] text-faint">
-            Ninguna mesa con cuenta abierta.
-          </p>
+          <p className="lbd-sv-empty">Ninguna mesa con cuenta abierta.</p>
         ) : (
-          <ul className="mt-2.5 flex flex-col gap-1">
+          <ul className="lbd-sv-list">
             {running.map((order) => {
               const table = tableById.get(order.tableId!)!;
               const tone = KITCHEN_TONE[order.status];
               // The comanda stores the table name when nobody gave one, so a
               // second line only appears when it actually says something else.
-              const named =
-                order.customerName && order.customerName !== table.name
-                  ? order.customerName
-                  : null;
+              const named = order.customerName && order.customerName !== table.name ? order.customerName : null;
 
               return (
                 <li key={order.id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(table.id)}
-                    className={`w-full rounded-xl px-2.5 py-2 text-left transition-colors ${
-                      selectedId === table.id
-                        ? "bg-accent-400/[0.1] ring-1 ring-inset ring-accent-400/30"
-                        : "hover:bg-fg/[0.04]"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="truncate text-[13.5px] font-semibold text-fg/90">
-                        {table.name}
-                      </span>
+                  <button type="button" onClick={() => onSelect(table.id)} className={`lbd-sv-row${selectedId === table.id ? " is-on" : ""}`}>
+                    <span className="lbd-sv-line">
+                      <span className="lbd-sv-name lbd-trunc">{table.name}</span>
                       {tone && (
-                        <span className="flex items-center gap-1 text-[11px] text-faint">
-                          <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+                        <span className="lbd-sv-kitchen">
+                          <i className={tone.dot} aria-hidden />
                           {tone.label}
                         </span>
                       )}
-                      <span className="ml-auto shrink-0 text-[12.5px] font-medium tabular-nums text-fg/70">
-                        {formatPrice(order.total)}
-                      </span>
+                      <span className="lbd-sv-amount">{formatPrice(order.total)}</span>
                     </span>
-
-                    <span className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-faint">
-                      {named && <span className="truncate">{named}</span>}
+                    <span className="lbd-sv-sub">
+                      {named && <span className="lbd-trunc">{named}</span>}
                       {named && <span aria-hidden>·</span>}
-                      <span className="tabular-nums">
-                        {nowMs === null ? "—" : elapsedLabel(order.createdAt, nowMs)}
-                      </span>
+                      <span>{nowMs === null ? "—" : elapsedLabel(order.createdAt, nowMs)}</span>
                     </span>
                   </button>
                 </li>
@@ -176,44 +149,24 @@ export default function ServicePanel({
       </section>
 
       {/* -------------------------------------------------------- disponibles */}
-      <section className="border-t border-fg/[0.07] pt-4">
-        <header className="flex items-baseline justify-between gap-2">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
-            Libres
-          </h3>
-          <span className="text-[11.5px] tabular-nums text-faint">{freeTables.length}</span>
+      <section className="lbd-sv-free">
+        <header className="lbd-sv-head">
+          <h3>Libres</h3>
+          <span>{freeTables.length}</span>
         </header>
 
         {freeTables.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-dashed border-fg/[0.1] px-3 py-4 text-center text-[12.5px] text-faint">
-            Salón lleno. No hay mesas libres.
-          </p>
+          <p className="lbd-sv-empty">Salón lleno. No hay mesas libres.</p>
         ) : (
-          <ul className="mt-2.5 flex flex-col gap-1">
+          <ul className="lbd-sv-list">
             {freeTables.map((table) => {
               const booking = nextBookingByTable.get(table.id);
               return (
                 <li key={table.id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(table.id)}
-                    className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition-colors ${
-                      selectedId === table.id
-                        ? "bg-accent-400/[0.1] ring-1 ring-inset ring-accent-400/30"
-                        : "hover:bg-fg/[0.04]"
-                    }`}
-                  >
-                    <span className="truncate text-[13.5px] font-medium text-fg/80">
-                      {table.name}
-                    </span>
-                    <span className="shrink-0 text-[11.5px] tabular-nums text-faint">
-                      {table.capacity}p
-                    </span>
-                    {booking && (
-                      <span className="ml-auto shrink-0 rounded-md bg-fg/[0.05] px-1.5 py-0.5 text-[10.5px] tabular-nums text-faint">
-                        reserva {formatClock(booking)}
-                      </span>
-                    )}
+                  <button type="button" onClick={() => onSelect(table.id)} className={`lbd-sv-row lbd-sv-row--free${selectedId === table.id ? " is-on" : ""}`}>
+                    <span className="lbd-sv-name lbd-trunc">{table.name}</span>
+                    <span className="lbd-sv-seats">{table.capacity}p</span>
+                    {booking && <span className="lbd-sv-booking">reserva {formatClock(booking)}</span>}
                   </button>
                 </li>
               );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AutoRefresh from "@/components/dashboard/AutoRefresh";
+import PageHeader from "@/components/dashboard/PageHeader";
 import SegmentedControl from "./SegmentedControl";
 import FloorPlan from "./FloorPlan";
 import TablesPanel from "./TablesPanel";
@@ -35,10 +36,10 @@ export default function MesasWorkspace({
   ).length;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="lbd-pg">
       {!planEditing && <AutoRefresh intervalMs={12000} />}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <PageHeader eyebrow="SERVICIO · MESAS" title="Mesas" description="Tu salón en vivo. Toca una mesa para ver su pedido, su QR o sentar una reserva.">
         <SegmentedControl
           idBase="mesas-tab"
           value={tab}
@@ -48,11 +49,7 @@ export default function MesasWorkspace({
             label: (
               <>
                 {t.label}
-                {t.id === "reservas" && pendingWeb > 0 && (
-                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-500 px-1 text-[10.5px] font-bold text-fg">
-                    {pendingWeb}
-                  </span>
-                )}
+                {t.id === "reservas" && pendingWeb > 0 && <span className="lbd-sc-badge">{pendingWeb}</span>}
               </>
             ),
           }))}
@@ -70,17 +67,11 @@ export default function MesasWorkspace({
             ]}
           />
         )}
-      </div>
+      </PageHeader>
 
       {tab === "plano" ? (
         planoView === "plano" ? (
-          <FloorPlan
-            tables={tables}
-            reservations={reservations}
-            orders={orders}
-            today={today}
-            onEditingChange={setPlanEditing}
-          />
+          <FloorPlan tables={tables} reservations={reservations} orders={orders} today={today} onEditingChange={setPlanEditing} />
         ) : (
           <TablesPanel tables={tables} />
         )

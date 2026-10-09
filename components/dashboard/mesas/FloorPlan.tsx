@@ -1,12 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import GlassCard from "@/components/ui/GlassCard";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import {
-  TABLE_STATES,
-  TABLE_STATE_LABELS,
-  TABLE_STATE_TONE,
   TABLE_ZONES,
   ZONE_LABELS,
   type TableStateValue,
@@ -132,11 +128,25 @@ export default function FloorPlan({
   );
   const visibleTables = zone === "all" ? tables : tables.filter((t) => t.zone === zone);
 
+  // A taken table whose order was served and not yet paid: the account is
+  // waiting to be charged.
+  const billIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const [tableId, list] of ordersByTable) {
+      if (list.some((o) => o.status === "delivered")) set.add(tableId);
+    }
+    return set;
+  }, [ordersByTable]);
+
   const counts = useMemo(() => {
-    const c: Record<TableStateValue, number> = { libre: 0, ocupada: 0, reservada: 0 };
-    for (const t of visibleTables) c[stateById.get(t.id) ?? "libre"] += 1;
+    const c = { libre: 0, ocupada: 0, cuenta: 0, reservada: 0 };
+    for (const t of visibleTables) {
+      const st = stateById.get(t.id) ?? "libre";
+      if (st === "ocupada" && billIds.has(t.id)) c.cuenta += 1;
+      else c[st] += 1;
+    }
     return c;
-  }, [visibleTables, stateById]);
+  }, [visibleTables, stateById, billIds]);
 
   const posOf = useCallback(
     (t: TableDTO): Pos => drafts[t.id] ?? { x: t.x, y: t.y },
@@ -228,64 +238,59 @@ export default function FloorPlan({
 
   if (tables.length === 0 && !editing) {
     return (
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3.5 py-2 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-          >
+      <div className="lbd-pg">
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button type="button" onClick={() => setEditing(true)} className="lbd-btn lbd-btn--ghost lbd-btn--sm">
             Editar plano
           </button>
         </div>
-        <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-faint">Aún no hay mesas. Crea tu plano para empezar.</p>
-        </GlassCard>
+        <div className="lbd-empty">Aún no hay mesas. Crea tu plano para empezar.</div>
       </div>
     );
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {TABLE_STATES.map((s) => (
-            <span
-              key={s}
-              className="inline-flex items-center gap-2 rounded-full border border-fg/[0.07] bg-fg/[0.03] px-2.5 py-1 text-[12px] text-muted"
-            >
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{
-                  backgroundColor: TABLE_STATE_TONE[s].solid,
-                  boxShadow: `0 0 7px -1px ${TABLE_STATE_TONE[s].solid}`,
-                }}
-              />
-              {TABLE_STATE_LABELS[s]}
-              <span className="tabular-nums font-semibold text-faint">{counts[s]}</span>
-            </span>
-          ))}
-        </div>
+  const stats: { key: keyof typeof counts; label: string }[] = [
+    { key: "libre", label: "Libres" },
+    { key: "ocupada", label: "Ocupadas" },
+    { key: "cuenta", label: "Piden la cuenta" },
+    { key: "reservada", label: "Reservadas" },
+  ];
 
-        <div className="flex items-center gap-2">
-          {zones.length > 1 && !editing && (
-            <SegmentedControl
-              idBase="mesas-zone"
-              size="sm"
-              value={zone}
-              onChange={setZone}
-              options={(["all", ...zones] as ZoneFilter[]).map((z) => ({
-                id: z,
-                label: z === "all" ? "Todas" : ZONE_LABELS[z],
-              }))}
-            />
-          )}
+  return (
+    <div className="lbd-pg">
+      <div className="lbd-ms-stats lbd-rise" style={{ animationDelay: ".05s" }}>
+        {stats.map((st) => (
+          <div key={st.key} className="lbd-ms-stat">
+            <span className={`lbd-ms-dot is-${st.key}`} aria-hidden />
+            <span style={{ flex: 1, fontSize: 13, color: "#a39b90" }}>{st.label}</span>
+            <span className="lbd-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
+              {counts[st.key]}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="lbd-ms-bar">
+        {zones.length > 1 && !editing ? (
+          <SegmentedControl
+            idBase="mesas-zone"
+            size="sm"
+            value={zone}
+            onChange={setZone}
+            options={(["all", ...zones] as ZoneFilter[]).map((z) => ({
+              id: z,
+              label: z === "all" ? "Todas" : ZONE_LABELS[z],
+            }))}
+          />
+        ) : (
+          <span />
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, color: "#8a8278" }}>
+            {editing ? "Modo edición: arrastra las mesas para colocarlas." : "Toca una mesa para ver el detalle."}
+          </span>
           {editing && (
-            <button
-              type="button"
-              onClick={handleAddTable}
-              className="rounded-lg border border-accent-400/30 bg-accent-400/[0.12] px-3.5 py-2 text-[13px] font-semibold text-accent-label transition-colors hover:bg-accent-400/20"
-            >
+            <button type="button" onClick={handleAddTable} className="lbd-btn lbd-btn--ghost lbd-btn--sm">
               + Añadir mesa
             </button>
           )}
@@ -295,91 +300,60 @@ export default function FloorPlan({
               setEditing((v) => !v);
               setSelectedId(null);
             }}
-            className={`rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors ${
-              editing
-                ? "bg-fg text-ink-950 hover:bg-fg/90"
-                : "border border-fg/[0.1] bg-fg/[0.04] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-            }`}
+            className={`lbd-btn lbd-btn--sm ${editing ? "lbd-btn--cream" : "lbd-btn--ghost"}`}
           >
             {editing ? "Listo" : "Editar plano"}
           </button>
         </div>
       </div>
 
-      {editing && (
-        <p className="text-[12.5px] text-faint">
-          Arrastra las mesas para colocarlas. Toca una mesa para editar sus datos o eliminarla.
-        </p>
-      )}
-
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="@container">
-          <div
-            ref={canvasRef}
-          className={`relative w-full touch-none overflow-hidden rounded-[20px] border transition-colors duration-300 aspect-[4/3] sm:aspect-[16/10] ${
-            editing
-              ? "border-accent-400/30 shadow-[inset_0_0_0_1px_rgba(255,90,51,0.12),inset_0_1px_0_0_var(--spec)]"
-              : "border-fg/[0.08] shadow-[inset_0_1px_0_0_var(--spec)]"
-          }`}
-          style={{
-            backgroundColor: "var(--plan-ground)",
-            backgroundImage:
-              "radial-gradient(130% 100% at 50% -10%, var(--plan-sheen), transparent 55%), radial-gradient(var(--plan-dot) 0.8px, transparent 0.8px)",
-            backgroundSize: "auto, 22px 22px",
-          }}
-        >
-            {visibleTables.map((t) => {
-              const p = posOf(t);
-              return (
-                <TableFigure
-                  key={t.id}
-                  table={{ ...t, x: p.x, y: p.y }}
-                  state={stateById.get(t.id) ?? "libre"}
-                  selected={selectedId === t.id}
-                  editing={editing}
-                  dragging={dragId === t.id}
-                  onPointerDown={(e) => handlePointerDown(e, t)}
-                  onPointerMove={(e) => handlePointerMove(e, t)}
-                  onPointerUp={(e) => handlePointerUp(e, t)}
-                  onClick={editing ? undefined : () => setSelectedId(t.id)}
-                />
-              );
-            })}
+      <div className="lbd-ms-grid">
+        <section className="lbd-card lbd-rise lbd-ms-plan" style={{ animationDelay: ".1s" }} aria-label="Plano del salón">
+          <div className="@container">
+            <div ref={canvasRef} className={`lbd-ms-canvas${editing ? " is-editing" : ""}`}>
+              {visibleTables.map((t) => {
+                const p = posOf(t);
+                return (
+                  <TableFigure
+                    key={t.id}
+                    table={{ ...t, x: p.x, y: p.y }}
+                    state={stateById.get(t.id) ?? "libre"}
+                    bill={billIds.has(t.id)}
+                    selected={selectedId === t.id}
+                    editing={editing}
+                    dragging={dragId === t.id}
+                    onPointerDown={(e) => handlePointerDown(e, t)}
+                    onPointerMove={(e) => handlePointerMove(e, t)}
+                    onPointerUp={(e) => handlePointerUp(e, t)}
+                    onClick={editing ? undefined : () => setSelectedId(t.id)}
+                  />
+                );
+              })}
+            </div>
           </div>
+        </section>
+
+        <div className="lbd-ms-side">
+          {editing ? (
+            <TablePropertiesPanel table={selected} onClose={() => setSelectedId(null)} onDeleted={() => setSelectedId(null)} />
+          ) : (
+            <>
+              <TableDrawer
+                table={selected}
+                state={selected ? stateById.get(selected.id) ?? "libre" : "libre"}
+                tables={tables}
+                linkedOrders={selected ? ordersByTable.get(selected.id) ?? [] : []}
+                reservations={reservations}
+                today={today}
+                onClose={() => setSelectedId(null)}
+              />
+              {/* Service information, not furniture: while the plan is being
+                  rearranged it would only be noise, so it steps out. */}
+              <ServicePanel tables={tables} orders={orders} reservations={reservations} today={today} stateById={stateById} selectedId={selectedId} onSelect={setSelectedId} />
+            </>
+          )}
         </div>
-
-        {/* Service information, not furniture: while the plan is being
-            rearranged it would only be noise, so it steps out. */}
-        {!editing && (
-          <ServicePanel
-            tables={tables}
-            orders={orders}
-            reservations={reservations}
-            today={today}
-            stateById={stateById}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
-        )}
       </div>
-
-      {editing ? (
-        <TablePropertiesPanel
-          table={selected}
-          onClose={() => setSelectedId(null)}
-          onDeleted={() => setSelectedId(null)}
-        />
-      ) : (
-        <TableDrawer
-          table={selected}
-          state={selected ? stateById.get(selected.id) ?? "libre" : "libre"}
-          tables={tables}
-          linkedOrders={selected ? ordersByTable.get(selected.id) ?? [] : []}
-          reservations={reservations}
-          today={today}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
     </div>
   );
 }
