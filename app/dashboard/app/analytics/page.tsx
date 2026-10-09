@@ -1,12 +1,10 @@
 import { prisma } from "@/lib/db/prisma";
 import { requirePlanFeature } from "@/lib/auth/plan";
 import PlanGate from "@/components/dashboard/PlanGate";
-import GlassCard from "@/components/ui/GlassCard";
-import StatTile from "@/components/dashboard/StatTile";
+import PageHeader from "@/components/dashboard/PageHeader";
 import SalesTrendChart, { type TrendPoint } from "@/components/dashboard/SalesTrendChart";
 import WeeklyEarnings, { type WeekBucket } from "@/components/dashboard/WeeklyEarnings";
-import ChannelBars from "@/components/dashboard/ChannelBars";
-import { IconBolt, IconOrders, IconTarget, IconTrendUp } from "@/components/ui/Icons";
+import { limaHour } from "@/lib/serviceOverview";
 import { CHANNEL_LABELS } from "@/lib/orderMeta";
 import { formatCurrency } from "@/lib/format";
 
@@ -42,12 +40,6 @@ function weekLabel(start: Date, end: Date): string {
   return start.getMonth() === end.getMonth()
     ? `${start.getDate()}–${end.getDate()} ${MONTHS[end.getMonth()]}`
     : `${dayLabel(start)}–${dayLabel(end)}`;
-}
-
-function hourLabel(hour: number): string {
-  const period = hour >= 12 ? "PM" : "AM";
-  const h12 = hour % 12 === 0 ? 12 : hour % 12;
-  return `${h12}${period}`;
 }
 
 function pctChange(current: number, previous: number): number | null {
@@ -170,14 +162,28 @@ export default async function AnalyticsPage() {
     revenue: Number(row.revenue),
   }));
   const topRevenue = Math.max(1, ...dishes.map((d) => d.revenue));
+  const dishPhotos = dishes.length
+    ? await prisma.menuItem.findMany({
+        where: { restaurantId: restaurant.id, name: { in: dishes.map((d) => d.name) } },
+        select: { name: true, photoUrl: true },
+      })
+    : [];
 
-  const hourCounts = Array.from({ length: 24 }, () => 0);
-  for (const order of inPeriod) hourCounts[order.createdAt.getHours()] += 1;
-  const peakHours = hourCounts
-    .map((count, hour) => ({ hour, count }))
-    .filter((h) => h.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+  // Weekday (Monday first) by hour, in Lima time: the server may run in UTC,
+  // and a lunch rush that lands at 7 AM is not a rush anyone can act on.
+  const heatCounts = Array.from({ length: 7 }, () => new Map<number, number>());
+  let firstHour = 12;
+  let lastHour = 23;
+  for (const order of inPeriod) {
+    const hour = limaHour(order.createdAt);
+    const day = (new Date(order.createdAt.getTime() - 5 * 3_600_000).getUTCDay() + 6) % 7;
+    heatCounts[day].set(hour, (heatCounts[day].get(hour) ?? 0) + 1);
+    firstHour = Math.min(firstHour, hour);
+    lastHour = Math.max(lastHour, hour);
+  }
+  const heatHours = Array.from({ length: lastHour - firstHour + 1 }, (_, i) => firstHour + i);
+  const heatMax = Math.max(1, ...heatCounts.flatMap((row) => [...row.values()]));
+  const hasHeat = inPeriod.length > 0;
 
   // An order without a diner's name carries the table it was taken at, or the
   // channel it came through. Those are not people, and counting them made the
@@ -196,144 +202,136 @@ export default async function AnalyticsPage() {
   const repeatRate =
     peopleWhoOrdered.length > 0 ? (repeatCustomers / peopleWhoOrdered.length) * 100 : 0;
 
+  const stats: { label: string; value: string; delta: number | null; hint?: string }[] = [
+    { label: "Ventas · 30 días", value: formatCurrency(sales), delta: pctChange(sales, priorSales), hint: "vs. 30 días previos" },
+    { label: "Pedidos · 30 días", value: orderCount.toLocaleString("es-PE"), delta: pctChange(orderCount, inPrior.length), hint: orderCount > 0 ? `${Math.round(orderCount / TREND_DAYS)} por día` : undefined },
+    { label: "Ticket promedio", value: formatCurrency(avgTicket), delta: pctChange(avgTicket, priorAvgTicket), hint: "por pedido" },
+    { label: "Mejor día", value: formatCurrency(bestDay.value), delta: null, hint: bestDay.value > 0 ? bestDay.label : "sin ventas aún" },
+  ];
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="lbd-pg">
+      <PageHeader eyebrow="NEGOCIO · ANÁLISIS" title="Análisis" description="Ventas, platos y horas pico de los últimos 30 días." />
+
       {/* the four numbers an owner opens this page for */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile
-          label="Ventas · 30 días"
-          value={sales}
-          prefix="S/ "
-          icon={<IconTrendUp className="h-[18px] w-[18px]" />}
-          delta={pctChange(sales, priorSales)}
-          hint="vs. 30 días previos"
-        />
-        <StatTile
-          label="Pedidos · 30 días"
-          value={orderCount}
-          icon={<IconOrders className="h-[18px] w-[18px]" />}
-          delta={pctChange(orderCount, inPrior.length)}
-          hint="vs. 30 días previos"
-        />
-        <StatTile
-          label="Ticket promedio"
-          value={avgTicket}
-          prefix="S/ "
-          decimals={2}
-          icon={<IconTarget className="h-[18px] w-[18px]" />}
-          delta={pctChange(avgTicket, priorAvgTicket)}
-        />
-        <StatTile
-          label="Mejor día"
-          value={bestDay.value}
-          prefix="S/ "
-          icon={<IconBolt className="h-[18px] w-[18px]" />}
-          hint={bestDay.value > 0 ? bestDay.label : "sin ventas aún"}
-        />
-      </div>
-
-      <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-        <div className="mb-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <div>
-            <h2 className="text-[15px] font-semibold text-fg/90">Tendencia de ventas</h2>
-            <p className="text-[12.5px] text-faint">
-              Últimos 30 días · toca la línea para ver el monto del día
-            </p>
+      <div className="lbd-an-stats lbd-rise" style={{ animationDelay: ".05s" }}>
+        {stats.map((stat) => (
+          <div key={stat.label} className="lbd-card lbd-an-stat">
+            <span>{stat.label}</span>
+            <strong className="lbd-display">{stat.value}</strong>
+            <small style={{ color: stat.delta == null ? "#a39b90" : stat.delta >= 0 ? "#3ddc97" : "#ff7a57", fontWeight: stat.delta == null ? 400 : 550 }}>
+              {stat.delta != null && `${stat.delta >= 0 ? "↑" : "↓"} ${Math.abs(stat.delta).toFixed(0)}% `}
+              {stat.hint}
+            </small>
           </div>
-          <p className="font-display text-[22px] font-extrabold tabular-nums text-fg">
-            {formatCurrency(sales)}
-          </p>
-        </div>
-        <SalesTrendChart points={trend} />
-      </GlassCard>
-
-      <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-        <h2 className="text-[15px] font-semibold text-fg/90">Ganancia por semana</h2>
-        <p className="mb-5 text-[12.5px] text-faint">
-          Últimas {WEEKS} semanas, de lunes a domingo
-        </p>
-        <WeeklyEarnings
-          weeks={weeks}
-          daysElapsed={daysElapsed}
-          previousToDate={previousToDate}
-        />
-      </GlassCard>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <h2 className="mb-4 text-[15px] font-semibold text-fg/90">Platos más vendidos</h2>
-          {dishes.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-faint">
-              Aún no hay datos de ventas.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-3.5">
-              {dishes.map((p, i) => (
-                <li key={p.name}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-fg/[0.06] text-[11px] font-semibold tabular-nums text-muted">
-                        {i + 1}
-                      </span>
-                      <span className="truncate text-[14px] text-fg/85">{p.name}</span>
-                    </div>
-                    <span className="shrink-0 text-[13.5px] font-medium tabular-nums text-fg/85">
-                      {formatCurrency(p.revenue)}
-                    </span>
-                  </div>
-                  {/* the bar turns a list into a comparison */}
-                  <div className="mt-1.5 flex items-center gap-2.5 pl-[30px]">
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-fg/[0.05]">
-                      <div
-                        className="h-full rounded-full bg-linear-to-r from-accent-500 to-accent-300"
-                        style={{ width: `${(p.revenue / topRevenue) * 100}%` }}
-                      />
-                    </div>
-                    <span className="shrink-0 text-[11.5px] tabular-nums text-faint">
-                      {p.quantity} vend.
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </GlassCard>
-
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <h2 className="mb-1 text-[15px] font-semibold text-fg/90">Horas pico</h2>
-          <p className="mb-4 text-[12.5px] text-faint">Pedidos por hora, últimos 30 días</p>
-          {peakHours.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-faint">
-              Aún no hay pedidos en este periodo.
-            </p>
-          ) : (
-            <ChannelBars
-              data={peakHours.map((h) => ({ label: hourLabel(h.hour), count: h.count }))}
-            />
-          )}
-        </GlassCard>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-muted">Clientes registrados</p>
-          <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
-            {customerCount}
-          </p>
-        </GlassCard>
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-muted">Comensales que repiten</p>
-          <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
-            {repeatCustomers}
-          </p>
-        </GlassCard>
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[13px] text-muted">Tasa de recurrencia</p>
-          <p className="mt-2 font-display text-[1.6rem] font-extrabold tabular-nums text-fg">
-            {repeatRate.toFixed(1)}%
-          </p>
-        </GlassCard>
+      <div className="lbd-an-row lbd-rise" style={{ animationDelay: ".1s" }}>
+        <section className="lbd-card lbd-an-panel" style={{ flex: "2 1 460px" }} aria-label="Tendencia de ventas">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+            <span className="lbd-an-h">Tendencia de ventas</span>
+            <span className="lbd-display" style={{ fontSize: 22, letterSpacing: "-0.04em" }}>
+              {formatCurrency(sales)}
+            </span>
+          </div>
+          <SalesTrendChart points={trend} />
+        </section>
+
+        <section className="lbd-card lbd-an-panel" style={{ flex: "1 1 280px" }} aria-label="Ganancia por semana">
+          <span className="lbd-an-h">Ganancia por semana</span>
+          <span style={{ marginTop: -6, fontSize: 12, color: "#8a8278" }}>Últimas {WEEKS} semanas, de lunes a domingo</span>
+          <WeeklyEarnings weeks={weeks} daysElapsed={daysElapsed} previousToDate={previousToDate} />
+        </section>
+      </div>
+
+      <div className="lbd-an-row lbd-rise" style={{ animationDelay: ".14s" }}>
+        <section className="lbd-card lbd-an-panel" style={{ flex: "1 1 320px" }} aria-label="Platos más vendidos">
+          <span className="lbd-an-h">Platos más vendidos</span>
+          {dishes.length === 0 ? (
+            <p className="lbd-an-empty">Aún no hay datos de ventas.</p>
+          ) : (
+            dishes.map((dish, i) => {
+              const photo = dishPhotos.find((item) => item.name === dish.name)?.photoUrl;
+              return (
+                <div key={dish.name} className="lbd-an-dish">
+                  {photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo} alt="" width={36} height={36} loading="lazy" />
+                  ) : (
+                    <span className="lbd-an-dish-n lbd-mono" aria-hidden>
+                      {i + 1}
+                    </span>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13 }}>
+                      <span className="lbd-trunc">{dish.name}</span>
+                      <span style={{ color: "#a39b90", flexShrink: 0 }}>
+                        {formatCurrency(dish.revenue)} · {dish.quantity} vend.
+                      </span>
+                    </div>
+                    <div className="lbd-track">
+                      <div className="lbd-bar" style={{ width: `${(dish.revenue / topRevenue) * 100}%`, background: i === 0 ? "#ff5a33" : "#f3efe6", animationDelay: `${0.5 + i * 0.1}s` }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </section>
+
+        <section className="lbd-card lbd-an-panel" style={{ flex: "1 1 320px" }} aria-label="Horas pico">
+          <span className="lbd-an-h">Horas pico</span>
+          <span style={{ marginTop: -6, fontSize: 12, color: "#8a8278" }}>Pedidos por día y hora, últimos 30 días</span>
+          {!hasHeat ? (
+            <p className="lbd-an-empty">Aún no hay pedidos en este periodo.</p>
+          ) : (
+            <>
+              <div className="lbd-an-heat" style={{ gridTemplateColumns: `34px repeat(${heatHours.length}, minmax(0, 1fr))` }}>
+                {DAYS.map((day, row) => (
+                  <HeatRow key={day} day={day} hours={heatHours} counts={heatCounts[row]} max={heatMax} />
+                ))}
+              </div>
+              <div className="lbd-an-heat-ticks lbd-mono">
+                <span>{firstHour}h</span>
+                <span>{Math.round((firstHour + lastHour) / 2)}h</span>
+                <span>{lastHour}h</span>
+              </div>
+            </>
+          )}
+        </section>
+      </div>
+
+      <div className="lbd-an-stats lbd-an-stats--3 lbd-rise" style={{ animationDelay: ".18s" }}>
+        <div className="lbd-card lbd-an-stat">
+          <span>Clientes registrados</span>
+          <strong className="lbd-display">{customerCount}</strong>
+        </div>
+        <div className="lbd-card lbd-an-stat">
+          <span>Comensales que repiten</span>
+          <strong className="lbd-display">{repeatCustomers}</strong>
+        </div>
+        <div className="lbd-card lbd-an-stat">
+          <span>Tasa de recurrencia</span>
+          <strong className="lbd-display">{repeatRate.toFixed(1)}%</strong>
+        </div>
       </div>
     </div>
+  );
+}
+
+const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+/** One weekday of the heat grid: a cell per hour, vermilion where it is busiest. */
+function HeatRow({ day, hours, counts, max }: { day: string; hours: number[]; counts: Map<number, number>; max: number }) {
+  return (
+    <>
+      <span>{day}</span>
+      {hours.map((hour) => {
+        const count = counts.get(hour) ?? 0;
+        const x = count / max;
+        return <span key={hour} title={`${day} ${hour}h · ${count} pedidos`} style={{ aspectRatio: "1", borderRadius: 4, background: count === 0 ? "rgba(243,239,230,0.05)" : x > 0.75 ? "#ff5a33" : `rgba(255,90,51,${(0.14 + x * 0.6).toFixed(2)})` }} />;
+      })}
+    </>
   );
 }
