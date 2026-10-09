@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import GlassCard from "@/components/ui/GlassCard";
-import Button from "@/components/ui/Button";
+import Link from "next/link";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { addStaffMember, removeStaffMember, type StaffMemberDTO } from "@/lib/actions/staff";
 
-const ghostButton =
-  "rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-1.5 text-[12.5px] font-medium text-fg/70 transition-colors hover:bg-fg/[0.08] hover:text-fg disabled:opacity-40";
-const dangerButton =
-  "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-fg transition-colors hover:bg-accent-600 disabled:opacity-40";
+const AVATARS = [
+  { bg: "#ff5a33", fg: "#0c0908" },
+  { bg: "#f3efe6", fg: "#0c0908" },
+  { bg: "#3a302b", fg: "#f3efe6" },
+];
 
-function MemberRow({ member }: { member: StaffMemberDTO }) {
+function MemberRow({ member, index }: { member: StaffMemberDTO; index: number }) {
   const [confirming, setConfirming] = useState(false);
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
+  const avatar = AVATARS[index % AVATARS.length];
 
   function remove() {
     if (!confirming) {
@@ -29,31 +30,28 @@ function MemberRow({ member }: { member: StaffMemberDTO }) {
   }
 
   return (
-    <li className="flex items-center justify-between gap-3 border-b border-fg/[0.05] px-5 py-3.5 last:border-0">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-fg/[0.06] text-[13px] font-bold text-fg/70">
-          {member.email.charAt(0).toUpperCase()}
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-medium text-fg/85">{member.email}</p>
-          <p className="text-[12px] text-faint">
-            {member.active ? "Mozo · ya inició sesión" : "Mozo · pendiente de primer inicio"}
-          </p>
-        </div>
-      </div>
-      <button
-        type="button"
-        disabled={isPending}
-        onClick={remove}
-        onBlur={() => setConfirming(false)}
-        className={confirming ? dangerButton : ghostButton}
-      >
+    <li className="lbd-eq-row">
+      <span className="lbd-cu-av" style={{ background: avatar.bg, color: avatar.fg }}>
+        {member.email.charAt(0).toUpperCase()}
+      </span>
+      <span className="lbd-or-cell" style={{ minWidth: 0 }}>
+        <span className="lbd-or-main lbd-trunc">{member.email}</span>
+        <span className="lbd-or-sub">{member.active ? "Ya inició sesión" : "Pendiente de primer inicio"}</span>
+      </span>
+      <span className="lbd-eq-role">Mozo</span>
+      <span className={`lbd-eq-state${member.active ? " is-on" : ""}`}>{member.active ? "Con acceso" : "Invitado"}</span>
+      <button type="button" disabled={isPending} onClick={remove} onBlur={() => setConfirming(false)} className={`lbd-btn lbd-btn--sm ${confirming ? "lbd-btn--solid" : "lbd-btn--ghost"}`} style={confirming ? { fontSize: 13 } : undefined}>
         {confirming ? "¿Confirmar?" : "Quitar"}
       </button>
     </li>
   );
 }
 
+/**
+ * Equipo, design B: the seat bar on top, the people who have access, and a
+ * card to add a waiter by email. Waiters only ever see the comanda screen, so
+ * the "what each role sees" block lists the two roles that exist.
+ */
 export default function EquipoManager({
   members,
   maxUsers,
@@ -84,66 +82,93 @@ export default function EquipoManager({
   }
 
   const full = seatsLeft != null && seatsLeft <= 0;
+  const used = members.length + 1;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">Equipo</h1>
-        <p className="mt-1 max-w-prose text-[13px] leading-relaxed text-faint">
-          Agrega a tus mozos por correo. Cada uno inicia sesión con su propio correo y un código —
-          solo verán la pantalla de comanda, nunca la administración de la carta ni los reportes.
-        </p>
-      </div>
-
-      <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-[15px] font-semibold text-fg/90">Agregar mozo</h2>
-          {maxUsers != null && (
-            <span className="text-[12.5px] text-faint">
-              {members.length + 1} de {maxUsers} usuarios
-              {seatsLeft != null && seatsLeft > 0
-                ? ` · quedan ${seatsLeft}`
-                : " · sin cupo libre"}
+    <>
+      {maxUsers != null && (
+        <div className="lbd-card lbd-rise lbd-eq-seats" style={{ animationDelay: ".05s" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>
+              <span className="lbd-display" style={{ fontSize: 26, letterSpacing: "-0.04em", marginRight: 6 }}>
+                {used}
+              </span>
+              de {maxUsers} usuarios
             </span>
-          )}
+            <span style={{ fontSize: 13, color: full ? "#ff9a7d" : "#a39b90" }}>{seatsLeft != null && seatsLeft > 0 ? `Quedan ${seatsLeft}` : "Sin cupo libre"}</span>
+          </div>
+          <div className="lbd-track" aria-hidden>
+            <div className="lbd-bar" style={{ width: `${Math.min(100, Math.round((used / maxUsers) * 100))}%`, background: full ? "#ff5a33" : "#f3efe6" }} />
+          </div>
         </div>
-        <form onSubmit={handleAdd} className="flex flex-col gap-3 sm:flex-row">
-          <input
-            type="email"
-            required
-            disabled={full}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="mozo@correo.com"
-            className="h-11 w-full flex-1 rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10 disabled:opacity-40"
-          />
-          <Button type="submit" size="md" className="shrink-0" disabled={isPending || full}>
-            {isPending ? "Agregando…" : "Agregar"}
-          </Button>
-        </form>
-        {full && (
-          <p className="mt-2.5 text-[13px] text-warn-ink">
-            Tu plan llegó al tope de usuarios. Quita a alguien o sube de plan para agregar más.
-          </p>
-        )}
-        {error && <p className="mt-2.5 text-[13px] text-accent-icon">{error}</p>}
-      </GlassCard>
-
-      {members.length === 0 ? (
-        <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-faint">
-            Aún no hay mozos en el equipo. Agrega el primero arriba.
-          </p>
-        </GlassCard>
-      ) : (
-        <GlassCard className="overflow-hidden p-0" hoverLift={false}>
-          <ul className="flex flex-col">
-            {members.map((m) => (
-              <MemberRow key={m.membershipId} member={m} />
-            ))}
-          </ul>
-        </GlassCard>
       )}
-    </div>
+
+      <div className="lbd-eq">
+        <section className="lbd-card lbd-rise lbd-or-list" style={{ animationDelay: ".08s" }} aria-label="Personas con acceso">
+          <ul className="lbd-eq-list">
+            <li className="lbd-eq-row">
+              <span className="lbd-cu-av" style={{ background: "#ff5a33", color: "#0c0908" }}>
+                Tú
+              </span>
+              <span className="lbd-or-cell" style={{ minWidth: 0 }}>
+                <span className="lbd-or-main">Tú</span>
+                <span className="lbd-or-sub">Dueño de la cuenta</span>
+              </span>
+              <span className="lbd-eq-role">Dueño</span>
+              <span className="lbd-eq-state is-on">Con acceso</span>
+              <span className="lbd-eq-spacer" aria-hidden />
+            </li>
+            {members.map((m, i) => (
+              <MemberRow key={m.membershipId} member={m} index={i + 1} />
+            ))}
+            {members.length === 0 && (
+              <li className="lbd-empty" style={{ border: 0, margin: 0 }}>
+                Aún no hay mozos en el equipo. Agrega el primero.
+              </li>
+            )}
+          </ul>
+        </section>
+
+        <aside className="lbd-eq-side">
+          <form onSubmit={handleAdd} className="lbd-card lbd-card--glass lbd-rise lbd-eq-add" style={{ animationDelay: ".12s" }}>
+            <span className="lbd-cm-eyebrow">Agregar a alguien</span>
+            <h2 className="lbd-cf-h">Nuevo mozo</h2>
+            <label htmlFor="eq-email" style={{ fontSize: 13, color: "#a39b90" }}>
+              Correo del mozo
+            </label>
+            <input id="eq-email" type="email" required disabled={full} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="mozo@correo.com" className="lbd-input" />
+            <button type="submit" disabled={isPending || full} className="lbd-btn lbd-btn--solid">
+              {isPending ? "Agregando…" : "Enviar acceso"}
+            </button>
+            {full && (
+              <p style={{ margin: 0, fontSize: 13, color: "#ff9a7d", lineHeight: 1.45 }}>
+                Tu plan llegó al tope de usuarios. Quita a alguien o sube de plan para agregar más.{" "}
+                <Link href="/dashboard/app/configuracion" style={{ color: "#f3efe6", fontWeight: 600 }}>
+                  Ver planes ›
+                </Link>
+              </p>
+            )}
+            {error && (
+              <p role="alert" style={{ margin: 0, fontSize: 13, color: "#ffb39e" }}>
+                {error}
+              </p>
+            )}
+          </form>
+
+          <div className="lbd-card lbd-rise lbd-eq-roles" style={{ animationDelay: ".16s" }}>
+            <span className="lbd-cm-eyebrow">Qué ve cada rol</span>
+            <div className="lbd-eq-role-row">
+              <strong>Dueño</strong>
+              <span>Todo: pedidos, cocina, mesas, carta, clientes, análisis y configuración.</span>
+            </div>
+            <div className="lbd-eq-role-row">
+              <strong>Mozo</strong>
+              <span>Solo la pantalla de comanda. Nunca la administración de la carta ni los reportes.</span>
+            </div>
+            <span style={{ fontSize: 12, color: "#8a8278", lineHeight: 1.45 }}>Cada mozo inicia sesión con su propio correo y un código.</span>
+          </div>
+        </aside>
+      </div>
+    </>
   );
 }

@@ -21,10 +21,10 @@ const CLIENT_TITLES: Record<string, string> = {
   // The public carta's settings, nested under /menu.
   carta: "",
   menu: "",
-  customers: "Clientes",
-  equipo: "Equipo",
+  customers: "",
+  equipo: "",
   analytics: "Análisis",
-  configuracion: "Configuración",
+  configuracion: "",
 };
 
 export default async function ClientAppLayout({ children }: { children: ReactNode }) {

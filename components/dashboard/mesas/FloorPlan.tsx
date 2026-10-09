@@ -311,6 +311,9 @@ export default function FloorPlan({
         <section className="lbd-card lbd-rise lbd-ms-plan" style={{ animationDelay: ".1s" }} aria-label="Plano del salón">
           <div className="@container">
             <div ref={canvasRef} className={`lbd-ms-canvas${editing ? " is-editing" : ""}`}>
+              <span className="lbd-ms-zone lbd-mono" aria-hidden>
+                {(zone === "all" ? "TODO EL LOCAL" : ZONE_LABELS[zone]).toUpperCase()} · {visibleTables.length} {visibleTables.length === 1 ? "MESA" : "MESAS"}
+              </span>
               {visibleTables.map((t) => {
                 const p = posOf(t);
                 return (

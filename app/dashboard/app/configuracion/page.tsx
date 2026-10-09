@@ -1,6 +1,6 @@
 import Link from "next/link";
-import GlassCard from "@/components/ui/GlassCard";
 import ExportDataButton from "@/components/dashboard/ExportDataButton";
+import PageHeader from "@/components/dashboard/PageHeader";
 import SubscriptionCheckoutPanel from "@/components/dashboard/SubscriptionCheckoutPanel";
 import RestaurantNameCard from "@/components/dashboard/RestaurantNameCard";
 import { requireClientRestaurant } from "@/lib/auth/restaurant";
@@ -32,59 +32,36 @@ export default async function SettingsPage() {
   if (!restaurant) return null;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
-          Configuración de {restaurant.name}
-        </h2>
-        <p className="mt-1 text-[13px] text-faint">
-          Cuenta, suscripción, datos y conexiones del local activo.
-        </p>
-      </div>
+    <div className="lbd-pg">
+      <PageHeader eyebrow="CONFIGURACIÓN · CUENTA" title={`Configuración de ${restaurant.name}`} description="Cuenta, suscripción, datos y conexiones del local activo." />
 
       {/* Keyed by venue: switching restaurants must not carry a half-typed name over. */}
       <RestaurantNameCard key={restaurant.id} currentName={restaurant.name} canEdit={isOwner} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <SubscriptionCheckoutPanel restaurantId={restaurant.id} restaurantName={restaurant.name} />
-        </GlassCard>
+      <section className="lbd-card lbd-card--glass lbd-rise lbd-cf-card" style={{ animationDelay: ".1s" }}>
+        <SubscriptionCheckoutPanel restaurantId={restaurant.id} restaurantName={restaurant.name} />
+      </section>
 
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-faint">
-            Tus datos
-          </p>
-          <h3 className="mt-2 font-display text-[20px] font-bold text-fg">
-            Exportación
-          </h3>
-          <p className="mt-2 text-[13px] leading-relaxed text-faint">
-            Descarga el menú completo y los últimos 100 pedidos del local activo en CSV.
-          </p>
-          <ExportDataButton className="mt-5" />
-        </GlassCard>
-      </div>
-
-      <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-faint">
-          Configuración operativa
-        </p>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {SETTINGS.map((setting) => (
-            <Link
-              key={setting.href}
-              href={setting.href}
-              className="rounded-xl border border-fg/[0.09] bg-fg/[0.025] p-4 transition-colors hover:bg-fg/[0.06]"
-            >
-              <span className="block text-[14px] font-semibold text-fg/85">
-                {setting.title}
-              </span>
-              <span className="mt-1.5 block text-[12.5px] leading-relaxed text-faint">
-                {setting.description}
-              </span>
-            </Link>
-          ))}
+      <section className="lbd-card lbd-rise lbd-cf-card lbd-cf-export" style={{ animationDelay: ".14s" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+          <span className="lbd-cm-eyebrow">Tus datos</span>
+          <h2 className="lbd-cf-h">Exportación</h2>
+          <p className="lbd-cf-p">Descarga el menú completo y los últimos 100 pedidos del local activo en CSV.</p>
         </div>
-      </GlassCard>
+        <ExportDataButton />
+      </section>
+
+      <div className="lbd-cf-links lbd-rise" style={{ animationDelay: ".18s" }}>
+        {SETTINGS.map((setting) => (
+          <Link key={setting.href} href={setting.href} className="lbd-card lbd-cf-link">
+            <span className="lbd-cf-link-t">{setting.title}</span>
+            <span className="lbd-cf-link-d">{setting.description}</span>
+            <span className="lbd-cf-link-go" aria-hidden>
+              Abrir ›
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

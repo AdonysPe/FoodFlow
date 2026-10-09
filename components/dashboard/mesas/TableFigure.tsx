@@ -5,9 +5,9 @@ import type { TableStateValue } from "@/lib/tableMeta";
 import type { TableDTO } from "./types";
 
 const SIZE: Record<TableDTO["shape"], string> = {
-  round: "w-[clamp(48px,14cqi,90px)] aspect-square rounded-full",
-  square: "w-[clamp(48px,14cqi,90px)] aspect-square rounded-[30%]",
-  rect: "w-[clamp(74px,22cqi,134px)] aspect-[7/4] rounded-[18%]",
+  round: "w-[clamp(64px,13cqi,128px)] aspect-square rounded-full",
+  square: "w-[clamp(64px,13cqi,128px)] aspect-square rounded-[26%]",
+  rect: "w-[clamp(108px,22cqi,196px)] aspect-[7/4] rounded-[18%]",
 };
 
 /**

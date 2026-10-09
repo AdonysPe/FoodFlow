@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import { AnimatePresence, m } from "framer-motion";
-import { EASE } from "@/lib/motion";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
-// Centered confirmation dialog — used for destructive actions (deleting a
-// table). Same glass/keyboard conventions as the rest of the dashboard.
+/**
+ * Centered confirmation dialog, design B. Used for the actions that should not
+ * happen by accident: deleting a table, renaming the restaurant. It mounts on
+ * the panel root (`.lbd`) so an animated ancestor cannot trap it behind the
+ * rows below, and closes on Escape or on a click outside.
+ */
 export default function ConfirmModal({
   open,
   title,
@@ -30,8 +33,11 @@ export default function ConfirmModal({
   /** Extra detail shown between the message and the buttons. */
   children?: ReactNode;
 }) {
+  const [host, setHost] = useState<Element | null>(null);
+
   useEffect(() => {
     if (!open) return;
+    setHost(document.querySelector(".lbd") ?? document.body);
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onCancel();
     }
@@ -39,55 +45,26 @@ export default function ConfirmModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onCancel]);
 
-  return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: EASE }}
-            onClick={onCancel}
-            className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
-            aria-hidden
-          />
-          <m.div
-            initial={{ opacity: 0, y: 14, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.24, ease: EASE }}
-            role="dialog"
-            aria-modal="true"
-            aria-label={title}
-            className="glass relative w-full max-w-sm rounded-2xl p-6 shadow-panel"
-          >
-            <h2 className="font-display text-[17px] font-bold tracking-[-0.01em] text-fg">
-              {title}
-            </h2>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{message}</p>
-            {children}
-            <div className="mt-6 flex justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={onCancel}
-                disabled={pending}
-                className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-4 py-2 text-[13px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg disabled:opacity-40"
-              >
-                {cancelLabel}
-              </button>
-              <button
-                type="button"
-                onClick={onConfirm}
-                disabled={pending}
-                className="rounded-lg bg-accent-500 px-4 py-2 text-[13px] font-semibold text-fg hover:bg-accent-600 disabled:opacity-40"
-              >
-                {pending ? pendingLabel : confirmLabel}
-              </button>
-            </div>
-          </m.div>
+  if (!open || !host) return null;
+
+  return createPortal(
+    <div className="lbd-modal" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
+      <div className="lbd-modal-card lbd-pop" role="dialog" aria-modal="true" aria-label={title} style={{ width: "min(420px, 100%)" }}>
+        <h2 className="lbd-display" style={{ margin: 0, fontSize: 24, letterSpacing: "-0.04em", lineHeight: 1.1 }}>
+          {title}
+        </h2>
+        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: "#a39b90" }}>{message}</p>
+        {children}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+          <button type="button" onClick={onCancel} disabled={pending} className="lbd-btn lbd-btn--ghost lbd-btn--sm">
+            {cancelLabel}
+          </button>
+          <button type="button" onClick={onConfirm} disabled={pending} className="lbd-btn lbd-btn--solid lbd-btn--sm" style={{ fontSize: 13 }}>
+            {pending ? pendingLabel : confirmLabel}
+          </button>
         </div>
-      )}
-    </AnimatePresence>
+      </div>
+    </div>,
+    host
   );
 }

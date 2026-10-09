@@ -2,20 +2,22 @@
 
 import { useDataExport } from "@/lib/hooks/useDataExport";
 
-export default function ExportDataButton({ className = "mb-2 px-2.5" }: { className?: string }) {
+export default function ExportDataButton({ className }: { className?: string }) {
   const { download, isExporting, error } = useDataExport();
 
   return (
     <div className={className}>
-      <button
-        type="button"
-        onClick={() => void download()}
-        disabled={isExporting}
-        className="w-full rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-3 py-2 text-left text-[12.5px] font-medium text-muted transition-colors hover:bg-fg/[0.08] hover:text-fg disabled:cursor-wait disabled:opacity-60"
-      >
+      <button type="button" onClick={() => void download()} disabled={isExporting} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ cursor: isExporting ? "wait" : undefined }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 8 }}>
+          <path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" />
+        </svg>
         {isExporting ? "Generando CSV…" : "Exportar datos (.csv)"}
       </button>
-      {error && <p className="mt-1.5 text-[11px] text-accent-label">{error}</p>}
+      {error && (
+        <p role="alert" style={{ margin: "8px 0 0", fontSize: 12, color: "#ffb39e" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import GlassCard from "@/components/ui/GlassCard";
 import ConfirmModal from "@/components/dashboard/mesas/ConfirmModal";
 import { renameRestaurant } from "@/lib/actions/restaurantProfile";
 import { RESTAURANT_NAME_MAX, normalizeRestaurantName, restaurantNameSchema } from "@/lib/restaurantName";
@@ -62,18 +61,17 @@ export default function RestaurantNameCard({
   }
 
   return (
-    <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-      <p className="text-[12px] font-semibold uppercase tracking-wide text-faint">Tu restaurante</p>
-      <h3 className="mt-2 font-display text-[20px] font-bold text-fg">Nombre del restaurante</h3>
-      <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-faint">
-        Es el nombre que ven tus clientes en la carta pública, en la web de pedidos y en los
-        comprobantes. La dirección de tu carta y tus códigos QR no cambian.
+    <section className="lbd-card lbd-card--glass lbd-rise lbd-cf-card" style={{ animationDelay: ".05s" }}>
+      <span className="lbd-cm-eyebrow">Tu restaurante</span>
+      <h2 className="lbd-cf-h">Nombre del restaurante</h2>
+      <p className="lbd-cf-p">
+        Es el nombre que ven tus clientes en la carta pública, en la web de pedidos y en los comprobantes. La dirección de tu carta y tus códigos QR no cambian.
       </p>
 
       {canEdit ? (
-        <form onSubmit={ask} className="mt-5 flex max-w-xl flex-col gap-3 sm:flex-row sm:items-start">
-          <div className="min-w-0 flex-1">
-            <label htmlFor="restaurant-name" className="sr-only">
+        <form onSubmit={ask} className="lbd-cf-form">
+          <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+            <label htmlFor="restaurant-name" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
               Nombre del restaurante
             </label>
             <input
@@ -87,30 +85,20 @@ export default function RestaurantNameCard({
               autoComplete="organization"
               aria-invalid={Boolean(hint || error)}
               aria-describedby="restaurant-name-help"
-              className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-3.5 text-[14px] text-fg outline-none transition-colors placeholder:text-faint focus:border-accent-500/60 focus:bg-fg/[0.06]"
+              className="lbd-input"
             />
-            <p
-              id="restaurant-name-help"
-              role={error ? "alert" : undefined}
-              className={`mt-1.5 text-[11.5px] ${error || hint ? "text-accent-label" : "text-faint"}`}
-            >
+            <p id="restaurant-name-help" role={error ? "alert" : undefined} style={{ margin: "6px 0 0", fontSize: 12, color: error || hint ? "#ffb39e" : "#8a8278" }}>
               {error || hint || `${normalizeRestaurantName(draft).length} / ${RESTAURANT_NAME_MAX} caracteres`}
             </p>
           </div>
-          <button
-            type="submit"
-            disabled={!changed || isPending}
-            className="h-11 shrink-0 rounded-xl bg-accent-500 px-5 text-[13.5px] font-semibold text-fg transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-40"
-          >
+          <button type="submit" disabled={!changed || isPending} className="lbd-btn lbd-btn--solid">
             Guardar nombre
           </button>
         </form>
       ) : (
-        <div className="mt-5 max-w-xl">
-          <p className="rounded-xl border border-fg/[0.09] bg-fg/[0.025] px-3.5 py-3 text-[14px] font-medium text-fg/85">
-            {currentName}
-          </p>
-          <p className="mt-2 text-[12px] text-faint">Solo el dueño de la cuenta puede cambiarlo.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <p style={{ margin: 0, padding: "12px 14px", borderRadius: 14, background: "rgba(243,239,230,0.04)", border: "1px solid rgba(243,239,230,0.09)", fontSize: 15, fontWeight: 600 }}>{currentName}</p>
+          <p style={{ margin: 0, fontSize: 12, color: "#8a8278" }}>Solo el dueño de la cuenta puede cambiarlo.</p>
         </div>
       )}
 
@@ -124,17 +112,17 @@ export default function RestaurantNameCard({
         onConfirm={confirm}
         onCancel={cancel}
       >
-        <dl className="mt-4 space-y-2 rounded-xl border border-fg/[0.09] bg-fg/[0.03] p-3.5 text-[13px]">
-          <div className="flex gap-2">
-            <dt className="w-14 shrink-0 text-faint">Antes</dt>
-            <dd className="min-w-0 break-words text-muted line-through decoration-fg/30">{currentName}</dd>
+        <dl className="lbd-cf-diff">
+          <div>
+            <dt>Antes</dt>
+            <dd style={{ textDecoration: "line-through", color: "#8a8278" }}>{currentName}</dd>
           </div>
-          <div className="flex gap-2">
-            <dt className="w-14 shrink-0 text-faint">Ahora</dt>
-            <dd className="min-w-0 break-words font-semibold text-fg">{nextName}</dd>
+          <div>
+            <dt>Ahora</dt>
+            <dd style={{ fontWeight: 650 }}>{nextName}</dd>
           </div>
         </dl>
       </ConfirmModal>
-    </GlassCard>
+    </section>
   );
 }

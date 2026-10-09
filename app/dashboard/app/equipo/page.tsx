@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { requirePlanFeature } from "@/lib/auth/plan";
 import { PLAN_MAX_USERS, staffSeatsLeft } from "@/lib/plans";
 import EquipoManager from "@/components/dashboard/equipo/EquipoManager";
+import PageHeader from "@/components/dashboard/PageHeader";
 import PlanGate from "@/components/dashboard/PlanGate";
 import type { StaffMemberDTO } from "@/lib/actions/staff";
 
@@ -41,10 +42,13 @@ export default async function EquipoPage() {
   const seatsLeft = staffSeatsLeft(plan, members.length);
 
   return (
-    <EquipoManager
-      members={members}
-      maxUsers={PLAN_MAX_USERS[plan] === Infinity ? null : PLAN_MAX_USERS[plan]}
-      seatsLeft={seatsLeft === Infinity ? null : seatsLeft}
-    />
+    <div className="lbd-pg">
+      <PageHeader eyebrow="CONFIGURACIÓN · EQUIPO" title="Equipo" description="Quién entra a tu panel y qué ve. Los mozos solo ven la comanda." />
+      <EquipoManager
+        members={members}
+        maxUsers={PLAN_MAX_USERS[plan] === Infinity ? null : PLAN_MAX_USERS[plan]}
+        seatsLeft={seatsLeft === Infinity ? null : seatsLeft}
+      />
+    </div>
   );
 }
