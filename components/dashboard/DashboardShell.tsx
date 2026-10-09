@@ -1,17 +1,11 @@
 import type { ReactNode } from "react";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import MotionProvider from "@/components/MotionProvider";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
 import Toast from "@/components/dashboard/Toast";
+import { panelFontClasses } from "@/components/dashboard/fonts";
 import type { RestaurantOption } from "@/components/dashboard/RestaurantSwitcher";
 import type { PlanValue } from "@/lib/plans";
-
-// The B design's type pair, loaded for the panel only and re-pointed to the
-// theme's font roles by the `.lbd` block at the end of globals.css.
-const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-lb-display", display: "swap" });
-const text = Geist({ subsets: ["latin"], variable: "--font-lb-text", display: "swap" });
-const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-lb-mono", display: "swap" });
 
 const ROLE_LABELS: Record<string, string> = {
   platform_admin: "Plataforma",
@@ -52,7 +46,7 @@ export default function DashboardShell({
 }) {
   return (
     <MotionProvider>
-      <div data-theme="dark" className={`${display.variable} ${text.variable} ${mono.variable} lbd`}>
+      <div data-theme="dark" className={`${panelFontClasses} lbd`}>
         <div className="lbd-glow" aria-hidden />
         <Sidebar
           userEmail={userEmail}
