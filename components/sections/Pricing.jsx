@@ -151,6 +151,7 @@ export default function Pricing({ as: Heading = "h1" }) {
             );
           })}
         </div>
+        <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 13, lineHeight: 1.5, color: "#8a8278" }}>{p.taxNote}</p>
       </section>
 
       {/* ----------------------------------------------------------- strip */}
@@ -205,6 +206,26 @@ export default function Pricing({ as: Heading = "h1" }) {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------- add-ons */}
+      <section className="lb-pr-block" style={{ paddingTop: 140 }}>
+        <h2 className="lb-h2 lb-reveal" style={{ fontSize: "clamp(36px, 5vw, 64px)", marginBottom: 36 }}>
+          {p.addons.label}
+          <span style={{ color: "#ff5a33" }}>.</span>
+        </h2>
+        <div className="lb-pr-addons">
+          {p.addons.items.map((item) => (
+            <div key={item.name} className="lb-reveal lb-pr-addon">
+              <span style={{ fontSize: 15, color: "#b9b1a5" }}>{item.name}</span>
+              <span className="lb-display" style={{ fontSize: 40, letterSpacing: "-0.05em", lineHeight: 1 }}>
+                {item.price}
+                <span style={{ fontSize: 16, color: "#a39b90", letterSpacing: 0, fontFamily: "var(--font-sans)", fontWeight: 400 }}>{item.unit}</span>
+              </span>
+              <span style={{ marginTop: "auto", fontSize: 15, lineHeight: 1.5, color: "#b9b1a5" }}>{item.copy}</span>
+            </div>
+          ))}
         </div>
       </section>
 
