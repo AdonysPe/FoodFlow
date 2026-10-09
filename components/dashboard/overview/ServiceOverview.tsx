@@ -1,10 +1,8 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { m as motion } from "framer-motion";
 import { buildComparisonPaths } from "@/lib/chart";
-import { EASE } from "@/lib/motion";
 import { formatCurrency, formatSoles } from "@/lib/format";
 import {
   LIVE_STATE_LABELS,
@@ -15,29 +13,15 @@ import {
   type LiveState,
   type OverviewRange,
   type ServiceOverviewData,
+  type TableTile,
 } from "@/lib/serviceOverview";
 
-// The landing's demo panel, grown into the real thing: same panels, same
-// order, same tones — but every figure comes from the restaurant's orders and
-// every colour from the dashboard's theme tokens, so it holds up in light too.
-
-const PANEL = "rounded-xl border border-cream/10 bg-cream/[0.03] shadow-card";
-
-const TONE = {
-  amber: "bg-accent-400/12 text-accent-label ring-accent-400/25",
-  mint: "bg-mint/10 text-mint-ink ring-mint/25",
-  plain: "bg-cream/[0.06] text-muted ring-cream/10",
-} as const;
-
-const LIVE_TONE: Record<LiveState, keyof typeof TONE> = {
-  pending: "plain",
-  preparing: "amber",
-  ready: "mint",
-  served: "mint",
-};
-
-// Same order as the channel list: the house colour first, then quieter.
-const CHANNEL_TONES = ["bg-accent-400", "bg-accent-400/70", "bg-cream/35", "bg-cream/20"];
+// The owner's Resumen, design B ("Noche"), as approved in the prototype: the
+// greeting, today's sales as the hero with its curve, three tiles, what is in
+// the kitchen now, the room and the dishes that sell. Every figure comes from
+// the restaurant's orders, tables and menu; the range switch, the channel mix
+// and the kitchen load are what the panel already had, redrawn in the same
+// cards.
 
 const KPI_LABELS: Record<OverviewRange, string> = {
   "1d": "Ventas de hoy",
@@ -51,149 +35,236 @@ const COMPARED_TO: Record<OverviewRange, string> = {
   "30d": "vs. 30 días anteriores",
 };
 
-// A ticket waiting longer than this gets flagged, like the demo's late card.
+const TOP_LABELS: Record<OverviewRange, string> = {
+  "1d": "Lo más pedido hoy",
+  "7d": "Lo más pedido · 7 días",
+  "30d": "Lo más pedido · 30 días",
+};
+
+// How far along a live order is, for its progress bar. A served dine-in order
+// is done cooking but its table is still open, so its bar is full and quiet.
+const PROGRESS: Record<LiveState, number> = { pending: 12, preparing: 55, ready: 100, served: 100 };
+
+// A ticket waiting longer than this gets flagged.
 const LATE_MINUTES = 20;
+
+const W = 600;
+const H = 170;
+const RING = 176; // circumference of the Mesas ring (r = 28)
+
+function percent(delta: number) {
+  return `${Math.abs(Math.round(delta))}%`;
+}
+
+/** "Mesa 07" → "07", "Terraza 2" → "02", "Barra" → "BAR": what fits a tile. */
+function tileLabel(name: string) {
+  const digits = name.match(/\d+/);
+  return digits ? digits[0].padStart(2, "0").slice(-3) : name.trim().slice(0, 3).toUpperCase();
+}
 
 export default function ServiceOverview({
   data,
   eyebrow,
+  greeting,
+  canComanda,
 }: {
   data: ServiceOverviewData;
   eyebrow: string;
+  greeting: string;
+  canComanda: boolean;
 }) {
   const { kpis, deltas, range } = data;
+  const inProgress = data.live.filter((o) => o.state !== "served").length;
+  const occupied = data.tables.filter((t) => t.state === "busy" || t.state === "bill").length;
+  const toCharge = data.tables.filter((t) => t.state === "bill").length;
+  const free = data.tables.filter((t) => t.state === "free").length;
+  const ringTo = data.tables.length > 0 ? Math.round(RING * (1 - occupied / data.tables.length)) : RING;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="lbd-ov">
       {/* ------------------------------------------------------ header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0">
-          <p className="truncate text-[11px] uppercase tracking-[0.16em] text-faint">{eyebrow}</p>
-          <h1 className="mt-1 font-display text-[1.4rem] font-semibold tracking-[-0.01em] text-fg sm:text-[1.6rem]">
-            Resumen del servicio
+      <div className="lbd-ov-head lbd-rise">
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+          <span style={{ fontSize: 14, color: "#a39b90" }}>{eyebrow}</span>
+          <h1 className="lbd-ov-h1">
+            {greeting}
+            <span style={{ color: "#ff5a33" }}>.</span>
           </h1>
         </div>
-
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-mint/10 px-2.5 py-1 text-[10.5px] font-semibold tracking-wide text-mint-ink ring-1 ring-mint/20">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint" />
-            EN VIVO
-          </span>
-          <nav className="flex gap-1 rounded-lg border border-cream/10 bg-cream/[0.03] p-1" aria-label="Rango">
+        <div className="lbd-ov-actions">
+          {data.demo && <span className="lbd-ov-chip">Datos de demostración</span>}
+          <nav className="lbd-seg" aria-label="Rango">
             {OVERVIEW_RANGES.map((r) => (
-              <Link
-                key={r}
-                href={`/dashboard/app/overview?range=${r}`}
-                scroll={false}
-                aria-current={r === range ? "page" : undefined}
-                className={`rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors ${
-                  r === range ? "bg-cream/[0.1] text-fg" : "text-muted hover:text-fg"
-                }`}
-              >
+              <Link key={r} href={`/dashboard/app/overview?range=${r}`} scroll={false} aria-current={r === range ? "page" : undefined} className={r === range ? "is-on" : undefined}>
                 {RANGE_CHIPS[r]}
               </Link>
             ))}
           </nav>
-        </div>
-      </div>
-
-      {data.demo && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-accent-400/25 bg-accent-400/[0.07] px-4 py-3 text-[13px]">
-          <span className="font-semibold text-accent-label">Datos de ejemplo</span>
-          <span className="text-muted">
-            Así se verá tu resumen. Con tu primer pedido, estas cifras pasan a ser las tuyas.
+          <span className="lbd-ov-live">
+            <i className="lbd-pulse" aria-hidden />
+            En vivo
           </span>
+          {canComanda && (
+            <Link href="/dashboard/comanda" className="lbd-ov-cta">
+              Nueva comanda
+            </Link>
+          )}
         </div>
-      )}
-
-      {/* -------------------------------------------------------- KPIs */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Kpi i={0} label={KPI_LABELS[range]} value={formatSoles(kpis.sales)} delta={deltas.sales} />
-        <Kpi i={1} label="Pedidos" value={kpis.orders.toLocaleString("es-PE")} delta={deltas.orders} />
-        <Kpi i={2} label="Ticket promedio" value={formatCurrency(kpis.avgTicket)} delta={deltas.avgTicket} />
-        <Kpi
-          i={3}
-          label="Tiempo de cocina"
-          value={kpis.kitchenSeconds != null ? formatKitchenTime(kpis.kitchenSeconds) : "—"}
-          delta={deltas.kitchen}
-          // Faster is better here, so a drop is the good news.
-          lowerIsBetter
-        />
       </div>
 
-      {/* ------------------------------------------- chart + channels */}
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <SalesChart data={data} />
+      {/* ------------------------------------- sales hero + three tiles */}
+      <div className="lbd-ov-row">
+        <SalesHero data={data} />
+
+        <div className="lbd-ov-stack">
+          <div className="lbd-card lbd-rise lbd-ov-tile" style={{ animationDelay: ".14s" }}>
+            <div className="lbd-ov-tile-main">
+              <span className="lbd-ov-label">Pedidos</span>
+              <span className="lbd-ov-num">{kpis.orders.toLocaleString("es-PE")}</span>
+            </div>
+            <span className="lbd-ov-aside">
+              {inProgress} en curso
+              <br />
+              ahora
+              {deltas.orders != null && <Delta value={deltas.orders} small />}
+            </span>
+          </div>
+
+          <div className="lbd-card lbd-rise lbd-ov-tile" style={{ animationDelay: ".2s" }}>
+            <div className="lbd-ov-tile-main">
+              <span className="lbd-ov-label">Ticket medio</span>
+              <span className="lbd-ov-num">{formatCurrency(kpis.avgTicket)}</span>
+            </div>
+            {deltas.avgTicket != null && (
+              <span className="lbd-ov-aside">
+                <Delta value={deltas.avgTicket} small />
+              </span>
+            )}
+          </div>
+
+          <div className="lbd-card lbd-rise lbd-ov-tile" style={{ animationDelay: ".26s" }}>
+            <div className="lbd-ov-tile-main">
+              <span className="lbd-ov-label">Mesas ocupadas</span>
+              {data.tables.length > 0 ? (
+                <span className="lbd-ov-num">
+                  {occupied}
+                  <span style={{ color: "#6f675e" }}>/{data.tables.length}</span>
+                </span>
+              ) : (
+                <Link href="/dashboard/app/mesas" className="lbd-ov-link" style={{ fontSize: 14 }}>
+                  Configura tus mesas ›
+                </Link>
+              )}
+            </div>
+            <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true" style={{ flexShrink: 0 }}>
+              <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(243,239,230,0.1)" strokeWidth="6" />
+              <circle className="lbd-ring" cx="32" cy="32" r="28" fill="none" stroke="#f3efe6" strokeWidth="6" strokeLinecap="round" transform="rotate(-90 32 32)" style={{ "--ring-to": ringTo } as CSSProperties} />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------- in progress, the room, what sells */}
+      <div className="lbd-ov-row">
+        <section className="lbd-card lbd-rise lbd-ov-panel" style={{ animationDelay: ".32s" }} aria-label="Pedidos en curso">
+          <div className="lbd-ov-panel-head">
+            <span className="lbd-ov-title">En curso</span>
+            <Link href="/dashboard/app/kitchen" className="lbd-ov-link">
+              Ver cocina ›
+            </Link>
+          </div>
+          {data.live.length === 0 ? (
+            <p className="lbd-ov-empty">Nada en marcha ahora. Los pedidos nuevos aparecen aquí al instante.</p>
+          ) : (
+            data.live.slice(0, 5).map((o) => {
+              const late = o.state !== "served" && o.minutes >= LATE_MINUTES;
+              return (
+                <div key={o.id} className="lbd-ov-live-row">
+                  <div className="lbd-ov-live-line">
+                    <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span className="lbd-mono" style={{ color: "#a39b90" }}>
+                        {o.origin}
+                      </span>
+                      {"  "}
+                      {o.items || "—"}
+                    </span>
+                    <span style={{ flexShrink: 0, color: o.state === "ready" || late ? "#ff7a57" : "#a39b90", fontWeight: o.state === "ready" || late ? 550 : 400 }}>
+                      {LIVE_STATE_LABELS[o.state]} · {formatElapsed(o.minutes)}
+                    </span>
+                  </div>
+                  <div className="lbd-track">
+                    <div className="lbd-bar" style={{ width: `${PROGRESS[o.state]}%`, background: o.state === "ready" ? "#ff5a33" : "#f3efe6", opacity: o.state === "served" ? 0.4 : 1 }} />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </section>
+
+        <section className="lbd-card lbd-rise lbd-ov-panel" style={{ animationDelay: ".38s" }} aria-label="Salón">
+          <div className="lbd-ov-panel-head">
+            <span className="lbd-ov-title">Salón</span>
+            <span style={{ fontSize: 12, color: "#a39b90" }}>
+              {data.tables.length === 0 ? "Sin mesas" : toCharge > 0 ? `${toCharge} por cobrar` : `${free} libres`}
+            </span>
+          </div>
+          {data.tables.length === 0 ? (
+            <p className="lbd-ov-empty">
+              Aún no hay mesas en el plano. <Link href="/dashboard/app/mesas" className="lbd-ov-link">Crear mesas ›</Link>
+            </p>
+          ) : (
+            <div className="lbd-tables">
+              {data.tables.slice(0, 35).map((t, i) => (
+                <TableChip key={`${t.name}-${i}`} table={t} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="lbd-card lbd-rise lbd-ov-panel" style={{ animationDelay: ".44s" }} aria-label="Lo más pedido">
+          <span className="lbd-ov-title">{TOP_LABELS[range]}</span>
+          {data.top.length === 0 ? (
+            <p className="lbd-ov-empty">Aún no hay pedidos en este rango.</p>
+          ) : (
+            <div className="lbd-top3">
+              {data.top.map((item) => (
+                <div key={item.name} className="lbd-top3-item">
+                  {item.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.photoUrl} alt={item.name} loading="lazy" className="lbd-top3-photo" />
+                  ) : (
+                    <span className="lbd-top3-photo lbd-top3-photo--blank" aria-hidden>
+                      {item.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="lbd-top3-name" title={item.name}>
+                    {item.name}
+                  </span>
+                  <span className="lbd-display" style={{ fontSize: 22 }}>
+                    {item.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* ------------------------------------ channels + kitchen load */}
+      <div className="lbd-ov-row">
         <Channels data={data} />
-      </div>
-
-      {/* ---------------------------------------- live orders + kitchen */}
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <LiveOrders data={data} />
         <KitchenLoad data={data} />
       </div>
 
-      {data.demo && (
-        <p className="text-[12px] text-faint">
-          Panel de demostración. Las cifras son de ejemplo hasta que registres pedidos.
-        </p>
-      )}
+      {data.demo && <p style={{ margin: 0, fontSize: 12, color: "#8a8278" }}>Panel de demostración. Las cifras son de ejemplo hasta que registres pedidos.</p>}
     </div>
   );
 }
 
-/* ---------------------------------------------------------------- KPI */
+/* ------------------------------------------------------------ sales hero */
 
-function Kpi({
-  i,
-  label,
-  value,
-  delta,
-  lowerIsBetter = false,
-}: {
-  i: number;
-  label: string;
-  value: string;
-  delta: number | null;
-  lowerIsBetter?: boolean;
-}) {
-  const good = delta != null && (lowerIsBetter ? delta <= 0 : delta >= 0);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: EASE, delay: 0.05 * i }}
-      className={`${PANEL} p-4`}
-    >
-      <p className="truncate text-[11px] uppercase tracking-[0.12em] text-faint">{label}</p>
-      <p className="mt-2 truncate font-display text-[1.35rem] font-semibold tabular-nums text-fg sm:text-[1.5rem]">
-        {value}
-      </p>
-      {delta != null ? (
-        <p
-          className={`mt-1.5 inline-flex items-center gap-1 text-[12px] font-medium tabular-nums ${
-            good ? "text-mint-ink" : "text-accent-label"
-          }`}
-        >
-          <TrendIcon down={delta < 0} />
-          {delta >= 0 ? "+" : "−"}
-          {Math.abs(delta).toFixed(1)}%
-        </p>
-      ) : (
-        <p className="mt-1.5 text-[12px] text-faint">Sin comparación aún</p>
-      )}
-    </motion.div>
-  );
-}
-
-/* -------------------------------------------------------------- chart */
-
-const W = 560;
-const H = 150;
-
-function SalesChart({ data }: { data: ServiceOverviewData }) {
-  const uid = useId().replace(/:/g, "");
+function SalesHero({ data }: { data: ServiceOverviewData }) {
+  const { range, kpis, deltas } = data;
   const [hover, setHover] = useState<number | null>(null);
   const { line, area, prevLine } = buildComparisonPaths(data.series, data.previous, W, H, 10);
   const n = data.series.length;
@@ -208,319 +279,149 @@ function SalesChart({ data }: { data: ServiceOverviewData }) {
   const pct = hover != null && n > 1 ? (hover / (n - 1)) * 100 : 50;
 
   return (
-    <div className={`${PANEL} p-4 sm:p-5`}>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] font-medium text-fg/85">Ventas</p>
-        <div className="flex items-center gap-3 text-[11.5px] text-faint">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-0.5 w-4 rounded-full bg-linear-to-r from-[#ffc184] to-accent-400" />
-            Actual
+    <section className="lbd-card lbd-card--glass lbd-rise lbd-ov-hero" style={{ animationDelay: ".08s" }} aria-label={KPI_LABELS[range]}>
+      <div className="lbd-ov-hero-top">
+        <span style={{ fontSize: 14, color: "#a39b90" }}>{KPI_LABELS[range]}</span>
+        {deltas.sales != null && (
+          <span style={{ fontSize: 13, color: deltas.sales >= 0 ? "#3ddc97" : "#ff7a57", fontWeight: 550 }}>
+            {deltas.sales >= 0 ? "↑" : "↓"} {percent(deltas.sales)} {COMPARED_TO[range]}
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-4 border-t border-dashed border-cream/35" />
-            {COMPARED_TO[data.range]}
-          </span>
-        </div>
+        )}
       </div>
+      <span className="lbd-display lbd-ov-big">{formatSoles(kpis.sales)}</span>
 
-      <div
-        className="relative"
-        onPointerMove={onMove}
-        onPointerLeave={() => setHover(null)}
-      >
-        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-36 w-full sm:h-44" aria-hidden>
-          <defs>
-            <linearGradient id={`fill-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff5a33" stopOpacity="0.42" />
-              <stop offset="100%" stopColor="#ff5a33" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id={`stroke-${uid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#ffc184" />
-              <stop offset="100%" stopColor="#ff5a33" />
-            </linearGradient>
-          </defs>
-
-          {[0, 1, 2, 3].map((i) => (
-            <line
-              key={i}
-              x1="0"
-              x2={W}
-              y1={12 + i * 42}
-              y2={12 + i * 42}
-              className="stroke-cream/[0.06]"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-
-          {prevLine && (
-            <path
-              d={prevLine}
-              fill="none"
-              className="stroke-cream/30"
-              strokeWidth="1.5"
-              strokeDasharray="5 5"
-              vectorEffect="non-scaling-stroke"
-            />
-          )}
-          <motion.path
-            key={`a-${area}`}
-            d={area}
-            fill={`url(#fill-${uid})`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, ease: EASE }}
-          />
-          <motion.path
-            key={`l-${line}`}
-            d={line}
-            fill="none"
-            stroke={`url(#stroke-${uid})`}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            vectorEffect="non-scaling-stroke"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.1, ease: EASE }}
-          />
+      <div className="lbd-ov-chart" onPointerMove={onMove} onPointerLeave={() => setHover(null)}>
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="170" aria-hidden="true" style={{ display: "block" }}>
+          {prevLine && <path d={prevLine} fill="none" stroke="rgba(243,239,230,0.28)" strokeWidth="1.5" strokeDasharray="5 5" vectorEffect="non-scaling-stroke" />}
+          <path key={`a-${range}`} className="lbd-area" d={area} fill="rgba(255,90,51,0.12)" />
+          <path key={`l-${range}`} className="lbd-line" d={line} fill="none" stroke="#ff5a33" strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         </svg>
 
-        {empty && (
-          <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-[13px] text-faint">
-            Aún no hay ventas en este rango.
-          </p>
-        )}
+        {empty && <p className="lbd-ov-chart-empty">Aún no hay ventas en este rango.</p>}
 
         {hover != null && !empty && (
           <>
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-y-0 w-px bg-cream/25"
-              style={{ left: `${pct}%` }}
-            />
-            <div
-              className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 rounded-lg border border-cream/10 bg-ink-900/95 px-2.5 py-1.5 text-[11.5px] shadow-card backdrop-blur"
-              style={{ left: `clamp(56px, ${pct}%, calc(100% - 56px))` }}
-            >
-              <p className="text-faint">{data.labels[hover]}</p>
-              <p className="font-semibold tabular-nums text-fg">
-                {formatSoles(data.series[hover] ?? 0)}
-              </p>
-              <p className="tabular-nums text-faint">antes {formatSoles(data.previous[hover] ?? 0)}</p>
+            <span aria-hidden className="lbd-ov-cursor" style={{ left: `${pct}%` }} />
+            <div className="lbd-ov-tip" style={{ left: `clamp(60px, ${pct}%, calc(100% - 60px))` }}>
+              <span style={{ color: "#a39b90" }}>{data.labels[hover]}</span>
+              <strong>{formatSoles(data.series[hover] ?? 0)}</strong>
+              <span style={{ color: "#8a8278" }}>antes {formatSoles(data.previous[hover] ?? 0)}</span>
             </div>
           </>
         )}
       </div>
 
-      <div className="mt-2 flex justify-between text-[11px] text-faint">
+      <div className="lbd-ov-axis lbd-mono">
         {data.axis.map((lbl, i) => (
           <span key={`${lbl}-${i}`}>{lbl}</span>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
-/* ----------------------------------------------------------- channels */
+/* ----------------------------------------------------------- the pieces */
+
+function Delta({ value, small, lowerIsBetter }: { value: number; small?: boolean; lowerIsBetter?: boolean }) {
+  const good = lowerIsBetter ? value <= 0 : value >= 0;
+  return (
+    <span style={{ display: "block", marginTop: small ? 6 : 0, fontSize: 12, color: good ? "#3ddc97" : "#ff7a57", fontWeight: 550 }}>
+      {value >= 0 ? "↑" : "↓"} {percent(value)}
+    </span>
+  );
+}
+
+function TableChip({ table }: { table: TableTile }) {
+  const label = { free: "libre", busy: "ocupada", bill: "por cobrar", reserved: "reservada" }[table.state];
+  return (
+    <span className={`lbd-table lbd-table--${table.state}`} title={`${table.name} · ${label}`}>
+      {tileLabel(table.name)}
+    </span>
+  );
+}
 
 function Channels({ data }: { data: ServiceOverviewData }) {
   const total = data.channels.reduce((acc, c) => acc + c.count, 0);
-
   return (
-    <div className={`${PANEL} p-4 sm:p-5`}>
-      <div className="mb-4 flex items-center justify-between">
-        <p className="text-[13px] font-medium text-fg/85">Pedidos por canal</p>
-        <span className="text-[11.5px] tabular-nums text-faint">{total} pedidos</span>
+    <section className="lbd-card lbd-rise lbd-ov-panel" style={{ animationDelay: ".5s" }} aria-label="Pedidos por canal">
+      <div className="lbd-ov-panel-head">
+        <span className="lbd-ov-title">Pedidos por canal</span>
+        <span style={{ fontSize: 12, color: "#a39b90" }}>{total} pedidos</span>
       </div>
-      <div className="space-y-3.5">
-        {data.channels.map((c, i) => {
-          const share = total > 0 ? Math.round((c.count / total) * 100) : 0;
-          return (
-            <div key={c.key}>
-              <div className="mb-1.5 flex justify-between text-[12px]">
-                <span className="text-muted">{c.label}</span>
-                <span className="tabular-nums text-faint">
-                  {c.count} · {share}%
-                </span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-cream/[0.07]">
-                <motion.div
-                  className={`h-full rounded-full ${CHANNEL_TONES[i]}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${share}%` }}
-                  transition={{ duration: 0.9, ease: EASE, delay: 0.1 + i * 0.08 }}
-                />
-              </div>
+      {data.channels.map((c, i) => {
+        const share = total > 0 ? Math.round((c.count / total) * 100) : 0;
+        return (
+          <div key={c.key} className="lbd-ov-live-row">
+            <div className="lbd-ov-live-line">
+              <span>{c.label}</span>
+              <span style={{ color: "#a39b90" }}>
+                {c.count} · {share}%
+              </span>
             </div>
-          );
-        })}
-      </div>
-    </div>
+            <div className="lbd-track">
+              <div className="lbd-bar" style={{ width: `${share}%`, background: i === 0 ? "#ff5a33" : i === 1 ? "rgba(255,90,51,0.65)" : "rgba(243,239,230,0.45)", animationDelay: `${0.5 + i * 0.08}s` }} />
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }
-
-/* -------------------------------------------------------- live orders */
-
-function LiveOrders({ data }: { data: ServiceOverviewData }) {
-  const rows = data.live.slice(0, 6);
-
-  return (
-    <div className={`${PANEL} p-4 sm:p-5`}>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-[13px] font-medium text-fg/85">Pedidos en vivo</p>
-        {data.demo ? (
-          <span className="text-[11.5px] text-faint">Actualizado hace un momento</span>
-        ) : (
-          <Link
-            href="/dashboard/app/orders"
-            className="text-[12px] font-medium text-accent-icon hover:text-accent-ink"
-          >
-            Ver todos{data.live.length > rows.length ? ` (${data.live.length})` : ""}
-          </Link>
-        )}
-      </div>
-
-      {rows.length === 0 ? (
-        <p className="py-8 text-center text-[13px] text-faint">
-          Nada en marcha ahora. Los pedidos nuevos aparecen aquí al instante.
-        </p>
-      ) : (
-        <div className="space-y-1">
-          {rows.map((o, i) => {
-            const late = o.state !== "served" && o.minutes >= LATE_MINUTES;
-            return (
-              <motion.div
-                key={o.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, ease: EASE, delay: 0.08 + i * 0.05 }}
-                className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-cream/[0.04]"
-              >
-                <span className="w-24 shrink-0 truncate text-[13px] font-medium text-fg/85 sm:w-28">
-                  {o.origin}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted">
-                  {o.items || "—"}
-                </span>
-                <span
-                  className={`shrink-0 text-[11.5px] tabular-nums ${
-                    late ? "font-semibold text-accent-label" : "text-faint"
-                  }`}
-                >
-                  {formatElapsed(o.minutes)}
-                </span>
-                <StatePill tone={LIVE_TONE[o.state]}>{LIVE_STATE_LABELS[o.state]}</StatePill>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------- kitchen load */
 
 function KitchenLoad({ data }: { data: ServiceOverviewData }) {
   const { pending, preparing, ready } = data.kitchen;
   const total = pending + preparing + ready;
   const segments = [
-    { label: "En cola", count: pending, className: "bg-cream/30" },
-    { label: "Preparando", count: preparing, className: "bg-accent-400" },
-    { label: "Listos", count: ready, className: "bg-mint" },
+    { label: "En cola", count: pending, color: "rgba(243,239,230,0.4)" },
+    { label: "Preparando", count: preparing, color: "#ff5a33" },
+    { label: "Listos", count: ready, color: "#3ddc97" },
   ];
 
   return (
-    <div className={`${PANEL} flex flex-col p-4 sm:p-5`}>
-      <div className="flex items-center justify-between">
-        <p className="text-[13px] font-medium text-fg/85">Carga de cocina</p>
-        {!data.demo && (
-          <Link
-            href="/dashboard/app/kitchen"
-            className="text-[12px] font-medium text-accent-icon hover:text-accent-ink"
-          >
-            Abrir cocina
-          </Link>
-        )}
+    <section className="lbd-card lbd-rise lbd-ov-panel" style={{ animationDelay: ".56s" }} aria-label="Carga de cocina">
+      <div className="lbd-ov-panel-head">
+        <span className="lbd-ov-title">Cocina</span>
+        <Link href="/dashboard/app/kitchen" className="lbd-ov-link">
+          Abrir cocina ›
+        </Link>
       </div>
 
-      <p className="mt-3 font-display text-[1.6rem] font-semibold tabular-nums text-fg">
-        {pending + preparing}
-        <span className="ml-2 font-sans text-[13px] font-normal text-faint">
-          {pending + preparing === 1 ? "ticket en marcha" : "tickets en marcha"}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
+        <span className="lbd-display" style={{ fontSize: 36, letterSpacing: "-0.05em", lineHeight: 1 }}>
+          {pending + preparing}
+          <span style={{ marginLeft: 8, fontFamily: "var(--font-sans)", fontSize: 13, fontWeight: 400, letterSpacing: 0, color: "#a39b90" }}>
+            {pending + preparing === 1 ? "ticket en marcha" : "tickets en marcha"}
+          </span>
         </span>
-      </p>
+        <span style={{ fontSize: 13, color: "#cfc7bb", textAlign: "right" }}>
+          Tiempo de cocina{" "}
+          <strong className="lbd-mono" style={{ color: "#f3efe6", fontWeight: 600 }}>
+            {data.kpis.kitchenSeconds != null ? formatKitchenTime(data.kpis.kitchenSeconds) : "—"}
+          </strong>
+          {data.deltas.kitchen != null && <Delta value={data.deltas.kitchen} lowerIsBetter />}
+        </span>
+      </div>
 
-      <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-cream/[0.07]">
+      <div className="lbd-track lbd-track--thick" style={{ display: "flex" }}>
         {total > 0 &&
-          segments.map((s, i) => (
-            <motion.div
-              key={s.label}
-              className={`h-full ${s.className}`}
-              initial={{ width: 0 }}
-              animate={{ width: `${(s.count / total) * 100}%` }}
-              transition={{ duration: 0.9, ease: EASE, delay: 0.2 + i * 0.08 }}
-            />
+          segments.map((s) => (
+            <div key={s.label} className="lbd-bar" style={{ width: `${(s.count / total) * 100}%`, background: s.color, borderRadius: 0 }} />
           ))}
       </div>
 
-      <dl className="mt-4 grid grid-cols-3 gap-2">
+      <dl className="lbd-kitchen-legend">
         {segments.map((s) => (
-          <div key={s.label} className="rounded-lg bg-cream/[0.03] px-2.5 py-2">
-            <dt className="flex items-center gap-1.5 text-[11px] text-faint">
-              <span className={`h-1.5 w-1.5 rounded-full ${s.className}`} />
+          <div key={s.label}>
+            <dt>
+              <i style={{ background: s.color }} />
               {s.label}
             </dt>
-            <dd className="mt-0.5 font-display text-[1.05rem] font-semibold tabular-nums text-fg">
-              {s.count}
-            </dd>
+            <dd className="lbd-display">{s.count}</dd>
           </div>
         ))}
       </dl>
 
-      {ready > 0 && (
-        <p className="mt-3 text-[12px] text-mint-ink">
-          {ready === 1 ? "1 pedido listo esperando salir." : `${ready} pedidos listos esperando salir.`}
-        </p>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------- pieces */
-
-function StatePill({ tone, children }: { tone: keyof typeof TONE; children: ReactNode }) {
-  return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${TONE[tone]}`}
-    >
-      {children}
-    </span>
-  );
-}
-
-function TrendIcon({ down }: { down: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 12 12"
-      className={`h-3 w-3 ${down ? "-scale-y-100" : ""}`}
-      fill="none"
-      aria-hidden
-    >
-      <path
-        d="M2 8.5 5 5l2 2 3-3.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7.5 3.5H10V6"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+      {ready > 0 && <p style={{ margin: 0, fontSize: 12, color: "#3ddc97" }}>{ready === 1 ? "1 pedido listo esperando salir." : `${ready} pedidos listos esperando salir.`}</p>}
+    </section>
   );
 }

@@ -5,7 +5,7 @@ import CartaOverview from "@/components/dashboard/CartaOverview";
 import ServiceOverview from "@/components/dashboard/overview/ServiceOverview";
 import { loadServiceOverview } from "@/lib/db/serviceOverview";
 import { demoOverview, parseOverviewRange } from "@/lib/serviceOverview";
-import type { PlanValue } from "@/lib/plans";
+import { planAllows } from "@/lib/plans";
 
 export const metadata = {
   title: "Resumen",
@@ -68,16 +68,18 @@ export default async function OverviewPage({
     : demoOverview(range, now);
 
   const period = range === "1d" ? "Hoy" : range === "7d" ? "Últimos 7 días" : "Últimos 30 días";
-  const eyebrow = data.demo
-    ? `${period} · datos de demostración`
-    : range === "1d"
-      ? `Hoy · ${now.toLocaleDateString("es-PE", { timeZone: "America/Lima", weekday: "long", day: "numeric", month: "long" })}`
-      : period;
+  // Lima has no daylight saving: a fixed UTC-5 offset gives its wall clock.
+  const limaHour = new Date(now.getTime() - 5 * 60 * 60 * 1000).getUTCHours();
+  const greeting = limaHour < 12 ? "Buenos días" : limaHour < 19 ? "Buenas tardes" : "Buenas noches";
+  const turn = limaHour < 12 ? "mañana" : limaHour < 19 ? "tarde" : "noche";
+  const today = now.toLocaleDateString("es-PE", { timeZone: "America/Lima", weekday: "long", day: "numeric", month: "long" });
+  const dateLine = today.charAt(0).toUpperCase() + today.slice(1);
+  const eyebrow = range === "1d" ? `${dateLine} · turno ${turn}` : `${period} · hasta hoy`;
 
   return (
     <>
       <AutoRefresh intervalMs={10000} />
-      <ServiceOverview data={data} eyebrow={eyebrow} />
+      <ServiceOverview data={data} eyebrow={eyebrow} greeting={greeting} canComanda={planAllows(plan, "comanda")} />
     </>
   );
 }
