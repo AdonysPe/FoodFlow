@@ -2,37 +2,65 @@
 
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { useId, useState } from "react";
-import { AnimatePresence, m } from "framer-motion";
-import { IconCheck, IconEye, IconEyeOff } from "@/components/ui/Icons";
+import { IconArrowRight, IconCheck, IconEye, IconEyeOff } from "@/components/ui/Icons";
 
-export function AuthCard({ title, description, children, footer }: { title: string; description?: string; children: ReactNode; footer?: ReactNode }) {
+/*
+ * The pieces of every auth form, design B ("Noche"): the glass card, the
+ * fields, the checkboxes, the alert and the button. Styles are the `lb-lg-*`
+ * rules at the end of globals.css; the frame around them is AuthPageShell.
+ */
+
+export function AuthCard({
+  title,
+  description,
+  children,
+  footer,
+  shake,
+  onShakeEnd,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+  footer?: ReactNode;
+  shake?: boolean;
+  onShakeEnd?: () => void;
+}) {
   return (
-    <m.section initial={{ opacity: 0, y: 22, filter: "blur(10px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} className="auth-card relative overflow-hidden rounded-2xl p-6 shadow-panel sm:p-9">
-      <div aria-hidden className="absolute inset-x-8 top-0 h-px hairline-top opacity-80" />
-      <div className="relative">
-        <h1 className="max-w-[18ch] font-display text-[clamp(1.75rem,5vw,2.2rem)] font-bold leading-[1.08] tracking-[-0.035em] text-fg">{title}</h1>
-        {description ? <p className="mt-3 max-w-[44ch] text-[14px] leading-6 text-muted">{description}</p> : null}
-        {children}
-        {footer ? <div className="mt-7 border-t border-fg/[0.07] pt-5">{footer}</div> : null}
+    <section className={`lb-lg-card${shake ? " shake" : ""}`} onAnimationEnd={(event) => event.animationName.includes("shake") && onShakeEnd?.()}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <h1 className="lb-lg-card-title">{title}</h1>
+        {description ? <p className="lb-lg-desc">{description}</p> : null}
       </div>
-    </m.section>
+      {children}
+      {footer ? <p className="lb-lg-foot">{footer}</p> : null}
+    </section>
   );
 }
 
-type AuthFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "className"> & { label: string; icon?: ReactNode; labelAction?: ReactNode; endAction?: ReactNode; hint?: string };
+type AuthFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "className"> & {
+  label: string;
+  icon?: ReactNode;
+  labelAction?: ReactNode;
+  endAction?: ReactNode;
+  hint?: string;
+  invalid?: boolean;
+};
 
-export function AuthField({ label, icon, labelAction, endAction, hint, id, ...inputProps }: AuthFieldProps) {
+export function AuthField({ label, icon, labelAction, endAction, hint, invalid, id, ...inputProps }: AuthFieldProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between gap-4"><label htmlFor={inputId} className="text-[13px] font-semibold text-fg/75">{label}</label>{labelAction}</div>
-      <div className="group relative">
-        {icon ? <span className="pointer-events-none absolute inset-y-0 left-0 grid w-11 place-items-center text-faint transition-colors group-focus-within:text-accent-icon">{icon}</span> : null}
-        <input id={inputId} className={`h-12 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.035] text-[15px] text-fg caret-accent-400 outline-none transition-[border-color,background-color,box-shadow] duration-200 placeholder:text-faint hover:border-fg/[0.16] focus:border-accent-400/55 focus:bg-fg/[0.055] focus:ring-4 focus:ring-accent-400/10 disabled:cursor-not-allowed disabled:opacity-55 ${icon ? "pl-11" : "pl-4"} ${endAction ? "pr-12" : "pr-4"}`} {...inputProps} />
-        {endAction ? <span className="absolute inset-y-0 right-0 grid w-12 place-items-center">{endAction}</span> : null}
+    <div className="lb-lg-field">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+        <label htmlFor={inputId}>{label}</label>
+        {labelAction}
       </div>
-      {hint ? <p className="mt-1.5 text-[12px] leading-5 text-faint">{hint}</p> : null}
+      <div className={`lb-lg-input${endAction ? " lb-lg-input--end" : ""}${invalid ? " is-bad" : ""}`}>
+        {icon}
+        <input id={inputId} aria-invalid={invalid ? true : undefined} {...inputProps} />
+        {endAction}
+      </div>
+      {hint ? <span className="lb-lg-hint">{hint}</span> : null}
     </div>
   );
 }
@@ -41,12 +69,35 @@ type PasswordFieldProps = Omit<AuthFieldProps, "type" | "endAction">;
 
 export function PasswordField(props: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
-  return <AuthField {...props} type={visible ? "text" : "password"} endAction={<button type="button" onClick={() => setVisible((current) => !current)} className="grid h-10 w-10 place-items-center rounded-lg text-faint outline-none transition-colors hover:bg-fg/[0.06] hover:text-fg focus-visible:ring-2 focus-visible:ring-accent-400/70" aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"} aria-pressed={visible}>{visible ? <IconEyeOff className="h-[18px] w-[18px]" /> : <IconEye className="h-[18px] w-[18px]" />}</button>} />;
+  return (
+    <AuthField
+      {...props}
+      type={visible ? "text" : "password"}
+      endAction={
+        <button type="button" className="lb-lg-eye" onClick={() => setVisible((current) => !current)} aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"} aria-pressed={visible}>
+          {visible ? <IconEyeOff className="h-[18px] w-[18px]" /> : <IconEye className="h-[18px] w-[18px]" />}
+        </button>
+      }
+    />
+  );
 }
 
 export function PasswordRules({ password }: { password: string }) {
-  const rules = [{ label: "8 caracteres", valid: password.length >= 8 }, { label: "Una mayúscula", valid: /[A-Z]/.test(password) }, { label: "Un número", valid: /\d/.test(password) }];
-  return <ul className="grid grid-cols-2 gap-x-3 gap-y-2" aria-label="Requisitos de contraseña">{rules.map(({ label, valid }) => <li key={label} className={`flex items-center gap-1.5 text-[11.5px] transition-colors ${valid ? "text-mint-ink" : "text-faint"}`}><span className={`grid h-4 w-4 place-items-center rounded-full border ${valid ? "border-mint/35 bg-mint/10" : "border-fg/[0.12]"}`}>{valid ? <IconCheck className="h-2.5 w-2.5" /> : null}</span>{label}</li>)}</ul>;
+  const rules = [
+    { label: "8 caracteres", valid: password.length >= 8 },
+    { label: "Una mayúscula", valid: /[A-Z]/.test(password) },
+    { label: "Un número", valid: /\d/.test(password) },
+  ];
+  return (
+    <ul className="lb-lg-rules" aria-label="Requisitos de contraseña">
+      {rules.map(({ label, valid }) => (
+        <li key={label} className={valid ? "is-ok" : undefined}>
+          <span aria-hidden>{valid ? <IconCheck className="h-2.5 w-2.5" /> : null}</span>
+          {label}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 type ConsentCheckboxProps = {
@@ -60,25 +111,16 @@ type ConsentCheckboxProps = {
 
 // Required, never pre-ticked — Ley 29733 asks for consent that is prior,
 // express and informed. Same UX contract as the lead-capture form's consent
-// box (components/lead/LeadForm.jsx), redrawn with this file's light/dark
-// tokens instead of the landing page's cream/accent-ink set.
+// box (components/lead/LeadForm.jsx), redrawn in the night design.
 export function ConsentCheckbox({ id, checked, onChange, error, errorMessage, children }: ConsentCheckboxProps) {
   return (
     <div>
-      <label htmlFor={id} className="flex cursor-pointer items-start gap-3 text-[13px] leading-relaxed text-muted">
-        <input
-          id={id}
-          type="checkbox"
-          checked={checked}
-          onChange={(event) => onChange(event.target.checked)}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-error` : undefined}
-          className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-accent-400"
-        />
-        <span>{children}</span>
+      <label htmlFor={id} className="lb-lg-checkrow">
+        <input id={id} type="checkbox" className="lb-lg-check" checked={checked} onChange={(event) => onChange(event.target.checked)} aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} />
+        <span style={{ fontSize: 13, lineHeight: 1.55, color: "#b9b1a5" }}>{children}</span>
       </label>
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-1.5 pl-[30px] text-[12px] font-medium text-warn-ink">
+        <p id={`${id}-error`} role="alert" className="lb-lg-fielderror">
           {errorMessage ?? "Debes aceptar para continuar."}
         </p>
       ) : null}
@@ -96,33 +138,58 @@ type RememberCheckboxProps = {
 };
 
 // An opt-in, never pre-ticked: staying signed in is a decision about one
-// device, and the safe default on a shared tablet is to forget. Same box as the
-// consent checkbox above so the two sit together in the auth forms, but this
-// one carries no legal meaning and nothing about it is required.
+// device, and the safe default on a shared tablet is to forget. It carries no
+// legal meaning and nothing about it is required.
 export function RememberCheckbox({ id, checked, onChange, disabled, label, hint }: RememberCheckboxProps) {
   return (
-    <div>
-      <label htmlFor={id} className={`flex items-start gap-3 text-[13.5px] font-medium leading-snug text-fg/80 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
-        <input
-          id={id}
-          type="checkbox"
-          checked={checked}
-          disabled={disabled}
-          onChange={(event) => onChange(event.target.checked)}
-          aria-describedby={hint ? `${id}-hint` : undefined}
-          className="mt-px h-[18px] w-[18px] shrink-0 cursor-pointer accent-accent-400 disabled:cursor-not-allowed"
-        />
-        <span>{label}</span>
-      </label>
-      {hint ? <p id={`${id}-hint`} className="mt-1 pl-[30px] text-[12px] leading-5 text-faint">{hint}</p> : null}
+    <label htmlFor={id} className="lb-lg-checkrow">
+      <input id={id} type="checkbox" className="lb-lg-check" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} aria-describedby={hint ? `${id}-hint` : undefined} />
+      <span style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <span style={{ fontSize: 14, fontWeight: 550 }}>{label}</span>
+        {hint ? (
+          <span id={`${id}-hint`} style={{ fontSize: 12, lineHeight: 1.45, color: "#a39b90" }}>
+            {hint}
+          </span>
+        ) : null}
+      </span>
+    </label>
+  );
+}
+
+/** A note above a form: `accent` for something chosen (a plan), plain for information. */
+export function AuthNotice({ children, icon, tone = "plain" }: { children: ReactNode; icon?: ReactNode; tone?: "plain" | "accent" }) {
+  return (
+    <div className={`lb-lg-notice${tone === "accent" ? " lb-lg-notice--accent" : ""}`}>
+      {icon}
+      <span>{children}</span>
     </div>
   );
 }
 
 export function AuthAlert({ message }: { message: string }) {
-  return <AnimatePresence initial={false}>{message ? <m.p role="alert" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="rounded-xl bg-accent-500/[0.09] px-3.5 py-3 text-[13px] leading-5 text-accent-ink ring-1 ring-inset ring-accent-500/20">{message}</m.p> : null}</AnimatePresence>;
+  if (!message) return null;
+  return (
+    <div role="alert" className="lb-pop lb-lg-alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7.5v5.5M12 16.5v.01" />
+      </svg>
+      {message}
+    </div>
+  );
 }
 
 export function LoadingIndicator() {
-  return <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />;
+  return <span aria-hidden className="spin" />;
+}
+
+/** The orange call to action: spinner while pending, arrow otherwise. */
+export function AuthSubmit({ pending, label, pendingLabel }: { pending: boolean; label: string; pendingLabel: string }) {
+  return (
+    <button type="submit" className="lb-lg-submit" disabled={pending}>
+      {pending ? <LoadingIndicator /> : null}
+      {pending ? pendingLabel : label}
+      {pending ? null : <IconArrowRight className="h-4 w-4" />}
+    </button>
+  );
 }
