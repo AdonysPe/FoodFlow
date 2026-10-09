@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { createOrder, type OrderChannel } from "@/lib/actions/orders";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { CHANNEL_LABELS } from "@/lib/orderMeta";
@@ -23,16 +24,25 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
   const nameRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  // The dialog is mounted on the panel's root, not where the button is: the
+  // header it sits in is animated, which makes its own stacking context and
+  // would trap a fixed overlay behind the rows below it.
+  const [host, setHost] = useState<Element | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    nameRef.current?.focus();
+    setHost(triggerRef.current?.closest(".lbd") ?? document.body);
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
+
+  useEffect(() => {
+    if (open && host) nameRef.current?.focus();
+  }, [open, host]);
 
   const lineItems = useMemo(
     () =>
@@ -80,11 +90,11 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="lbd-cta">
+      <button ref={triggerRef} type="button" onClick={() => setOpen(true)} className="lbd-cta">
         Registrar pedido
       </button>
 
-      {open && (
+      {open && host && createPortal(
         <div className="lbd-modal" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
           <div className="lbd-modal-card lbd-pop" role="dialog" aria-modal="true" aria-labelledby="new-order-title">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
@@ -154,7 +164,8 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        host
       )}
     </>
   );

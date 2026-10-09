@@ -10,9 +10,9 @@ const CLIENT_TITLES: Record<string, string> = {
   "web-pedidos": "Web de pedidos",
   // The Resumen draws its own greeting, so the strip above it stays empty.
   overview: "",
-  orders: "Pedidos",
-  kitchen: "Cocina",
-  mesas: "Mesas",
+  orders: "",
+  kitchen: "",
+  mesas: "",
   // The QR sheet is a page under /mesas; the topbar keys off the last
   // segment, so it needs its own entry or it falls back to "Dashboard".
   qr: "QR de mesas",
