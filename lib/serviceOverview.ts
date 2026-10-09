@@ -32,6 +32,15 @@ export type LiveOrder = {
   minutes: number;
 };
 
+// One table of the floor plan as the Resumen draws it. "bill" is a table whose
+// order was served and not yet paid: the account is open and waiting to be
+// charged. "reserved" is empty but held by a reservation that still stands.
+export type TableTile = { name: string; state: "free" | "busy" | "bill" | "reserved" };
+
+// A dish ranked by units sold in the range. `photoUrl` comes from the menu
+// when a dish with that name still exists there.
+export type TopItem = { name: string; count: number; photoUrl: string | null };
+
 export type ServiceOverviewData = {
   range: OverviewRange;
   /** True when the restaurant has no orders yet and the panel shows sample data. */
@@ -59,6 +68,10 @@ export type ServiceOverviewData = {
   channels: { key: ChannelKey; label: string; count: number }[];
   live: LiveOrder[];
   kitchen: { pending: number; preparing: number; ready: number };
+  /** Active tables of the floor plan, in plan order. Empty when none are set up. */
+  tables: TableTile[];
+  /** The three dishes sold most in the range. */
+  top: TopItem[];
 };
 
 export const LIVE_STATE_LABELS: Record<LiveState, string> = {
@@ -198,5 +211,18 @@ export function demoOverview(range: OverviewRange, now = new Date()): ServiceOve
       { id: "d4", origin: "Para llevar", items: "Pollo a la brasa x1", state: "ready", minutes: 6 },
     ],
     kitchen: { pending: 2, preparing: 4, ready: 2 },
+    // The prototype's room: fourteen tables, nine taken, one waiting to pay.
+    tables: Array.from({ length: 14 }, (_, i): TableTile => {
+      const n = i + 1;
+      return {
+        name: `Mesa ${String(n).padStart(2, "0")}`,
+        state: n === 5 ? "bill" : [1, 2, 4, 7, 8, 10, 11, 13].includes(n) ? "busy" : "free",
+      };
+    }),
+    top: [
+      { name: "Ceviche clásico", count: 18, photoUrl: "/demo/carta/ceviche.webp" },
+      { name: "Lomo saltado", count: 14, photoUrl: "/demo/carta/lomo-saltado.webp" },
+      { name: "Causa limeña", count: 9, photoUrl: "/demo/carta/causa-limena.webp" },
+    ],
   };
 }

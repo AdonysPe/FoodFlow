@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { BLOCKING_RESERVATION_STATUSES, reservationStillHolds } from "@/lib/tableMeta";
 import {
   CHANNEL_ROWS,
   dayLabels,
@@ -11,6 +12,8 @@ import {
   type LiveOrder,
   type OverviewRange,
   type ServiceOverviewData,
+  type TableTile,
+  type TopItem,
 } from "@/lib/serviceOverview";
 
 type Line = { name?: string; quantity?: number };
@@ -62,10 +65,16 @@ export async function loadServiceOverview(
   const prevStart = new Date(start.getTime() - span);
   const prevNow = new Date(now.getTime() - span);
 
-  const [periodOrders, liveOrders] = await Promise.all([
+  // Lima's calendar day as the @db.Date the reservations are stored with, and
+  // the minutes since Lima midnight the "still holds" check works in.
+  const limaNow = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+  const limaToday = new Date(Date.UTC(limaNow.getUTCFullYear(), limaNow.getUTCMonth(), limaNow.getUTCDate()));
+  const limaMinutes = limaNow.getUTCHours() * 60 + limaNow.getUTCMinutes();
+
+  const [periodOrders, liveOrders, floorTables, openTabs, todaysReservations] = await Promise.all([
     prisma.order.findMany({
       where: { restaurantId, voidedAt: null, createdAt: { gte: prevStart, lte: now } },
-      select: { total: true, createdAt: true, readyAt: true, channel: true, source: true },
+      select: { total: true, createdAt: true, readyAt: true, channel: true, source: true, items: true },
     }),
     prisma.order.findMany({
       where: {
@@ -89,6 +98,21 @@ export async function loadServiceOverview(
         createdAt: true,
         table: { select: { name: true } },
       },
+    }),
+    prisma.restaurantTable.findMany({
+      where: { restaurantId, active: true },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, occupiedAt: true },
+    }),
+    // A table's open tab keeps it occupied until it is charged or voided, the
+    // same rule the Mesas floor plan uses.
+    prisma.order.findMany({
+      where: { restaurantId, tableId: { not: null }, paidAt: null, voidedAt: null },
+      select: { tableId: true, status: true },
+    }),
+    prisma.reservation.findMany({
+      where: { restaurantId, date: limaToday, status: { in: BLOCKING_RESERVATION_STATUSES } },
+      select: { tableId: true, startTime: true, durationMin: true },
     }),
   ]);
 
@@ -157,6 +181,44 @@ export async function loadServiceOverview(
     };
   });
 
+  /* ---- the floor: free, busy, waiting to pay, or held by a reservation ---- */
+  const tables: TableTile[] = floorTables.map((table) => {
+    const tabs = openTabs.filter((o) => o.tableId === table.id);
+    let state: TableTile["state"] = "free";
+    if (tabs.some((o) => o.status === "delivered")) state = "bill";
+    else if (table.occupiedAt || tabs.length > 0) state = "busy";
+    else if (
+      todaysReservations.some(
+        (r) => r.tableId === table.id && reservationStillHolds(r.startTime, r.durationMin, limaMinutes)
+      )
+    ) {
+      state = "reserved";
+    }
+    return { name: table.name, state };
+  });
+
+  /* ---- the three dishes with the most units in the range ---- */
+  const units = new Map<string, number>();
+  for (const order of current) {
+    if (!Array.isArray(order.items)) continue;
+    for (const line of order.items as Line[]) {
+      if (!line?.name) continue;
+      units.set(line.name, (units.get(line.name) ?? 0) + (line.quantity ?? 1));
+    }
+  }
+  const ranked = [...units.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const photos = ranked.length
+    ? await prisma.menuItem.findMany({
+        where: { restaurantId, name: { in: ranked.map(([name]) => name) } },
+        select: { name: true, photoUrl: true },
+      })
+    : [];
+  const top: TopItem[] = ranked.map(([name, count]) => ({
+    name,
+    count,
+    photoUrl: photos.find((p) => p.name === name)?.photoUrl ?? null,
+  }));
+
   return {
     range,
     demo: false,
@@ -178,5 +240,7 @@ export async function loadServiceOverview(
       preparing: liveOrders.filter((o) => o.status === "preparing").length,
       ready: liveOrders.filter((o) => o.status === "ready").length,
     },
+    tables,
+    top,
   };
 }
