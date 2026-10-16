@@ -186,16 +186,17 @@ function Plans({ p, prices }) {
 
 function Reserve({ r, onReserve }) {
   return (
-    <section id="reserva" className="lb-reserve">
+    <section id="reserva" className="lb-reserve lb-reserve--vivid">
       <span id="cta" className="lb-anchor" aria-hidden />
       <span id="contacto" className="lb-anchor" aria-hidden />
       <div className="lb-reserve-glow" aria-hidden />
+      <div className="lb-reserve-glow2" aria-hidden />
       <h2 className="lb-h2-xl lb-reveal">
         {r.title}
         <br />
         <span>{r.titleMuted}</span>
       </h2>
-      <p className="lb-reveal" style={{ margin: "28px auto 0", maxWidth: 500, fontSize: 19, lineHeight: 1.5, color: "#b9b1a5" }}>
+      <p className="lb-reveal" style={{ margin: "28px auto 0", maxWidth: 500, fontSize: 19, lineHeight: 1.5, color: "#e4ddd0" }}>
         {r.copy}
       </p>
       <div className="lb-hero-ctas lb-reveal">
