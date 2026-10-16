@@ -3038,3 +3038,16 @@
 .lb-st-btn--solid { background: #ff5a33; color: #0c0908 !important; }
 .lb-st-btn--solid:hover { background: #ff6c47; }
 @media (prefers-reduced-motion: reduce) { .lb-st-arc, .lb-st-orbit { animation: none; } .lb-st-arc { transition: none; } }
+
+/* Landing closing ("Tu próximo turno, sin papelitos."): more colour than the
+   shared closing used on the inner pages, which stays as it was. */
+.lb-reserve--vivid .lb-reserve-glow { top: 60px; width: 1000px; height: 560px; background: radial-gradient(closest-side, rgba(255,90,51,0.5), rgba(255,90,51,0.14) 55%, rgba(255,90,51,0) 100%); filter: blur(10px); }
+.lb-reserve-glow2 { position: absolute; z-index: -1; left: 50%; top: 220px; width: 640px; max-width: 120vw; height: 320px; transform: translateX(-30%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255,176,102,0.3), rgba(255,176,102,0) 100%); filter: blur(30px); pointer-events: none; }
+.lb-reserve--vivid .lb-h2-xl { color: #fff7ea; text-shadow: 0 0 60px rgba(255,90,51,0.25); }
+.lb-reserve--vivid .lb-h2-xl span { background: linear-gradient(95deg, #ff5a33 10%, #ff8a4c 60%, #ffb066 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.lb-reserve--vivid .lb-pill-btn--lg { box-shadow: 0 18px 50px -12px rgba(255,90,51,0.9), 0 0 0 1px rgba(255,138,76,0.5); }
+.lb-reserve--vivid .lb-text-link { color: #ffb07f; }
+/* At the very end of the page the scroll never reaches "cover 28%", which left this block half faded: finish the reveal as soon as it has entered. */
+@supports (animation-timeline: view()) {
+  .lb-reserve--vivid .lb-reveal { animation-range: entry 0% entry 70%; }
+}
