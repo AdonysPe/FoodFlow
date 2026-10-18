@@ -1,23 +1,32 @@
 import { prisma } from "@/lib/db/prisma";
-import GlassCard from "@/components/ui/GlassCard";
+import PageHeader from "@/components/dashboard/PageHeader";
+import AuditLogView, { type AuditEvent, type AuditKind } from "@/components/dashboard/admin/AuditLogView";
 
 export const metadata = {
-  title: "Audit log",
+  title: "Auditoría",
 };
 
 // Read-only. Gated by AdminLayout (getCurrentUser().role === "platform_admin"); the
 // AuditLog rows carry no tenant relation, so no restaurant user can reach them.
 const PAGE_SIZE = 200;
 
-const ACTION_LABELS: Record<string, string> = {
-  "auth.login": "Login",
-  "auth.logout": "Logout",
-  "menu.item.price_change": "Price changed",
-  "menu.item.delete": "Dish deleted",
-  "staff.add": "Waiter added",
-  "staff.remove": "Waiter removed",
-  "lead.status_change": "Lead status changed",
-  "restaurant.delete": "Restaurant deleted",
+// The log keeps English action keys; the operator reads them in Spanish.
+const ACTIONS: Record<string, { label: string; kind: AuditKind }> = {
+  "auth.login": { label: "Inicio de sesión", kind: "acceso" },
+  "auth.logout": { label: "Cierre de sesión", kind: "acceso" },
+  "auth.register": { label: "Cuenta creada", kind: "acceso" },
+  "auth.password_reset": { label: "Contraseña restablecida", kind: "acceso" },
+  "menu.item.price_change": { label: "Precio cambiado", kind: "precio" },
+  "menu.item.delete": { label: "Plato eliminado", kind: "riesgo" },
+  "staff.add": { label: "Mozo agregado", kind: "equipo" },
+  "staff.remove": { label: "Mozo quitado", kind: "equipo" },
+  "lead.status_change": { label: "Contacto cambió de estado", kind: "ventas" },
+  "restaurant.delete": { label: "Restaurante eliminado", kind: "riesgo" },
+  "restaurant.rename": { label: "Local renombrado", kind: "local" },
+  "restaurant.category_template.update": { label: "Categoría o plantilla cambiada", kind: "local" },
+  "billing.config.save": { label: "Facturación configurada", kind: "factura" },
+  "billing.emit": { label: "Comprobante emitido", kind: "factura" },
+  "billing.cdr.email": { label: "Constancia enviada por correo", kind: "factura" },
 };
 
 function summarize(before: unknown, after: unknown): string {
@@ -30,9 +39,10 @@ function summarize(before: unknown, after: unknown): string {
   if ("status" in b || "status" in a) return `${b.status ?? "—"} → ${a.status ?? "—"}`;
   if ("email" in a) return String(a.email);
   if ("email" in b) return String(b.email);
+  if ("name" in b && "name" in a) return `${b.name} → ${a.name}`;
   if ("name" in b) return String(b.name);
-  if ("role" in a) return `role: ${a.role}`;
-  return "";
+  if ("role" in a) return `rol: ${a.role}`;
+  return "—";
 }
 
 export default async function AuditLogPage() {
@@ -41,56 +51,22 @@ export default async function AuditLogPage() {
     take: PAGE_SIZE,
   });
 
-  if (entries.length === 0) {
-    return (
-      <GlassCard className="p-10 text-center text-[14px] text-faint" hoverLift={false}>
-        No audit entries yet. Sensitive actions (logins, price changes, deletions,
-        role changes) will be recorded here.
-      </GlassCard>
-    );
-  }
+  const events: AuditEvent[] = entries.map((e) => {
+    const meta = ACTIONS[e.action];
+    return {
+      id: e.id,
+      at: e.createdAt.toISOString(),
+      action: meta?.label ?? e.action,
+      kind: meta?.kind ?? "acceso",
+      actor: e.actorEmail ?? "—",
+      detail: summarize(e.before, e.after),
+    };
+  });
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-[13px] text-faint">
-        Last {entries.length} events. Append-only. IP is stored as a salted hash,
-        never the address.
-      </p>
-      <GlassCard className="overflow-hidden p-0" hoverLift={false}>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-[13.5px]">
-            <thead>
-              <tr className="border-b border-fg/[0.07] text-[12px] uppercase tracking-wide text-faint">
-                <th className="px-5 py-3.5 font-medium">When</th>
-                <th className="px-5 py-3.5 font-medium">Action</th>
-                <th className="px-5 py-3.5 font-medium">Actor</th>
-                <th className="px-5 py-3.5 font-medium">Detail</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((e) => (
-                <tr key={e.id} className="border-b border-fg/[0.04] last:border-0 align-top">
-                  <td className="whitespace-nowrap px-5 py-3 text-faint">
-                    {e.createdAt.toLocaleString("en-GB", {
-                      day: "2-digit",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </td>
-                  <td className="px-5 py-3 text-fg/85">
-                    {ACTION_LABELS[e.action] ?? e.action}
-                  </td>
-                  <td className="px-5 py-3 text-muted">{e.actorEmail ?? "—"}</td>
-                  <td className="px-5 py-3 text-muted">
-                    {summarize(e.before, e.after)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </GlassCard>
+    <div className="lbd-pg">
+      <PageHeader eyebrow="SEGURIDAD · AUDITORÍA" title="Auditoría" description={`Quién hizo qué y cuándo. Solo se agrega, nunca se borra. La IP se guarda cifrada, nunca la dirección. Últimos ${PAGE_SIZE} eventos.`} />
+      <AuditLogView events={events} />
     </div>
   );
 }
