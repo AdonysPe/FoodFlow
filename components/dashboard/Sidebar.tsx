@@ -50,17 +50,22 @@ const ICONS = {
 // Icon paths are plain strings, so unlike components they could cross the
 // server→client boundary; the nav still lives here, inside the client module.
 const ADMIN_NAV: NavSection[] = [
+  { title: null, items: [{ href: "/dashboard/admin/overview", label: "Resumen", icon: ICONS.resumen }] },
   {
-    title: null,
+    title: "VENTAS",
     items: [
-      { href: "/dashboard/admin/overview", label: "Overview", icon: ICONS.resumen },
-      { href: "/dashboard/admin/leads", label: "Leads", icon: ICONS.clientes },
       { href: "/dashboard/admin/contactos", label: "Contactos", icon: ICONS.contactos },
-      { href: "/dashboard/admin/restaurants", label: "Administración de restaurantes", icon: ICONS.locales },
-      { href: "/dashboard/admin/analytics", label: "Analytics", icon: ICONS.analisis },
-      { href: "/dashboard/admin/audit", label: "Audit log", icon: ICONS.auditoria },
+      { href: "/dashboard/admin/leads", label: "Leads del chat", icon: ICONS.clientes },
     ],
   },
+  {
+    title: "CLIENTES",
+    items: [
+      { href: "/dashboard/admin/restaurants", label: "Restaurantes", icon: ICONS.locales },
+      { href: "/dashboard/admin/analytics", label: "Analítica", icon: ICONS.analisis },
+    ],
+  },
+  { title: "SEGURIDAD", items: [{ href: "/dashboard/admin/audit", label: "Auditoría", icon: ICONS.auditoria }] },
 ];
 
 /**

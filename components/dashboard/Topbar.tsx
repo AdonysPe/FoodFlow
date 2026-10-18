@@ -8,7 +8,7 @@ const DEFAULT_TITLES: Record<string, string> = {
   overview: "Overview",
   leads: "Leads",
   contactos: "Contactos",
-  restaurants: "Restaurants",
+  restaurants: "Restaurantes",
   analytics: "Analytics",
   audit: "Audit log",
 };
@@ -23,7 +23,8 @@ export default function Topbar({ titles = DEFAULT_TITLES, home = "/dashboard" }:
   const pathname = usePathname();
   const openSidebar = useDashboardStore((s) => s.openSidebar);
   const segment = pathname.split("/").filter(Boolean).pop() ?? "";
-  const title = titles[segment] ?? "Dashboard";
+  // A venue's own page is /admin/restaurants/<id>: it draws its own heading.
+  const title = titles[segment] ?? (pathname.includes("/admin/restaurants/") ? "" : "Dashboard");
 
   return (
     <header className={`lbd-top${title ? "" : " lbd-top--bare"}`}>
