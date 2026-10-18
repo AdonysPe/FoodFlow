@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import GlassCard from "@/components/ui/GlassCard";
-import Button from "@/components/ui/Button";
+import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { createRestaurant } from "@/lib/actions/restaurants";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import {
-  PLANS,
-  PLAN_LABELS,
-  PLAN_PRICES,
-  PLAN_SUMMARIES,
-  type PlanValue,
-} from "@/lib/plans";
+import { PLANS, PLAN_LABELS, PLAN_PRICES, PLAN_SUMMARIES, type PlanValue } from "@/lib/plans";
 
+/**
+ * "Nuevo restaurante", design B: a button for the header that opens a drawer
+ * (a bottom sheet on a phone). The drawer mounts on the panel root so the
+ * animated header it sits in cannot trap it behind the list.
+ */
 export default function CreateRestaurantForm() {
+  const [open, setOpen] = useState(false);
+  const [host, setHost] = useState<Element | null>(null);
   const [name, setName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
   // Defaults to the plan the pricing page calls "Más elegido".
@@ -21,6 +21,17 @@ export default function CreateRestaurantForm() {
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const pushToast = useDashboardStore((s) => s.pushToast);
+
+  useEffect(() => {
+    setHost(document.querySelector(".lbd") ?? document.body);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +42,8 @@ export default function CreateRestaurantForm() {
         setName("");
         setOwnerEmail("");
         setPlan("servicio");
-        pushToast("Restaurant created.", "success");
+        setOpen(false);
+        pushToast("Restaurante creado.", "success");
       } else {
         setError(result.error);
       }
@@ -39,59 +51,59 @@ export default function CreateRestaurantForm() {
   }
 
   return (
-    <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-      <h2 className="mb-4 text-[15px] font-semibold text-fg/90">Create restaurant</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <div className="flex-1">
-          <label htmlFor="restaurant-name" className="sr-only">
-            Restaurant name
-          </label>
-          <input
-            id="restaurant-name"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Restaurant name"
-            className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
-          />
-        </div>
-        <div className="flex-1">
-          <label htmlFor="owner-email" className="sr-only">
-            Owner email
-          </label>
-          <input
-            id="owner-email"
-            type="email"
-            required
-            value={ownerEmail}
-            onChange={(e) => setOwnerEmail(e.target.value)}
-            placeholder="Owner email"
-            className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg placeholder:text-faint outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
-          />
-        </div>
-        <div className="sm:w-44">
-          <label htmlFor="restaurant-plan" className="sr-only">
-            Plan
-          </label>
-          <select
-            id="restaurant-plan"
-            value={plan}
-            onChange={(e) => setPlan(e.target.value as PlanValue)}
-            className="h-11 w-full rounded-xl border border-fg/[0.1] bg-fg/[0.04] px-4 text-[14px] text-fg outline-none transition-all duration-200 focus:border-accent-400/50 focus:bg-fg/[0.06] focus:ring-4 focus:ring-accent-400/10"
-          >
-            {PLANS.map((p) => (
-              <option key={p} value={p} className="bg-ink-900">
-                {PLAN_LABELS[p]} · {PLAN_PRICES[p]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <Button type="submit" size="md" className="shrink-0" disabled={isPending}>
-          {isPending ? "Creating…" : "Create"}
-        </Button>
-      </form>
-      <p className="mt-2.5 text-[12.5px] text-faint">{PLAN_SUMMARIES[plan]}</p>
-      {error && <p className="mt-2.5 text-[13px] text-accent-icon">{error}</p>}
-    </GlassCard>
+    <>
+      <button type="button" className="lbd-cta" onClick={() => setOpen(true)}>
+        + Nuevo restaurante
+      </button>
+      {open &&
+        host &&
+        createPortal(
+          <>
+            <div className="lbd-ad-scrim" onMouseDown={() => setOpen(false)} aria-hidden="true" />
+            <form className="lbd-ad-drawer lbd-ad-drawer--form" onSubmit={handleSubmit} role="dialog" aria-modal="true" aria-label="Nuevo restaurante">
+              <div className="lbd-ad-drawer-head">
+                <h2 className="lbd-display" style={{ fontSize: 26 }}>
+                  Nuevo restaurante
+                </h2>
+                <button type="button" className="lbd-ad-ico" onClick={() => setOpen(false)} aria-label="Cerrar">
+                  ×
+                </button>
+              </div>
+              <p className="lbd-bl-help" style={{ margin: 0, fontSize: 13 }}>
+                Creas el local y la cuenta del dueño. Entra con su correo y un código. El plan queda asignado a mano, sin cobro, hasta que él suscriba el suyo.
+              </p>
+              <label className="lbd-wp-field" htmlFor="nr-nombre">
+                Nombre del local
+                <input id="nr-nombre" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Cevichería El Muelle" className="lbd-input" autoFocus />
+              </label>
+              <label className="lbd-wp-field" htmlFor="nr-correo">
+                Correo del dueño
+                <input id="nr-correo" type="email" required value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="dueno@turestaurante.pe" className="lbd-input" />
+              </label>
+              <div className="lbd-wp-field">
+                Plan
+                <div role="group" aria-label="Plan" className="lbd-ad-planpick">
+                  {PLANS.map((p) => (
+                    <button key={p} type="button" aria-pressed={plan === p} className={plan === p ? "is-on" : undefined} onClick={() => setPlan(p)}>
+                      {PLAN_LABELS[p]}
+                      <small>{PLAN_PRICES[p]} + IGV</small>
+                    </button>
+                  ))}
+                </div>
+                <small>{PLAN_SUMMARIES[plan]}</small>
+              </div>
+              {error && (
+                <p role="alert" className="lbd-modal-error">
+                  {error}
+                </p>
+              )}
+              <button type="submit" disabled={isPending} className="lbd-btn lbd-btn--solid" style={{ marginTop: "auto" }}>
+                {isPending ? "Creando…" : "Crear restaurante"}
+              </button>
+            </form>
+          </>,
+          host
+        )}
+    </>
   );
 }

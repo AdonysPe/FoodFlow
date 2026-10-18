@@ -6,8 +6,9 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { menuTemplates, resolveMenuTemplate } from "@/lib/menuTemplates";
 import RestaurantsTable from "@/components/dashboard/RestaurantsTable";
 import CreateRestaurantForm from "@/components/dashboard/CreateRestaurantForm";
+import PageHeader from "@/components/dashboard/PageHeader";
 import RestaurantFilters from "@/components/dashboard/admin/RestaurantFilters";
-import type { PlanValue } from "@/lib/plans";
+import { PLANS, PLAN_PRICES, type PlanValue } from "@/lib/plans";
 
 export const metadata = {
   title: "Administración de restaurantes",
@@ -37,6 +38,8 @@ export default async function RestaurantsPage({
   const query = readParam(params, "q");
   const categoryFilter = readParam(params, "categoria");
   const templateFilter = readParam(params, "plantilla");
+  const planFilter = readParam(params, "plan");
+  const billFilter = readParam(params, "cobro");
   const page = Math.max(1, Number(readParam(params, "page")) || 1);
 
   // Every active filter is one entry in an AND list. Building it this way
@@ -55,6 +58,8 @@ export default async function RestaurantsPage({
   }
 
   if (categoryFilter) clauses.push({ categoryId: categoryFilter });
+  if ((PLANS as readonly string[]).includes(planFilter)) clauses.push({ plan: planFilter as PlanValue });
+  if (["active", "trialing", "past_due"].includes(billFilter)) clauses.push({ billingStatus: billFilter as "active" | "trialing" | "past_due" });
 
   // "Effective template" is `menuTemplateOverride ?? the category default`, so
   // matching it takes both halves of that fallback: a venue counts as pizzería
@@ -74,7 +79,7 @@ export default async function RestaurantsPage({
 
   const scoped: Prisma.RestaurantWhereInput = clauses.length ? { AND: clauses } : {};
 
-  const [categories, totalCount, matchCount, restaurants] = await Promise.all([
+  const [categories, totalCount, matchCount, restaurants, planCounts] = await Promise.all([
     prisma.restaurantCategory.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true, isActive: true },
@@ -92,6 +97,7 @@ export default async function RestaurantsPage({
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
+    prisma.restaurant.groupBy({ by: ["plan"], _count: { _all: true } }),
   ]);
 
   const pageCount = Math.max(1, Math.ceil(matchCount / PAGE_SIZE));
@@ -126,24 +132,42 @@ export default async function RestaurantsPage({
     if (query) next.set("q", query);
     if (categoryFilter) next.set("categoria", categoryFilter);
     if (templateFilter) next.set("plantilla", templateFilter);
+    if (planFilter) next.set("plan", planFilter);
+    if (billFilter) next.set("cobro", billFilter);
     if (target > 1) next.set("page", String(target));
     const qs = next.toString();
     return qs ? `/dashboard/admin/restaurants?${qs}` : "/dashboard/admin/restaurants";
   }
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
-          Administración de restaurantes
-        </h2>
-        <p className="mt-1 text-[13px] text-faint">
-          Todos los locales de la plataforma: su plan, su categoría y la plantilla
-          con la que se ve su carta.
-        </p>
-      </div>
+  const planCount = (plan: PlanValue) => planCounts.find((row) => row.plan === plan)?._count._all ?? 0;
+  const stats = [
+    { label: "Locales", value: totalCount, note: "en la plataforma", color: "#a39b90" },
+    ...PLANS.map((plan) => ({
+      label: plan === "carta" ? "Carta" : plan === "servicio" ? "Servicio" : "Negocio",
+      value: planCount(plan),
+      note: `${PLAN_PRICES[plan]} al mes + IGV`,
+      color: plan === "negocio" ? "#ff5a33" : plan === "servicio" ? "#f3efe6" : "#6f675e",
+    })),
+  ];
 
-      <CreateRestaurantForm />
+  return (
+    <div className="lbd-pg">
+      <PageHeader eyebrow="CLIENTES · RESTAURANTES" title="Restaurantes" description="Todos los locales de la plataforma: su plan, cómo van con el cobro y con qué plantilla se ve su carta.">
+        <CreateRestaurantForm />
+      </PageHeader>
+
+      <div className="lbd-ad-kpis lbd-rise" style={{ animationDelay: ".04s" }}>
+        {stats.map((stat) => (
+          <div key={stat.label} className="lbd-card lbd-ad-kpi">
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <i style={{ width: 8, height: 8, borderRadius: "50%", background: stat.color }} aria-hidden />
+              {stat.label}
+            </span>
+            <strong className="lbd-display">{stat.value}</strong>
+            <small>{stat.note}</small>
+          </div>
+        ))}
+      </div>
 
       <RestaurantFilters
         categories={categories.map((category) => ({
@@ -159,44 +183,24 @@ export default async function RestaurantsPage({
       />
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-fg/15 bg-fg/[0.02] px-6 py-12 text-center">
-          <p className="text-[14px] font-semibold text-fg">
-            {totalCount === 0
-              ? "Todavía no hay restaurantes."
-              : "Ningún restaurante coincide con esa búsqueda."}
-          </p>
-          <p className="mt-1.5 text-[13px] text-faint">
-            {totalCount === 0
-              ? "Crea el primero con el formulario de arriba."
-              : "Prueba con otro nombre, o limpia los filtros para verlos todos."}
-          </p>
-        </div>
+        <div className="lbd-empty">{totalCount === 0 ? "Todavía no hay restaurantes. Crea el primero con «Nuevo restaurante»." : "Ningún restaurante coincide con esa búsqueda. Prueba con otro nombre o limpia los filtros."}</div>
       ) : (
         <RestaurantsTable restaurants={rows} />
       )}
 
       {pageCount > 1 && (
-        <nav
-          aria-label="Paginación de restaurantes"
-          className="flex items-center justify-between gap-4"
-        >
-          <p className="text-[12.5px] tabular-nums text-faint">
+        <nav aria-label="Paginación de restaurantes" className="lbd-ad-pager">
+          <p>
             Página {page} de {pageCount} · {matchCount} restaurantes
           </p>
-          <div className="flex gap-2">
+          <div>
             {page > 1 && (
-              <Link
-                href={pageHref(page - 1)}
-                className="rounded-lg border border-fg/15 px-3 py-2 text-[12.5px] font-semibold text-fg transition-colors hover:bg-fg/[0.06]"
-              >
+              <Link href={pageHref(page - 1)} className="lbd-btn lbd-btn--ghost lbd-btn--sm">
                 ← Anterior
               </Link>
             )}
             {page < pageCount && (
-              <Link
-                href={pageHref(page + 1)}
-                className="rounded-lg border border-fg/15 px-3 py-2 text-[12.5px] font-semibold text-fg transition-colors hover:bg-fg/[0.06]"
-              >
+              <Link href={pageHref(page + 1)} className="lbd-btn lbd-btn--ghost lbd-btn--sm">
                 Siguiente →
               </Link>
             )}

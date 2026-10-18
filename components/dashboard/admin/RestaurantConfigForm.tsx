@@ -103,99 +103,64 @@ export default function RestaurantConfigForm({
   }
 
   return (
-    <section
-      className="rounded-2xl border border-fg/10 bg-fg/[0.025] p-5 sm:p-6"
-      aria-labelledby="restaurant-config-title"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3
-            id="restaurant-config-title"
-            className="font-display text-[20px] font-bold text-fg"
-          >
+    <section className="lbd-card lbd-card--glass lbd-ad-panel lbd-ad-cfg lbd-rise" style={{ animationDelay: ".12s" }} aria-labelledby="restaurant-config-title">
+      <div className="lbd-ad-head">
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+          <h2 id="restaurant-config-title" className="lbd-ad-h">
             Categoría y plantilla de la carta
-          </h3>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-faint">
-            Define la identidad de {restaurantName}. No cambia platos, precios,
-            categorías del menú, mesas, pedidos ni códigos QR.
-          </p>
+          </h2>
+          <span className="lbd-ad-sub">
+            Define la identidad de {restaurantName}. No cambia platos, precios, categorías del menú, mesas, pedidos ni códigos QR.
+          </span>
         </div>
         {previewUrl && (
-          <Link
-            href={previewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg border border-fg/15 px-3 py-2 text-[12px] font-semibold text-fg transition-colors hover:bg-fg/[0.06]"
-          >
+          <Link href={previewUrl} target="_blank" rel="noopener noreferrer" className="lbd-btn lbd-btn--ghost lbd-btn--sm">
             Ver carta del QR ↗
           </Link>
         )}
       </div>
 
       {/* --------------------------------------------------------- category */}
-      <fieldset className="mt-6 border-0 p-0">
-        <legend className="text-[12px] font-semibold uppercase tracking-wide text-faint">
-          Categoría
-        </legend>
-        <div className="mt-3 grid gap-4 md:grid-cols-2">
+      <fieldset className="lbd-ad-fieldset">
+        <legend className="lbd-mono lbd-bl-eyebrow">CATEGORÍA</legend>
+        <div className="lbd-ad-cats">
           {categories.map((category) => {
             const active = categoryId === category.id;
             return (
-              <div
-                key={category.id}
-                className={`rounded-2xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-accent-400 ${
-                  active
-                    ? "border-accent-400 bg-accent-400/[0.06]"
-                    : "border-fg/10 bg-fg/[0.015] hover:border-fg/25"
-                }`}
-              >
-                <label className="block cursor-pointer">
-                  <input
-                    type="radio"
-                    name="restaurantCategory"
-                    value={category.id}
-                    checked={active}
-                    onChange={() => {
-                      setCategoryId(category.id);
-                      setConfirming(false);
-                      setError("");
-                    }}
-                    className="sr-only"
-                  />
-                  <TemplateMiniature template={category.defaultMenuTemplate} />
-                  <span className="mt-3 flex items-start justify-between gap-3">
-                    <span>
-                      <strong className="block text-[14px] text-fg">{category.name}</strong>
-                      <span className="mt-1 block text-[12px] leading-relaxed text-faint">
-                        {category.description}
-                      </span>
-                    </span>
-                    <span
-                      className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[12px] ${
-                        active
-                          ? "border-accent-400 bg-accent-400 text-on-accent"
-                          : "border-fg/30"
-                      }`}
-                      aria-hidden="true"
-                    >
-                      {active ? "✓" : ""}
-                    </span>
+              <label key={category.id} className={`lbd-ad-cat${active ? " is-on" : ""}`}>
+                <input
+                  type="radio"
+                  name="restaurantCategory"
+                  value={category.id}
+                  checked={active}
+                  onChange={() => {
+                    setCategoryId(category.id);
+                    setConfirming(false);
+                    setError("");
+                  }}
+                  className="sr-only"
+                />
+                <TemplateMiniature template={category.defaultMenuTemplate} />
+                <span className="lbd-ad-cat-text">
+                  <span>
+                    <strong>{category.name}</strong>
+                    <small>{category.description}</small>
                   </span>
-                </label>
-              </div>
+                  <span className="lbd-ad-cat-tick" aria-hidden="true">
+                    {active ? "✓" : ""}
+                  </span>
+                </span>
+              </label>
             );
           })}
         </div>
       </fieldset>
 
       {/* --------------------------------------------------------- template */}
-      <div className="mt-6 grid gap-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
-        <div>
-          <label
-            htmlFor="template-override"
-            className="block text-[12px] font-semibold uppercase tracking-wide text-faint"
-          >
-            Plantilla visual (opcional)
+      <div className="lbd-ad-tpl">
+        <div className="lbd-wp-field">
+          <label htmlFor="template-override" className="lbd-mono lbd-bl-eyebrow">
+            PLANTILLA VISUAL (OPCIONAL)
           </label>
           <select
             id="template-override"
@@ -206,52 +171,37 @@ export default function RestaurantConfigForm({
               setError("");
             }}
             aria-describedby="template-override-hint"
-            className="mt-2 h-11 w-full rounded-lg border border-fg/[0.12] bg-fg/[0.04] px-3 text-[13.5px] text-fg outline-none focus:border-accent-400/50"
+            className="lbd-input"
           >
-            <option value={FOLLOW_CATEGORY} className="bg-ink-900">
+            <option value={FOLLOW_CATEGORY}>
               Usar la plantilla predeterminada de la categoría
-              {selectedCategory
-                ? ` (${menuTemplates[resolveMenuTemplate(null, selectedCategory.defaultMenuTemplate)].name})`
-                : ""}
+              {selectedCategory ? ` (${menuTemplates[resolveMenuTemplate(null, selectedCategory.defaultMenuTemplate)].name})` : ""}
             </option>
             {Object.values(menuTemplates).map((template) => (
-              <option key={template.id} value={template.id} className="bg-ink-900">
+              <option key={template.id} value={template.id}>
                 {template.name}
               </option>
             ))}
           </select>
-          <p id="template-override-hint" className="mt-2 text-[12px] leading-relaxed text-faint">
+          <small id="template-override-hint">
             {override === FOLLOW_CATEGORY
               ? "Seguirá a su categoría: si más adelante cambias la plantilla de la categoría, esta carta la sigue."
               : "Plantilla fija: se mantiene aunque cambie la plantilla de la categoría."}
-          </p>
+          </small>
         </div>
 
-        <div>
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-faint">
-            Vista previa
-          </p>
-          <div className="mt-2">
-            <TemplateMiniature template={effectiveTemplate} />
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="flex gap-1.5" aria-label="Paleta de colores">
+        <div className="lbd-ad-tpl-preview">
+          <span className="lbd-mono lbd-bl-eyebrow">VISTA PREVIA</span>
+          <TemplateMiniature template={effectiveTemplate} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <span style={{ display: "flex", gap: 6 }} aria-label="Paleta de colores">
               {Object.values(theme.colors)
                 .slice(0, 5)
                 .map((color) => (
-                  <i
-                    key={color}
-                    className="h-3.5 w-3.5 rounded-full border border-black/10"
-                    style={{ background: color }}
-                  />
+                  <i key={color} style={{ width: 14, height: 14, borderRadius: "50%", border: "1px solid rgba(0,0,0,0.2)", background: color, display: "inline-block" }} />
                 ))}
             </span>
-            <Link
-              href={`/preview-category?template=${theme.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] font-bold text-fg underline decoration-fg/30 underline-offset-4 hover:decoration-fg"
-            >
+            <Link href={`/preview-category?template=${theme.id}`} target="_blank" rel="noopener noreferrer" className="lbd-ad-link" style={{ fontSize: 12 }}>
               Vista completa ↗
             </Link>
           </div>
@@ -260,68 +210,47 @@ export default function RestaurantConfigForm({
 
       {/* ---------------------------------------------------------- confirm */}
       {confirming && (
-        <div className="mt-6 rounded-xl border border-accent-400/30 bg-accent-400/[0.06] p-4">
-          <p className="text-[13px] font-semibold text-fg">Confirma el cambio</p>
-          <dl className="mt-3 grid gap-1.5 text-[13px]">
-            <div className="flex gap-2">
-              <dt className="w-40 shrink-0 text-faint">Restaurante</dt>
-              <dd className="text-fg">{restaurantName}</dd>
-            </div>
-            <div className="flex gap-2">
-              <dt className="w-40 shrink-0 text-faint">Categoría anterior</dt>
-              <dd className="text-fg">{savedCategory?.name ?? "—"}</dd>
-            </div>
-            <div className="flex gap-2">
-              <dt className="w-40 shrink-0 text-faint">Categoría nueva</dt>
-              <dd className="text-fg">{selectedCategory?.name ?? "—"}</dd>
-            </div>
-            <div className="flex gap-2">
-              <dt className="w-40 shrink-0 text-faint">Plantilla resultante</dt>
-              <dd className="text-fg">
-                {theme.name}
-                <span className="text-faint">
-                  {override === FOLLOW_CATEGORY ? " (por categoría)" : " (fija)"}
-                </span>
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-3 text-[12px] leading-relaxed text-faint">
-            Los QR impresos siguen funcionando: cambia solo cómo se ve la carta al
-            abrirla.
-          </p>
+        <div className="lbd-bl-callout" data-tone="warn">
+          <strong>Confirma el cambio</strong>
+          <div>
+            <dl className="lbd-ad-dl" style={{ marginTop: 6 }}>
+              <div>
+                <dt>Restaurante</dt>
+                <dd>{restaurantName}</dd>
+              </div>
+              <div>
+                <dt>Categoría anterior</dt>
+                <dd>{savedCategory?.name ?? "—"}</dd>
+              </div>
+              <div>
+                <dt>Categoría nueva</dt>
+                <dd>{selectedCategory?.name ?? "—"}</dd>
+              </div>
+              <div>
+                <dt>Plantilla resultante</dt>
+                <dd>
+                  {theme.name}
+                  <span style={{ color: "#a39b90" }}>{override === FOLLOW_CATEGORY ? " (por categoría)" : " (fija)"}</span>
+                </dd>
+              </div>
+            </dl>
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#a39b90" }}>Los QR impresos siguen funcionando: cambia solo cómo se ve la carta al abrirla.</p>
+          </div>
         </div>
       )}
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={() => (confirming ? save() : setConfirming(true))}
-          disabled={isPending || !dirty}
-          className="min-h-11 rounded-xl bg-linear-to-b from-accent-400 to-accent-600 px-5 text-[13px] font-bold text-on-accent transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isPending
-            ? "Guardando…"
-            : confirming
-              ? "Sí, guardar cambios"
-              : "Guardar cambios"}
+      <div className="lbd-bl-actions" style={{ marginTop: 0 }}>
+        <button type="button" onClick={() => (confirming ? save() : setConfirming(true))} disabled={isPending || !dirty} className="lbd-btn lbd-btn--solid">
+          {isPending ? "Guardando…" : confirming ? "Sí, guardar cambios" : "Guardar cambios"}
         </button>
-
         {confirming && !isPending && (
-          <button
-            type="button"
-            onClick={() => setConfirming(false)}
-            className="min-h-11 rounded-xl border border-fg/15 px-4 text-[13px] font-semibold text-muted transition-colors hover:bg-fg/[0.06] hover:text-fg"
-          >
+          <button type="button" onClick={() => setConfirming(false)} className="lbd-btn lbd-btn--ghost">
             Cancelar
           </button>
         )}
-
-        {!dirty && !isPending && (
-          <p className="text-[12.5px] text-faint">No hay cambios por guardar.</p>
-        )}
-
+        {!dirty && !isPending && <span className="lbd-bl-help" style={{ margin: 0 }}>No hay cambios por guardar.</span>}
         {error && (
-          <p role="alert" className="text-[12.5px] font-medium text-accent-ink">
+          <p role="alert" className="lbd-bl-help" style={{ margin: 0, color: "#ffb39e" }}>
             {error}
           </p>
         )}
