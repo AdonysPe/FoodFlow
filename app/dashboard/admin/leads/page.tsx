@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import LeadsTable from "@/components/dashboard/LeadsTable";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 export const metadata = {
   title: "Leads",
@@ -12,12 +13,17 @@ export default async function LeadsPage() {
     id: lead.id,
     email: lead.email,
     status: lead.status,
-    createdAtLabel: lead.createdAt.toLocaleDateString("en-US", {
+    createdAtLabel: lead.createdAt.toLocaleDateString("es-PE", {
       month: "short",
       day: "numeric",
       year: "numeric",
     }),
   }));
 
-  return <LeadsTable leads={rows} />;
+  return (
+    <div className="lbd-pg">
+      <PageHeader eyebrow="VENTAS · LEADS DEL CHAT" title="Leads del chat" description="Correos que dejaron en el asistente de la web. Solo tienes el correo: escríbeles para pasarlos a Contactos." />
+      <LeadsTable leads={rows} />
+    </div>
+  );
 }

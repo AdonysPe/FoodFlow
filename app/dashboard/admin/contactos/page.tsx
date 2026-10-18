@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import ContactLeadsTable from "@/components/dashboard/ContactLeadsTable";
+import PageHeader from "@/components/dashboard/PageHeader";
 import { formatSoles } from "@/lib/format";
 
 export const metadata = {
@@ -23,6 +24,7 @@ export default async function ContactosPage() {
     score: lead.score,
     perdidaAnualLabel: lead.perdidaAnual != null ? formatSoles(lead.perdidaAnual) : null,
     status: lead.status,
+    createdAt: lead.createdAt.toISOString(),
     createdAtLabel: lead.createdAt.toLocaleDateString("es-PE", {
       month: "short",
       day: "numeric",
@@ -30,5 +32,10 @@ export default async function ContactosPage() {
     }),
   }));
 
-  return <ContactLeadsTable leads={rows} />;
+  return (
+    <div className="lbd-pg">
+      <PageHeader eyebrow="VENTAS · CONTACTOS" title="Contactos" description="Quien dejó su WhatsApp en la web. Muévelo de columna a medida que avanza la conversación." />
+      <ContactLeadsTable leads={rows} />
+    </div>
+  );
 }
