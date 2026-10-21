@@ -12,7 +12,7 @@ export const metadata = {
 export default function TermsPage() {
   return (
     <SiteShell>
-      <LegalDoc doc={TERMS_DOC} />
+      <LegalDoc doc={TERMS_DOC} active="terminos" />
     </SiteShell>
   );
 }

@@ -1,61 +1,35 @@
 "use client";
 
-import Container from "@/components/ui/Container";
-import Reveal from "@/components/ui/Reveal";
-import { CONTACT_EMAIL } from "@/lib/contact";
+import LegalDoc, { LEGAL_LABELS_ES } from "@/components/sections/LegalDoc";
 import { LEGAL_UPDATED } from "@/lib/legal/holder";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
+// The cookie policy is the one legal page that follows the site language, so
+// it brings the layout's labels in both.
+const LABELS = {
+  es: { ...LEGAL_LABELS_ES, contactTitle: "¿Dudas sobre esta política?", contactCopy: "Escríbenos y te respondemos." },
+  en: {
+    eyebrow: "Legal",
+    tabs: { terminos: "Terms", privacidad: "Privacy", cookies: "Cookies" },
+    tabsLabel: "Legal documents",
+    claims: "Complaints book",
+    toc: "On this page",
+    tocLabel: "Document contents",
+    spanishOnly: "",
+    contactTitle: "Questions about this policy?",
+    contactCopy: "Write to us and we will get back to you.",
+  },
+};
+
 export default function CookiePolicy() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const page = t.cookies.page;
+  const doc = {
+    title: page.title,
+    updated: `${page.updatedLabel}: ${LEGAL_UPDATED}`,
+    intro: [page.intro],
+    sections: page.sections,
+  };
 
-  return (
-    <section className="relative overflow-x-clip pt-32 pb-24 sm:pt-40 sm:pb-28">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[24rem] w-[44rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,90,51,0.09),transparent_65%)] blur-3xl"
-      />
-
-      <Container className="max-w-3xl">
-        <Reveal>
-          <h1 className="font-display text-4xl font-extrabold tracking-[-0.035em] text-gradient sm:text-5xl">
-            {page.title}
-          </h1>
-        </Reveal>
-        <Reveal delay={0.06}>
-          <p className="mt-3 text-[13px] text-cream/50">
-            {page.updatedLabel}: {LEGAL_UPDATED}
-          </p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <p className="mt-6 text-[16px] leading-relaxed text-cream/70">{page.intro}</p>
-        </Reveal>
-
-        <div className="mt-10 divide-y divide-cream/10 border-y border-cream/10">
-          {page.sections.map((section, i) => (
-            <Reveal key={i} delay={Math.min(i, 3) * 0.05}>
-              <div className="py-6">
-                <h2 className="font-display text-[19px] font-semibold text-fg">
-                  {section.title}
-                </h2>
-                <p className="mt-2.5 text-[15px] leading-relaxed text-cream/66">
-                  {section.body}
-                </p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal delay={0.1}>
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="mt-8 inline-block text-[15px] font-medium text-accent-ink underline-offset-4 hover:underline"
-          >
-            {CONTACT_EMAIL}
-          </a>
-        </Reveal>
-      </Container>
-    </section>
-  );
+  return <LegalDoc doc={doc} active="cookies" labels={LABELS[lang] ?? LABELS.es} spanishOnly={false} />;
 }

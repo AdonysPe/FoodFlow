@@ -12,7 +12,7 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <SiteShell>
-      <LegalDoc doc={PRIVACY_DOC} />
+      <LegalDoc doc={PRIVACY_DOC} active="privacidad" />
     </SiteShell>
   );
 }
