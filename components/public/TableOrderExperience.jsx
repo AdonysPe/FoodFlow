@@ -9,6 +9,8 @@ import { NOTE_CHIPS, ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency } from "@/lib/format";
 import { isOpenAt, todayLabel } from "@/lib/carta";
 import { lbFontClasses } from "@/components/landing/lbFonts";
+import { menuTemplates } from "@/lib/menuTemplates";
+import { Motif, Seal, cartaFontClasses, cartaTheme, statusShellProps } from "./cartaThemes";
 import styles from "./TableOrderExperience.module.css";
 
 /**
@@ -18,7 +20,10 @@ import styles from "./TableOrderExperience.module.css";
  * from a table — the progress ring that follows it through the kitchen.
  *
  * One component for both entrances: the table QR (/m/[code]) and the ordering
- * website (`remote`, /pedido/[slug]). The look is the same for every venue.
+ * website (`remote`, /pedido/[slug]). The restaurant's template, which only the
+ * platform admin sets, decides the look: "noche" is design B as drawn; the
+ * classic ones (criolla, cevichería, chifa, pizzería) swap the hero for a
+ * printed-carta masthead and dress the same screens in paper and ink.
  */
 
 const OTHERS = "__otros__";
@@ -169,10 +174,10 @@ const STAGES = [
 ];
 
 /** What the diner sees right after sending from the table: the order and where it is. */
-function Sent({ sent, table, status, onAgain }) {
+function Sent({ sent, table, status, onAgain, template }) {
   const step = status === "delivered" ? 4 : status === "ready" ? 3 : status === "preparing" ? 2 : 1;
   const stage = STAGES[step - 1];
-  return <div data-theme="dark" className={`${lbFontClasses} lb lb-st`} style={{ paddingTop: 0 }}>
+  return <div {...statusShellProps(template)}>
     <div className="lb-st-page">
       <div className="lb-st-glow" aria-hidden="true" />
       <header className="lb-st-top">
@@ -215,8 +220,9 @@ function Sent({ sent, table, status, onAgain }) {
 }
 
 export default function TableOrderExperience({ code, initial, template = undefined, remote = false, preview = false, previewViewport = "desktop" }) {
-  void template;
   const { state, online, refresh } = useTableState(code, initial, remote, preview);
+  const theme = cartaTheme(template ?? state.template);
+  const classic = theme.key !== "noche";
   const { table, restaurantName, categories, items, openTab } = state;
   const venue = state.venue ?? {};
   const [cart, setCart] = useState({});
@@ -395,7 +401,7 @@ export default function TableOrderExperience({ code, initial, template = undefin
 
   if (sent) {
     const status = openTab && openTab.round >= sent.round ? openTab.status : "pending";
-    return <Sent sent={sent} table={table} status={status} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
+    return <Sent sent={sent} table={table} status={status} template={theme.key} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
   }
   const zone = table?.zone ? (ZONE_LABELS_ES[table.zone] ?? table.zone) : null;
   const availability = remote ? (now ? orderingAvailability(state.ordering, venue.hours, now) : state.availability) : null;
@@ -407,15 +413,33 @@ export default function TableOrderExperience({ code, initial, template = undefin
   // The hero shows the owner's cover on the ordering website, and otherwise the
   // first dish of what is on screen, as the prototype does; the rest follow as a list.
   const cover = remote ? state.ordering.coverUrl : "";
-  const featured = !cover && shown.length > 0 ? shown[0] : null;
+  const featured = !classic && !cover && shown.length > 0 ? shown[0] : null;
   const listed = featured ? shown.slice(1) : shown;
   const heroPhoto = cover || featured?.photoUrl || null;
   const heroQty = featured ? (cart[featured.id]?.qty ?? 0) : 0;
   const categoryName = tabs.find((tab) => tab.id === activeTab)?.name ?? "";
   const kitchenText = !online ? "Sin conexión" : remote && !availability.open ? "Pedidos pausados" : "Cocina en línea";
 
-  return <div data-theme="dark" className={`${lbFontClasses} lb ${styles.stage} ${preview ? styles.preview : ""} ${preview && previewViewport === "mobile" ? styles.previewMobile : ""}`}>
+  const stageClass = `${styles.stage} ${preview ? styles.preview : ""} ${preview && previewViewport === "mobile" ? styles.previewMobile : ""}`;
+  const servingLabel = remote ? [state.ordering.delivery && "Delivery", state.ordering.pickup && "Recojo"].filter(Boolean).join(" · ") : `${table.name} · pides desde tu sitio`;
+
+  return <div data-theme={classic ? "light" : "dark"} data-template={theme.key} className={classic ? `${cartaFontClasses} ${stageClass} ${styles.classic}` : `${lbFontClasses} lb ${stageClass}`} style={classic ? theme.style : undefined}>
     <div className={styles.glow} aria-hidden="true" />
+    {classic ? <header className={styles.mast}>
+      <div className={styles.mastFrame} aria-hidden="true" />
+      <div className={styles.mastFrameInner} aria-hidden="true" />
+      <div className={styles.mastBand} aria-hidden="true" />
+      {theme.seal && <Seal className={styles.mastSeal} />}
+      <div className={styles.mastTop}>
+        <span className={styles.mastChip}>{servingLabel}</span>
+        <span className={`${styles.chipLive} ${online && !(remote && !availability.open) ? "" : styles.offline}`}><i aria-hidden="true" />{kitchenText}</span>
+      </div>
+      <span className={styles.mastEyebrow}>{theme.eyebrow}</span>
+      <h1 className={styles.mastName}>{restaurantName}</h1>
+      <p className={styles.mastTagline}>{venue.tagline || menuTemplates[theme.key].subtitle}</p>
+      <Motif paths={theme.motif} className={styles.mastMotif} />
+      {cover && <div className={styles.mastCover}><Image src={cover} alt={`Portada de ${restaurantName}`} fill sizes="(min-width: 1000px) 1180px, 100vw" className={styles.foodPhoto} priority /></div>}
+    </header> : <>
     <header className={styles.hero}>
       {heroPhoto && <Image key={cover || featured?.id} src={heroPhoto} alt={cover ? `Portada de ${restaurantName}` : featured?.name ?? ""} fill sizes="100vw" className={styles.heroImg} priority />}
       <div className={styles.heroShade} aria-hidden="true" />
@@ -443,12 +467,13 @@ export default function TableOrderExperience({ code, initial, template = undefin
         </>}
       </div>
     </header>
+    </>}
 
     <section className={styles.venue} aria-label="El local">
-      <div className={styles.venueHead}>
+      {!classic && <div className={styles.venueHead}>
         <span className={styles.venueBadge}>{venue.logoUrl ? <Image src={venue.logoUrl} alt="" fill sizes="44px" className={styles.venueLogo} /> : initialsFor(restaurantName)}</span>
         <div className={styles.venueText}><h1>{restaurantName}</h1>{venue.tagline && <p>{venue.tagline}</p>}</div>
-      </div>
+      </div>}
       <div className={styles.venueInfo}>
         {venue.address && <span>{venue.address}</span>}
         {venue.hours && now && <span>{todayLabel(venue.hours, remote ? peruWallTime(now) : now)} · <strong className={open ? "" : styles.closed}>{open ? "Abierto ahora" : "Cerrado"}</strong></span>}
@@ -476,15 +501,20 @@ export default function TableOrderExperience({ code, initial, template = undefin
             const label = item.available ? itemLabel(item) : null;
             return <article key={item.id} className={`${styles.card} ${!item.available ? styles.cardSoldOut : ""}`}>
               <button type="button" className={styles.rowMain} onClick={() => openDetail(item.id)} aria-label={`Ver detalles de ${item.name}`}>
-                <span className={styles.cardPhoto}>
+                {(item.photoUrl || !classic) && <span className={styles.cardPhoto}>
                   {item.photoUrl ? <Image src={item.photoUrl} alt="" fill sizes="68px" className={styles.foodPhoto} /> : <span className={styles.noPhoto} aria-hidden="true">{initialsFor(item.name)}</span>}
-                </span>
-                <span className={styles.cardBody}>
+                </span>}
+                {classic ? <span className={styles.cardBody}>
+                  <span className={styles.nameRow}><h3>{item.name}</h3><span className={styles.leader} aria-hidden="true" /><span className={styles.cardPrice}>{formatCurrency(item.price)}</span></span>
+                  {item.description && <span className={styles.cardDescription}>{item.description}</span>}
+                  {label && <span className={styles.cardLabel}>{label}</span>}
+                  {!item.available && <span className={styles.cardSold}>Agotado por hoy</span>}
+                </span> : <span className={styles.cardBody}>
                   <h3>{item.name}</h3>
                   {item.description && <span className={styles.cardDescription}>{item.description}</span>}
                   {label && <span className={styles.cardLabel}>{label}</span>}
                   <span className={styles.cardPrice}>{item.available ? formatCurrency(item.price) : "Agotado por hoy"}</span>
-                </span>
+                </span>}
               </button>
               {!item.available ? null : qty > 0
                 ? <button type="button" className={styles.qtyBadge} onClick={() => setQty(item.id, qty + 1)} aria-label={`Agregar otro ${item.name} (tienes ${qty})`}>{qty}</button>

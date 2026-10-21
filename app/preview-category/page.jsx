@@ -43,6 +43,16 @@ const DEMOS = {
       ["Pan al ajo", "Masa artesanal, ajo confitado y hierbas.", 16, null, 2, false],
     ],
   },
+  noche: {
+    venue: "Casa Ñusta",
+    tagline: "Cocina limeña de barrio",
+    categories: ["Entradas", "Fondos", "Bebidas"],
+    items: [
+      ["Causa limeña", "Papa amarilla, ají amarillo, pollo y palta.", 24, null, 0, true],
+      ["Ají de gallina", "Cremoso ají amarillo, pollo y arroz blanco.", 34, "/demo/carta/aji-de-gallina.webp", 1, true],
+      ["Chicha morada", "Maíz morado, piña y canela.", 9, null, 2, true],
+    ],
+  },
 };
 
 export default async function PreviewCategory({ searchParams }) {

@@ -15,11 +15,16 @@ describe("plantillas de carta por restaurante", () => {
     expect(resolveMenuTemplate(null, null)).toBe("criolla");
   });
 
-  test("las cuatro plantillas están registradas con una acción principal", () => {
-    expect(Object.keys(menuTemplates)).toEqual(["criolla", "cevicheria", "chifa", "pizzeria"]);
+  test("las cinco plantillas están registradas con una acción principal", () => {
+    expect(Object.keys(menuTemplates)).toEqual(["criolla", "cevicheria", "chifa", "pizzeria", "noche"]);
     expect(menuTemplates.criolla.colors.cta).toBe("#FF6B35");
     expect(menuTemplates.cevicheria.colors.cta).toBe("#FF6B35");
     expect(menuTemplates.chifa.colors.cta).toBe("#C9362B");
     expect(menuTemplates.pizzeria.colors.cta).toBe("#E4572E");
+    expect(menuTemplates.noche.colors.cta).toBe("#FF5A33");
+  });
+
+  test("noche se puede elegir como override, también sobre una categoría clásica", () => {
+    expect(resolveMenuTemplate("noche", "chifa")).toBe("noche");
   });
 });

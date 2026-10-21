@@ -3,7 +3,7 @@ import { formatCurrency } from "@/lib/format";
 import { PAYMENT_METHOD_LABELS } from "@/lib/paymentMeta";
 import { whatsappLink } from "@/lib/carta";
 import AutoRefresh from "@/components/dashboard/AutoRefresh";
-import { lbFontClasses } from "@/components/landing/lbFonts";
+import { statusShellProps } from "@/components/public/cartaThemes";
 import type { OrderItemInput } from "@/lib/actions/orders";
 import type { readOnlineOrder } from "@/lib/db/orderingWebsite";
 
@@ -45,7 +45,7 @@ export default function OrderTracking({ slug, order }: { slug: string; order: Tr
   const labels = [...STEP_LABELS, delivery ? "Entregado" : "Recogido"];
 
   return (
-    <div data-theme="dark" className={`${lbFontClasses} lb lb-st`} style={{ paddingTop: 0 }}>
+    <div {...statusShellProps(order.template)}>
       <main id="main" className="lb-st-page">
         <AutoRefresh intervalMs={8000} />
         <div className="lb-st-glow" aria-hidden />

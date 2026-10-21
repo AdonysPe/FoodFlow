@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { readCarta } from "@/lib/db/carta";
 import { ENTITLEMENT_SELECT, restaurantCanUse } from "@/lib/subscriptions/access";
 import { orderingAvailability, readOrderingSettings } from "@/lib/orderingWebsite";
+import { resolveMenuTemplate } from "@/lib/menuTemplates";
 
 export async function readOrderingWebsite(slug: string, preview = false) {
   const restaurant = await prisma.restaurant.findUnique({ where: { slug }, select: {
@@ -26,11 +27,12 @@ export async function readOnlineOrder(token: string, slug: string) {
     select: { publicToken: true, status: true, channel: true, items: true, total: true, deliveryFee: true,
       customerName: true, fulfillmentAddress: true, deliveryZone: true, deliveryReference: true,
       customerNotes: true, paymentMethod: true, paidAt: true, voidedAt: true, estimatedMinutes: true,
-      restaurant: { select: { name: true, carta: { select: { whatsapp: true } } } },
+      restaurant: { select: { name: true, menuTemplateOverride: true, category: { select: { defaultMenuTemplate: true } }, carta: { select: { whatsapp: true } } } },
     },
   });
   if (!order) return null;
   return { code: order.publicToken!.slice(0, 10).toUpperCase(), restaurantName: order.restaurant.name,
+    template: resolveMenuTemplate(order.restaurant.menuTemplateOverride, order.restaurant.category.defaultMenuTemplate),
     whatsapp: order.restaurant.carta?.whatsapp ?? null, status: order.status, channel: order.channel,
     items: order.items, total: order.total, deliveryFee: order.deliveryFee,
     customerName: order.customerName, address: order.fulfillmentAddress, zone: order.deliveryZone,

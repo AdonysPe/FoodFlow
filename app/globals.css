@@ -3482,3 +3482,43 @@ body:has(.lb-legal) { overflow-x: clip; }
   .lb .lb-cl-receipt-copy, .lb .lb-cl-receipt-copy strong, .lb .lb-cl-summary dd { color: #000; }
   .lb .lb-cl-print { display: none; }
 }
+
+/* Order status (table "¡Pedido enviado!" and web tracking) for a classic carta
+   template: design B's layout untouched, in the template's paper, ink and type
+   (--c-* tokens from components/public/cartaThemes.js). */
+.lb.lb-st--classic {
+  --font-display: var(--c-display);
+  --font-sans: var(--c-body);
+  --lb-ink: var(--c-ink);
+  --lb-dim: var(--c-muted);
+  --lb-mute: var(--c-muted);
+  --lb-accent: var(--c-cta);
+  --lb-accent-ink: var(--c-primary);
+  --lb-line: var(--c-rule);
+  background: var(--c-grain), var(--c-paper);
+  color: var(--c-ink);
+  font-family: var(--c-body);
+  color-scheme: light;
+}
+.lb-st--classic .lb-st-glow { display: none; }
+.lb-st--classic .lb-mono { font-family: var(--c-body); font-weight: 600; letter-spacing: .14em; }
+.lb.lb-st--classic .lb-st-back { color: var(--c-primary); font-weight: 600; }
+.lb-st--classic .lb-st-venue { font-family: var(--c-display); font-style: var(--c-name-style); font-weight: var(--c-name-weight) !important; font-size: 24px; letter-spacing: var(--c-name-track); text-transform: var(--c-name-case); color: var(--c-primary); }
+.lb-st--classic[data-template="chifa"] .lb-st-venue { font-size: 19px; }
+.lb-st--classic .lb-st-ring circle:first-child { stroke: color-mix(in srgb, var(--c-rule) 70%, transparent); }
+.lb-st--classic .lb-st-arc { stroke: var(--c-cta); }
+.lb-st--classic .lb-st-ring[data-voided] .lb-st-arc { stroke: var(--c-muted); }
+.lb-st--classic .lb-st-orbit span { background: var(--c-primary); box-shadow: 0 0 0 3px var(--c-paper); }
+.lb-st--classic .lb-st-title { font-family: var(--c-display); font-style: var(--c-name-style); font-weight: var(--c-name-weight); letter-spacing: var(--c-name-track); text-transform: var(--c-name-case); color: var(--c-primary); }
+.lb-st--classic[data-template="chifa"] .lb-st-title { font-size: 30px; }
+.lb-st--classic .lb-st-sub { color: var(--c-muted); font-style: var(--c-desc-style); }
+.lb-st--classic .lb-st-steps li > span { background: color-mix(in srgb, var(--c-rule) 70%, transparent); }
+.lb-st--classic .lb-st-steps li[data-on="true"] > span { background: var(--c-cta); }
+.lb-st--classic .lb-st-card { background: color-mix(in srgb, var(--c-paper) 55%, #fff); border-color: var(--c-rule); border-radius: var(--c-btn-radius); }
+.lb-st--classic .lb-st-line.is-total > span:last-child { font-family: var(--c-display); color: var(--c-price); }
+.lb-st--classic .lb-st-rule { background: var(--c-rule); }
+.lb-st--classic .lb-st-btn { border-radius: var(--c-btn-radius); }
+.lb-st--classic .lb-st-btn--ghost { border-color: var(--c-rule); color: var(--c-primary); }
+.lb-st--classic .lb-st-btn--ghost:hover { background: color-mix(in srgb, var(--c-primary) 8%, transparent); }
+.lb-st--classic .lb-st-btn--solid { background: var(--c-cta); color: var(--c-on-cta) !important; }
+.lb-st--classic .lb-st-btn--solid:hover { background: color-mix(in srgb, var(--c-cta) 88%, #000); }

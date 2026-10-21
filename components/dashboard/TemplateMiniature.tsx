@@ -11,6 +11,13 @@ import { menuTemplates, resolveMenuTemplate } from "@/lib/menuTemplates";
  */
 
 function MiniatureMotif({ decoration }: { decoration: string }) {
+  if (decoration === "noche")
+    return (
+      <>
+        <circle cx="10" cy="11" r="4" />
+        <path d="M18 11h26M18 17h18" />
+      </>
+    );
   if (decoration === "pacifico")
     return (
       <>

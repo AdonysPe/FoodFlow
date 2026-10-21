@@ -34,12 +34,22 @@ export const pizzeriaTheme = {
   decoration: "trigo",
 } as const;
 
+export const nocheTheme = {
+  id: "noche",
+  name: "Noche (FoodFlow)",
+  description: "La carta oscura de FoodFlow: noche cálida, bermellón y vidrio esmerilado. Sirve para cualquier tipo de local.",
+  subtitle: "Precios al momento",
+  colors: { background: "#0C0908", surface: "#16110F", primary: "#F3EFE6", secondary: "#FF5A33", accent: "#FF7A57", cta: "#FF5A33" },
+  decoration: "noche",
+} as const;
+
 /** Restaurant identity, separate from the categories inside its menu. */
 export const menuTemplates = {
   criolla: criollaTheme,
   cevicheria: cevicheriaTheme,
   chifa: chifaTheme,
   pizzeria: pizzeriaTheme,
+  noche: nocheTheme,
 } as const;
 
 export type MenuTemplateKey = keyof typeof menuTemplates;

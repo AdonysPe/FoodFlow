@@ -3,11 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { cartaPrice } from "@/lib/carta";
-import { menuTemplates, resolveMenuTemplate } from "@/lib/menuTemplates";
+import { menuTemplates } from "@/lib/menuTemplates";
+import { Corners, Motif, Seal, cartaFontClasses, cartaTheme } from "./cartaThemes";
 import styles from "./PhysicalCartaView.module.css";
-import marineStyles from "./PhysicalCartaCevicheria.module.css";
-import chifaStyles from "./PhysicalCartaChifa.module.css";
-import pizzeriaStyles from "./PhysicalCartaPizzeria.module.css";
 
 const POLL_MS = 30_000;
 const cacheKey = (slug) => `foodflow:carta:${slug}`;
@@ -96,7 +94,7 @@ function useLiveCarta(slug, initial) {
 // The first sheet carries the full masthead, later ones a short one. The costs
 // are measured from the stylesheet: a heading with its spacing, a row of two
 // photo cards, the full-width card an odd photo gets, a row of two text lines.
-const FIRST_SHEET_MM = 212;
+const FIRST_SHEET_MM = 204;
 const NEXT_SHEET_MM = 234;
 const HEADING_MM = 17;
 const PHOTO_ROW_MM = 32;
@@ -184,44 +182,6 @@ function paginate(sections) {
   return sheets.length ? sheets : [[]];
 }
 
-function AjiMotif({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 108 52" fill="none" aria-hidden="true">
-      <path d="M27 20c8-7 19-3 20 6 1 11-15 18-37 19 10-8 14-18 17-25Z" />
-      <path d="M30 18c0-8 6-13 14-12M33 19c5-4 10-5 16-3-3 4-7 6-12 6" />
-      <path d="M49 25c17-5 32-1 47 10M64 26c5-10 13-11 19-8-3 6-9 9-17 9M75 29c7-1 13 2 19 6" />
-      <circle cx="99" cy="37" r="1.2" />
-    </svg>
-  );
-}
-
-function CoastMotif({ className }) {
-  return <svg className={className} viewBox="0 0 108 52" fill="none" aria-hidden="true">
-    <path d="M4 28c13-8 25-8 38 0s25 8 38 0c8-5 16-5 24-1M4 40c13-8 25-8 38 0s25 8 38 0c8-5 16-5 24-1" />
-    <path d="M43 12c8-8 22-8 30 0-8 8-22 8-30 0ZM43 12l-9-5v10l9-5ZM62 11h.01" />
-  </svg>;
-}
-
-function LatticeMotif({ className }) {
-  return <svg className={className} viewBox="0 0 108 52" fill="none" aria-hidden="true">
-    <path d="M5 5h35v35H5zM13 13h19v19H13zM68 5h35v35H68zM76 13h19v19H76zM40 22h28M23 40v8M85 40v8" />
-  </svg>;
-}
-
-function WheatMotif({ className }) {
-  return <svg className={className} viewBox="0 0 108 52" fill="none" aria-hidden="true">
-    <path d="M54 49V3M54 14C43 12 38 8 37 1c10 1 16 5 17 13Zm0 10c11-2 16-6 17-13-10 1-16 5-17 13Zm0 10c-11-2-16-6-17-13 10 1 16 5 17 13Zm0 10c11-2 16-6 17-13-10 1-16 5-17 13Z" />
-    <path d="M6 47c12-7 24-7 36 0M66 47c12-7 24-7 36 0" />
-  </svg>;
-}
-
-const visualThemes = {
-  criolla: { className: "", Motif: AjiMotif },
-  cevicheria: { className: marineStyles.theme, Motif: CoastMotif },
-  chifa: { className: chifaStyles.theme, Motif: LatticeMotif },
-  pizzeria: { className: pizzeriaStyles.theme, Motif: WheatMotif },
-};
-
 function PhotoDish({ item, wide, onOpen }) {
   return (
     <div className={`${styles.card} ${wide ? styles.wide : ""} ${item.available ? "" : styles.out}`}>
@@ -261,7 +221,7 @@ function TextDish({ item }) {
 
 // Jump bar for the diner who is hunting for the drinks or the desserts. It is
 // screen-only: the printed sheet has no use for it.
-function SectionNav({ sections }) {
+function SectionNav({ sections, live }) {
   const [active, setActive] = useState(sections[0]?.id);
   const barRef = useRef(null);
 
@@ -305,6 +265,7 @@ function SectionNav({ sections }) {
     <div className={styles.navSlot}>
     <nav className={styles.nav} aria-label="Secciones de la carta">
       <div className={styles.navBar} ref={barRef}>
+        {live && <span className={styles.live}><i aria-hidden="true" />Precios al momento</span>}
         {sections.map((section) => (
           <a
             key={section.id}
@@ -364,8 +325,7 @@ function DishDialog({ item, onClose }) {
 
 export default function PhysicalCartaView({ initial }) {
   const { venue, categories, items, template } = useLiveCarta(initial.venue.slug, initial);
-  const templateKey = resolveMenuTemplate(template);
-  const { className: themeClass, Motif } = visualThemes[templateKey];
+  const theme = cartaTheme(template);
   const sections = useMemo(() => menuSections(categories, items), [categories, items]);
   const sheets = useMemo(() => paginate(sections), [sections]);
   const [openId, setOpenId] = useState(null);
@@ -373,17 +333,24 @@ export default function PhysicalCartaView({ initial }) {
   const seen = new Set();
 
   return (
-    <main id="main" className={`${styles.stage} ${themeClass}`}>
-      {sections.length > 1 && <SectionNav sections={sections} />}
+    <main id="main" className={`${styles.stage} ${cartaFontClasses}`} style={theme.style} data-template={theme.key}>
+      {sections.length > 1 && <SectionNav sections={sections} live={theme.key === "noche"} />}
       {sheets.map((sheet, pageIndex) => (
         <article className={styles.sheet} key={`${venue.slug}-${pageIndex}`} aria-label={`Carta, hoja ${pageIndex + 1} de ${sheets.length}`}>
           <div className={styles.paperGrain} aria-hidden="true" />
+          <div className={styles.frame} aria-hidden="true" />
+          <div className={styles.frameInner} aria-hidden="true" />
+          <div className={styles.band} aria-hidden="true" />
+          <div className={`${styles.band} ${styles.bandBottom}`} aria-hidden="true" />
+          <Corners path={theme.corner} className={styles.corner} />
+          {pageIndex === 0 && theme.seal && <Seal className={styles.seal} />}
           <div className={styles.inner}>
             <header className={`${styles.header} ${pageIndex > 0 ? styles.continuation : ""}`}>
-              <div className={styles.topRule} aria-hidden="true"><span /></div>
-              <h1>{venue.name}</h1>
-              <p className={styles.tagline}>{venue.tagline || menuTemplates[templateKey].subtitle}</p>
-              <Motif className={styles.headerMotif} />
+              <p className={styles.eyebrow}>{theme.eyebrow}</p>
+              <h1>{venue.name}<span className={styles.nameDot} aria-hidden="true">.</span></h1>
+              <p className={styles.tagline}>{venue.tagline || menuTemplates[theme.key].subtitle}</p>
+              <Motif paths={theme.motif} className={styles.headerMotif} />
+              <span className={styles.nameRule} aria-hidden="true" />
             </header>
             <div className={styles.sections}>
               {sheet.length === 0 && <p className={styles.empty}>Pronto compartiremos nuestra carta.</p>}
@@ -398,9 +365,11 @@ export default function PhysicalCartaView({ initial }) {
                     data-cat={chunk.sectionId}
                   >
                     <div className={styles.sectionHeading}>
-                      <span className={styles.sectionFlourish} aria-hidden="true">✦</span>
+                      <span className={styles.sectionLine} aria-hidden="true" />
+                      <span className={styles.diamond} aria-hidden="true" />
                       <h2>{chunk.name}</h2>
                       {chunk.continued && <span className={styles.continued}>continuación</span>}
+                      <span className={styles.diamond} aria-hidden="true" />
                       <span className={styles.sectionLine} aria-hidden="true" />
                     </div>
                     {chunk.photos.length > 0 && (
@@ -426,8 +395,10 @@ export default function PhysicalCartaView({ initial }) {
             </div>
             <footer className={styles.footer}>
               <span className={styles.footerLine} aria-hidden="true" />
-              <Motif className={styles.footerMotif} />
+              <Motif paths={theme.motif} className={styles.footerMotif} />
               <span className={styles.pageNumber}>{String(pageIndex + 1).padStart(2, "0")} / {String(sheets.length).padStart(2, "0")}</span>
+              <Motif paths={theme.motif} className={`${styles.footerMotif} ${styles.mirror}`} />
+              <span className={styles.footerLine} aria-hidden="true" />
             </footer>
           </div>
         </article>
