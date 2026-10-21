@@ -1,19 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AnimatePresence, m } from "framer-motion";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import { EASE } from "@/lib/motion";
 import {
   updateReservation,
   updateReservationStatus,
   deleteReservation,
 } from "@/lib/actions/reservations";
-import { RESERVATION_SOURCE_LABELS, type ReservationStatusValue } from "@/lib/tableMeta";
+import { type ReservationStatusValue } from "@/lib/tableMeta";
 import type { TableDTO, ReservationDTO } from "./types";
 import ReservationForm, { initialFromReservation } from "./ReservationForm";
-import ReservationStatusPill from "./ReservationStatusPill";
-import { ghostButtonClass, formatClock, endTimeLabel } from "./ui";
+import ReservationStatusPill, { RESERVATION_TONE } from "./ReservationStatusPill";
+import { formatClock, endTimeLabel } from "./ui";
 
 const QUICK_ACTIONS: Record<ReservationStatusValue, { to: ReservationStatusValue; label: string }[]> =
   {
@@ -74,111 +72,75 @@ export default function ReservationCard({
     day: "numeric",
     month: "short",
   });
+  const faded = reservation.status === "cancelada" || reservation.status === "no_show";
 
   return (
-    <li className="border-b border-fg/[0.05] px-5 py-4 last:border-0">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            {showDate && (
-              <span className="rounded-md bg-fg/[0.05] px-1.5 py-0.5 text-[11px] capitalize text-muted">
-                {dateLabel}
-              </span>
-            )}
-            <span className="font-mono text-[13px] text-accent-ink">
-              {formatClock(reservation.startTime)}
-            </span>
-            <span className="text-[12px] text-faint">
-              – {endTimeLabel(reservation.startTime, reservation.durationMin)}
-            </span>
-          </div>
-          <p className="mt-1 truncate text-[14px] font-medium text-fg/85">
-            {reservation.customerName}
-          </p>
-          <p className="mt-0.5 text-[12.5px] text-faint">
-            {reservation.partySize} personas
-            {tableName ? ` · ${tableName}` : " · sin mesa"}
-            {reservation.customerPhone ? ` · ${reservation.customerPhone}` : ""}
-          </p>
-          {reservation.notes && (
-            <p className="mt-1 text-[12.5px] italic text-faint">“{reservation.notes}”</p>
-          )}
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <div className="flex items-center gap-1.5">
-            {reservation.source === "web" && (
-              <span className="rounded-full border border-chat-400/25 bg-chat-400/10 px-2 py-0.5 text-[11px] font-medium text-chat-ink">
-                {RESERVATION_SOURCE_LABELS.web}
-              </span>
-            )}
-            <ReservationStatusPill status={reservation.status} />
-          </div>
-          <div className="flex flex-wrap justify-end gap-2">
-            {actions.map((a) => (
-              <button
-                key={a.to}
-                type="button"
-                disabled={isPending}
-                onClick={() => changeStatus(a.to)}
-                className={ghostButtonClass}
-              >
-                {a.label}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setEditing((v) => !v)}
-              className={ghostButtonClass}
-            >
-              {editing ? "Cerrar" : "Editar"}
-            </button>
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={handleDelete}
-              onBlur={() => setConfirmingDelete(false)}
-              className={
-                confirmingDelete
-                  ? "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-fg hover:bg-accent-600 disabled:opacity-40"
-                  : ghostButtonClass
-              }
-            >
-              {confirmingDelete ? "¿Confirmar?" : "Eliminar"}
-            </button>
-          </div>
-        </div>
+    <li className="lbd-rv-row" data-faded={faded || undefined}>
+      <div className="lbd-rv-time">
+        <strong className="lbd-mono">{reservation.startTime}</strong>
+        <small>{showDate ? dateLabel : `hasta ${endTimeLabel(reservation.startTime, reservation.durationMin)}`}</small>
+      </div>
+      <span className="lbd-rv-bar" style={{ background: RESERVATION_TONE[reservation.status].color }} aria-hidden="true" />
+      <div className="lbd-rv-main">
+        <span className="lbd-rv-name">
+          <strong>{reservation.customerName}</strong>
+          {reservation.source === "web" && <span className="lbd-rv-web">WEB</span>}
+        </span>
+        <small>
+          {reservation.partySize} {reservation.partySize === 1 ? "persona" : "personas"}
+          {tableName ? ` · ${tableName}` : " · sin mesa asignada"}
+          {reservation.customerPhone ? ` · ${reservation.customerPhone}` : ""}
+          {showDate ? ` · ${formatClock(reservation.startTime)}` : ""}
+        </small>
+        {reservation.notes && <em>“{reservation.notes}”</em>}
+      </div>
+      <ReservationStatusPill status={reservation.status} />
+      <div className="lbd-rv-actions">
+        {actions.map((a, index) => (
+          <button
+            key={a.to}
+            type="button"
+            disabled={isPending}
+            onClick={() => changeStatus(a.to)}
+            className={`lbd-btn lbd-btn--sm ${index === 0 && !faded ? "lbd-btn--cream" : "lbd-btn--ghost"}`}
+          >
+            {a.label}
+          </button>
+        ))}
+        <button type="button" onClick={() => setEditing((v) => !v)} className="lbd-btn lbd-btn--ghost lbd-btn--sm" aria-expanded={editing}>
+          {editing ? "Cerrar" : "Editar"}
+        </button>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={handleDelete}
+          onBlur={() => setConfirmingDelete(false)}
+          className={`lbd-btn lbd-btn--sm ${confirmingDelete ? "lbd-btn--solid" : "lbd-btn--ghost"}`}
+        >
+          {confirmingDelete ? "¿Confirmar?" : "Eliminar"}
+        </button>
       </div>
 
-      <AnimatePresence initial={false}>
-        {editing && (
-          <m.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.28, ease: EASE }}
-            className="overflow-hidden"
-          >
-            <div className="mt-4 rounded-xl border border-fg/[0.07] bg-fg/[0.02] p-4">
-              <ReservationForm
-                tables={tables}
-                reservations={reservations}
-                excludeReservationId={reservation.id}
-                initial={initialFromReservation(reservation)}
-                submitLabel="Guardar cambios"
-                onSubmit={async (input) => {
-                  const result = await updateReservation(reservation.id, input);
-                  if (result.ok) {
-                    setEditing(false);
-                    pushToast("Reserva actualizada.", "success");
-                  }
-                  return result;
-                }}
-                onCancel={() => setEditing(false)}
-              />
-            </div>
-          </m.div>
-        )}
-      </AnimatePresence>
+      {editing && (
+        <div className="lbd-rv-edit">
+          <ReservationForm
+            tables={tables}
+            reservations={reservations}
+            excludeReservationId={reservation.id}
+            initial={initialFromReservation(reservation)}
+            submitLabel="Guardar cambios"
+            onSubmit={async (input) => {
+              const result = await updateReservation(reservation.id, input);
+              if (result.ok) {
+                setEditing(false);
+                pushToast("Reserva actualizada.", "success");
+              }
+              return result;
+            }}
+            onCancel={() => setEditing(false)}
+          />
+        </div>
+      )}
     </li>
   );
 }

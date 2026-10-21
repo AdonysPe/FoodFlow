@@ -1,18 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import GlassCard from "@/components/ui/GlassCard";
-import { addDays, RESERVATION_STATUS_LABELS, type ReservationStatusValue } from "@/lib/tableMeta";
+import { addDays, RESERVATION_STATUS_LABELS } from "@/lib/tableMeta";
 import type { ReservationDTO } from "./types";
+import { RESERVATION_TONE } from "./ReservationStatusPill";
 import { formatClock } from "./ui";
-
-const DOT: Record<ReservationStatusValue, string> = {
-  pendiente: "bg-warn",
-  confirmada: "bg-mint",
-  sentada: "bg-accent-400",
-  cancelada: "bg-fg/25",
-  no_show: "bg-fg/25",
-};
 
 export default function WeekView({
   reservations,
@@ -41,68 +33,46 @@ export default function WeekView({
   }, [reservations]);
 
   return (
-    <GlassCard className="overflow-hidden p-0" hoverLift={false}>
-      <div className="overflow-x-auto">
-        <div className="grid min-w-[720px] grid-cols-7">
-          {days.map((day) => {
-            const list = byDay.get(day) ?? [];
-            const d = new Date(`${day}T00:00:00`);
-            const isToday = day === today;
-            return (
-              <div key={day} className="min-h-[220px] border-r border-fg/[0.05] last:border-r-0">
-                <div
-                  className={`border-b border-fg/[0.06] px-3 py-2 ${
-                    isToday ? "bg-accent-400/[0.06]" : ""
-                  }`}
-                >
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-faint">
-                    {d.toLocaleDateString("es-PE", { weekday: "short" })}
-                  </p>
-                  <p
-                    className={`text-[15px] font-semibold ${
-                      isToday ? "text-accent-ink" : "text-fg/80"
-                    }`}
-                  >
-                    {d.getDate()}
-                  </p>
-                </div>
-                <div className="flex flex-col gap-1.5 p-2">
-                  {list.length === 0 ? (
-                    <p className="px-1 py-3 text-center text-[11.5px] text-fg/20">—</p>
-                  ) : (
-                    list.map((r) => {
-                      const muted = r.status === "cancelada" || r.status === "no_show";
-                      return (
-                        <button
-                          key={r.id}
-                          type="button"
-                          onClick={() => onSelect(r.id)}
-                          title={`${formatClock(r.startTime)} · ${r.customerName} · ${
-                            RESERVATION_STATUS_LABELS[r.status]
-                          }`}
-                          className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-1 text-left transition-colors ${
-                            selectedId === r.id
-                              ? "border-fg/30 bg-fg/[0.08]"
-                              : "border-fg/[0.06] bg-fg/[0.02] hover:bg-fg/[0.05]"
-                          } ${muted ? "opacity-45" : ""}`}
-                        >
-                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${DOT[r.status]}`} />
-                          <span className="shrink-0 font-mono text-[10.5px] text-muted">
-                            {r.startTime}
-                          </span>
-                          <span className="min-w-0 flex-1 truncate text-[11.5px] text-fg/80">
-                            {r.customerName}
-                          </span>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
+    <div className="lbd-rv-week-scroll">
+      <div className="lbd-rv-week">
+        {days.map((day) => {
+          const list = byDay.get(day) ?? [];
+          const d = new Date(`${day}T00:00:00`);
+          const isToday = day === today;
+          return (
+            <div key={day} className="lbd-rv-day" data-today={isToday || undefined}>
+              <div className="lbd-rv-day-head">
+                <span>{d.toLocaleDateString("es-PE", { weekday: "short" })}</span>
+                <strong className="lbd-display">{d.getDate()}</strong>
               </div>
-            );
-          })}
-        </div>
+              {list.length === 0 ? (
+                <span className="lbd-rv-day-empty">Sin reservas</span>
+              ) : (
+                list.map((r) => {
+                  const muted = r.status === "cancelada" || r.status === "no_show";
+                  return (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => onSelect(r.id)}
+                      aria-pressed={selectedId === r.id}
+                      title={`${formatClock(r.startTime)} · ${r.customerName} · ${RESERVATION_STATUS_LABELS[r.status]}`}
+                      className="lbd-rv-chip"
+                      data-muted={muted || undefined}
+                    >
+                      <span className="lbd-mono">
+                        <i style={{ background: RESERVATION_TONE[r.status].color }} aria-hidden="true" />
+                        {r.startTime}
+                      </span>
+                      <span>{r.customerName}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          );
+        })}
       </div>
-    </GlassCard>
+    </div>
   );
 }

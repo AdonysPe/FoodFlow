@@ -1,19 +1,39 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AnimatePresence, m } from "framer-motion";
-import GlassCard from "@/components/ui/GlassCard";
-import Button from "@/components/ui/Button";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import { EASE } from "@/lib/motion";
 import { createTable, updateTable, deleteTable } from "@/lib/actions/tables";
-import { SHAPE_LABELS, ZONE_LABELS } from "@/lib/tableMeta";
+import { SHAPE_LABELS, TABLE_SHAPES, TABLE_ZONES, ZONE_LABELS, type TableShapeValue, type TableZoneValue } from "@/lib/tableMeta";
 import type { TableDTO } from "./types";
-import TableFormFields, { emptyTableForm, type TableFormValue } from "./TableFormFields";
-import { ghostButtonClass, accentButtonClass } from "./ui";
+import { emptyTableForm, type TableFormValue } from "./TableFormFields";
 
 function toForm(t: TableDTO): TableFormValue {
   return { name: t.name, capacity: String(t.capacity), shape: t.shape, zone: t.zone };
+}
+
+/** The table's outline, drawn to its shape, with the seat count inside. */
+function ShapeGlyph({ shape, seats }: { shape: TableShapeValue; seats: number }) {
+  return (
+    <span className="lbd-ms-glyph" aria-hidden="true">
+      <span data-shape={shape}>{seats}</span>
+    </span>
+  );
+}
+
+/** Pick one of a few values as a row of pills — shape and zone. */
+function Pick<T extends string>({ label, options, labels, value, onChange }: { label: string; options: readonly T[]; labels: Record<T, string>; value: T; onChange: (next: T) => void }) {
+  return (
+    <div className="lbd-ms-field lbd-ms-field--wide">
+      <span>{label}</span>
+      <div className="lbd-ms-pick" role="group" aria-label={label}>
+        {options.map((option) => (
+          <button key={option} type="button" aria-pressed={value === option} className={value === option ? "is-on" : undefined} onClick={() => onChange(option)}>
+            {labels[option]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function TableRow({ table }: { table: TableDTO }) {
@@ -53,13 +73,23 @@ function TableRow({ table }: { table: TableDTO }) {
   }
 
   return (
-    <li className="border-b border-fg/[0.05] px-5 py-4 last:border-0">
+    <li className="lbd-ms-row">
+      <ShapeGlyph shape={editing ? form.shape : table.shape} seats={editing ? Number(form.capacity) || 0 : table.capacity} />
       {editing ? (
-        <div className="flex flex-col gap-4">
-          <TableFormFields value={form} onChange={setForm} idPrefix={`edit-${table.id}`} />
-          <div className="flex gap-2">
-            <button type="button" disabled={isPending} onClick={handleSave} className={accentButtonClass}>
-              Guardar
+        <div className="lbd-ms-edit">
+          <label className="lbd-ms-field">
+            <span>Nombre</span>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Mesa 4" required autoFocus />
+          </label>
+          <label className="lbd-ms-field lbd-ms-field--small">
+            <span>Personas</span>
+            <input type="number" min="1" max="40" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} required />
+          </label>
+          <Pick label="Forma" options={TABLE_SHAPES} labels={SHAPE_LABELS} value={form.shape} onChange={(shape) => setForm({ ...form, shape })} />
+          <Pick label="Zona" options={TABLE_ZONES} labels={ZONE_LABELS} value={form.zone} onChange={(zone) => setForm({ ...form, zone })} />
+          <div className="lbd-ms-edit-actions">
+            <button type="button" disabled={isPending} onClick={handleSave} className="lbd-btn lbd-btn--solid lbd-btn--sm">
+              {isPending ? "Guardando…" : "Guardar"}
             </button>
             <button
               type="button"
@@ -68,22 +98,22 @@ function TableRow({ table }: { table: TableDTO }) {
                 setForm(toForm(table));
                 setEditing(false);
               }}
-              className={ghostButtonClass}
+              className="lbd-btn lbd-btn--ghost lbd-btn--sm"
             >
               Cancelar
             </button>
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="truncate text-[14px] font-medium text-fg/85">{table.name}</p>
-            <p className="mt-0.5 text-[12.5px] text-faint">
-              {table.capacity} personas · {SHAPE_LABELS[table.shape]} · {ZONE_LABELS[table.zone]}
-            </p>
+        <>
+          <div className="lbd-ms-row-main">
+            <strong>{table.name}</strong>
+            <small>
+              {table.capacity} {table.capacity === 1 ? "persona" : "personas"} · {SHAPE_LABELS[table.shape]} · {ZONE_LABELS[table.zone]}
+            </small>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <button type="button" onClick={() => setEditing(true)} className={ghostButtonClass}>
+          <div className="lbd-ms-row-actions">
+            <button type="button" onClick={() => setEditing(true)} className="lbd-btn lbd-btn--ghost lbd-btn--sm">
               Editar
             </button>
             <button
@@ -91,16 +121,12 @@ function TableRow({ table }: { table: TableDTO }) {
               disabled={isPending}
               onClick={handleDelete}
               onBlur={() => setConfirmingDelete(false)}
-              className={
-                confirmingDelete
-                  ? "rounded-lg bg-accent-500 px-3 py-1.5 text-[12.5px] font-medium text-fg transition-colors hover:bg-accent-600 disabled:opacity-40"
-                  : ghostButtonClass
-              }
+              className={`lbd-btn lbd-btn--sm ${confirmingDelete ? "lbd-btn--solid" : "lbd-btn--ghost"}`}
             >
               {confirmingDelete ? "¿Confirmar?" : "Eliminar"}
             </button>
           </div>
-        </div>
+        </>
       )}
     </li>
   );
@@ -122,7 +148,7 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
         zone: form.zone,
       });
       if (result.ok) {
-        setForm(emptyTableForm);
+        setForm({ ...emptyTableForm, zone: form.zone });
         setAdding(false);
         pushToast("Mesa añadida.", "success");
       } else {
@@ -131,61 +157,76 @@ export default function TablesPanel({ tables }: { tables: TableDTO[] }) {
     });
   }
 
+  const seats = tables.reduce((sum, t) => sum + t.capacity, 0);
+  const zones = TABLE_ZONES.map((zone) => ({ zone, rows: tables.filter((t) => t.zone === zone) })).filter((group) => group.rows.length > 0);
+  const stats = [
+    { label: "Mesas", value: tables.length, sub: "activas" },
+    { label: "Asientos", value: seats, sub: "en total" },
+    ...zones.map(({ zone, rows }) => ({ label: ZONE_LABELS[zone as TableZoneValue], value: rows.length, sub: rows.length === 1 ? "mesa" : "mesas" })),
+  ];
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-[15px] font-semibold text-fg/90">Mesas del local</h2>
-          <p className="mt-0.5 text-[12.5px] text-faint">
-            {tables.length} {tables.length === 1 ? "mesa" : "mesas"} en el plano
-          </p>
-        </div>
-        <Button
-          type="button"
-          size="md"
-          variant={adding ? "secondary" : "primary"}
-          onClick={() => setAdding((v) => !v)}
-        >
-          {adding ? "Cerrar" : "+ Añadir mesa"}
-        </Button>
+    <div className="lbd-pg">
+      <div className="lbd-ms-stats lbd-rise" style={{ animationDelay: ".05s" }}>
+        {stats.map((stat) => (
+          <div key={stat.label} className="lbd-ms-stat lbd-ms-stat--count">
+            <span>{stat.label}</span>
+            <span>
+              <strong className="lbd-display">{stat.value}</strong>
+              <small>{stat.sub}</small>
+            </span>
+          </div>
+        ))}
       </div>
 
-      <AnimatePresence initial={false}>
-        {adding && (
-          <m.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: EASE }}
-            className="overflow-hidden"
-          >
-            <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-              <form onSubmit={handleCreate} className="flex flex-col gap-4">
-                <TableFormFields value={form} onChange={setForm} idPrefix="new" />
-                <div>
-                  <Button type="submit" size="md" disabled={isPending}>
-                    {isPending ? "Añadiendo…" : "Añadir mesa"}
-                  </Button>
-                </div>
-              </form>
-            </GlassCard>
-          </m.div>
-        )}
-      </AnimatePresence>
+      <section className="lbd-card lbd-ms-list lbd-rise" style={{ animationDelay: ".1s" }} aria-label="Mesas del local">
+        <div className="lbd-ms-list-head">
+          <div>
+            <strong>Mesas del local</strong>
+            <small>
+              {tables.length} {tables.length === 1 ? "mesa" : "mesas"} en el plano
+            </small>
+          </div>
+          <button type="button" aria-expanded={adding} onClick={() => setAdding((v) => !v)} className={`lbd-btn lbd-btn--sm ${adding ? "lbd-btn--ghost" : "lbd-btn--solid"}`}>
+            {adding ? "Cerrar" : "+ Añadir mesa"}
+          </button>
+        </div>
 
-      {tables.length === 0 ? (
-        <GlassCard className="p-10 text-center" hoverLift={false}>
-          <p className="text-[14px] text-faint">Aún no hay mesas. Crea tu plano para empezar.</p>
-        </GlassCard>
-      ) : (
-        <GlassCard className="overflow-hidden p-0" hoverLift={false}>
-          <ul className="flex flex-col">
-            {tables.map((t) => (
-              <TableRow key={t.id} table={t} />
-            ))}
-          </ul>
-        </GlassCard>
-      )}
+        {adding && (
+          <form onSubmit={handleCreate} className="lbd-ms-add">
+            <label className="lbd-ms-field">
+              <span>Nombre</span>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Mesa 4" required autoFocus />
+            </label>
+            <label className="lbd-ms-field lbd-ms-field--small">
+              <span>Personas</span>
+              <input type="number" min="1" max="40" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} required />
+            </label>
+            <Pick label="Forma" options={TABLE_SHAPES} labels={SHAPE_LABELS} value={form.shape} onChange={(shape) => setForm({ ...form, shape })} />
+            <Pick label="Zona" options={TABLE_ZONES} labels={ZONE_LABELS} value={form.zone} onChange={(zone) => setForm({ ...form, zone })} />
+            <button type="submit" disabled={isPending} className="lbd-btn lbd-btn--solid lbd-btn--sm lbd-ms-add-go">
+              {isPending ? "Añadiendo…" : "Añadir mesa"}
+            </button>
+          </form>
+        )}
+
+        {tables.length === 0 ? (
+          <p className="lbd-ms-empty">Aún no hay mesas. Crea tu plano para empezar.</p>
+        ) : (
+          zones.map(({ zone, rows }) => (
+            <div key={zone}>
+              <span className="lbd-ms-group lbd-mono">
+                {ZONE_LABELS[zone as TableZoneValue].toUpperCase()} · {rows.length} {rows.length === 1 ? "MESA" : "MESAS"}
+              </span>
+              <ul className="lbd-ms-rows">
+                {rows.map((t) => (
+                  <TableRow key={t.id} table={t} />
+                ))}
+              </ul>
+            </div>
+          ))
+        )}
+      </section>
     </div>
   );
 }

@@ -1,21 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AnimatePresence, m } from "framer-motion";
-import GlassCard from "@/components/ui/GlassCard";
-import Button from "@/components/ui/Button";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import { EASE } from "@/lib/motion";
 import { createReservation } from "@/lib/actions/reservations";
-import { addDays, startOfWeek } from "@/lib/tableMeta";
+import { addDays, startOfWeek, RESERVATION_STATUS_LABELS, type ReservationStatusValue } from "@/lib/tableMeta";
 import type { TableDTO, ReservationDTO } from "./types";
 import ReservationForm, { blankReservation } from "./ReservationForm";
 import ReservationCard from "./ReservationCard";
-import SegmentedControl from "./SegmentedControl";
+import { RESERVATION_TONE } from "./ReservationStatusPill";
 import WeekView from "./WeekView";
 import { formatDayLabel } from "./ui";
 
 type View = "hoy" | "semana";
+
+const LEGEND: ReservationStatusValue[] = ["confirmada", "sentada", "no_show", "cancelada"];
 
 export default function ReservationsPanel({
   tables,
@@ -30,17 +29,30 @@ export default function ReservationsPanel({
   const [adding, setAdding] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(today));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [host, setHost] = useState<Element | null>(null);
   const pushToast = useDashboardStore((s) => s.pushToast);
 
+  // The drawer mounts in the panel root so no animated ancestor traps it.
+  useEffect(() => {
+    setHost(document.querySelector(".lbd") ?? document.body);
+  }, []);
+  useEffect(() => {
+    if (!adding) return;
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setAdding(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [adding]);
+
+  // Today's agenda leaves out what still needs a decision: that sits above it.
   const todays = useMemo(
     () =>
       reservations
-        .filter((r) => r.date === today)
+        .filter((r) => r.date === today && r.status !== "pendiente")
         .sort((a, b) => a.startTime.localeCompare(b.startTime)),
     [reservations, today]
   );
 
-  // Anything still awaiting a decision, today or later — the queue the admin
+  // Anything still awaiting a decision, today or later — the queue the owner
   // works through. Web bookings land here automatically.
   const pending = useMemo(
     () =>
@@ -70,19 +82,16 @@ export default function ReservationsPanel({
   })}`;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <SegmentedControl
-          idBase="reservas-view"
-          size="sm"
-          value={view}
-          onChange={setView}
-          options={[
-            { id: "hoy", label: "Hoy" },
-            { id: "semana", label: "Semana" },
-          ]}
-        />
-        <div className="flex items-center gap-2">
+    <div className="lbd-pg">
+      <div className="lbd-rv-toolbar lbd-rise" style={{ animationDelay: ".05s" }}>
+        <div className="lbd-seg" role="group" aria-label="Vista">
+          {(["hoy", "semana"] as const).map((v) => (
+            <button key={v} type="button" aria-pressed={view === v} className={view === v ? "is-on" : undefined} onClick={() => setView(v)}>
+              {v === "hoy" ? "Hoy" : "Semana"}
+            </button>
+          ))}
+        </div>
+        <div className="lbd-rv-toolbar-actions">
           <button
             type="button"
             onClick={() => {
@@ -100,32 +109,108 @@ export default function ReservationsPanel({
                 pushToast(r.ok ? "Llegó una reserva web (pendiente)." : r.error, r.ok ? "success" : "error")
               );
             }}
-            className="rounded-xl border border-chat-400/25 bg-chat-400/10 px-3 py-2.5 text-[13px] font-medium text-chat-ink hover:bg-chat-400/20"
+            className="lbd-btn lbd-btn--ghost lbd-btn--sm"
             title="Crea una reserva de prueba como si llegara desde FoodFlow Sites"
           >
             Simular web
           </button>
-          <Button
-            type="button"
-            size="md"
-            variant={adding ? "secondary" : "primary"}
-            onClick={() => setAdding((v) => !v)}
-          >
-            {adding ? "Cerrar" : "+ Nueva reserva"}
-          </Button>
+          <button type="button" onClick={() => setAdding(true)} className="lbd-btn lbd-btn--solid lbd-btn--sm">
+            + Nueva reserva
+          </button>
         </div>
       </div>
 
-      <AnimatePresence initial={false}>
-        {adding && (
-          <m.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: EASE }}
-            className="overflow-hidden"
-          >
-            <GlassCard className="p-5 sm:p-6" hoverLift={false}>
+      {pending.length > 0 && (
+        <section className="lbd-rv-pending lbd-rise" style={{ animationDelay: ".08s" }} aria-label="Por confirmar">
+          <div className="lbd-rv-pending-head">
+            <i className="lbd-rv-pulse" aria-hidden="true" />
+            <strong>Por confirmar</strong>
+            <span>{pending.length} {pending.length === 1 ? "reserva espera" : "reservas esperan"} tu respuesta</span>
+          </div>
+          <ul className="lbd-rv-list">
+            {pending.map((r) => (
+              <ReservationCard key={r.id} reservation={r} tables={tables} reservations={reservations} showDate />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {view === "hoy" ? (
+        <section className="lbd-card lbd-rv-card lbd-rise" style={{ animationDelay: ".12s" }} aria-label="Agenda de hoy">
+          <div className="lbd-rv-card-head">
+            <div>
+              <strong>Agenda de hoy</strong>
+              <small>{formatDayLabel(today)}</small>
+            </div>
+            <div className="lbd-rv-legend" aria-hidden="true">
+              {LEGEND.map((s) => (
+                <span key={s}>
+                  <i style={{ background: RESERVATION_TONE[s].color }} />
+                  {RESERVATION_STATUS_LABELS[s]}
+                </span>
+              ))}
+            </div>
+          </div>
+          {todays.length === 0 ? (
+            <p className="lbd-rv-empty">Aún no hay reservas para hoy. Crea una con “+ Nueva reserva”.</p>
+          ) : (
+            <ul className="lbd-rv-list">
+              {todays.map((r) => (
+                <ReservationCard key={r.id} reservation={r} tables={tables} reservations={reservations} />
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : (
+        <section className="lbd-card lbd-rv-card lbd-rv-card--week lbd-rise" style={{ animationDelay: ".12s" }} aria-label="Semana">
+          <div className="lbd-rv-card-head">
+            <strong>Semana</strong>
+            <div className="lbd-rv-weeknav">
+              <button type="button" onClick={() => setWeekStart((w) => addDays(w, -7))} aria-label="Semana anterior">
+                ‹
+              </button>
+              <span>{weekLabel}</span>
+              <button type="button" onClick={() => setWeekStart((w) => addDays(w, 7))} aria-label="Semana siguiente">
+                ›
+              </button>
+              {weekStart !== startOfWeek(today) && (
+                <button type="button" className="lbd-rv-today" onClick={() => setWeekStart(startOfWeek(today))}>
+                  Hoy
+                </button>
+              )}
+            </div>
+          </div>
+
+          <WeekView
+            reservations={weekReservations}
+            weekStart={weekStart}
+            today={today}
+            selectedId={selectedId}
+            onSelect={(id) => setSelectedId((cur) => (cur === id ? null : id))}
+          />
+
+          {selected && (
+            <ul className="lbd-rv-list lbd-rv-selected">
+              <ReservationCard key={selected.id} reservation={selected} tables={tables} reservations={reservations} showDate />
+            </ul>
+          )}
+        </section>
+      )}
+
+      {adding &&
+        host &&
+        createPortal(
+          <>
+            <div className="lbd-ad-scrim" onMouseDown={() => setAdding(false)} aria-hidden="true" />
+            <div className="lbd-ad-drawer lbd-ad-drawer--form lbd-rv-drawer" role="dialog" aria-modal="true" aria-labelledby="rv-new-title">
+              <div className="lbd-ad-drawer-head">
+                <h2 id="rv-new-title" className="lbd-display">
+                  Nueva reserva
+                </h2>
+                <button type="button" className="lbd-ad-ico" onClick={() => setAdding(false)} aria-label="Cerrar">
+                  ×
+                </button>
+              </div>
               <ReservationForm
                 tables={tables}
                 reservations={reservations}
@@ -141,130 +226,10 @@ export default function ReservationsPanel({
                 }}
                 onCancel={() => setAdding(false)}
               />
-            </GlassCard>
-          </m.div>
-        )}
-      </AnimatePresence>
-
-      {pending.length > 0 && (
-        <div>
-          <h2 className="mb-2 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-warn-ink/80">
-            Por confirmar
-            <span className="rounded-full bg-warn/15 px-1.5 py-0.5 text-[11px] font-bold text-warn-ink">
-              {pending.length}
-            </span>
-          </h2>
-          <GlassCard
-            className="overflow-hidden p-0 ring-1 ring-inset ring-warn/15"
-            hoverLift={false}
-          >
-            <ul className="flex flex-col">
-              {pending.map((r) => (
-                <ReservationCard
-                  key={r.id}
-                  reservation={r}
-                  tables={tables}
-                  reservations={reservations}
-                  showDate
-                />
-              ))}
-            </ul>
-          </GlassCard>
-        </div>
-      )}
-
-      {view === "hoy" ? (
-        <div>
-          <h2 className="text-[15px] font-semibold text-fg/90">Agenda de hoy</h2>
-          <p className="mt-0.5 mb-2 text-[12.5px] capitalize text-faint">{formatDayLabel(today)}</p>
-          {todays.length === 0 ? (
-            <GlassCard className="p-10 text-center" hoverLift={false}>
-              <p className="text-[14px] text-faint">
-                Aún no hay reservas para hoy. Crea una con “+ Nueva reserva”.
-              </p>
-            </GlassCard>
-          ) : (
-            <GlassCard className="overflow-hidden p-0" hoverLift={false}>
-              <ul className="flex flex-col">
-                {todays.map((r) => (
-                  <ReservationCard
-                  key={r.id}
-                  reservation={r}
-                  tables={tables}
-                  reservations={reservations}
-                />
-                ))}
-              </ul>
-            </GlassCard>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-[15px] font-semibold text-fg/90">Semana</h2>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setWeekStart((w) => addDays(w, -7))}
-                className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 py-1.5 text-[13px] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-                aria-label="Semana anterior"
-              >
-                ‹
-              </button>
-              <span className="min-w-[120px] text-center text-[12.5px] text-muted">
-                {weekLabel}
-              </span>
-              <button
-                type="button"
-                onClick={() => setWeekStart((w) => addDays(w, 7))}
-                className="rounded-lg border border-fg/[0.1] bg-fg/[0.04] px-2.5 py-1.5 text-[13px] text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
-                aria-label="Semana siguiente"
-              >
-                ›
-              </button>
-              {weekStart !== startOfWeek(today) && (
-                <button
-                  type="button"
-                  onClick={() => setWeekStart(startOfWeek(today))}
-                  className="rounded-lg px-2 py-1.5 text-[12.5px] font-medium text-accent-icon hover:text-accent-ink"
-                >
-                  Hoy
-                </button>
-              )}
             </div>
-          </div>
-
-          <WeekView
-            reservations={weekReservations}
-            weekStart={weekStart}
-            today={today}
-            selectedId={selectedId}
-            onSelect={(id) => setSelectedId((cur) => (cur === id ? null : id))}
-          />
-
-          <AnimatePresence initial={false}>
-            {selected && (
-              <m.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22, ease: EASE }}
-              >
-                <GlassCard className="overflow-hidden p-0" hoverLift={false}>
-                  <ul>
-                    <ReservationCard
-                      reservation={selected}
-                      tables={tables}
-                      reservations={reservations}
-                      showDate
-                    />
-                  </ul>
-                </GlassCard>
-              </m.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+          </>,
+          host
+        )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import AutoRefresh from "@/components/dashboard/AutoRefresh";
 import PageHeader from "@/components/dashboard/PageHeader";
 import SegmentedControl from "./SegmentedControl";
@@ -67,6 +68,13 @@ export default function MesasWorkspace({
             ]}
           />
         )}
+
+        <Link href="/dashboard/app/mesas/qr" className="lbd-btn lbd-btn--ghost lbd-btn--sm lbd-ms-qrlink">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2" />
+          </svg>
+          Imprimir QR
+        </Link>
       </PageHeader>
 
       {tab === "plano" ? (

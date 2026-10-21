@@ -1,25 +1,19 @@
 import { RESERVATION_STATUS_LABELS, type ReservationStatusValue } from "@/lib/tableMeta";
 
-// Same pill grammar as components/dashboard/StatusPill — a dot plus a label
-// inside a tinted, ring-inset capsule.
-const TONE: Record<ReservationStatusValue, string> = {
-  pendiente: "bg-warn/10 text-warn-ink ring-warn/25",
-  confirmada: "bg-mint/10 text-mint-ink ring-mint/25",
-  sentada: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
-  cancelada: "bg-fg/[0.06] text-muted ring-fg/15",
-  no_show: "bg-fg/[0.06] text-muted ring-fg/15",
+// One colour per state, shared by the pill, the agenda bar and the week grid,
+// so a reservation reads the same wherever it shows up.
+export const RESERVATION_TONE: Record<ReservationStatusValue, { color: string; bg: string }> = {
+  pendiente: { color: "#f5c76a", bg: "rgba(245,199,106,0.12)" },
+  confirmada: { color: "#f3efe6", bg: "rgba(243,239,230,0.1)" },
+  sentada: { color: "#3ddc97", bg: "rgba(61,220,151,0.12)" },
+  cancelada: { color: "#8a8278", bg: "rgba(243,239,230,0.06)" },
+  no_show: { color: "#ff7a57", bg: "rgba(255,90,51,0.12)" },
 };
 
-export default function ReservationStatusPill({
-  status,
-}: {
-  status: ReservationStatusValue;
-}) {
+export default function ReservationStatusPill({ status }: { status: ReservationStatusValue }) {
+  const tone = RESERVATION_TONE[status];
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium ring-1 ring-inset ${TONE[status]}`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+    <span className="lbd-rv-pill" style={{ color: tone.color, background: tone.bg }}>
       {RESERVATION_STATUS_LABELS[status]}
     </span>
   );

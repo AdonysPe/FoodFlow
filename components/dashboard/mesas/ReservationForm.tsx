@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import Button from "@/components/ui/Button";
 import type { ActionResult } from "@/lib/actions/auth";
 import type { ReservationInput } from "@/lib/actions/reservations";
 import {
@@ -190,7 +189,7 @@ export default function ReservationForm({
             className={fieldClass}
           >
             {DURATIONS.map((d) => (
-              <option key={d} value={d} className="bg-ink-800">
+              <option key={d} value={d} className="bg-[#16110f]">
                 {d} min
               </option>
             ))}
@@ -221,7 +220,7 @@ export default function ReservationForm({
             onChange={(e) => set("tableId", e.target.value)}
             className={fieldClass}
           >
-            <option value="" className="bg-ink-800">
+            <option value="" className="bg-[#16110f]">
               Sin asignar
             </option>
             {tables.map((t) => {
@@ -232,7 +231,7 @@ export default function ReservationForm({
                   key={t.id}
                   value={t.id}
                   disabled={busy}
-                  className="bg-ink-800"
+                  className="bg-[#16110f]"
                 >
                   {t.name} · {t.capacity} pers.
                   {a?.busy ? ` — ocupada (${a.by ?? "reserva"} ${a.at ? formatClock(a.at) : ""})` : ""}
@@ -240,13 +239,13 @@ export default function ReservationForm({
               );
             })}
           </select>
-          <p className="mt-1.5 text-[12px] text-faint">
+          <p className="mt-1.5 text-[12px] text-[#a39b90]">
             {freeCount === 0
               ? "Ninguna mesa libre para esa fecha y hora."
               : `${freeCount} ${freeCount === 1 ? "mesa disponible" : "mesas disponibles"} a esa hora · cada reserva bloquea la mesa 3 h.`}
           </p>
           {selectedBusy && (
-            <p className="mt-1 text-[12px] text-warn-ink">
+            <p className="mt-1 text-[12px] text-[#f5c76a]">
               La mesa elegida ya tiene una reserva cerca de esa hora. Cámbiala o ajusta el horario.
             </p>
           )}
@@ -266,16 +265,16 @@ export default function ReservationForm({
         </div>
       </div>
 
-      {error && <p className="text-[13px] text-accent-icon">{error}</p>}
+      {error && <p role="alert" className="lbd-modal-error">{error}</p>}
 
-      <div className="flex gap-2">
-        <Button type="submit" size="md" disabled={isPending}>
+      <div className="lbd-rv-form-actions">
+        <button type="submit" disabled={isPending} className="lbd-btn lbd-btn--solid">
           {isPending ? "Guardando…" : submitLabel}
-        </Button>
+        </button>
         {onCancel && (
-          <Button type="button" size="md" variant="secondary" onClick={onCancel}>
+          <button type="button" onClick={onCancel} className="lbd-btn lbd-btn--ghost">
             Cancelar
-          </Button>
+          </button>
         )}
       </div>
     </form>

@@ -53,6 +53,7 @@ export default async function OverviewPage({
         availableCount={items.filter((i) => i.available).length}
         categoryCount={categoryCount}
         soldOut={items.filter((i) => !i.available).map((i) => ({ id: i.id, name: i.name }))}
+        slug={restaurant.slug}
       />
     );
   }

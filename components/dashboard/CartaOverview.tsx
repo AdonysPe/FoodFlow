@@ -1,7 +1,5 @@
 import Link from "next/link";
-import GlassCard from "@/components/ui/GlassCard";
-import StatTile from "@/components/dashboard/StatTile";
-import { IconMenuBook, IconCheck, IconBolt } from "@/components/ui/Icons";
+import { buildWhatsAppUrl } from "@/lib/contact";
 import {
   FEATURE_LABELS,
   PLAN_FEATURES,
@@ -13,6 +11,12 @@ import {
 // The Carta plan has no orders, so the usual sales tiles would all read zero
 // forever. This is the overview that plan actually earns: the state of the
 // menu, plus an honest look at what the next plan turns on.
+const ICONS = {
+  book: "M5 4.5h10a4 4 0 0 1 4 4v11H9a4 4 0 0 1-4-4zM9 9.5h6M9 13.5h4",
+  check: "M5 12.5l4.5 4.5L19 7.5",
+  bolt: "M13 3L5 13.5h6L10 21l9-11h-6z",
+};
+
 export default function CartaOverview({
   restaurantName,
   plan,
@@ -20,6 +24,7 @@ export default function CartaOverview({
   availableCount,
   categoryCount,
   soldOut,
+  slug = null,
 }: {
   restaurantName: string;
   plan: PlanValue;
@@ -27,96 +32,131 @@ export default function CartaOverview({
   availableCount: number;
   categoryCount: number;
   soldOut: { id: string; name: string }[];
+  slug?: string | null;
 }) {
   const next: PlanValue = "servicio";
   const unlocks = PLAN_FEATURES[next].filter((f) => !PLAN_FEATURES[plan].includes(f));
+  const whatsapp = buildWhatsAppUrl(`Hola FoodFlow, quiero subir ${restaurantName} al plan ${PLAN_LABELS[next]}.`);
+  const availablePct = itemCount ? Math.round((availableCount / itemCount) * 100) : 0;
+  const stats = [
+    { label: "Platos en la carta", value: itemCount, icon: ICONS.book, tone: "plain" },
+    { label: "Disponibles", value: availableCount, icon: ICONS.check, tone: "good", bar: itemCount > 0 },
+    { label: "Categorías", value: categoryCount, icon: ICONS.bolt, tone: "accent" },
+  ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-[19px] font-bold tracking-[-0.01em] text-fg">
-          {restaurantName}
-        </h1>
-        <p className="mt-0.5 text-[12.5px] text-faint">
-          Plan {PLAN_LABELS[plan]} · tu carta digital
-        </p>
+    <div className="lbd-pg">
+      <div className="lbd-co-head lbd-rise">
+        <div>
+          <span className="lbd-mono lbd-co-eyebrow">RESUMEN · PLAN {PLAN_LABELS[plan].toUpperCase()}</span>
+          <h1 className="lbd-ph-h1">
+            {restaurantName}
+            <span style={{ color: "#ff5a33" }}>.</span>
+          </h1>
+          <span className="lbd-co-sub">Plan {PLAN_LABELS[plan]} · tu carta digital</span>
+        </div>
+        <div className="lbd-co-actions">
+          {slug && (
+            <Link href={`/carta/${slug}`} target="_blank" rel="noopener noreferrer" className="lbd-btn lbd-btn--ghost lbd-btn--sm">
+              Ver mi carta ↗
+            </Link>
+          )}
+          <Link href="/dashboard/app/menu" className="lbd-btn lbd-btn--solid lbd-btn--sm">
+            Ir a la carta
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatTile
-          label="Platos en la carta"
-          value={itemCount}
-          icon={<IconMenuBook className="h-4 w-4" />}
-        />
-        <StatTile
-          label="Disponibles"
-          value={availableCount}
-          icon={<IconCheck className="h-4 w-4" />}
-        />
-        <StatTile
-          label="Categorías"
-          value={categoryCount}
-          icon={<IconBolt className="h-4 w-4" />}
-        />
+      <div className="lbd-co-stats lbd-rise" style={{ animationDelay: ".05s" }}>
+        {stats.map((stat) => (
+          <div key={stat.label} className="lbd-card lbd-co-stat" data-tone={stat.tone}>
+            <span>
+              <i aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={stat.icon} />
+                </svg>
+              </i>
+              {stat.label}
+            </span>
+            <strong className="lbd-display">{stat.value}</strong>
+            {stat.bar && (
+              <span className="lbd-co-bar" aria-hidden="true">
+                <span style={{ width: `${availablePct}%` }} />
+              </span>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-fg/90">Agotados ahora</h2>
-            <Link
-              href="/dashboard/app/menu"
-              className="text-[13px] font-medium text-accent-icon hover:text-accent-ink"
-            >
-              Ir a la carta
+      <div className="lbd-co-row">
+        <section className="lbd-card lbd-co-panel lbd-rise" style={{ animationDelay: ".1s" }} aria-label="Agotados hoy">
+          <div className="lbd-co-panel-head">
+            <strong>Agotados hoy</strong>
+            <Link href="/dashboard/app/menu" className="lbd-co-link">
+              Ir a la carta ›
             </Link>
           </div>
           {itemCount === 0 ? (
-            <p className="py-6 text-center text-[14px] text-faint">
-              Tu carta está vacía. Agrega tu primer plato.
-            </p>
+            <div className="lbd-co-empty">
+              <span aria-hidden="true">+</span>
+              <p>Tu carta está vacía. Agrega tu primer plato.</p>
+              <Link href="/dashboard/app/menu" className="lbd-btn lbd-btn--cream lbd-btn--sm">
+                Agregar un plato
+              </Link>
+            </div>
           ) : soldOut.length === 0 ? (
-            <p className="py-6 text-center text-[14px] text-faint">
+            <p className="lbd-co-allgood">
+              <span aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={ICONS.check} />
+                </svg>
+              </span>
               Todo disponible. Nada marcado como agotado.
             </p>
           ) : (
-            <ul className="flex flex-col divide-y divide-fg/[0.05]">
-              {soldOut.slice(0, 6).map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <span className="truncate text-[14px] text-fg/70">{item.name}</span>
-                  <span className="shrink-0 rounded-full bg-fg/[0.06] px-2.5 py-1 text-[12px] font-medium text-muted ring-1 ring-inset ring-fg/15">
-                    Agotado
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="lbd-co-sold">
+                {soldOut.slice(0, 6).map((item) => (
+                  <li key={item.id}>
+                    <span>{item.name}</span>
+                    <em>Agotado</em>
+                  </li>
+                ))}
+              </ul>
+              {soldOut.length > 6 && <small className="lbd-co-more">y {soldOut.length - 6} más</small>}
+            </>
           )}
-        </GlassCard>
+        </section>
 
-        <GlassCard className="p-5 sm:p-6" hoverLift={false}>
-          <h2 className="text-[15px] font-semibold text-fg/90">
-            Con el plan {PLAN_LABELS[next]}
-          </h2>
-          <p className="mt-1 text-[12.5px] text-faint">
-            {PLAN_PRICES[next]}/mes · lo que se abre en este panel
-          </p>
-          <ul className="mt-4 flex flex-col gap-2">
-            {unlocks.map((f) => (
-              <li key={f} className="flex items-center gap-2 text-[13.5px] text-fg/70">
-                <IconCheck className="h-3.5 w-3.5 shrink-0 text-accent-icon" />
+        <section className="lbd-co-next lbd-rise" style={{ animationDelay: ".15s" }} aria-label={`Con el plan ${PLAN_LABELS[next]}`}>
+          <span className="lbd-mono lbd-co-next-eyebrow">SIGUIENTE PLAN</span>
+          <div>
+            <strong className="lbd-display">Con el plan {PLAN_LABELS[next]}</strong>
+            <span>{PLAN_PRICES[next]}/mes · lo que se abre en este panel</span>
+          </div>
+          <ul>
+            {unlocks.map((f, index) => (
+              <li key={f}>
+                <svg style={{ animationDelay: `${index * 0.4}s` }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8401f" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0" />
+                </svg>
                 {FEATURE_LABELS[f]}
               </li>
             ))}
           </ul>
-          <a
-            href="https://wa.me/51950360685"
-            target="_blank"
-            rel="noreferrer"
-            className="mt-5 inline-block rounded-xl border border-accent-400/30 bg-accent-400/[0.12] px-4 py-2 text-[13px] font-semibold text-accent-label transition-colors hover:bg-accent-400/20"
-          >
-            Hablar para subir de plan
-          </a>
-        </GlassCard>
+          {whatsapp ? (
+            <a href={whatsapp} target="_blank" rel="noreferrer" className="lbd-co-wa">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5fd6c5" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 19.5l1.4-4A8 8 0 1 1 8.6 18.6z" />
+              </svg>
+              Hablar para subir de plan
+            </a>
+          ) : (
+            <Link href="/dashboard/app/configuracion" className="lbd-co-wa">
+              Ver mi plan
+            </Link>
+          )}
+        </section>
       </div>
     </div>
   );

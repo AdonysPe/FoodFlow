@@ -6,9 +6,12 @@ export default function PrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="rounded-lg bg-linear-to-b from-accent-400 to-accent-600 px-3.5 py-2 text-[13px] font-semibold text-on-accent transition-opacity hover:opacity-90"
+      className="lbd-btn lbd-btn--solid lbd-qr-print"
     >
-      Imprimir
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M7 9V4h10v5M6 18H4v-7h16v7h-2M7 14h10v6H7z" />
+      </svg>
+      Imprimir hoja
     </button>
   );
 }
