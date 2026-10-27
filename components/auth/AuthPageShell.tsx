@@ -55,7 +55,7 @@ const STEPS = [
  */
 export default function AuthPageShell({ children }: { children: ReactNode }) {
   return (
-    <div data-theme="dark" className={`${display.variable} ${text.variable} ${mono.variable} lb lb-lg-page`}>
+    <div data-theme="dark" className={`${display.variable} ${text.variable} ${mono.variable} lb lb-site lb-lg-page`}>
       <div className="lb-lg">
         <div className="lb-glow lb-lg-glow" aria-hidden />
 

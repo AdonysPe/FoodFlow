@@ -11,7 +11,7 @@ import { lbFontClasses } from "@/components/landing/lbFonts";
  */
 export default function ErrorScreen({ code, lead, last, copy, lines, foot, children, footnote }) {
   return (
-    <div data-theme="dark" className={`${lbFontClasses} lb lb-er`}>
+    <div data-theme="dark" className={`${lbFontClasses} lb lb-site lb-er`}>
       <div aria-hidden className="lb-er-glow" />
 
       <header className="lb-er-top">

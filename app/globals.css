@@ -10,6 +10,15 @@
    its own desktop scale, and the diner's carta is left alone. Print is 1:1.
 ------------------------------------------------------------------ */
 :root { --z: 1; }
+@media (min-width: 1024px) {
+  html:has(.lb-site) { --z: 0.8; zoom: var(--z); }
+}
+@media (min-width: 1800px) {
+  html:has(.lb-site) { --z: 0.9; }
+}
+@media print {
+  html:has(.lb-site) { --z: 1; zoom: 1; }
+}
 
 /* ------------------------------------------------------------------
    FoodFlow design tokens

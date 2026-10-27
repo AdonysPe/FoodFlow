@@ -31,7 +31,7 @@ import { lbFontClasses } from "@/components/landing/lbFonts";
  */
 export default function SiteShell({ children, intro = false }) {
   return (
-    <div data-theme="dark" className={`${lbFontClasses} lb`}>
+    <div data-theme="dark" className={`${lbFontClasses} lb lb-site`}>
     <LanguageProvider>
       <MotionProvider>
         <ChatProvider>
