@@ -46,10 +46,10 @@ export default function ForgotPasswordForm() {
       onShakeEnd={() => setShake(false)}
       footer={<Link href="/login">Volver al inicio de sesión</Link>}
     >
-      <div style={{ marginTop: "clamp(14px, 3.2svh, 24px)" }}>
+      <div style={{ marginTop: "clamp(14px, calc(3.2svh / var(--z, 1)), 24px)" }}>
         <AuthNotice icon={<IconShield className="h-5 w-5 shrink-0" />}>El código solo se enviará si el correo pertenece a una cuenta registrada.</AuthNotice>
       </div>
-      <form onSubmit={handleSubmit} className="lb-lg-form" style={{ marginTop: "clamp(12px, 2.4svh, 20px)" }}>
+      <form onSubmit={handleSubmit} className="lb-lg-form" style={{ marginTop: "clamp(12px, calc(2.4svh / var(--z, 1)), 20px)" }}>
         <AuthField id="forgot-email" label="Correo de tu cuenta" icon={<IconMail className="h-[18px] w-[18px]" />} type="email" required autoFocus autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@restaurante.com" disabled={pending} />
         <AuthAlert message={error} />
         <AuthSubmit pending={pending} label="Enviar código de acceso" pendingLabel="Enviando el código" />

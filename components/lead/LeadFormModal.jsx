@@ -70,7 +70,7 @@ export default function LeadFormModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.38, ease: EASE }}
-            className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-3xl border border-cream/10 bg-ink-900 p-6 shadow-panel sm:p-7"
+            className="relative max-h-[calc(92vh/var(--z,1))] w-full max-w-md overflow-y-auto rounded-3xl border border-cream/10 bg-ink-900 p-6 shadow-panel sm:p-7"
           >
             <button
               type="button"

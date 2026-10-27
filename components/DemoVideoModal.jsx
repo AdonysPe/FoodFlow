@@ -51,8 +51,8 @@ export default function DemoVideoModal({ onClose }) {
         onClose();
       }}
       onClick={closeOnBackdrop}
-      className="fixed inset-0 m-auto max-h-[calc(100dvh-24px)] max-w-none overflow-hidden rounded-2xl border border-cream/15 bg-ink-950 p-0 text-cream shadow-panel backdrop:bg-black/75 backdrop:backdrop-blur-sm"
-      style={{ width: "min(640px, calc(100vw - 24px), calc(100dvh - 136px))" }}
+      className="fixed inset-0 m-auto max-h-[calc(100dvh/var(--z,1)-24px)] max-w-none overflow-hidden rounded-2xl border border-cream/15 bg-ink-950 p-0 text-cream shadow-panel backdrop:bg-black/75 backdrop:backdrop-blur-sm"
+      style={{ width: "min(640px, calc(100vw / var(--z, 1) - 24px), calc(100dvh / var(--z, 1) - 136px))" }}
     >
       <header className="flex h-16 items-center justify-between gap-3 px-4">
         <h2 id={titleId} className="font-display text-lg font-semibold">{copy.title}</h2>
