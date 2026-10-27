@@ -1132,23 +1132,6 @@
 .lb-pill-btn:hover { background: #ff6c47; transform: translateY(-1px); }
 .lb-pill-btn--sm { padding: 8px 15px; font-size: 13px; }
 .lb-pill-btn--lg { padding: 15px 28px; font-size: 17px; box-shadow: 0 18px 40px -16px rgba(255, 90, 51, 0.7); }
-.lb-mobile-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  max-height: calc(calc(100svh / var(--z, 1)) - var(--lb-header-height));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  background: rgba(12, 9, 8, 0.96);
-  border-top: 1px solid var(--lb-line);
-  padding: 12px 24px 22px;
-  flex-direction: column;
-  gap: 4px;
-}
-.lb-mobile-menu a { padding: 12px 4px; font-size: 17px; color: var(--lb-ink); border-bottom: 1px solid var(--lb-line); }
-.lb-mobile-menu .lb-pill-btn { margin-top: 14px; padding: 14px; font-size: 16px; }
 
 /* ------------------------------------------------- nav (Apple-style, B) */
 .lb-header {
@@ -1543,9 +1526,6 @@
   .lb-section { padding-top: 120px; }
   .lb-reserve { padding: 140px 24px 110px; }
 }
-@media (max-width: 1024px) {
-  .lb-header.is-open .lb-mobile-menu { display: flex; }
-}
 @media (max-width: 900px) {
   /* Kitchen pass on a narrow rail: four 220px tickets are closer together
      than they are wide (spacing = (rail + 260) / 4), so they merged into one
@@ -1561,7 +1541,6 @@
   .lb-story-cards { margin-top: 48px; }
 }
 @media (max-width: 640px) {
-  .lb-mobile-menu { padding: 8px 16px 20px; }
   .lb-hero { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
   .lb-hero .lb-badge { font-size: 12px; padding: 6px 10px; }
   .lb-hero .lb-h1 { font-size: clamp(44px, min(calc(13vw / var(--z, 1)), calc(10svh / var(--z, 1))), 64px); }
