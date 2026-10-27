@@ -1169,6 +1169,24 @@
 .lb-mobile-menu a { padding: 12px 4px; font-size: 17px; color: var(--lb-ink); border-bottom: 1px solid var(--lb-line); }
 .lb-mobile-menu .lb-pill-btn { margin-top: 14px; padding: 14px; font-size: 16px; }
 
+/* The "Qué incluye" panel drops from the bar; the page behind blurs. */
+.lb-fly { position: absolute; left: 0; right: 0; top: 100%; background: rgba(16,12,11,0.92); -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px); border-bottom: 1px solid rgba(243,239,230,0.08); animation: lb-fade .35s ease both; }
+.lb-fly-grid { max-width: 1080px; margin: 0 auto; padding: 34px 22px 44px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.9fr); gap: 48px; }
+.lb-fly-col { display: flex; flex-direction: column; align-items: flex-start; gap: 11px; }
+.lb-fly-col:first-child { gap: 14px; }
+.lb-fly-h, .lb .lb-fly-big, .lb .lb-fly-small { animation: lb-fly-in .45s cubic-bezier(.25,.1,.25,1) both; }
+.lb-fly-h { font-size: 12px; color: #8a8278; }
+.lb .lb-fly-big { font-family: var(--font-display); font-size: 24px; font-weight: 650; letter-spacing: -0.035em; line-height: 1.1; color: var(--lb-ink); transition: color .2s; }
+.lb .lb-fly-big:hover { color: #fff; }
+.lb .lb-fly-small { padding: 0; border: 0; background: none; text-align: left; font-size: 14px; font-weight: 550; color: #cfc7bb; transition: color .2s; }
+.lb .lb-fly-small:hover { color: var(--lb-ink); }
+.lb .lb-fly-accent { color: var(--lb-accent-ink); font-weight: 600; }
+.lb .lb-fly-accent:hover { color: #ffa088; }
+.lb-fly-veil { position: fixed; inset: 0; z-index: 39; background: rgba(12,9,8,0.45); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); animation: lb-fade .35s ease both; }
+@keyframes lb-fly-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+
+
 /* ------------------------------------------------------------- hero */
 .lb-hero {
   --hero-gap: clamp(10px, calc(2.2svh / var(--z, 1)), 28px);
