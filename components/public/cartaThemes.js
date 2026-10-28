@@ -6,8 +6,9 @@ import { resolveMenuTemplate } from "@/lib/menuTemplates";
  * How each carta template looks on paper and on the phone: type, ink, frame
  * and ornaments. `lib/menuTemplates` keeps the identity (name, palette the
  * admin picks from); this file turns it into CSS custom properties, shared by
- * the public carta (PhysicalCartaView) and the table / ordering carta
- * (TableOrderExperience), so both read as the same restaurant.
+ * the public carta (PhysicalCartaView), the table carta (TableOrderExperience)
+ * and the ordering website (OnlineOrderExperience), so all read as the same
+ * restaurant.
  *
  * Every family is declared with `preload: false`: a carta only uses the two of
  * its template, and the browser downloads a face only when text uses it.
