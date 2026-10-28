@@ -49,6 +49,9 @@ const ACTIVITY: Record<string, { label: string; color: string }> = {
   "staff.add": { label: "Mozo agregado", color: "#c7bcff" },
   "staff.remove": { label: "Mozo quitado", color: "#c7bcff" },
   "lead.status_change": { label: "Contacto cambió de estado", color: "#ff7a57" },
+  "prospects.search": { label: "Búsqueda de prospectos", color: "#a39b90" },
+  "prospect.message": { label: "Mensaje a un prospecto", color: "#0fb5a0" },
+  "prospect.status_change": { label: "Prospecto cambió de estado", color: "#ff7a57" },
   "restaurant.delete": { label: "Restaurante eliminado", color: "#ff5a33" },
 };
 

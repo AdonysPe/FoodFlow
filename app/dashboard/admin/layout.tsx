@@ -8,6 +8,7 @@ import { isPlatformAdmin } from "@/lib/auth/permissions";
 // stays empty on desktop.
 const TITLES: Record<string, string> = {
   overview: "",
+  prospeccion: "",
   contactos: "",
   leads: "",
   restaurants: "",

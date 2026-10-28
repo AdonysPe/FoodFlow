@@ -43,6 +43,7 @@ const ICONS = {
   factura: "M7 9V4h10v5M6 18H4v-7h16v7h-2M7 14h10v6H7z",
   // Not in the prototype's client set; same stroke, for the admin nav.
   contactos: "M3 5.5h18v13H3zM3.5 7l8.5 6 8.5-6",
+  prospeccion: "M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8M12 11.5v1",
   locales: "M4 9l1.5-5h13L20 9M5 9v10h14V9M9 19v-5h6v5",
   auditoria: "M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z",
 } as const;
@@ -54,6 +55,7 @@ const ADMIN_NAV: NavSection[] = [
   {
     title: "VENTAS",
     items: [
+      { href: "/dashboard/admin/prospeccion", label: "Prospección", icon: ICONS.prospeccion },
       { href: "/dashboard/admin/contactos", label: "Contactos", icon: ICONS.contactos },
       { href: "/dashboard/admin/leads", label: "Leads del chat", icon: ICONS.clientes },
     ],
