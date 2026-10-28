@@ -1061,6 +1061,86 @@ model Lead {
   @@map("leads")
 }
 
+// ------------------------------------------------------------ prospección
+// Restaurants found on Google Maps (Places API) that FoodFlow could write to.
+// A different thing from `Lead`: nobody here gave consent or filled a form —
+// it is public business data (name, phone, address the venue itself
+// published), and the first message is sent by hand from the owner's own
+// WhatsApp. A prospect who replies is a conversation, not a form lead, so the
+// two pipelines stay apart.
+
+enum ProspectStatus {
+  nuevo
+  contactado
+  respondio
+  cliente
+  // Final: said no, asked not to be written to, a chain, or simply not a fit.
+  // The place id stays unique, so the daily search never brings it back.
+  descartado
+}
+
+// Where the row came from. OpenStreetMap is free and keyless but rarely has
+// phones or reviews; Google Places has both and needs a billed key.
+enum ProspectSource {
+  google
+  osm
+}
+
+enum ProspectSegment {
+  mesas
+  cafe
+  delivery
+  menu
+}
+
+model Prospect {
+  id String @id @default(cuid())
+
+  // The source's own id — a Google place id, or "osm:node/123" — and the
+  // dedupe key across every search that finds it.
+  placeId String         @unique @map("place_id")
+  source  ProspectSource @default(google)
+
+  name     String
+  district String
+  address  String?
+  // As Google publishes it ("01 4447777", "987 654 321"), for display and tel:.
+  phone    String?
+  // Peru mobile, 9 digits without the country code, only when `phone` is one.
+  // A landline cannot receive WhatsApp, so this is what decides the button.
+  mobile   String?
+  website  String?
+  mapsUrl  String? @map("maps_url")
+
+  // Google's own label ("Cevichería", "Cafetería"), shown as is.
+  category    String?
+  segment     ProspectSegment
+  rating      Float?
+  reviewCount Int?            @map("review_count")
+  delivery    Boolean?
+  dineIn      Boolean?        @map("dine_in")
+
+  // 0–100 from lib/prospecting/score.ts, and the plan it points to.
+  score         Int     @default(0)
+  suggestedPlan Plan    @map("suggested_plan")
+  isChain       Boolean @default(false) @map("is_chain")
+
+  status      ProspectStatus @default(nuevo)
+  // How many messages went out (first one plus follow-ups) and when the last
+  // one did — the two fields the "Para hoy" list is computed from.
+  touches     Int            @default(0)
+  lastTouchAt DateTime?      @map("last_touch_at")
+
+  // The search that first found it, e.g. "cevichería · Miraflores".
+  foundBy   String   @map("found_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, score])
+  @@index([district])
+  @@map("prospects")
+}
+
 // ------------------------------------------------- libro de reclamaciones
 // Virtual complaints book required of any supplier that sells to consumers in
 // Peru (Código de Protección y Defensa del Consumidor, Ley 29571, and its
