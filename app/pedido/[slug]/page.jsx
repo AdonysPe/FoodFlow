@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { readOrderingWebsite } from "@/lib/db/orderingWebsite";
-import TableOrderExperience from "@/components/public/TableOrderExperience";
+import OnlineOrderExperience from "@/components/public/OnlineOrderExperience";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -11,5 +11,5 @@ export default async function OrderingPage({ params }) {
   const { slug } = await params;
   const state = await readOrderingWebsite(slug);
   if (!state) notFound();
-  return <main id="main"><TableOrderExperience key={slug} code={slug} initial={state} remote /></main>;
+  return <main id="main"><OnlineOrderExperience key={slug} slug={slug} initial={state} /></main>;
 }

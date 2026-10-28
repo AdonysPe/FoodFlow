@@ -11,7 +11,7 @@ import { CARTA_DAYS, type DayHours } from "@/lib/carta";
 import { PAYMENT_METHOD_LABELS } from "@/lib/paymentMeta";
 import { formatCurrency } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
-import TableOrderExperience from "@/components/public/TableOrderExperience";
+import OnlineOrderExperience from "@/components/public/OnlineOrderExperience";
 import type { readOrderingWebsite } from "@/lib/db/orderingWebsite";
 
 export type SampleDish = { id: string; name: string; price: number; photoUrl: string | null };
@@ -413,7 +413,7 @@ export default function OrderingWebsiteSettings({ name, slug, initial, generalHo
           </div>
           {preview ? (
             <div style={{ overflow: "auto", borderRadius: 22, border: "1px solid rgba(243,239,230,0.1)", maxHeight: 800 }}>
-              <TableOrderExperience key={viewport} code={slug!} initial={preview} remote preview previewViewport={viewport} />
+              <OnlineOrderExperience key={viewport} slug={slug!} initial={preview} preview previewViewport={viewport} />
             </div>
           ) : (
             <p className="lbd-bl-help">Guarda la configuración para ver la vista previa.</p>
