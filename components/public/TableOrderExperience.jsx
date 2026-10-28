@@ -2,9 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { submitTableOrder, submitOnlineOrder } from "@/lib/actions/publicOrder";
-import OnlineCheckout from "./OnlineCheckout";
-import { orderingAvailability, peruWallTime } from "@/lib/orderingWebsite";
+import { submitTableOrder } from "@/lib/actions/publicOrder";
 import { NOTE_CHIPS, ZONE_LABELS_ES } from "@/lib/comandaMeta";
 import { formatCurrency } from "@/lib/format";
 import { isOpenAt, todayLabel } from "@/lib/carta";
@@ -19,11 +17,11 @@ import styles from "./TableOrderExperience.module.css";
  * row, a glass bar with the count and the total, and — once the order is sent
  * from a table — the progress ring that follows it through the kitchen.
  *
- * One component for both entrances: the table QR (/m/[code]) and the ordering
- * website (`remote`, /pedido/[slug]). The restaurant's template, which only the
- * platform admin sets, decides the look: "noche" is design B as drawn; the
- * classic ones (criolla, cevichería, chifa, pizzería) swap the hero for a
- * printed-carta masthead and dress the same screens in paper and ink.
+ * The table QR's carta (/m/[code]); the ordering website has its own
+ * (OnlineOrderExperience). The restaurant's template, which only the platform
+ * admin sets, decides the look: "noche" is design B as drawn; the classic ones
+ * (criolla, cevichería, chifa, pizzería) swap the hero for a printed-carta
+ * masthead and dress the same screens in paper and ink.
  */
 
 const OTHERS = "__otros__";
@@ -50,7 +48,7 @@ function itemLabel(item) {
   return /picante|rocoto/.test(detail) ? "Picante" : null;
 }
 
-function useTableState(code, initial, remote, preview) {
+function useTableState(code, initial, preview) {
   const [state, setState] = useState(initial);
   const [online, setOnline] = useState(true);
   const latestRequest = useRef(0);
@@ -58,17 +56,14 @@ function useTableState(code, initial, remote, preview) {
     if (preview) return;
     const request = ++latestRequest.current;
     try {
-      const response = await fetch(remote ? `/api/pedido/${code}` : `/api/m/${code}/state`, { cache: "no-store" });
-      if (!response.ok) {
-        if (remote && response.status === 404) setState(previous => ({ ...previous, ordering: { ...previous.ordering, active: false } }));
-        throw new Error("state unavailable");
-      }
+      const response = await fetch(`/api/m/${code}/state`, { cache: "no-store" });
+      if (!response.ok) throw new Error("state unavailable");
       const next = await response.json();
       if (request !== latestRequest.current) return;
       setState(next);
       setOnline(true);
     } catch { if (request === latestRequest.current) setOnline(false); }
-  }, [code, remote, preview]);
+  }, [code, preview]);
   useEffect(() => {
     if (preview) return;
     const updateWhenVisible = () => { if (document.visibilityState === "visible") void refresh(); };
@@ -132,7 +127,7 @@ function PreviousOrder({ openTab }) {
   </section>;
 }
 
-function CartContent({ cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, onClose, mobile, suggestions, tableName, checkout }) {
+function CartContent({ cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, onClose, mobile, suggestions, tableName }) {
   const lines = Object.entries(cart).map(([id, line]) => ({ item: itemById.get(id), ...line })).filter(({ item }) => item);
   const hasUnavailable = lines.some(({ item }) => !item.available);
   return <div className={styles.cartContent}>
@@ -153,7 +148,6 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
       </li>)}
     </ul>}
     <div className={styles.cartBottom}>
-      {checkout ? <OnlineCheckout {...checkout} subtotal={total} count={count} isPending={isPending || hasUnavailable} error={error} send={send} mobile={mobile} /> : <>
       <p className={styles.cartTable}>{tableName} · Pedido desde QR</p>
       {!openTab && count > 0 && <label className={styles.nameLabel}>Nombre para la cuenta <span>(opcional)</span><input value={customerName} onChange={(event) => setCustomerName(event.target.value)} maxLength={60} placeholder="¿A nombre de quién?" /></label>}
       <p className={styles.totalRow}><span>Subtotal</span><strong>{formatCurrency(total)}</strong></p>
@@ -161,7 +155,6 @@ function CartContent({ cart, itemById, count, total, openTab, customerName, setC
       {error && <p role="alert" className={styles.error}>{error}</p>}
       <button type="button" className={styles.sendButton} disabled={count === 0 || hasUnavailable || isPending} onClick={send}>{isPending ? "Enviando…" : "Enviar a cocina"}</button>
       <p className={styles.sendHint}>Tu pedido será enviado directamente a cocina.</p>
-      </>}
     </div>
   </div>;
 }
@@ -219,32 +212,14 @@ function Sent({ sent, table, status, onAgain, template }) {
   </div>;
 }
 
-export default function TableOrderExperience({ code, initial, template = undefined, remote = false, preview = false, previewViewport = "desktop" }) {
-  const { state, online, refresh } = useTableState(code, initial, remote, preview);
+export default function TableOrderExperience({ code, initial, template = undefined, preview = false, previewViewport = "desktop" }) {
+  const { state, online, refresh } = useTableState(code, initial, preview);
   const theme = cartaTheme(template ?? state.template);
   const classic = theme.key !== "noche";
   const { table, restaurantName, categories, items, openTab } = state;
   const venue = state.venue ?? {};
   const [cart, setCart] = useState({});
-  const [cartLoaded, setCartLoaded] = useState(false);
   const submitting = useRef(false);
-  const attemptRef = useRef(null);
-  // `district`, `placeId` and `locationConfirmed` only steer the address step;
-  // the server reads the zone, never the district the browser detected.
-  const [checkoutValue, setCheckoutValue] = useState({ channel: "", customerName: "", customerPhone: "", address: "", district: "", zoneId: "", reference: "", notes: "", paymentMethod: "", latitude: null, longitude: null, placeId: "", locationConfirmed: false });
-  useEffect(() => {
-    if (!remote || preview) return;
-    try {
-      const stored = JSON.parse(localStorage.getItem('foodflow:online-cart:' + code) || '{}');
-      const valid = Object.entries(stored).filter(([, line]) => line && Number.isInteger(line.qty) && line.qty > 0 && line.qty <= 20 && typeof line.note === 'string');
-      setCart(Object.fromEntries(valid.slice(0, 20)));
-    } catch { /* Storage can be disabled without blocking checkout. */ }
-    setCartLoaded(true);
-  }, [code, remote, preview]);
-  useEffect(() => {
-    if (!remote || preview || !cartLoaded) return;
-    try { localStorage.setItem('foodflow:online-cart:' + code, JSON.stringify(cart)); } catch { /* optional persistence */ }
-  }, [cart, cartLoaded, code, remote, preview]);
   const [search, setSearch] = useState("");
   const [now, setNow] = useState(null);
   const [detailItemId, setDetailItemId] = useState(null);
@@ -368,22 +343,6 @@ export default function TableOrderExperience({ code, initial, template = undefin
     submitting.current = true;
     startTransition(async () => {
       try {
-        if (remote) {
-          const deliveryFee = checkoutValue.channel === "delivery" ? state.ordering.zones.find(z => z.id === checkoutValue.zoneId)?.fee ?? 0 : 0;
-          const payload = { slug: code, lines, ...checkoutValue, expectedTotal: (Math.round(total * 100) + Math.round(deliveryFee * 100)) / 100 };
-          const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(payload)));
-          const signature = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
-          let attempt = attemptRef.current;
-          try { attempt = JSON.parse(sessionStorage.getItem('foodflow:checkout:' + code)) || attempt; } catch { /* optional storage */ }
-          if (!attempt || attempt.signature !== signature) attempt = { signature, key: crypto.randomUUID() };
-          attemptRef.current = attempt;
-          try { sessionStorage.setItem('foodflow:checkout:' + code, JSON.stringify(attempt)); } catch { /* optional storage */ }
-          const result = await submitOnlineOrder({ ...payload, checkoutKey: attempt.key });
-          if (!result.ok) { setError(result.error); void refresh(); return; }
-          try { localStorage.removeItem('foodflow:online-cart:' + code); } catch { /* optional storage */ }
-          window.location.assign('/pedido/' + code + '/seguimiento/' + result.token);
-          return;
-        }
         const result = await submitTableOrder({ code, lines, customerName });
         if (!result.ok) {
           setError(result.detail ? `“${result.detail}” ya no está disponible. Quítalo y envía de nuevo.` : (ERRORS[result.code] ?? ERRORS.server));
@@ -394,7 +353,7 @@ export default function TableOrderExperience({ code, initial, template = undefin
         setCart({});
         setCartOpen(false);
         void refresh();
-      } catch { setError(remote ? "No pudimos confirmar el envío. Reintenta con el mismo carrito." : ERRORS.server); }
+      } catch { setError(ERRORS.server); }
       finally { submitting.current = false; }
     });
   }
@@ -404,24 +363,20 @@ export default function TableOrderExperience({ code, initial, template = undefin
     return <Sent sent={sent} table={table} status={status} template={theme.key} onAgain={() => { setSent(null); setActiveTab(tabs[0]?.id ?? OTHERS); }} />;
   }
   const zone = table?.zone ? (ZONE_LABELS_ES[table.zone] ?? table.zone) : null;
-  const availability = remote ? (now ? orderingAvailability(state.ordering, venue.hours, now) : state.availability) : null;
-  const checkout = remote ? { settings: state.ordering, venue, availability, value: checkoutValue, onChange: setCheckoutValue, preview } : null;
-  const cartProps = { checkout, cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, suggestions: SUGGESTIONS, tableName: table?.name };
-  const open = remote ? availability.open : venue.hours && now ? isOpenAt(venue.hours, now) : null;
-  const selectedFee = remote && checkoutValue.channel === "delivery" ? state.ordering.zones.find(z => z.id === checkoutValue.zoneId)?.fee ?? 0 : 0;
+  const cartProps = { cart, itemById, count, total, openTab, customerName, setCustomerName, setQty, setNote, error, isPending, send, suggestions: SUGGESTIONS, tableName: table?.name };
+  const open = venue.hours && now ? isOpenAt(venue.hours, now) : null;
 
-  // The hero shows the owner's cover on the ordering website, and otherwise the
-  // first dish of what is on screen, as the prototype does; the rest follow as a list.
-  const cover = remote ? state.ordering.coverUrl : "";
-  const featured = !classic && !cover && shown.length > 0 ? shown[0] : null;
+  // The hero shows the first dish of what is on screen, as the prototype does;
+  // the rest follow as a list.
+  const featured = !classic && shown.length > 0 ? shown[0] : null;
   const listed = featured ? shown.slice(1) : shown;
-  const heroPhoto = cover || featured?.photoUrl || null;
+  const heroPhoto = featured?.photoUrl || null;
   const heroQty = featured ? (cart[featured.id]?.qty ?? 0) : 0;
   const categoryName = tabs.find((tab) => tab.id === activeTab)?.name ?? "";
-  const kitchenText = !online ? "Sin conexión" : remote && !availability.open ? "Pedidos pausados" : "Cocina en línea";
+  const kitchenText = !online ? "Sin conexión" : "Cocina en línea";
 
   const stageClass = `${styles.stage} ${preview ? styles.preview : ""} ${preview && previewViewport === "mobile" ? styles.previewMobile : ""}`;
-  const servingLabel = remote ? [state.ordering.delivery && "Delivery", state.ordering.pickup && "Recojo"].filter(Boolean).join(" · ") : `${table.name} · pides desde tu sitio`;
+  const servingLabel = `${table.name} · pides desde tu sitio`;
 
   return <div data-theme={classic ? "light" : "dark"} data-template={theme.key} className={classic ? `${cartaFontClasses} ${stageClass} ${styles.classic}` : `${lbFontClasses} lb ${stageClass}`} style={classic ? theme.style : undefined}>
     <div className={styles.glow} aria-hidden="true" />
@@ -432,20 +387,19 @@ export default function TableOrderExperience({ code, initial, template = undefin
       {theme.seal && <Seal className={styles.mastSeal} />}
       <div className={styles.mastTop}>
         <span className={styles.mastChip}>{servingLabel}</span>
-        <span className={`${styles.chipLive} ${online && !(remote && !availability.open) ? "" : styles.offline}`}><i aria-hidden="true" />{kitchenText}</span>
+        <span className={`${styles.chipLive} ${online ? "" : styles.offline}`}><i aria-hidden="true" />{kitchenText}</span>
       </div>
       <span className={styles.mastEyebrow}>{theme.eyebrow}</span>
       <h1 className={styles.mastName}>{restaurantName}</h1>
       <p className={styles.mastTagline}>{venue.tagline || menuTemplates[theme.key].subtitle}</p>
       <Motif paths={theme.motif} className={styles.mastMotif} />
-      {cover && <div className={styles.mastCover}><Image src={cover} alt={`Portada de ${restaurantName}`} fill sizes="(min-width: 1000px) 1180px, 100vw" className={styles.foodPhoto} priority /></div>}
     </header> : <>
     <header className={styles.hero}>
-      {heroPhoto && <Image key={cover || featured?.id} src={heroPhoto} alt={cover ? `Portada de ${restaurantName}` : featured?.name ?? ""} fill sizes="100vw" className={styles.heroImg} priority />}
+      {heroPhoto && <Image key={featured?.id} src={heroPhoto} alt={featured?.name ?? ""} fill sizes="100vw" className={styles.heroImg} priority />}
       <div className={styles.heroShade} aria-hidden="true" />
       <div className={styles.heroTop}>
-        <span className={styles.chip}>{remote ? restaurantName : `${table.name} · ${restaurantName}`}</span>
-        <span className={`${styles.chipLive} ${online && !(remote && !availability.open) ? "" : styles.offline}`}><i aria-hidden="true" />{kitchenText}</span>
+        <span className={styles.chip}>{`${table.name} · ${restaurantName}`}</span>
+        <span className={`${styles.chipLive} ${online ? "" : styles.offline}`}><i aria-hidden="true" />{kitchenText}</span>
       </div>
       <div className={styles.heroText}>
         {featured ? <>
@@ -461,7 +415,7 @@ export default function TableOrderExperience({ code, initial, template = undefin
               : <button type="button" className={styles.heroAdd} onClick={() => setQty(featured.id, 1)} aria-label={`Agregar ${featured.name}`}>+</button>}
           </div>
         </> : <>
-          <span className={styles.eyebrow}>{remote ? [state.ordering.delivery && "Delivery", state.ordering.pickup && "Recojo"].filter(Boolean).join(" · ") : zone ?? "Carta"}</span>
+          <span className={styles.eyebrow}>{zone ?? "Carta"}</span>
           <h2 className={styles.heroTitle}>{restaurantName}</h2>
           {venue.tagline && <p className={styles.heroDesc}>{venue.tagline}</p>}
         </>}
@@ -476,14 +430,9 @@ export default function TableOrderExperience({ code, initial, template = undefin
       </div>}
       <div className={styles.venueInfo}>
         {venue.address && <span>{venue.address}</span>}
-        {venue.hours && now && <span>{todayLabel(venue.hours, remote ? peruWallTime(now) : now)} · <strong className={open ? "" : styles.closed}>{open ? "Abierto ahora" : "Cerrado"}</strong></span>}
-        {remote ? <>
-          <span>{[state.ordering.delivery && "Delivery", state.ordering.pickup && "Recojo en local"].filter(Boolean).join(" · ")} · Preparación {state.ordering.preparationMinutes} min</span>
-          <span>{state.ordering.minimum > 0 ? 'Pedido mínimo S/ ' + state.ordering.minimum.toFixed(2) : 'Sin pedido mínimo'}</span>
-          {state.ordering.delivery && <span>Delivery: tarifa según zona</span>}
-        </> : <span>{table.name} · Pedido desde QR{zone ? ` · ${zone}` : ""}</span>}
+        {venue.hours && now && <span>{todayLabel(venue.hours, now)} · <strong className={open ? "" : styles.closed}>{open ? "Abierto ahora" : "Cerrado"}</strong></span>}
+        <span>{table.name} · Pedido desde QR{zone ? ` · ${zone}` : ""}</span>
       </div>
-      {remote && !availability.open && <p role="status" className={styles.notice}>{availability.reason}</p>}
     </section>
 
     <div className={styles.layout}>
@@ -527,7 +476,7 @@ export default function TableOrderExperience({ code, initial, template = undefin
     </div>
 
     {count > 0
-      ? <div className={styles.bar}><span>{count} {count === 1 ? "plato" : "platos"} · {formatCurrency(total + selectedFee)}</span><button type="button" onClick={() => setCartOpen(true)}>Ver mi pedido</button></div>
+      ? <div className={styles.bar}><span>{count} {count === 1 ? "plato" : "platos"} · {formatCurrency(total)}</span><button type="button" onClick={() => setCartOpen(true)}>Ver mi pedido</button></div>
       : <div className={styles.barEmpty}>Toca + para armar tu pedido</div>}
     {cartOpen && <div className={styles.backdrop} onClick={() => setCartOpen(false)} aria-hidden="true" />}
     <aside inert={!cartOpen ? true : undefined} ref={cartDialogRef} className={`${styles.mobileCart} ${cartOpen ? styles.cartOpen : ""}`} role="dialog" aria-modal="true" aria-labelledby="mobile-cart-title" aria-hidden={!cartOpen}><CartContent {...cartProps} mobile onClose={() => setCartOpen(false)} /></aside>
