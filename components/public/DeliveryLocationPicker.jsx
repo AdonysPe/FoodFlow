@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LIMA_CENTER, LIMA_ZOOM } from "@/lib/orderingWebsite";
-import styles from "./TableOrderExperience.module.css";
+import styles from "./OnlineOrderExperience.module.css";
 
 /**
  * The address step of the delivery checkout.
@@ -243,23 +243,23 @@ export default function DeliveryLocationPicker({ idPrefix, value, onChange, onSt
 
   const hasPin = value.latitude != null && value.longitude != null;
   const canConfirm = value.address.trim().length >= 5;
-  return <div className={styles.locationPicker}>
-    {status !== "unavailable" && <>
-      <label className={styles.nameLabel} htmlFor={`${idPrefix}-address-search`}>Busca tu dirección</label>
+  return <div className={styles.picker}>
+    {status !== "unavailable" && <div className={styles.pickerTop}>
+      <label className={styles.mapHint} htmlFor={`${idPrefix}-address-search`}>Busca tu dirección</label>
       <div ref={searchNode} className={styles.addressSearch} />
-    </>}
+    </div>}
     {/* Kept mounted while loading so the container has a size to measure. */}
     {status !== "unavailable" && <div className={styles.mapFrame}>
       <div ref={mapNode} className={styles.mapCanvas} role="application" aria-label="Mapa para elegir tu dirección de entrega" />
       {status === "loading" && <p className={styles.mapOverlay} role="status">Cargando el mapa…</p>}
     </div>}
-    {status === "ready" && <p className={styles.mapHint}>Mueve el marcador hasta la entrada de tu domicilio.</p>}
-    {status === "unavailable" && <p className={styles.mapHint} role="status">El mapa no está disponible ahora. Escribe tu dirección y una referencia y podrás pedir igual.</p>}
-    {status === "ready" && <button type="button" className={styles.ghostAction} onClick={useMyLocation}>Usar mi ubicación</button>}
-    {busy && <p className={styles.mapHint} role="status">{busy}</p>}
-    {notice && <p className={styles.error} role="status">{notice}</p>}
-    <label className={styles.nameLabel} htmlFor={`${idPrefix}-address`}>Dirección
-      <input id={`${idPrefix}-address`} value={value.address} required minLength={5} maxLength={200} autoComplete="street-address"
+    {status === "ready" && <div className={styles.pickerTop}>
+      <p className={styles.mapHint}>Mueve el marcador hasta la entrada de tu domicilio.</p>
+      <button type="button" className={styles.linkBtn} style={{ alignSelf: "flex-start" }} onClick={useMyLocation}>Usar mi ubicación</button>
+    </div>}
+    <label className={styles.field} htmlFor={`${idPrefix}-address`}>
+      <span>Dirección</span>
+      <input id={`${idPrefix}-address`} className={styles.input} value={value.address} required minLength={5} maxLength={200} autoComplete="street-address" placeholder="Calle, número y distrito"
         onChange={event => apply.current({
           address: event.target.value,
           // The pin stays — it is still the best guess of where the door is —
@@ -268,12 +268,17 @@ export default function DeliveryLocationPicker({ idPrefix, value, onChange, onSt
         })} />
     </label>
     {children}
-    {hasPin && !value.locationConfirmed && <p className={styles.mapHint}>Revisa el punto en el mapa y confírmalo.</p>}
-    {/* Without a map there is no pin to confirm — the button still closes the
-        step so the diner gets the same delivery summary, but it stops
-        promising a confirmation it cannot make. */}
-    <button type="button" className={styles.confirmLocation} disabled={!canConfirm} onClick={() => apply.current({ locationConfirmed: true })}>
-      {status === "unavailable" ? "Guardar dirección" : "Confirmar ubicación"}
-    </button>
+    <div className={styles.pickerFoot}>
+      {status === "unavailable" && <p className={styles.mapHint} role="status">Escribe tu dirección y una referencia para que te encuentren.</p>}
+      {busy && <p className={styles.mapHint} role="status">{busy}</p>}
+      {notice && <p className={styles.mapNotice} role="status">{notice}</p>}
+      {hasPin && !value.locationConfirmed && <p className={styles.mapHint}>Revisa el punto en el mapa y confírmalo.</p>}
+      {/* Without a map there is no pin to confirm — the button still closes the
+          step so the diner gets the same delivery summary, but it stops
+          promising a confirmation it cannot make. */}
+      <button type="button" className={`${styles.confirm} ${styles.press}`} disabled={!canConfirm} onClick={() => apply.current({ locationConfirmed: true })}>
+        {status === "unavailable" ? "Guardar dirección" : "Confirmar ubicación"}
+      </button>
+    </div>
   </div>;
 }
