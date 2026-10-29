@@ -52,7 +52,8 @@ export default function DemoVideoModal({ onClose }) {
       }}
       onClick={closeOnBackdrop}
       className="fixed inset-0 m-auto max-h-[calc(100dvh/var(--z,1)-24px)] max-w-none overflow-hidden rounded-2xl border border-cream/15 bg-ink-950 p-0 text-cream shadow-panel backdrop:bg-black/75 backdrop:backdrop-blur-sm"
-      style={{ width: "min(640px, calc(100vw / var(--z, 1) - 24px), calc(100dvh / var(--z, 1) - 136px))" }}
+      // The film is 16:9: as wide as the viewport allows, and never taller than it.
+      style={{ width: "min(1120px, calc(100vw / var(--z, 1) - 24px), calc((100dvh / var(--z, 1) - 136px) * 16 / 9))" }}
     >
       <header className="flex h-16 items-center justify-between gap-3 px-4">
         <h2 id={titleId} className="font-display text-lg font-semibold">{copy.title}</h2>
@@ -70,14 +71,14 @@ export default function DemoVideoModal({ onClose }) {
         src="/videos/foodflow-demo.mp4"
         poster="/videos/foodflow-demo-poster.png"
         aria-label={copy.title}
-        width={1080}
+        width={1920}
         height={1080}
         autoPlay
         muted
         controls
         playsInline
         preload="metadata"
-        className="block aspect-square w-full bg-black"
+        className="block aspect-video w-full bg-black"
       >
         {copy.fallback} <a href="/videos/foodflow-demo.mp4">{copy.openVideo}</a>
       </video>
