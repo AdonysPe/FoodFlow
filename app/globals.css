@@ -3938,14 +3938,3 @@ body:has(.lb-legal) { overflow-x: clip; }
 }
 .lbd-px-note--info { background: rgba(243,239,230,0.05); border-color: rgba(243,239,230,0.14); color: #cfc7bb; }
 .lbd-px-note--info strong { color: #f3efe6; }
-.lbd-px-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.lbd-px-muted { font-size: 12px; color: #8a8278; line-height: 1.5; }
-.lbd-px-notes { margin: 0; white-space: pre-wrap; font-size: 13px; line-height: 1.55; color: #cfc7bb; padding: 12px 14px; border-radius: 14px; background: #0c0908; border: 1px solid rgba(243,239,230,0.07); }
-.lbd-px-editor { width: 520px; }
-.lbd-px-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.lbd-px-stats > div { padding: 12px; border-radius: 14px; background: #0c0908; border: 1px solid rgba(243,239,230,0.07); display: flex; flex-direction: column; gap: 2px; }
-.lbd-px-stats span { font-size: 11px; color: #a39b90; }
-.lbd-px-stats strong { font-size: 20px; font-weight: 650; letter-spacing: -0.04em; }
-.lbd-px-stats small { font-size: 11px; color: #8a8278; }
-.lbd-px-preview { font-size: 12px; line-height: 1.5; color: #a39b90; padding: 10px 12px; border-radius: 12px; border: 1px dashed rgba(243,239,230,0.14); }
-.lbd-px-preview b { color: #cfc7bb; font-weight: 600; }

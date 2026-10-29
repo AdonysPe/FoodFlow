@@ -13,7 +13,6 @@ import { prisma } from "@/lib/db/prisma";
 import type { JobReport } from "@/lib/billing/jobs";
 import { searchPlaces, PlacesError, type Place } from "./places";
 import { fetchOsmDistrict } from "./osm";
-import { fetchSheetValues, parseSheet, sheetConfig, type SheetLead } from "./sheet";
 import { districtFromAddress, queryLabel, queryText, type SearchQuery, type Segment } from "./searches";
 import { isChain, peruMobile, prospectScore, suggestedPlan } from "./score";
 
@@ -30,10 +29,7 @@ type Found = {
   segment: Segment;
   district: string;
   foundBy: string;
-  source: "google" | "osm" | "sheet";
-  // Only the agent's sheet brings these; a Google or OSM refresh never
-  // overwrites them.
-  extras?: Pick<SheetLead, "notes" | "customMessage" | "customFollowUp" | "initialStatus" | "scoreBoost">;
+  source: "google" | "osm";
 };
 
 // Updates go out in transactions of this size: a district from OpenStreetMap
@@ -58,7 +54,6 @@ function factsOf(found: Found) {
     dineIn: place.dineIn,
   };
   const chain = place.chain || isChain(place.name);
-  const boost = found.extras?.scoreBoost ?? 0;
   return {
     facts,
     data: {
@@ -74,9 +69,8 @@ function factsOf(found: Found) {
       reviewCount: place.reviewCount,
       delivery: place.delivery,
       dineIn: place.dineIn,
-      score: chain ? 0 : Math.max(0, Math.min(100, prospectScore(facts) + boost)),
+      score: chain ? 0 : prospectScore(facts),
       isChain: chain,
-      ...(found.extras ? { notes: found.extras.notes, customMessage: found.extras.customMessage, customFollowUp: found.extras.customFollowUp } : {}),
     },
   };
 }
@@ -93,14 +87,14 @@ async function save(batch: Found[], result: SyncResult): Promise<void> {
   });
   const byPlace = new Map(existing.map((e) => [e.placeId, e.id]));
 
-  // A Google or sheet result for a venue first found on OpenStreetMap
-  // upgrades that row (same name, same district) instead of creating a twin,
-  // and keeps whatever was already done with it.
+  // A Google result for a venue first found on OpenStreetMap upgrades that
+  // row (same name, same district) instead of creating a twin, and keeps
+  // whatever was already done with it.
   const osmTwins = new Map<string, string>();
-  const richerNew = unique.filter((f) => f.source !== "osm" && !byPlace.has(f.place.id));
-  if (richerNew.length > 0) {
+  const googleNew = unique.filter((f) => f.source === "google" && !byPlace.has(f.place.id));
+  if (googleNew.length > 0) {
     const candidates = await prisma.prospect.findMany({
-      where: { source: "osm", district: { in: [...new Set(richerNew.map((f) => f.district))] } },
+      where: { source: "osm", district: { in: [...new Set(googleNew.map((f) => f.district))] } },
       select: { id: true, name: true, district: true },
     });
     for (const c of candidates) osmTwins.set(`${fold(c.name)}|${c.district}`, c.id);
@@ -116,9 +110,9 @@ async function save(batch: Found[], result: SyncResult): Promise<void> {
       updates.push({ id, data });
       continue;
     }
-    const twin = found.source !== "osm" ? osmTwins.get(`${fold(found.place.name)}|${found.district}`) : undefined;
+    const twin = found.source === "google" ? osmTwins.get(`${fold(found.place.name)}|${found.district}`) : undefined;
     if (twin) {
-      updates.push({ id: twin, data: { ...data, placeId: found.place.id, source: found.source } });
+      updates.push({ id: twin, data: { ...data, placeId: found.place.id, source: "google" } });
       osmTwins.delete(`${fold(found.place.name)}|${found.district}`);
       continue;
     }
@@ -130,10 +124,8 @@ async function save(batch: Found[], result: SyncResult): Promise<void> {
       suggestedPlan: suggestedPlan(facts),
       foundBy: found.foundBy,
       // A chain is kept (so it is never fetched as "new" again) but starts
-      // out of the way. A sheet row the agent already worked keeps its
-      // stage; a first message counted then schedules the follow-up.
-      status: data.isChain ? "descartado" : (found.extras?.initialStatus ?? "nuevo"),
-      ...(found.extras && found.extras.initialStatus !== "nuevo" && !data.isChain ? { touches: 1, lastTouchAt: new Date() } : {}),
+      // out of the way.
+      status: data.isChain ? "descartado" : "nuevo",
     });
   }
 
@@ -200,38 +192,6 @@ export async function syncOsmDistricts(districts: string[]): Promise<SyncResult>
   }
 
   return result;
-}
-
-/** The agent's sheet: every row of the configured tab. One read. */
-export async function syncSheet(): Promise<SyncResult> {
-  const result = emptyResult();
-  const config = sheetConfig();
-  if (!config) {
-    result.errors.push("La hoja no está configurada (GOOGLE_SHEETS_SERVICE_ACCOUNT y PROSPECTS_SHEET_ID).");
-    return result;
-  }
-  try {
-    const leads = parseSheet(await fetchSheetValues(config));
-    result.requests += 1;
-    await save(
-      leads.map(({ place, segment, district, ...extras }) => ({ place, segment, district, foundBy: `Hoja del agente · ${config.tab}`, source: "sheet" as const, extras })),
-      result
-    );
-  } catch (err) {
-    result.errors.push(`Hoja: ${err instanceof Error ? err.message : "Error desconocido"}`);
-  }
-  return result;
-}
-
-/** Adds one run's counts to another's, for a cron that runs several sources. */
-export function mergeResults(a: SyncResult, b: SyncResult): SyncResult {
-  return {
-    found: a.found + b.found,
-    created: a.created + b.created,
-    updated: a.updated + b.updated,
-    requests: a.requests + b.requests,
-    errors: [...a.errors, ...b.errors],
-  };
 }
 
 export function toJobReport(job: string, result: SyncResult, startedAt: number): JobReport {

@@ -8,9 +8,8 @@ import { logAudit } from "@/lib/audit/log";
 import type { ActionResult } from "@/lib/actions/auth";
 import { placesKey } from "@/lib/prospecting/places";
 import { DISTRICTS, queriesFor, type Segment } from "@/lib/prospecting/searches";
-import { syncOsmDistricts, syncQueries, syncSheet, type SyncResult } from "@/lib/prospecting/sync";
-import { sheetConfig } from "@/lib/prospecting/sheet";
-import { MAX_TOUCHES, TEMPLATE_KEYS, type Variant } from "@/lib/prospecting/message";
+import { syncOsmDistricts, syncQueries, type SyncResult } from "@/lib/prospecting/sync";
+import { MAX_TOUCHES } from "@/lib/prospecting/message";
 
 const PAGE = "/dashboard/admin/prospeccion";
 
@@ -52,34 +51,12 @@ export async function searchProspectsNow(source: string, district: string, segme
   return { ok: true, data: result };
 }
 
-/** "Importar hoja ahora": the agent's sheet, read once, outside the cron. */
-export async function importSheetNow(): Promise<ActionResult<SyncResult>> {
-  const admin = await requirePlatformAdmin();
-  if (!sheetConfig()) return { ok: false, error: "La hoja no está configurada en el servidor." };
-
-  const result = await syncSheet();
-
-  await logAudit({
-    action: "prospects.search",
-    actor: { id: admin.id, email: admin.email },
-    entity: "Prospect",
-    after: { source: "sheet", created: result.created, updated: result.updated, errors: result.errors.length },
-  });
-
-  revalidatePath(PAGE);
-  if (result.errors.length > 0 && result.found === 0) return { ok: false, error: result.errors[0] };
-  return { ok: true, data: result };
-}
-
-const variantSchema = z.enum(["agente", "A", "B"]);
-
 /**
  * The admin tapped "Enviar por WhatsApp": the chat opened with the draft in
  * it. Sending happens in WhatsApp, out of our sight, so this records the
- * intent — one more touch, now — which is what schedules the follow-up. The
- * first message also records which version went out.
+ * intent — one more touch, now — which is what schedules the follow-up.
  */
-export async function recordProspectMessage(prospectId: string, rawVariant?: string): Promise<ActionResult> {
+export async function recordProspectMessage(prospectId: string): Promise<ActionResult> {
   const admin = await requirePlatformAdmin();
 
   const existing = await prisma.prospect.findUnique({ where: { id: prospectId } });
@@ -89,15 +66,9 @@ export async function recordProspectMessage(prospectId: string, rawVariant?: str
   }
   if (existing.touches >= MAX_TOUCHES) return { ok: false, error: "Ya se enviaron los tres mensajes." };
 
-  const variant = variantSchema.safeParse(rawVariant);
   await prisma.prospect.update({
     where: { id: prospectId },
-    data: {
-      status: "contactado",
-      touches: { increment: 1 },
-      lastTouchAt: new Date(),
-      ...(existing.touches === 0 && variant.success ? { variant: variant.data satisfies Variant } : {}),
-    },
+    data: { status: "contactado", touches: { increment: 1 }, lastTouchAt: new Date() },
   });
 
   await logAudit({
@@ -133,36 +104,6 @@ export async function updateProspectStatus(prospectId: string, rawStatus: string
     entityId: prospectId,
     before: { status: existing.status },
     after: { status: parsed.data },
-  });
-
-  revalidatePath(PAGE);
-  return { ok: true, data: undefined };
-}
-
-const templatesSchema = z.record(z.string(), z.string().max(2000));
-
-/**
- * The editable WhatsApp templates. A blank field goes back to the default,
- * which is a deleted row — the table only ever holds what was changed.
- */
-export async function saveProspectTemplates(raw: Record<string, string>): Promise<ActionResult> {
-  const admin = await requirePlatformAdmin();
-
-  const parsed = templatesSchema.safeParse(raw);
-  if (!parsed.success) return { ok: false, error: "Algún mensaje es demasiado largo (máximo 2000 caracteres)." };
-
-  const entries = TEMPLATE_KEYS.map((key) => [key, (parsed.data[key] ?? "").trim()] as const);
-  await prisma.$transaction(
-    entries.map(([key, body]) =>
-      body ? prisma.prospectTemplate.upsert({ where: { key }, create: { key, body }, update: { body } }) : prisma.prospectTemplate.deleteMany({ where: { key } })
-    )
-  );
-
-  await logAudit({
-    action: "prospects.templates",
-    actor: { id: admin.id, email: admin.email },
-    entity: "ProspectTemplate",
-    after: { changed: entries.filter(([, body]) => body).map(([key]) => key) },
   });
 
   revalidatePath(PAGE);
