@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { recordProspectMessage, searchProspectsNow, updateProspectStatus } from "@/lib/actions/prospects";
-import { whatsappLink, MAX_TOUCHES } from "@/lib/prospecting/message";
+import { importSheetNow, recordProspectMessage, saveProspectTemplates, searchProspectsNow, updateProspectStatus } from "@/lib/actions/prospects";
+import { DEFAULT_TEMPLATES, MAX_TOUCHES, TEMPLATE_KEYS, draftMessage, whatsappLink, type TemplateKey, type Templates, type Variant } from "@/lib/prospecting/message";
 import { SEGMENT_LABELS, type Segment } from "@/lib/prospecting/searches";
 import { PLAN_LABELS, PLAN_PRICES, type PlanValue } from "@/lib/plans";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
@@ -36,9 +36,29 @@ export type ProspectRow = {
   due: boolean;
   // The message for the next touch, or null when the sequence is over.
   draft: string | null;
+  // The version the first message uses (or used): the agent's, A or B.
+  variant: Variant;
+  // What the lead-finding agent wrote about the venue, and its own drafts.
+  notes: string | null;
+  customMessage: string | null;
+  customFollowUp: string | null;
   foundBy: string;
-  source: "google" | "osm";
+  source: "google" | "osm" | "sheet";
 };
+
+const VARIANT_LABEL: Record<Variant, string> = { agente: "Del agente", A: "Plantilla A", B: "Plantilla B" };
+
+const TEMPLATE_FIELDS: { key: TemplateKey; label: string; hint: string; rows: number }[] = [
+  { key: "signature", label: "Firma", hint: "Cómo te presentas: {firma}.", rows: 1 },
+  { key: "first.A", label: "Primer mensaje · A", hint: "Para locales sin mensaje del agente, o si eliges A.", rows: 6 },
+  { key: "first.B", label: "Primer mensaje · B", hint: "La otra versión, para comparar cuál responde más.", rows: 6 },
+  { key: "follow.1", label: "Seguimiento · día 3", hint: "Si el agente escribió uno, se usa el suyo.", rows: 4 },
+  { key: "follow.2", label: "Último mensaje · día 7", hint: "Cierra la secuencia sin insistir más.", rows: 4 },
+];
+
+function factsOf(p: ProspectRow) {
+  return { name: p.name, segment: p.segment, rating: p.rating, reviewCount: p.reviewCount, source: p.source, district: p.district, customMessage: p.customMessage, customFollowUp: p.customFollowUp };
+}
 
 type Tab = "hoy" | ProspectStatus;
 
@@ -96,6 +116,7 @@ function tagsOf(p: ProspectRow) {
   if (!p.mobile) tags.push(p.phone ? "Solo teléfono fijo" : "Sin teléfono");
   if (p.isChain) tags.push("Cadena");
   if (p.source === "osm") tags.push("OpenStreetMap");
+  if (p.source === "sheet") tags.push("Tu agente");
   return tags;
 }
 
@@ -114,12 +135,19 @@ export default function ProspectsBoard({
   hasKey,
   districtGroups,
   sweepDays,
+  sheetTab,
+  templates,
+  variantStats,
 }: {
   prospects: ProspectRow[];
   totals: Record<ProspectStatus, number>;
   hasKey: boolean;
   districtGroups: { label: string; districts: string[] }[];
   sweepDays: number;
+  // The agent's sheet tab when the server can read it, else null.
+  sheetTab: string | null;
+  templates: Templates;
+  variantStats: Record<Variant, { sent: number; replied: number }>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [isSearching, startSearch] = useTransition();
@@ -137,6 +165,11 @@ export default function ProspectsBoard({
   const [searchSource, setSearchSource] = useState<"osm" | "google">(hasKey ? "google" : "osm");
   const [openId, setOpenId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [draftVariant, setDraftVariant] = useState<Variant>("A");
+  const [editing, setEditing] = useState(false);
+  const [templateDraft, setTemplateDraft] = useState<Templates>(templates);
+  const [isSaving, startSave] = useTransition();
+  const [isImporting, startImport] = useTransition();
   const [host, setHost] = useState<Element | null>(null);
 
   useEffect(() => {
@@ -144,17 +177,55 @@ export default function ProspectsBoard({
   }, []);
 
   useEffect(() => {
-    if (!openId) return;
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpenId(null);
+    if (!openId && !editing) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpenId(null);
+      setEditing(false);
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [openId]);
+  }, [openId, editing]);
 
   const opened = rows.find((p) => p.id === openId) ?? null;
 
   function open(p: ProspectRow) {
     setOpenId(p.id);
+    setDraftVariant(p.variant);
     setDraft(p.draft ?? "");
+  }
+
+  // Switching version rewrites the draft; any hand edit to the old one goes.
+  function chooseVariant(p: ProspectRow, variant: Variant) {
+    setDraftVariant(variant);
+    setDraft(draftMessage(factsOf(p), p.touches, variant, templates));
+  }
+
+  function openEditor() {
+    setTemplateDraft(templates);
+    setEditing(true);
+  }
+
+  function saveTemplates() {
+    startSave(async () => {
+      // A field left equal to the default is saved blank: no row, the default.
+      const payload = Object.fromEntries(TEMPLATE_KEYS.map((key) => [key, templateDraft[key].trim() === DEFAULT_TEMPLATES[key] ? "" : templateDraft[key]]));
+      const result = await saveProspectTemplates(payload);
+      pushToast(result.ok ? "Mensajes guardados." : result.error, result.ok ? "success" : "error");
+      if (result.ok) setEditing(false);
+    });
+  }
+
+  function runImport() {
+    startImport(async () => {
+      const result = await importSheetNow();
+      if (!result.ok) {
+        pushToast(result.error, "error");
+        return;
+      }
+      const { created, updated, errors } = result.data;
+      pushToast(created > 0 ? `${created} leads nuevos de tu agente · ${updated} actualizados.` : `Nada nuevo en la hoja: ${updated} ya estaban.`, errors.length ? "error" : "success");
+    });
   }
 
   function move(id: string, status: ProspectStatus) {
@@ -169,8 +240,11 @@ export default function ProspectsBoard({
   // blocks the new tab); this records that the message went out.
   function sent(p: ProspectRow) {
     startTransition(async () => {
-      applyOptimistic({ id: p.id, patch: { status: "contactado", touches: p.touches + 1, due: false, draft: null, lastTouchAt: new Date().toISOString() } });
-      const result = await recordProspectMessage(p.id);
+      applyOptimistic({
+        id: p.id,
+        patch: { status: "contactado", touches: p.touches + 1, due: false, draft: null, lastTouchAt: new Date().toISOString(), ...(p.touches === 0 ? { variant: draftVariant } : {}) },
+      });
+      const result = await recordProspectMessage(p.id, p.touches === 0 ? draftVariant : undefined);
       pushToast(result.ok ? `Mensaje ${p.touches + 1} registrado para ${p.name}.` : result.error, result.ok ? "success" : "error");
     });
     setOpenId(null);
@@ -282,6 +356,18 @@ export default function ProspectsBoard({
               ? `Cada mañana se buscan 5 combinaciones en Google y Lima completa vuelve a pasar cada ~${sweepDays} días.`
               : `Cada mañana se leen 2 distritos de OpenStreetMap y Lima completa pasa cada ~${sweepDays} días.`}{" "}
             Para no esperar, busca un distrito ya.
+          </span>
+          <span className="lbd-px-tools">
+            {sheetTab ? (
+              <button type="button" className="lbd-btn lbd-btn--ghost lbd-btn--sm" disabled={isImporting} onClick={runImport}>
+                {isImporting ? "Importando…" : "Importar hoja del agente ahora"}
+              </button>
+            ) : (
+              <span className="lbd-px-muted">Hoja del agente: sin conectar</span>
+            )}
+            <button type="button" className="lbd-btn lbd-btn--ghost lbd-btn--sm" onClick={openEditor}>
+              Editar mensajes
+            </button>
           </span>
         </div>
         <div className="lbd-px-search-form">
@@ -439,8 +525,26 @@ export default function ProspectsBoard({
                 </span>
               </div>
 
+              {opened.notes && (
+                <div className="lbd-ad-drawer-block">
+                  <span className="lbd-mono lbd-bl-eyebrow">LO QUE ANOTÓ TU AGENTE</span>
+                  <p className="lbd-px-notes">{opened.notes}</p>
+                </div>
+              )}
+
               {opened.draft && opened.mobile ? (
                 <div className="lbd-ad-drawer-block">
+                  {opened.touches === 0 && (
+                    <div className="lbd-seg lbd-px-seg" role="group" aria-label="Versión del mensaje">
+                      {(["agente", "A", "B"] as Variant[])
+                        .filter((v) => v !== "agente" || opened.customMessage)
+                        .map((v) => (
+                          <button key={v} type="button" aria-pressed={draftVariant === v} className={draftVariant === v ? "is-on" : undefined} onClick={() => chooseVariant(opened, v)}>
+                            {VARIANT_LABEL[v]}
+                          </button>
+                        ))}
+                    </div>
+                  )}
                   <label htmlFor="px-draft" className="lbd-mono lbd-bl-eyebrow">
                     MENSAJE {opened.touches + 1} DE {MAX_TOUCHES} · EDÍTALO SI QUIERES
                   </label>
@@ -525,6 +629,93 @@ export default function ProspectsBoard({
                     Descartar · no volver a escribir
                   </button>
                 ) : null}
+              </div>
+            </aside>
+          </>,
+          host
+        )}
+
+      {editing &&
+        host &&
+        createPortal(
+          <>
+            <div className="lbd-ad-scrim" onMouseDown={() => setEditing(false)} aria-hidden="true" />
+            <aside className="lbd-ad-drawer lbd-px-editor" role="dialog" aria-modal="true" aria-label="Editar mensajes">
+              <div className="lbd-ad-drawer-head">
+                <div>
+                  <span className="lbd-mono lbd-bl-eyebrow">PROSPECCIÓN · MENSAJES</span>
+                  <h2 className="lbd-display">Tus mensajes</h2>
+                  <span>Si el agente escribió un mensaje para el local, se usa el suyo; si no, estas plantillas.</span>
+                </div>
+                <button type="button" className="lbd-ad-ico" onClick={() => setEditing(false)} aria-label="Cerrar" style={{ flexShrink: 0 }}>
+                  ×
+                </button>
+              </div>
+
+              <div className="lbd-px-stats" aria-label="Respuestas por versión">
+                {(["agente", "A", "B"] as Variant[]).map((v) => {
+                  const stat = variantStats[v];
+                  const rate = stat.sent ? Math.round((stat.replied / stat.sent) * 100) : null;
+                  return (
+                    <div key={v}>
+                      <span>{VARIANT_LABEL[v]}</span>
+                      <strong className="lbd-display">{rate == null ? "—" : `${rate}%`}</strong>
+                      <small>
+                        {stat.replied} de {stat.sent} respondieron
+                      </small>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p className="lbd-px-muted" style={{ margin: 0 }}>
+                Puedes usar <span className="lbd-mono">{"{local}"}</span>, <span className="lbd-mono">{"{distrito}"}</span>, <span className="lbd-mono">{"{firma}"}</span>,{" "}
+                <span className="lbd-mono">{"{visto}"}</span> (dónde lo encontraste y su nota), <span className="lbd-mono">{"{propuesta}"}</span> (según el tipo de local) y{" "}
+                <span className="lbd-mono">{"{web}"}</span>.
+              </p>
+
+              {TEMPLATE_FIELDS.map((field) => {
+                const sample = rows.find((p) => p.status === "nuevo") ?? rows[0];
+                const preview =
+                  sample && field.key.startsWith("first.") ? draftMessage({ ...factsOf(sample), customMessage: null }, 0, field.key === "first.B" ? "B" : "A", templateDraft) : null;
+                return (
+                  <div key={field.key} className="lbd-ad-drawer-block">
+                    <label htmlFor={`px-tpl-${field.key}`} className="lbd-mono lbd-bl-eyebrow">
+                      {field.label.toUpperCase()}
+                    </label>
+                    {field.rows === 1 ? (
+                      <input
+                        id={`px-tpl-${field.key}`}
+                        className="lbd-input"
+                        value={templateDraft[field.key]}
+                        onChange={(e) => setTemplateDraft((t) => ({ ...t, [field.key]: e.target.value }))}
+                      />
+                    ) : (
+                      <textarea
+                        id={`px-tpl-${field.key}`}
+                        className="lbd-input lbd-px-draft"
+                        rows={field.rows}
+                        value={templateDraft[field.key]}
+                        onChange={(e) => setTemplateDraft((t) => ({ ...t, [field.key]: e.target.value }))}
+                      />
+                    )}
+                    <span className="lbd-px-muted">{field.hint}</span>
+                    {preview && (
+                      <span className="lbd-px-preview">
+                        <b>Así le llegaría a {sample.name}:</b> {preview}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+
+              <div className="lbd-ad-drawer-actions">
+                <button type="button" className="lbd-btn lbd-btn--solid" disabled={isSaving} onClick={saveTemplates}>
+                  {isSaving ? "Guardando…" : "Guardar mensajes"}
+                </button>
+                <button type="button" className="lbd-btn lbd-btn--ghost" disabled={isSaving} onClick={() => setTemplateDraft(DEFAULT_TEMPLATES)}>
+                  Volver a los textos originales
+                </button>
               </div>
             </aside>
           </>,

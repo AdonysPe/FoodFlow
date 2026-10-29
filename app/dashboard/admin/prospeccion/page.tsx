@@ -4,7 +4,8 @@ import ProspectsBoard, { type ProspectRow } from "@/components/dashboard/Prospec
 import { placesKey } from "@/lib/prospecting/places";
 import { ALL_QUERIES, CRON_OSM_DISTRICTS_PER_DAY, CRON_SEARCHES_PER_DAY, DISTRICTS, DISTRICT_GROUPS } from "@/lib/prospecting/searches";
 import { hasOwnWebsite } from "@/lib/prospecting/score";
-import { MAX_TOUCHES, draftMessage, nextFollowUpAt } from "@/lib/prospecting/message";
+import { MAX_TOUCHES, defaultVariant, draftMessage, nextFollowUpAt, withDefaults, type Templates, type Variant } from "@/lib/prospecting/message";
+import { sheetConfig } from "@/lib/prospecting/sheet";
 import type { Prospect } from "@prisma/client";
 
 export const metadata = {
@@ -20,9 +21,12 @@ export const maxDuration = 60;
 const NEW_LIMIT = 300;
 const DISCARDED_LIMIT = 100;
 
-function toRow(p: Prospect, now: Date): ProspectRow {
+function toRow(p: Prospect, now: Date, templates: Templates): ProspectRow {
   const inSequence = (p.status === "nuevo" || p.status === "contactado") && p.touches < MAX_TOUCHES;
   const dueAt = nextFollowUpAt(p.touches, p.lastTouchAt);
+  const facts = { name: p.name, segment: p.segment, rating: p.rating, reviewCount: p.reviewCount, source: p.source, district: p.district, customMessage: p.customMessage, customFollowUp: p.customFollowUp };
+  // Follow-ups stay on the version the first message went out with.
+  const variant = (p.variant as Variant | null) ?? defaultVariant(facts);
   return {
     id: p.id,
     name: p.name,
@@ -47,7 +51,11 @@ function toRow(p: Prospect, now: Date): ProspectRow {
     lastTouchAt: p.lastTouchAt?.toISOString() ?? null,
     dueAt: dueAt?.toISOString() ?? null,
     due: p.status === "contactado" && dueAt != null && dueAt <= now,
-    draft: inSequence ? draftMessage({ name: p.name, segment: p.segment, rating: p.rating, reviewCount: p.reviewCount, source: p.source, district: p.district }, p.touches) : null,
+    draft: inSequence ? draftMessage(facts, p.touches, variant, templates) : null,
+    variant,
+    notes: p.notes,
+    customMessage: p.customMessage,
+    customFollowUp: p.customFollowUp,
     foundBy: p.foundBy,
     source: p.source,
   };
@@ -62,22 +70,35 @@ function toRow(p: Prospect, now: Date): ProspectRow {
 export default async function ProspeccionPage() {
   const now = new Date();
   const hasKey = placesKey() != null;
-  const [fresh, working, discarded, counts] = await Promise.all([
+  const [fresh, working, discarded, counts, savedTemplates, byVariant] = await Promise.all([
     prisma.prospect.findMany({ where: { status: "nuevo" }, orderBy: [{ score: "desc" }, { reviewCount: "desc" }], take: NEW_LIMIT }),
     prisma.prospect.findMany({ where: { status: { in: ["contactado", "respondio", "cliente"] } }, orderBy: { updatedAt: "desc" } }),
     prisma.prospect.findMany({ where: { status: "descartado" }, orderBy: { updatedAt: "desc" }, take: DISCARDED_LIMIT }),
     prisma.prospect.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.prospectTemplate.findMany(),
+    prisma.prospect.groupBy({ by: ["variant", "status"], where: { variant: { not: null } }, _count: { _all: true } }),
   ]);
+  const templates = withDefaults(Object.fromEntries(savedTemplates.map((t) => [t.key, t.body])));
+
+  // Sent and replied per first-message version, for the A/B comparison.
+  const variantStats: Record<Variant, { sent: number; replied: number }> = { agente: { sent: 0, replied: 0 }, A: { sent: 0, replied: 0 }, B: { sent: 0, replied: 0 } };
+  for (const g of byVariant) {
+    const stat = variantStats[g.variant as Variant];
+    if (!stat) continue;
+    stat.sent += g._count._all;
+    if (g.status === "respondio" || g.status === "cliente") stat.replied += g._count._all;
+  }
+  const sheet = sheetConfig();
 
   const totals = Object.fromEntries(counts.map((c) => [c.status, c._count._all])) as Partial<Record<Prospect["status"], number>>;
-  const rows = [...fresh, ...working, ...discarded].map((p) => toRow(p, now));
+  const rows = [...fresh, ...working, ...discarded].map((p) => toRow(p, now, templates));
 
   return (
     <div className="lbd-pg">
       <PageHeader
         eyebrow="VENTAS · PROSPECCIÓN"
         title="Prospección"
-        description="Restaurantes de Lima sacados de OpenStreetMap y Google Maps, puntuados y con el mensaje listo. Tú das el clic para enviarlo desde WhatsApp."
+        description="Restaurantes de Lima de tu agente, OpenStreetMap y Google Maps, puntuados y con el mensaje listo. Tú das el clic para enviarlo desde WhatsApp."
       />
       <ProspectsBoard
         prospects={rows}
@@ -91,6 +112,9 @@ export default async function ProspeccionPage() {
         hasKey={hasKey}
         districtGroups={DISTRICT_GROUPS}
         sweepDays={hasKey ? Math.ceil(ALL_QUERIES.length / CRON_SEARCHES_PER_DAY) : Math.ceil(DISTRICTS.length / CRON_OSM_DISTRICTS_PER_DAY)}
+        sheetTab={sheet?.tab ?? null}
+        templates={templates}
+        variantStats={variantStats}
       />
     </div>
   );
