@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hasOwnWebsite, isChain, peruMobile, prospectScore, suggestedPlan, type PlaceFacts } from "@/lib/prospecting/score";
-import { MAX_TOUCHES, draftMessage, nextFollowUpAt, whatsappLink } from "@/lib/prospecting/message";
+import { DEFAULT_TEMPLATES, MAX_TOUCHES, defaultVariant, draftMessage, nextFollowUpAt, whatsappLink, withDefaults } from "@/lib/prospecting/message";
+import { parseSheet, sheetSegment } from "@/lib/prospecting/sheet";
 import { ALL_QUERIES, DISTRICTS, OSM_RELATION, dailyDistricts, dailySlice, districtFromAddress, queryText } from "@/lib/prospecting/searches";
 import { osmPhone, osmSegment, osmWebsite, toOsmPlace } from "@/lib/prospecting/osm";
 
@@ -188,5 +189,91 @@ describe("OpenStreetMap source", () => {
     const msg = draftMessage({ name: "Ejemplo", segment: "mesas", rating: null, reviewCount: null, source: "osm", district: "Barranco" }, 0);
     expect(msg).not.toContain("Google Maps");
     expect(msg).toContain("buscando restaurantes en Barranco");
+  });
+});
+
+describe("the agent's sheet", () => {
+  const header = ["#", "Prioridad", "Nombre", "Tipo de negocio", "Independiente / Cadena", "Distrito", "Dirección", "Teléfono", "Tipo teléfono", "WhatsApp", "Facebook", "Instagram", "Otra red / link", "Qué le falta", "Problemas / señales", "Oportunidades", "Rating", "Reseñas", "Perfil Google sin reclamar", "Google Maps", "Estado contacto", "Notas propias", "Mensaje WhatsApp / DM", "Abrir WhatsApp con mensaje", "Seguimiento (a los 2-3 días)"];
+  const row = (over: Record<string, string> = {}) => {
+    const base: Record<string, string> = {
+      Prioridad: "Alta",
+      Nombre: "Ejemplo Bar",
+      "Tipo de negocio": "Bar-restaurante · alto tráfico (480 reseñas, 4.6★)",
+      "Independiente / Cadena": "Independiente (1 local)",
+      Distrito: "Miraflores",
+      "Teléfono": "(01) 4447777",
+      WhatsApp: "https://wa.me/51924000000",
+      Instagram: "@ejemplobar",
+      "Qué le falta": "Carta digital / QR",
+      Rating: "4,6",
+      "Reseñas": "480",
+      "Perfil Google sin reclamar": "Sí",
+      "Google Maps": "https://www.google.com/maps/place/?q=place_id:ChIJQXdGtC_JBZERwUL8ZYhEli0",
+      "Mensaje WhatsApp / DM": "Hola, mensaje del agente",
+      "Seguimiento (a los 2-3 días)": "Hola de nuevo, seguimiento del agente",
+    };
+    const values = { ...base, ...over };
+    return header.map((h) => values[h] ?? "");
+  };
+
+  it("finds columns by their header and keeps the Google place id", () => {
+    const [lead] = parseSheet([header, row()]);
+    expect(lead.place.id).toBe("ChIJQXdGtC_JBZERwUL8ZYhEli0");
+    expect(lead.place.phone).toBe("+51 924 000 000");
+    expect(lead.place.rating).toBe(4.6);
+    expect(lead.place.reviewCount).toBe(480);
+    expect(lead.place.website).toBe("https://instagram.com/ejemplobar");
+    expect(lead.customMessage).toBe("Hola, mensaje del agente");
+    expect(lead.customFollowUp).toBe("Hola de nuevo, seguimiento del agente");
+    expect(lead.notes).toContain("Ficha de Google sin reclamar");
+    expect(lead.scoreBoost).toBe(10);
+    expect(lead.initialStatus).toBe("nuevo");
+  });
+
+  it("works with columns in another order and skips rows without a name", () => {
+    const shuffled = [...header].reverse();
+    const values = row();
+    const reordered = shuffled.map((h) => values[header.indexOf(h)]);
+    const leads = parseSheet([shuffled, reordered, shuffled.map(() => "")]);
+    expect(leads).toHaveLength(1);
+    expect(leads[0].place.name).toBe("Ejemplo Bar");
+  });
+
+  it("keeps the stage the agent already reached", () => {
+    expect(parseSheet([header, row({ "Estado contacto": "Enviado 20/10" })])[0].initialStatus).toBe("contactado");
+    expect(parseSheet([header, row({ "Estado contacto": "No le interesa" })])[0].initialStatus).toBe("descartado");
+    expect(parseSheet([header, row({ "Estado contacto": "Respondió, quiere demo" })])[0].initialStatus).toBe("respondio");
+  });
+
+  it("marks corporate chains and reads the kind of venue", () => {
+    expect(parseSheet([header, row({ "Independiente / Cadena": "Cadena corporativa" })])[0].place.chain).toBe(true);
+    expect(sheetSegment("Pollería · tráfico medio")).toBe("delivery");
+    expect(sheetSegment("Cafetería")).toBe("cafe");
+    expect(sheetSegment("Bar-restaurante")).toBe("mesas");
+  });
+
+  it("refuses a tab without Nombre and Distrito", () => {
+    expect(() => parseSheet([["a", "b"], ["1", "2"]])).toThrow();
+  });
+});
+
+describe("message templates", () => {
+  const facts = { name: "Ejemplo", segment: "mesas" as const, rating: 4.6, reviewCount: 320, source: "sheet" as const, district: "Barranco", customMessage: "Del agente", customFollowUp: "Seguimiento del agente" };
+
+  it("uses the agent's texts by default, and the templates on request", () => {
+    expect(defaultVariant(facts)).toBe("agente");
+    expect(draftMessage(facts, 0)).toBe("Del agente");
+    expect(draftMessage(facts, 1)).toBe("Seguimiento del agente");
+    expect(draftMessage(facts, 0, "B")).toContain("Ejemplo");
+    expect(draftMessage(facts, 0, "B")).not.toBe(draftMessage(facts, 0, "A"));
+  });
+
+  it("fills placeholders and leaves unknown ones visible", () => {
+    const templates = withDefaults({ signature: "Adonys", "first.A": "Soy {firma} y vi {local} en {distrito}. {typo}" });
+    expect(draftMessage({ ...facts, customMessage: null }, 0, "A", templates)).toBe("Soy Adonys y vi Ejemplo en Barranco. {typo}");
+  });
+
+  it("falls back to the default for a blank saved template", () => {
+    expect(withDefaults({ "first.A": "   " })["first.A"]).toBe(DEFAULT_TEMPLATES["first.A"]);
   });
 });
