@@ -1084,6 +1084,9 @@ enum ProspectStatus {
 enum ProspectSource {
   google
   osm
+  // Adonis's own lead-finding agent, which writes to a Google Sheet that the
+  // daily cron reads (lib/prospecting/sheet.ts).
+  sheet
 }
 
 enum ProspectSegment {
@@ -1131,6 +1134,16 @@ model Prospect {
   touches     Int            @default(0)
   lastTouchAt DateTime?      @map("last_touch_at")
 
+  // What the lead-finding agent wrote about the venue (what it lacks, the
+  // signals, the opening), and the messages it drafted for it. Null for rows
+  // from Google or OpenStreetMap, which fall back to the panel's templates.
+  notes          String? @db.Text
+  customMessage  String? @map("custom_message") @db.Text
+  customFollowUp String? @map("custom_follow_up") @db.Text
+  // Which version of the first message went out: "agente", "A" or "B". Kept
+  // so the panel can tell which one gets more replies.
+  variant        String?
+
   // The search that first found it, e.g. "cevichería · Miraflores".
   foundBy   String   @map("found_by")
   createdAt DateTime @default(now()) @map("created_at")
@@ -1139,6 +1152,17 @@ model Prospect {
   @@index([status, score])
   @@index([district])
   @@map("prospects")
+}
+
+// The editable WhatsApp templates of Prospección, by key ("first.A",
+// "first.B", "follow.1", "follow.2", "signature"). A missing row means the
+// default in lib/prospecting/message.ts, so the table starts empty.
+model ProspectTemplate {
+  key       String   @id
+  body      String   @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("prospect_templates")
 }
 
 // ------------------------------------------------- libro de reclamaciones
