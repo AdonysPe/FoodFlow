@@ -75,7 +75,7 @@ export default function About({ as: Heading = "h1" }) {
               const last = i === a.line2.length - 1;
               return (
                 <span key={`b${i}`}>
-                  <span className="lb-word" style={{ animationDelay: `${0.52 + i * 0.07}s`, color: "#8a8278" }}>
+                  <span className="lb-word" style={{ animationDelay: `${0.52 + i * 0.07}s`, color: "#ada599" }}>
                     {w}
                     {last && <span style={{ color: "#ff5a33" }}>.</span>}
                   </span>
@@ -105,7 +105,7 @@ export default function About({ as: Heading = "h1" }) {
             </div>
             <div className="lb-ab-caption">
               <span style={{ fontSize: 15, fontWeight: 600 }}>{a.signature}</span>
-              <span style={{ fontSize: 12, lineHeight: 1.45, color: "#cfc7bb" }}>{a.photoNote}</span>
+              <span style={{ fontSize: 12, lineHeight: 1.45, color: "#e2dbcf" }}>{a.photoNote}</span>
             </div>
           </div>
 
@@ -114,7 +114,7 @@ export default function About({ as: Heading = "h1" }) {
               {lead}
             </p>
             {rest.map((paragraph, i) => (
-              <p key={i} className="lb-rise" style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: "#b9b1a5", animationDelay: `${0.7 + i * 0.1}s` }}>
+              <p key={i} className="lb-rise" style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: "#d6cfc3", animationDelay: `${0.7 + i * 0.1}s` }}>
                 {paragraph}
               </p>
             ))}
@@ -147,15 +147,15 @@ export default function About({ as: Heading = "h1" }) {
                 </span>
                 <span style={{ display: "flex", flexDirection: "column" }}>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{a.before.tablet}</span>
-                  <span style={{ fontSize: 11, color: "#a39b90" }}>{a.before.battery}</span>
+                  <span style={{ fontSize: 11, color: "#c5bdb1" }}>{a.before.battery}</span>
                 </span>
               </div>
             </div>
-            <span style={{ fontSize: 15, color: "#b9b1a5" }}>{a.before.caption}</span>
+            <span style={{ fontSize: 15, color: "#d6cfc3" }}>{a.before.caption}</span>
           </div>
 
           <div className="lb-reveal lb-ab-panel lb-ab-panel--light">
-            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "#5f5a54", textTransform: "uppercase" }}>
+            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "#46413c", textTransform: "uppercase" }}>
               {a.after.label}
             </span>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
@@ -225,7 +225,7 @@ export default function About({ as: Heading = "h1" }) {
           <br />
           <span>{a.closing.line2}</span>
         </h2>
-        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#b9b1a5" }}>
+        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#d6cfc3" }}>
           {a.closing.description}
         </p>
         <div className="lb-hero-ctas lb-reveal">

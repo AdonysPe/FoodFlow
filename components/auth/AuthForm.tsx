@@ -117,7 +117,7 @@ export function ConsentCheckbox({ id, checked, onChange, error, errorMessage, ch
     <div>
       <label htmlFor={id} className="lb-lg-checkrow">
         <input id={id} type="checkbox" className="lb-lg-check" checked={checked} onChange={(event) => onChange(event.target.checked)} aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} />
-        <span style={{ fontSize: 13, lineHeight: 1.55, color: "#b9b1a5" }}>{children}</span>
+        <span style={{ fontSize: 13, lineHeight: 1.55, color: "#d6cfc3" }}>{children}</span>
       </label>
       {error ? (
         <p id={`${id}-error`} role="alert" className="lb-lg-fielderror">
@@ -147,7 +147,7 @@ export function RememberCheckbox({ id, checked, onChange, disabled, label, hint 
       <span style={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <span style={{ fontSize: 14, fontWeight: 550 }}>{label}</span>
         {hint ? (
-          <span id={`${id}-hint`} style={{ fontSize: 12, lineHeight: 1.45, color: "#a39b90" }}>
+          <span id={`${id}-hint`} style={{ fontSize: 12, lineHeight: 1.45, color: "#c5bdb1" }}>
             {hint}
           </span>
         ) : null}

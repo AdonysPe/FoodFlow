@@ -55,7 +55,7 @@ export default function Pricing({ as: Heading = "h1" }) {
           <br />
           {p.line2.map((w, i) => (
             <span key={`b${i}`}>
-              <span className="lb-word" style={{ animationDelay: `${0.5 + i * 0.1}s`, color: "#8a8278" }}>
+              <span className="lb-word" style={{ animationDelay: `${0.5 + i * 0.1}s`, color: "#ada599" }}>
                 {w}
                 {i === p.line2.length - 1 && <span style={{ color: "#ff5a33" }}>.</span>}
               </span>
@@ -73,7 +73,7 @@ export default function Pricing({ as: Heading = "h1" }) {
         <div className="lb-finder lb-rise" style={{ animationDelay: "1s" }}>
           <span className="lb-display lb-finder-title">{p.finder.title}</span>
           <div className="lb-finder-group">
-            <span id="lb-team-label" style={{ fontSize: 14, color: "#b9b1a5" }}>
+            <span id="lb-team-label" style={{ fontSize: 14, color: "#d6cfc3" }}>
               {p.finder.teamLabel}
             </span>
             <div className="lb-seg" role="group" aria-labelledby="lb-team-label">
@@ -151,7 +151,7 @@ export default function Pricing({ as: Heading = "h1" }) {
             );
           })}
         </div>
-        <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 13, lineHeight: 1.5, color: "#8a8278" }}>{p.taxNote}</p>
+        <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 13, lineHeight: 1.5, color: "#ada599" }}>{p.taxNote}</p>
       </section>
 
       {/* ----------------------------------------------------------- strip */}
@@ -161,9 +161,9 @@ export default function Pricing({ as: Heading = "h1" }) {
             <div key={i}>
               <span className="lb-display" style={{ fontSize: 40, letterSpacing: "-0.05em", lineHeight: 1 }}>
                 {item.big}
-                <span style={{ fontSize: item.unit === "%" ? 40 : 20, color: item.unit === "%" ? "#ff5a33" : "#a39b90" }}>{item.unit}</span>
+                <span style={{ fontSize: item.unit === "%" ? 40 : 20, color: item.unit === "%" ? "#ff5a33" : "#c5bdb1" }}>{item.unit}</span>
               </span>
-              <span style={{ fontSize: 15, color: "#b9b1a5" }}>{item.copy}</span>
+              <span style={{ fontSize: 15, color: "#d6cfc3" }}>{item.copy}</span>
             </div>
           ))}
         </div>
@@ -178,7 +178,7 @@ export default function Pricing({ as: Heading = "h1" }) {
         <div className="lb-table-wrap lb-reveal">
           <div className="lb-table">
             <div className="lb-trow lb-thead">
-              <span style={{ color: "#a39b90", fontWeight: 500 }}>{p.compare.module}</span>
+              <span style={{ color: "#c5bdb1", fontWeight: 500 }}>{p.compare.module}</span>
               {p.plans.map((plan, i) => (
                 <span key={plan.name} style={{ textAlign: "center", color: rec === i ? "#ff7a57" : "#f3efe6" }}>
                   {plan.name}
@@ -195,7 +195,7 @@ export default function Pricing({ as: Heading = "h1" }) {
                         <path d="M5 12.5l4.5 4.5L19 7.5" />
                       </svg>
                     ) : cell === false ? (
-                      <span style={{ color: "#6f675e" }} role="img" aria-label={p.compare.notIncluded}>
+                      <span style={{ color: "#9a9287" }} role="img" aria-label={p.compare.notIncluded}>
                         —
                       </span>
                     ) : (
@@ -218,12 +218,12 @@ export default function Pricing({ as: Heading = "h1" }) {
         <div className="lb-pr-addons">
           {p.addons.items.map((item) => (
             <div key={item.name} className="lb-reveal lb-pr-addon">
-              <span style={{ fontSize: 15, color: "#b9b1a5" }}>{item.name}</span>
+              <span style={{ fontSize: 15, color: "#d6cfc3" }}>{item.name}</span>
               <span className="lb-display" style={{ fontSize: 40, letterSpacing: "-0.05em", lineHeight: 1 }}>
                 {item.price}
-                <span style={{ fontSize: 16, color: "#a39b90", letterSpacing: 0, fontFamily: "var(--font-sans)", fontWeight: 400 }}>{item.unit}</span>
+                <span style={{ fontSize: 16, color: "#c5bdb1", letterSpacing: 0, fontFamily: "var(--font-sans)", fontWeight: 400 }}>{item.unit}</span>
               </span>
-              <span style={{ marginTop: "auto", fontSize: 15, lineHeight: 1.5, color: "#b9b1a5" }}>{item.copy}</span>
+              <span style={{ marginTop: "auto", fontSize: 15, lineHeight: 1.5, color: "#d6cfc3" }}>{item.copy}</span>
             </div>
           ))}
         </div>
@@ -266,7 +266,7 @@ export default function Pricing({ as: Heading = "h1" }) {
           <br />
           <span>{p.plans[rec].name}.</span>
         </h2>
-        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#b9b1a5" }}>
+        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#d6cfc3" }}>
           {p.closing.copy}
         </p>
         <div className="lb-hero-ctas lb-reveal">

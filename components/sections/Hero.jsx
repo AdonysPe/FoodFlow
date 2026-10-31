@@ -82,7 +82,7 @@ export default function Hero() {
           <br />
           {second.map(({ w, d }, i) => (
             <span key={`b${i}`}>
-              <span className="lb-word" style={{ animationDelay: `${d}s`, color: "#8a8278" }}>
+              <span className="lb-word" style={{ animationDelay: `${d}s`, color: "#ada599" }}>
                 {w}
                 {i === second.length - 1 && <span style={{ color: "#ff5a33" }}>.</span>}
               </span>

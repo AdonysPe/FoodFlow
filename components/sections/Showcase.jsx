@@ -94,7 +94,7 @@ function Phone({ phone }) {
     <div className="lb-phone-slot">
       <div className="lb-phone">
         <div className="lb-phone-screen">
-          <span style={{ fontSize: 11, color: "#a39b90" }}>{phone.table}</span>
+          <span style={{ fontSize: 11, color: "#c5bdb1" }}>{phone.table}</span>
           <span className="lb-display" style={{ fontSize: 22, letterSpacing: "-0.04em" }}>
             {phone.title}
           </span>
@@ -102,7 +102,7 @@ function Phone({ phone }) {
             <div key={i} className="lb-phone-item">
               <Image src={photos[i]} alt={item.name} width={40} height={40} sizes="40px" loading="lazy" decoding="async" />
               <span style={{ flex: 1, fontSize: 13, fontWeight: 550 }}>{item.name}</span>
-              <span style={{ fontSize: 12, color: "#a39b90" }}>{item.price}</span>
+              <span style={{ fontSize: 12, color: "#c5bdb1" }}>{item.price}</span>
             </div>
           ))}
           <div className="lb-phone-send sb press">
@@ -146,7 +146,7 @@ function Kitchen({ kitchen }) {
             </span>
           </span>
         </div>
-        <span style={{ fontSize: 12, color: "#a39b90" }}>{kitchen.source}</span>
+        <span style={{ fontSize: 12, color: "#c5bdb1" }}>{kitchen.source}</span>
         {kitchen.lines.map((line, i) => (
           <span key={i} style={{ fontSize: 15 }}>
             {line}
@@ -156,7 +156,7 @@ function Kitchen({ kitchen }) {
       <div className="lb-kds-old">
         <div className="lb-mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 600, textTransform: "uppercase" }}>
           <span>{kitchen.other}</span>
-          <span style={{ color: "#a39b90", fontWeight: 500 }}>06:12</span>
+          <span style={{ color: "#c5bdb1", fontWeight: 500 }}>06:12</span>
         </div>
         <span style={{ fontSize: 14 }}>{kitchen.otherLine}</span>
       </div>
@@ -173,7 +173,7 @@ function OwnerPanel({ panel }) {
       </div>
       <div className="lb-owner-body">
         <div className="lb-owner-left">
-          <span style={{ fontSize: 13, color: "#a39b90" }}>{panel.sales}</span>
+          <span style={{ fontSize: 13, color: "#c5bdb1" }}>{panel.sales}</span>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <span className="lb-stack lb-display" style={{ fontSize: 46, letterSpacing: "-0.05em", lineHeight: 1 }}>
               <span className="sb n1">{panel.before}</span>
@@ -192,7 +192,7 @@ function OwnerPanel({ panel }) {
           </div>
         </div>
         <div className="lb-owner-right">
-          <div className="lb-mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 10, letterSpacing: "0.08em", color: "#8a8278", textTransform: "uppercase" }}>
+          <div className="lb-mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 10, letterSpacing: "0.08em", color: "#ada599", textTransform: "uppercase" }}>
             <span>{panel.byHour}</span>
             <span>{panel.today}</span>
           </div>
@@ -204,14 +204,14 @@ function OwnerPanel({ panel }) {
             </svg>
             <span className="sb sdot" style={{ position: "absolute", right: -4, top: 6, width: 9, height: 9, borderRadius: "50%", background: "#ff5a33", boxShadow: "0 0 0 4px rgba(255,90,51,0.25)" }} />
           </div>
-          <span style={{ fontSize: 11, color: "#8a8278", marginTop: 2 }}>{panel.recent}</span>
+          <span style={{ fontSize: 11, color: "#ada599", marginTop: 2 }}>{panel.recent}</span>
           <div className="lb-pay-row sb paid" style={{ borderRadius: 8, background: "rgba(61,220,151,0.1)" }}>
             <span>{panel.newest.label}</span>
             <span style={{ fontWeight: 600, color: "#3ddc97" }}>{panel.newest.amount}</span>
           </div>
           {panel.others.map((row, i) => (
             <div key={i} className="lb-pay-row">
-              <span style={{ color: "#cfc7bb" }}>{row.label}</span>
+              <span style={{ color: "#e2dbcf" }}>{row.label}</span>
               <span>{row.amount}</span>
             </div>
           ))}
@@ -220,7 +220,7 @@ function OwnerPanel({ panel }) {
       <div className="sb paid" style={{ marginTop: "auto", background: "#1d1714", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
         <Check color="#3ddc97" size={16} />
         <span style={{ flex: 1 }}>{panel.paid}</span>
-        <span style={{ color: "#a39b90" }}>{panel.paidAmount}</span>
+        <span style={{ color: "#c5bdb1" }}>{panel.paidAmount}</span>
       </div>
     </div>
   );

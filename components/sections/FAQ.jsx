@@ -73,7 +73,7 @@ export default function FAQ({ as: Heading = "h1" }) {
               const last = i === c.line2.length - 1;
               return (
                 <span key={`b${i}`}>
-                  <span className="lb-word" style={{ animationDelay: `${0.45 + i * 0.07}s`, color: last ? undefined : "#8a8278" }}>
+                  <span className="lb-word" style={{ animationDelay: `${0.45 + i * 0.07}s`, color: last ? undefined : "#ada599" }}>
                     {w}
                     {last && <span style={{ color: "#ff5a33" }}>.</span>}
                   </span>
@@ -88,7 +88,7 @@ export default function FAQ({ as: Heading = "h1" }) {
               {c.searchLabel}
             </label>
             <div className="lb-qa-search">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="6.5" />
                 <path d="M20 20l-4-4" />
               </svg>
@@ -148,7 +148,7 @@ export default function FAQ({ as: Heading = "h1" }) {
             <br />
             <span>{c.closing.line2}</span>
           </h2>
-          <p className="lb-reveal" style={{ margin: 0, fontSize: 18, lineHeight: 1.55, color: "#b9b1a5", maxWidth: 460 }}>
+          <p className="lb-reveal" style={{ margin: 0, fontSize: 18, lineHeight: 1.55, color: "#d6cfc3", maxWidth: 460 }}>
             {c.closing.description}
           </p>
           <div className="lb-reveal" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginTop: 8 }}>
@@ -177,7 +177,7 @@ export default function FAQ({ as: Heading = "h1" }) {
               </span>
               <span style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: 15, fontWeight: 600 }}>{c.chatDemo.name}</span>
-                <span style={{ fontSize: 12, color: "#a39b90" }}>{c.chatDemo.status}</span>
+                <span style={{ fontSize: 12, color: "#c5bdb1" }}>{c.chatDemo.status}</span>
               </span>
             </div>
             <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 10, minHeight: 280 }}>
@@ -196,7 +196,7 @@ export default function FAQ({ as: Heading = "h1" }) {
               </div>
               <div className="ch c4" style={{ alignSelf: "flex-start", display: "flex", gap: 6, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12, fontWeight: 550, border: "1px solid rgba(15,181,160,0.5)", color: "#5fd6c5", padding: "7px 12px", borderRadius: 999 }}>{c.chatDemo.chips[0]}</span>
-                <span style={{ fontSize: 12, fontWeight: 550, border: "1px solid rgba(243,239,230,0.16)", color: "#cfc7bb", padding: "7px 12px", borderRadius: 999 }}>{c.chatDemo.chips[1]}</span>
+                <span style={{ fontSize: 12, fontWeight: 550, border: "1px solid rgba(243,239,230,0.16)", color: "#e2dbcf", padding: "7px 12px", borderRadius: 999 }}>{c.chatDemo.chips[1]}</span>
               </div>
             </div>
           </div>

@@ -77,9 +77,9 @@ export default function AuthPageShell({ children }: { children: ReactNode }) {
               <span className="lb-word" style={{ animationDelay: ".05s" }}>Cada</span>{" "}
               <span className="lb-word" style={{ animationDelay: ".15s" }}>pedido,</span>
               <br />
-              <span className="lb-word" style={{ animationDelay: ".3s", color: "#8a8278" }}>en</span>{" "}
-              <span className="lb-word" style={{ animationDelay: ".4s", color: "#8a8278" }}>su</span>{" "}
-              <span className="lb-word" style={{ animationDelay: ".5s", color: "#8a8278" }}>
+              <span className="lb-word" style={{ animationDelay: ".3s", color: "#ada599" }}>en</span>{" "}
+              <span className="lb-word" style={{ animationDelay: ".4s", color: "#ada599" }}>su</span>{" "}
+              <span className="lb-word" style={{ animationDelay: ".5s", color: "#ada599" }}>
                 lugar<span style={{ color: "#ff5a33" }}>.</span>
               </span>
             </h2>
@@ -100,7 +100,7 @@ export default function AuthPageShell({ children }: { children: ReactNode }) {
                     </span>
                     <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       <span style={{ fontSize: 15, fontWeight: 600 }}>{step.label}</span>
-                      <span style={{ fontSize: 13, color: "#a39b90" }}>{step.detail}</span>
+                      <span style={{ fontSize: 13, color: "#c5bdb1" }}>{step.detail}</span>
                     </span>
                   </li>
                 ))}

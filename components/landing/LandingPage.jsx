@@ -61,7 +61,7 @@ function Pilot({ p }) {
     <section id="piloto" className="lb-section">
       <div className="lb-wrap lb-row">
         <div className="lb-pilot-card is-light lb-reveal">
-          <span className="lb-eyebrow" style={{ color: "#5f5a54" }}>
+          <span className="lb-eyebrow" style={{ color: "#46413c" }}>
             {p.eyebrow}
           </span>
           <span className="lb-big-num" aria-label="48 h">
@@ -82,7 +82,7 @@ function Pilot({ p }) {
               {p.steps.map((step, i) => (
                 <div key={i}>
                   <span style={{ fontWeight: 600 }}>{step.title}</span>
-                  <span style={{ color: "#5f5a54" }}>{step.copy}</span>
+                  <span style={{ color: "#46413c" }}>{step.copy}</span>
                 </div>
               ))}
             </div>
@@ -104,7 +104,7 @@ function Pilot({ p }) {
             0<span style={{ color: "#ff5a33" }}>%</span>
           </span>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4, padding: "8px 0" }}>
-            <div className="lb-mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, letterSpacing: "0.06em", color: "#8a8278", paddingBottom: 6, borderBottom: "1px solid rgba(243,239,230,0.08)", textTransform: "uppercase" }}>
+            <div className="lb-mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, letterSpacing: "0.06em", color: "#ada599", paddingBottom: 6, borderBottom: "1px solid rgba(243,239,230,0.08)", textTransform: "uppercase" }}>
               {ledger.head.map((h) => (
                 <span key={h}>{h}</span>
               ))}
@@ -112,14 +112,14 @@ function Pilot({ p }) {
             {ledger.rows.map((row, i) => (
               <div key={i} className={`lb-ledger-row lg lr${i + 1}`}>
                 <span>{row.label}</span>
-                <span className="lb-mono" style={{ color: "#8a8278" }}>
+                <span className="lb-mono" style={{ color: "#ada599" }}>
                   {ledger.fee}
                 </span>
                 <span style={{ textAlign: "right", fontWeight: 600 }}>{row.amount}</span>
               </div>
             ))}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 10 }}>
-              <span style={{ fontSize: 14, color: "#a39b90" }}>{ledger.totalLabel}</span>
+              <span style={{ fontSize: 14, color: "#c5bdb1" }}>{ledger.totalLabel}</span>
               <span className="lb-stack lb-display" style={{ justifyItems: "end", fontSize: 30, letterSpacing: "-0.04em" }}>
                 {ledger.totals.map((total, i) => (
                   <span key={i} className={`lg lt${i + 1}`}>
@@ -131,9 +131,9 @@ function Pilot({ p }) {
             <div style={{ height: 8, borderRadius: 8, background: "rgba(243,239,230,0.08)", overflow: "hidden", marginTop: 6 }}>
               <div className="lg lbar" style={{ height: "100%", borderRadius: 8, background: "#ff5a33" }} />
             </div>
-            <span style={{ fontSize: 12, color: "#8a8278" }}>{ledger.note}</span>
+            <span style={{ fontSize: 12, color: "#ada599" }}>{ledger.note}</span>
           </div>
-          <span style={{ fontSize: 18, lineHeight: 1.5, color: "#b9b1a5", maxWidth: 460 }}>{ledger.copy}</span>
+          <span style={{ fontSize: 18, lineHeight: 1.5, color: "#d6cfc3", maxWidth: 460 }}>{ledger.copy}</span>
         </div>
       </div>
     </section>
@@ -170,13 +170,13 @@ function Plans({ p, prices }) {
                   )}
                 </div>
                 <span className="lb-plan-price">{prices[i]}</span>
-                <span style={{ fontSize: 13, color: featured ? "#5f5a54" : "#a39b90" }}>{p.period}</span>
-                <span style={{ marginTop: 10, fontSize: 15, lineHeight: 1.5, color: featured ? "#4a4540" : "#b9b1a5" }}>{plan.copy}</span>
+                <span style={{ fontSize: 13, color: featured ? "#5f5a54" : "#c5bdb1" }}>{p.period}</span>
+                <span style={{ marginTop: 10, fontSize: 15, lineHeight: 1.5, color: featured ? "#4a4540" : "#d6cfc3" }}>{plan.copy}</span>
               </div>
             );
           })}
         </div>
-        <p style={{ margin: "22px 0 0", fontSize: 14, color: "#a39b90" }}>{p.note}</p>
+        <p style={{ margin: "22px 0 0", fontSize: 14, color: "#c5bdb1" }}>{p.note}</p>
       </div>
     </section>
   );
