@@ -26,7 +26,7 @@ import { prisma } from "@/lib/db/prisma";
 import {
   FEATURES,
   PLAN_MAX_USERS,
-  PLAN_MONTHLY_NET_CENTS,
+  PLAN_MONTHLY_CENTS,
   planAllows,
   type FeatureValue,
   type PlanValue,
@@ -178,7 +178,7 @@ async function buildPreview(
   now: Date
 ): Promise<PlanChangePreview> {
   const direction =
-    PLAN_MONTHLY_NET_CENTS[targetPlan] > PLAN_MONTHLY_NET_CENTS[sub.plan] ? "upgrade" : "downgrade";
+    PLAN_MONTHLY_CENTS[targetPlan] > PLAN_MONTHLY_CENTS[sub.plan] ? "upgrade" : "downgrade";
   const blockers: PlanChangePreview["blockers"] = [];
   if (direction === "downgrade" && Number.isFinite(PLAN_MAX_USERS[targetPlan])) {
     const staff = await prisma.staffMembership.count({ where: { restaurantId } });

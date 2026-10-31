@@ -173,9 +173,9 @@ async function seedPendingSubscription({ trialDays = 7, plan = "servicio", provi
       providerPlanId: trialDays ? PLAN_ENV.CULQI_PLAN_SERVICIO_TRIAL : PLAN_ENV.CULQI_PLAN_SERVICIO,
       plan,
       status: "pending",
-      netAmountCents: 16900,
-      igvAmountCents: 3042,
-      grossAmountCents: 19942,
+      netAmountCents: 14322,
+      igvAmountCents: 2578,
+      grossAmountCents: 16900,
       igvRateBps: 1800,
       trialDays,
       trialUsedAt: trialDays ? new Date() : null,
@@ -196,9 +196,9 @@ async function seedPendingSubscription({ trialDays = 7, plan = "servicio", provi
       withTrial: trialDays > 0,
       trialDays,
       currency: "PEN",
-      netAmountCents: 16900,
-      igvAmountCents: 3042,
-      grossAmountCents: 19942,
+      netAmountCents: 14322,
+      igvAmountCents: 2578,
+      grossAmountCents: 16900,
       igvRateBps: 1800,
       customerFirstName: "Ana",
       customerLastName: "Quispe",
@@ -354,22 +354,22 @@ describe("ciclo de suscripción", () => {
     const next = new Date(Date.now() + 30 * DAY);
     culqi.subs.get("sxn_test_trial1")!.nextBillingAt = next;
     event("evt_test_0000paid1", "charge.creation.succeeded", {
-      id: "chr_test_pay1", amount: 19942, currency_code: "PEN", creation_date: Math.floor(Date.now() / 1000), metadata: {}, source: { id: "crd_test_card1" },
+      id: "chr_test_pay1", amount: 16900, currency_code: "PEN", creation_date: Math.floor(Date.now() / 1000), metadata: {}, source: { id: "crd_test_card1" },
     });
     expect((await deliver("evt_test_0000paid1")).status).toBe(200);
     expect(await restaurantRow()).toMatchObject({ billingStatus: "active", accessUntil: next });
     expect(db.subscriptionPayment.rows).toHaveLength(1);
-    expect(db.subscriptionPayment.rows[0]).toMatchObject({ status: "succeeded", amountCents: 19942 });
+    expect(db.subscriptionPayment.rows[0]).toMatchObject({ status: "succeeded", amountCents: 16900 });
 
     // The same charge under another event id is still one payment.
-    event("evt_test_0000paid1b", "charge.creation.succeeded", { id: "chr_test_pay1", amount: 19942, source: { id: "crd_test_card1" } });
+    event("evt_test_0000paid1b", "charge.creation.succeeded", { id: "chr_test_pay1", amount: 16900, source: { id: "crd_test_card1" } });
     await deliver("evt_test_0000paid1b");
     expect(db.subscriptionPayment.rows).toHaveLength(1);
   });
 
   it("un cobro rechazado deja al local en gracia y luego se recupera", async () => {
     await activeTrial();
-    event("evt_test_0000fail1", "charge.failed", { id: "chr_test_fail1", amount: 19942, outcome: { code: "insufficient_funds" }, source: { id: "crd_test_card1" } });
+    event("evt_test_0000fail1", "charge.failed", { id: "chr_test_fail1", amount: 16900, outcome: { code: "insufficient_funds" }, source: { id: "crd_test_card1" } });
     await deliver("evt_test_0000fail1");
     const pastDue = await restaurantRow();
     expect(pastDue.billingStatus).toBe("past_due");
@@ -377,7 +377,7 @@ describe("ciclo de suscripción", () => {
     expect(restaurantEntitlement(pastDue as never).mode).not.toBe("locked");
     expect(db.subscriptionPayment.rows[0]).toMatchObject({ status: "failed", failureCode: "insufficient_funds" });
 
-    event("evt_test_0000paid2", "charge.creation.succeeded", { id: "chr_test_pay2", amount: 19942, source: { id: "crd_test_card1" } });
+    event("evt_test_0000paid2", "charge.creation.succeeded", { id: "chr_test_pay2", amount: 16900, source: { id: "crd_test_card1" } });
     await deliver("evt_test_0000paid2");
     expect((await restaurantRow()).billingStatus).toBe("active");
     expect(db.subscriptionTransition.rows.at(-1)).toMatchObject({ reason: "provider.recovered" });
@@ -386,11 +386,11 @@ describe("ciclo de suscripción", () => {
   it("eventos fuera de orden no acortan el acceso ni reviven un rechazo viejo", async () => {
     await activeTrial();
     const later = Date.now() + 5 * DAY;
-    event("evt_test_0000new", "charge.creation.succeeded", { id: "chr_test_new", amount: 19942, creation_date: later, source: { id: "crd_test_card1" } });
+    event("evt_test_0000new", "charge.creation.succeeded", { id: "chr_test_new", amount: 16900, creation_date: later, source: { id: "crd_test_card1" } });
     await deliver("evt_test_0000new");
     const accessAfterNew = ((await restaurantRow()).accessUntil as Date).getTime();
 
-    event("evt_test_0000old", "charge.creation.succeeded", { id: "chr_test_old", amount: 19942, creation_date: Date.now(), source: { id: "crd_test_card1" } });
+    event("evt_test_0000old", "charge.creation.succeeded", { id: "chr_test_old", amount: 16900, creation_date: Date.now(), source: { id: "crd_test_card1" } });
     await deliver("evt_test_0000old");
     expect(((await restaurantRow()).accessUntil as Date).getTime()).toBe(accessAfterNew);
 
@@ -401,7 +401,7 @@ describe("ciclo de suscripción", () => {
 
   it("si el primer cobro (sin prueba) falla, no se concede nada y se puede reintentar", async () => {
     const { checkout } = await seedPendingSubscription({ trialDays: 0, providerSubscriptionId: "sxn_test_nt1" });
-    event("evt_test_0000f1", "charge.failed", { id: "chr_test_f1", amount: 19942, source: { id: "crd_test_card1" }, metadata: {} });
+    event("evt_test_0000f1", "charge.failed", { id: "chr_test_f1", amount: 16900, source: { id: "crd_test_card1" }, metadata: {} });
     await deliver("evt_test_0000f1");
     expect(await restaurantRow()).toMatchObject({ billingSource: "manual", plan: "carta" });
     expect(await db.subscriptionCheckout.findUnique({ where: { id: checkout.id } })).toMatchObject({
@@ -415,10 +415,10 @@ describe("ciclo de suscripción", () => {
 
   it("una devolución se marca para revisión sin quitar acceso", async () => {
     await activeTrial();
-    event("evt_test_0000paid", "charge.creation.succeeded", { id: "chr_test_p", amount: 19942, source: { id: "crd_test_card1" } });
+    event("evt_test_0000paid", "charge.creation.succeeded", { id: "chr_test_p", amount: 16900, source: { id: "crd_test_card1" } });
     await deliver("evt_test_0000paid");
     const before = await restaurantRow();
-    event("evt_test_0000ref", "refund.creation.succeeded", { id: "ref_test_1", charge_id: "chr_test_p", amount: 19942 });
+    event("evt_test_0000ref", "refund.creation.succeeded", { id: "ref_test_1", charge_id: "chr_test_p", amount: 16900 });
     await deliver("evt_test_0000ref");
     expect(db.subscriptionPayment.rows[0].status).toBe("refunded");
     expect(db.subscription.rows[0]).toMatchObject({ needsReview: true, reviewReason: "refund" });
@@ -510,7 +510,7 @@ describe("cancelar y cambiar de plan", () => {
     const preview = await previewPlanChange(await actor(), { restaurantId: "ckrestaurant000000000001", targetPlan: "negocio" });
     expect(preview).toMatchObject({
       ok: true,
-      data: { direction: "upgrade", endsTrial: true, chargeNow: { grossCents: 40002 }, blockers: [] },
+      data: { direction: "upgrade", endsTrial: true, chargeNow: { grossCents: 33900 }, blockers: [] },
     });
 
     const change = await changeSubscriptionPlan(await actor(), {
@@ -526,7 +526,7 @@ describe("cancelar y cambiar de plan", () => {
     expect((await restaurantRow()).plan).toBe("servicio"); // not before payment
 
     const newSub = db.subscription.rows.find((s) => s.plan === "negocio")!;
-    event("evt_test_0000up", "charge.creation.succeeded", { id: "chr_test_up", amount: 40002, metadata: {}, subscription_id: newSub.providerSubscriptionId });
+    event("evt_test_0000up", "charge.creation.succeeded", { id: "chr_test_up", amount: 33900, metadata: {}, subscription_id: newSub.providerSubscriptionId });
     await deliver("evt_test_0000up");
     expect(await restaurantRow()).toMatchObject({ plan: "negocio", billingStatus: "active" });
     const old = db.subscription.rows.find((s) => s.plan === "servicio")!;
@@ -750,7 +750,7 @@ describe("conciliación por los cargos de Culqi (sin webhook)", () => {
   function listCharge(id: string, outcome: "succeeded" | "failed" | "unknown", extra: Partial<ProviderCharge["facts"]> = {}) {
     culqi.charges.set(id, {
       outcome,
-      facts: { chargeId: id, amountCents: 19942, currency: "PEN", occurredAt: new Date(), failureCode: null, ...extra },
+      facts: { chargeId: id, amountCents: 16900, currency: "PEN", occurredAt: new Date(), failureCode: null, ...extra },
     });
     culqi.subs.get("sxn_test_trial1")!.chargeIds.push(id);
   }
@@ -778,7 +778,7 @@ describe("conciliación por los cargos de Culqi (sin webhook)", () => {
     culqi.subs.get("sxn_test_nt9")!.nextBillingAt = new Date(Date.now() + 30 * DAY);
     culqi.charges.set("chr_test_first9", {
       outcome: "succeeded",
-      facts: { chargeId: "chr_test_first9", amountCents: 19942, currency: "PEN", occurredAt: new Date(), failureCode: null },
+      facts: { chargeId: "chr_test_first9", amountCents: 16900, currency: "PEN", occurredAt: new Date(), failureCode: null },
     });
     await runSubscriptionMaintenance();
     expect(await restaurantRow()).toMatchObject({ plan: "servicio", billingStatus: "active", billingSource: "provider" });
@@ -816,7 +816,7 @@ describe("conciliación por los cargos de Culqi (sin webhook)", () => {
         restaurantId: RID, restaurantName: "Mi local", ownerId: OWNER.id, ownerEmail: OWNER.email,
         provider: "culqi", providerCustomerId: "cus_test_1", providerCardId: "crd_test_card1",
         providerSubscriptionId: "sxn_test_fresh1", providerPlanId: PLAN_ENV.CULQI_PLAN_NEGOCIO,
-        plan: "negocio", status: "pending", netAmountCents: 33900, igvAmountCents: 6102, grossAmountCents: 40002,
+        plan: "negocio", status: "pending", netAmountCents: 28729, igvAmountCents: 5171, grossAmountCents: 33900,
         igvRateBps: 1800, replacesSubscriptionId: old.id,
       },
     });
@@ -889,7 +889,7 @@ describe("reactivar", () => {
     );
     const fresh = db.subscription.rows.find((s) => s.replacesSubscriptionId)!;
     culqi.subs.get(fresh.providerSubscriptionId as string)!.nextBillingAt = new Date(Date.now() + 30 * DAY);
-    event("evt_test_0000react", "charge.creation.succeeded", { id: "chr_test_react", amount: 19942, subscription_id: fresh.providerSubscriptionId });
+    event("evt_test_0000react", "charge.creation.succeeded", { id: "chr_test_react", amount: 16900, subscription_id: fresh.providerSubscriptionId });
     await deliver("evt_test_0000react");
     expect(await restaurantRow()).toMatchObject({ plan: "servicio", billingStatus: "active" });
   });
@@ -972,7 +972,7 @@ describe("cambiar la tarjeta", () => {
     const session = await startPaymentMethodUpdate(await actor(), { restaurantId: RID });
     expect(session).toMatchObject({
       ok: true,
-      data: { card: { last4: "1111" }, next: { type: "culqi_checkout", publicKey: "pk_test_public", settings: { currency: "PEN", amount: 19942 } } },
+      data: { card: { last4: "1111" }, next: { type: "culqi_checkout", publicKey: "pk_test_public", settings: { currency: "PEN", amount: 16900 } } },
     });
     expect(JSON.stringify(session)).not.toContain("sk_test_secret");
   });
@@ -994,7 +994,7 @@ describe("cambiar la tarjeta", () => {
     culqi.adapter.saveCard = vi.fn(async () => ({ kind: "requires_3ds" as const }));
     expect(await updatePaymentMethod(await actor(), { restaurantId: RID, tokenId: tok })).toMatchObject({
       ok: true,
-      data: { status: "requires_action", threeDS: { totalAmount: 19942 } },
+      data: { status: "requires_action", threeDS: { totalAmount: 16900 } },
     });
     expect(culqi.adapter.updateSubscriptionCard).not.toHaveBeenCalled();
   });
@@ -1104,7 +1104,7 @@ describe("operación: reconciliar sin tocar la base a mano", () => {
     culqi.subs.get("sxn_test_paid1")!.nextBillingAt = new Date(Date.now() + 30 * DAY);
     culqi.charges.set("chr_test_paid1", {
       outcome: "succeeded",
-      facts: { chargeId: "chr_test_paid1", amountCents: 19942, currency: "PEN", occurredAt: new Date(), failureCode: null },
+      facts: { chargeId: "chr_test_paid1", amountCents: 16900, currency: "PEN", occurredAt: new Date(), failureCode: null },
     });
     const result = await abandonPendingSubscription({ subscriptionId: db.subscription.rows[0].id });
     expect(result).toMatchObject({ ok: true, data: { note: "activated_by_reconcile" } });
@@ -1147,7 +1147,7 @@ describe("coherencia entre suscripción, cobro y permisos efectivos", () => {
     // a late payment restores it
     db.subscription.rows[0].trialEndsAt = new Date(Date.now() - 9 * DAY);
     culqi.subs.get("sxn_test_trial1")!.nextBillingAt = new Date(Date.now() + 25 * DAY);
-    event("evt_test_0000late", "charge.creation.succeeded", { id: "chr_test_late", amount: 19942, subscription_id: "sxn_test_trial1" });
+    event("evt_test_0000late", "charge.creation.succeeded", { id: "chr_test_late", amount: 16900, subscription_id: "sxn_test_trial1" });
     await deliver("evt_test_0000late");
     expect(await access()).toMatchObject({ mode: "full", reason: "active" });
   });
@@ -1221,7 +1221,7 @@ describe("retención de datos personales", () => {
         restaurantId: RID, userId: OWNER.id, userEmail: OWNER.email,
         idempotencyKey: crypto.randomUUID(), status, plan: "servicio", provider: "culqi",
         providerPlanId: PLAN_ENV.CULQI_PLAN_SERVICIO, withTrial: false, trialDays: 0, currency: "PEN",
-        netAmountCents: 16900, igvAmountCents: 3042, grossAmountCents: 19942, igvRateBps: 1800,
+        netAmountCents: 14322, igvAmountCents: 2578, grossAmountCents: 16900, igvRateBps: 1800,
         customerFirstName: "Ana", customerLastName: "Quispe", customerPhone: "987654321",
         customerAddress: "Av. Lima 123", customerCity: "Lima",
         billingDocType: "factura", billingRuc: "20131312955", billingLegalName: "Mi Local SAC",

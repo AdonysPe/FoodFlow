@@ -74,15 +74,16 @@ afterEach(() => {
 // -------------------------------------------------------------- pricing
 
 describe("precios", () => {
-  it("cobra el precio publicado más IGV, calculado en el servidor", () => {
-    expect(priceFor("carta")).toMatchObject({ netCents: 6900, igvCents: 1242, grossCents: 8142 });
-    expect(priceFor("servicio")).toMatchObject({ netCents: 16900, igvCents: 3042, grossCents: 19942 });
-    expect(priceFor("negocio")).toMatchObject({ netCents: 33900, igvCents: 6102, grossCents: 40002 });
+  it("cobra el precio publicado, con el IGV ya incluido, calculado en el servidor", () => {
+    expect(priceFor("carta")).toMatchObject({ netCents: 5847, igvCents: 1053, grossCents: 6900 });
+    expect(priceFor("servicio")).toMatchObject({ netCents: 14322, igvCents: 2578, grossCents: 16900 });
+    expect(priceFor("negocio")).toMatchObject({ netCents: 28729, igvCents: 5171, grossCents: 33900 });
   });
 
   it("neto más IGV siempre suma el bruto, también con descuento", () => {
     const p = priceFor("servicio", 1000);
-    expect(p.netCents).toBe(15210);
+    expect(p.grossCents).toBe(15210);
+    expect(p.netCents).toBe(12890);
     expect(p.netCents + p.igvCents).toBe(p.grossCents);
     expect(() => priceFor("carta", 10_000)).toThrow();
   });
@@ -335,10 +336,10 @@ describe("adaptador de Culqi", () => {
       "sk_test_secret",
       fakeFetch({
         status: 200,
-        body: { amount: 19942, currency: "PEN", initial_cycles: { count: 1, has_initial_charge: false, amount: 0, interval_unit_time: 2 } },
+        body: { amount: 16900, currency: "PEN", initial_cycles: { count: 1, has_initial_charge: false, amount: 0, interval_unit_time: 2 } },
       }).impl
     );
-    expect(await culqi.getPlan("pln_test_1")).toEqual({ amountCents: 19942, currency: "PEN", hasFreeInitialCycles: true });
+    expect(await culqi.getPlan("pln_test_1")).toEqual({ amountCents: 16900, currency: "PEN", hasFreeInitialCycles: true });
   });
 });
 
@@ -372,9 +373,9 @@ const checkoutRow = {
   withTrial: true,
   trialDays: 7,
   currency: "PEN",
-  netAmountCents: 16900,
-  igvAmountCents: 3042,
-  grossAmountCents: 19942,
+  netAmountCents: 14322,
+  igvAmountCents: 2578,
+  grossAmountCents: 16900,
   igvRateBps: 1800,
   discountBps: 0,
   customerFirstName: "Ana",
@@ -401,7 +402,7 @@ const checkoutRow = {
 function fakeAdapter(overrides: Partial<SubscriptionProviderAdapter> = {}): SubscriptionProviderAdapter {
   return {
     id: "culqi",
-    getPlan: vi.fn(async () => ({ amountCents: 19942, currency: "PEN", hasFreeInitialCycles: true })),
+    getPlan: vi.fn(async () => ({ amountCents: 16900, currency: "PEN", hasFreeInitialCycles: true })),
     ensureCustomer: vi.fn(async () => ({ customerId: "cus_test_1" })),
     saveCard: vi.fn(async () => ({ kind: "saved" as const, cardId: "crd_test_1", brand: "Visa", last4: "1111" })),
     createSubscription: vi.fn(async () => ({ subscriptionId: "sxn_test_1", rawStatus: "1" })),
@@ -462,8 +463,8 @@ describe("servicio de suscripciones", () => {
     const data = mocks.subscriptionCheckout.create.mock.calls[0][0].data;
     expect(data).toMatchObject({
       plan: "servicio",
-      netAmountCents: 16900,
-      grossAmountCents: 19942,
+      netAmountCents: 14322,
+      grossAmountCents: 16900,
       withTrial: true,
       trialDays: 7,
       providerPlanId: PLAN_ENV.CULQI_PLAN_SERVICIO_TRIAL,
@@ -475,7 +476,7 @@ describe("servicio de suscripciones", () => {
       expect(result.data.next).toMatchObject({
         type: "culqi_checkout",
         publicKey: "pk_test_public",
-        settings: { currency: "PEN", amount: 19942 },
+        settings: { currency: "PEN", amount: 16900 },
       });
       expect(result.data.next.threeDSReturnUrl).toMatch(/\/dashboard\/app\/configuracion\?checkout=ckcheckout00000000000001$/);
       expect(JSON.stringify(result.data)).not.toContain("sk_test_secret");
@@ -486,7 +487,7 @@ describe("servicio de suscripciones", () => {
     mocks.subscription.findFirst.mockImplementation(async ({ where }: { where: Record<string, unknown> }) =>
       "trialUsedAt" in where ? { id: "old" } : null
     );
-    adapter = fakeAdapter({ getPlan: vi.fn(async () => ({ amountCents: 19942, currency: "PEN", hasFreeInitialCycles: false })) });
+    adapter = fakeAdapter({ getPlan: vi.fn(async () => ({ amountCents: 16900, currency: "PEN", hasFreeInitialCycles: false })) });
     await createCheckout(owner, validCheckout);
     expect(mocks.subscriptionCheckout.create.mock.calls[0][0].data).toMatchObject({
       withTrial: false,
@@ -507,7 +508,7 @@ describe("servicio de suscripciones", () => {
     expect(again.ok && again.data.checkoutId).toBe(checkoutRow.id);
     expect(mocks.subscriptionCheckout.create).not.toHaveBeenCalled();
 
-    adapter = fakeAdapter({ getPlan: vi.fn(async () => ({ amountCents: 40002, currency: "PEN", hasFreeInitialCycles: true })) });
+    adapter = fakeAdapter({ getPlan: vi.fn(async () => ({ amountCents: 33900, currency: "PEN", hasFreeInitialCycles: true })) });
     expect(await createCheckout(owner, { ...validCheckout, plan: "negocio" })).toMatchObject({
       ok: false,
       code: "idempotency_conflict",
@@ -539,7 +540,7 @@ describe("servicio de suscripciones", () => {
     expect(mocks.subscription.create.mock.calls[0][0].data).toMatchObject({
       status: "pending",
       providerSubscriptionId: "sxn_test_1",
-      grossAmountCents: 19942,
+      grossAmountCents: 16900,
       cardLast4: "1111",
     });
     expect(mocks.subscription.create.mock.calls[0][0].data.trialUsedAt).toBeInstanceOf(Date);
@@ -553,7 +554,7 @@ describe("servicio de suscripciones", () => {
     const first = await confirmCheckout(owner, confirmInput);
     expect(first).toMatchObject({
       ok: true,
-      data: { status: "requires_action", threeDS: { email: "dueno@local.pe", totalAmount: 19942 } },
+      data: { status: "requires_action", threeDS: { email: "dueno@local.pe", totalAmount: 16900 } },
     });
     expect(adapter.createSubscription).not.toHaveBeenCalled();
 
@@ -641,7 +642,7 @@ describe("servicio de suscripciones", () => {
         trial: { eligible: true, days: 7 },
         subscription: null,
       });
-      expect(view.data.offers.map((o) => o.price.grossCents)).toEqual([8142, 19942, 40002]);
+      expect(view.data.offers.map((o) => o.price.grossCents)).toEqual([6900, 16900, 33900]);
     }
   });
 });

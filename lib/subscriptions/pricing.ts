@@ -5,9 +5,9 @@
 // browser: it calls `priceFor` itself when it opens a checkout and freezes the
 // result on the checkout row.
 
-import { PLAN_MONTHLY_NET_CENTS, type PlanValue } from "@/lib/plans";
+import { PLAN_MONTHLY_CENTS, type PlanValue } from "@/lib/plans";
 
-/** IGV, 18 %, in basis points. The public prices are "+ IGV". */
+/** IGV, 18 %, in basis points. The public prices already include it. */
 export const IGV_RATE_BPS = 1800;
 
 /** Free trial on the first card subscription of a restaurant. */
@@ -19,43 +19,44 @@ export const GRACE_DAYS = 7;
 export const SUBSCRIPTION_CURRENCY = "PEN" as const;
 
 /** Bumped whenever the subscription terms the owner accepts change. */
-export const SUBSCRIPTION_TERMS_VERSION = "2026-09-29";
+export const SUBSCRIPTION_TERMS_VERSION = "2026-10-30";
 
 export type PriceSummary = {
   currency: typeof SUBSCRIPTION_CURRENCY;
   interval: "month";
-  /** Price before IGV — the figure on the public site. */
+  /** The price without IGV, backed out of the gross. */
   netCents: number;
   igvCents: number;
-  /** What the card is charged each month. */
+  /** What the card is charged each month, IGV included — the figure on the public site. */
   grossCents: number;
   igvRateBps: number;
   discountBps: number;
 };
 
 /**
- * Monthly price of a plan. IGV is rounded to the céntimo once, on the
- * discounted net, so net + IGV always equals the gross charged.
+ * Monthly price of a plan. The published price already includes IGV, so the
+ * gross is the (discounted) list price and the net is backed out of it; the
+ * IGV is what is left, so net + IGV always equals the gross charged.
  */
 export function priceFor(plan: PlanValue, discountBps = 0): PriceSummary {
   if (!Number.isInteger(discountBps) || discountBps < 0 || discountBps >= 10_000) {
     throw new Error("discountBps fuera de rango");
   }
-  const list = PLAN_MONTHLY_NET_CENTS[plan];
-  const netCents = Math.round((list * (10_000 - discountBps)) / 10_000);
-  const igvCents = Math.round((netCents * IGV_RATE_BPS) / 10_000);
+  const list = PLAN_MONTHLY_CENTS[plan];
+  const grossCents = Math.round((list * (10_000 - discountBps)) / 10_000);
+  const netCents = Math.round((grossCents * 10_000) / (10_000 + IGV_RATE_BPS));
   return {
     currency: SUBSCRIPTION_CURRENCY,
     interval: "month",
     netCents,
-    igvCents,
-    grossCents: netCents + igvCents,
+    igvCents: grossCents - netCents,
+    grossCents,
     igvRateBps: IGV_RATE_BPS,
     discountBps,
   };
 }
 
-/** "S/ 81.42" — for server-side messages; the UI formats on its own. */
+/** "S/ 69.00" — for server-side messages; the UI formats on its own. */
 export function formatSoles(cents: number): string {
   return `S/ ${(cents / 100).toFixed(2)}`;
 }
