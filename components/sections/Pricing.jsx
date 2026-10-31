@@ -3,20 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
-import { PLANS, PLAN_MONTHLY_NET_CENTS } from "@/lib/plans";
+import { PLANS, PLAN_MONTHLY_CENTS } from "@/lib/plans";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-const IGV = 1.18;
 
 /**
  * /precios, design B ("Noche"), as approved in the prototype: the headline,
- * a "find your plan" panel (team size, analytics, with/without IGV), the
+ * a "find your plan" panel (team size, analytics), the
  * three plan cards, the four promises, the comparison table, the questions
  * and the closing call.
  *
  * Flows kept:
- *   - prices come from lib/plans.ts, the figure checkout charges, so the page
- *     cannot drift from what is billed (lib/plans.test.ts guards the copy);
+ *   - prices come from lib/plans.ts, IGV included — the figure checkout
+ *     charges — so the page cannot drift from what is billed
+ *     (lib/plans.test.ts guards the copy);
  *   - each plan button still goes to /register?plan=<carta|servicio|negocio>;
  *   - "Reserva tu piloto" opens the shared lead form.
  *
@@ -27,7 +27,6 @@ export default function Pricing({ as: Heading = "h1" }) {
   const p = t.pricing.page;
   const { openLeadForm } = useLeadCapture();
 
-  const [igv, setIgv] = useState(false);
   const [team, setTeam] = useState(1); // 0 = just me, 1 = 2 to 10, 2 = over 10
   const [stats, setStats] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
@@ -35,8 +34,7 @@ export default function Pricing({ as: Heading = "h1" }) {
   // The plan that fits the answers: analytics or a big team needs Negocio,
   // a team needs Servicio, a one-person shop needs Carta.
   const rec = stats || team === 2 ? 2 : team === 1 ? 1 : 0;
-  const net = PLANS.map((key) => PLAN_MONTHLY_NET_CENTS[key] / 100);
-  const shown = (n) => (igv ? (n * IGV).toFixed(2) : String(n));
+  const price = PLANS.map((key) => PLAN_MONTHLY_CENTS[key] / 100);
 
   return (
     <>
@@ -90,14 +88,6 @@ export default function Pricing({ as: Heading = "h1" }) {
             </span>
             {p.finder.stats}
           </button>
-          <div className="lb-seg lb-seg--end" role="group" aria-label={p.finder.taxLabel}>
-            <button type="button" aria-pressed={!igv} className={!igv ? "is-on" : ""} onClick={() => setIgv(false)}>
-              {p.finder.net}
-            </button>
-            <button type="button" aria-pressed={igv} className={igv ? "is-on" : ""} onClick={() => setIgv(true)}>
-              {p.finder.gross}
-            </button>
-          </div>
         </div>
       </section>
 
@@ -124,13 +114,13 @@ export default function Pricing({ as: Heading = "h1" }) {
                   {popular && <span className="lb-pr-tag">{p.popular}</span>}
                 </div>
                 <span className="lb-pr-pitch">{plan.pitch}</span>
-                <div className="lb-pr-price lb-swap" key={`${i}${igv}`}>
+                <div className="lb-pr-price">
                   <span style={{ fontSize: 22, fontWeight: 600 }}>S/</span>
-                  <span className="lb-display lb-pr-num">{shown(net[i])}</span>
+                  <span className="lb-display lb-pr-num">{price[i]}</span>
                   <span className="lb-pr-muted">{p.perMonth}</span>
                 </div>
                 <span className="lb-pr-muted" style={{ fontSize: 13 }}>
-                  {igv ? p.taxGross.replace("{net}", String(net[i])) : p.taxNet}
+                  {p.taxIncluded}
                 </span>
                 <Link href={`/register?plan=${encodeURIComponent(PLANS[i])}`} className="lb-pr-cta">
                   {p.cta.replace("{plan}", plan.name)}
