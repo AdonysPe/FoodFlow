@@ -36,7 +36,7 @@ const SOURCES: { id: "all" | ContactLead["source"]; label: string }[] = [
 
 const COLUMNS: { id: Exclude<PipelineStatus, "archivado">; label: string; color: string }[] = [
   { id: "nuevo", label: "Nuevos", color: "#ff5a33" },
-  { id: "contactado", label: "Contactados", color: "#a39b90" },
+  { id: "contactado", label: "Contactados", color: "#c5bdb1" },
   { id: "cita", label: "Con cita", color: "#c7bcff" },
   { id: "cliente", label: "Clientes", color: "#3ddc97" },
 ];
@@ -75,8 +75,8 @@ function ageOf(iso: string) {
 
 function priority(score: number) {
   if (score >= 75) return { label: "Prioridad alta", bg: "rgba(255,90,51,0.16)", fg: "#ff7a57" };
-  if (score >= 50) return { label: "Prioridad media", bg: "rgba(243,239,230,0.08)", fg: "#cfc7bb" };
-  if (score > 0) return { label: "Prioridad baja", bg: "rgba(243,239,230,0.05)", fg: "#8a8278" };
+  if (score >= 50) return { label: "Prioridad media", bg: "rgba(243,239,230,0.08)", fg: "#e2dbcf" };
+  if (score > 0) return { label: "Prioridad baja", bg: "rgba(243,239,230,0.05)", fg: "#ada599" };
   return null;
 }
 
@@ -187,7 +187,7 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
           Buscar contacto
         </label>
         <div className="lbd-cu-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="M20 20l-4-4" />
           </svg>
@@ -288,8 +288,8 @@ export default function ContactLeadsTable({ leads }: { leads: ContactLead[] }) {
               <div className="lbd-ad-drawer-block">
                 <span className="lbd-mono lbd-bl-eyebrow">CONTACTO</span>
                 <span className="lbd-mono">+51 {opened.whatsapp}</span>
-                {opened.email && <span style={{ color: "#cfc7bb" }}>{opened.email}</span>}
-                <span style={{ color: "#a39b90", fontSize: 13 }}>
+                {opened.email && <span style={{ color: "#e2dbcf" }}>{opened.email}</span>}
+                <span style={{ color: "#c5bdb1", fontSize: 13 }}>
                   Llegó por {SOURCE_LABEL[opened.source].toLowerCase()} · {opened.createdAtLabel}
                 </span>
               </div>

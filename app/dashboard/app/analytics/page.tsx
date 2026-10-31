@@ -219,7 +219,7 @@ export default async function AnalyticsPage() {
           <div key={stat.label} className="lbd-card lbd-an-stat">
             <span>{stat.label}</span>
             <strong className="lbd-display">{stat.value}</strong>
-            <small style={{ color: stat.delta == null ? "#a39b90" : stat.delta >= 0 ? "#3ddc97" : "#ff7a57", fontWeight: stat.delta == null ? 400 : 550 }}>
+            <small style={{ color: stat.delta == null ? "#c5bdb1" : stat.delta >= 0 ? "#3ddc97" : "#ff7a57", fontWeight: stat.delta == null ? 400 : 550 }}>
               {stat.delta != null && `${stat.delta >= 0 ? "↑" : "↓"} ${Math.abs(stat.delta).toFixed(0)}% `}
               {stat.hint}
             </small>
@@ -240,7 +240,7 @@ export default async function AnalyticsPage() {
 
         <section className="lbd-card lbd-an-panel" style={{ flex: "1 1 280px" }} aria-label="Ganancia por semana">
           <span className="lbd-an-h">Ganancia por semana</span>
-          <span style={{ marginTop: -6, fontSize: 12, color: "#8a8278" }}>Últimas {WEEKS} semanas, de lunes a domingo</span>
+          <span style={{ marginTop: -6, fontSize: 12, color: "#ada599" }}>Últimas {WEEKS} semanas, de lunes a domingo</span>
           <WeeklyEarnings weeks={weeks} daysElapsed={daysElapsed} previousToDate={previousToDate} />
         </section>
       </div>
@@ -266,7 +266,7 @@ export default async function AnalyticsPage() {
                   <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13 }}>
                       <span className="lbd-trunc">{dish.name}</span>
-                      <span style={{ color: "#a39b90", flexShrink: 0 }}>
+                      <span style={{ color: "#c5bdb1", flexShrink: 0 }}>
                         {formatCurrency(dish.revenue)} · {dish.quantity} vend.
                       </span>
                     </div>
@@ -282,7 +282,7 @@ export default async function AnalyticsPage() {
 
         <section className="lbd-card lbd-an-panel" style={{ flex: "1 1 320px" }} aria-label="Horas pico">
           <span className="lbd-an-h">Horas pico</span>
-          <span style={{ marginTop: -6, fontSize: 12, color: "#8a8278" }}>Pedidos por día y hora, últimos 30 días</span>
+          <span style={{ marginTop: -6, fontSize: 12, color: "#ada599" }}>Pedidos por día y hora, últimos 30 días</span>
           {!hasHeat ? (
             <p className="lbd-an-empty">Aún no hay pedidos en este periodo.</p>
           ) : (

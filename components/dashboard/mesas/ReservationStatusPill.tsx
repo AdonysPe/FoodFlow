@@ -6,7 +6,7 @@ export const RESERVATION_TONE: Record<ReservationStatusValue, { color: string; b
   pendiente: { color: "#f5c76a", bg: "rgba(245,199,106,0.12)" },
   confirmada: { color: "#f3efe6", bg: "rgba(243,239,230,0.1)" },
   sentada: { color: "#3ddc97", bg: "rgba(61,220,151,0.12)" },
-  cancelada: { color: "#8a8278", bg: "rgba(243,239,230,0.06)" },
+  cancelada: { color: "#ada599", bg: "rgba(243,239,230,0.06)" },
   no_show: { color: "#ff7a57", bg: "rgba(255,90,51,0.12)" },
 };
 

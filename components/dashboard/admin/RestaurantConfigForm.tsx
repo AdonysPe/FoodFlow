@@ -230,11 +230,11 @@ export default function RestaurantConfigForm({
                 <dt>Plantilla resultante</dt>
                 <dd>
                   {theme.name}
-                  <span style={{ color: "#a39b90" }}>{override === FOLLOW_CATEGORY ? " (por categoría)" : " (fija)"}</span>
+                  <span style={{ color: "#c5bdb1" }}>{override === FOLLOW_CATEGORY ? " (por categoría)" : " (fija)"}</span>
                 </dd>
               </div>
             </dl>
-            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#a39b90" }}>Los QR impresos siguen funcionando: cambia solo cómo se ve la carta al abrirla.</p>
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#c5bdb1" }}>Los QR impresos siguen funcionando: cambia solo cómo se ve la carta al abrirla.</p>
           </div>
         </div>
       )}

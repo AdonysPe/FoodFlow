@@ -72,8 +72,8 @@ function ratingLabel(p: ProspectRow) {
 
 function scoreTone(score: number) {
   if (score >= 75) return { bg: "rgba(255,90,51,0.16)", fg: "#ff7a57" };
-  if (score >= 50) return { bg: "rgba(243,239,230,0.08)", fg: "#cfc7bb" };
-  return { bg: "rgba(243,239,230,0.05)", fg: "#8a8278" };
+  if (score >= 50) return { bg: "rgba(243,239,230,0.08)", fg: "#e2dbcf" };
+  return { bg: "rgba(243,239,230,0.05)", fg: "#ada599" };
 }
 
 function dayLabel(iso: string) {
@@ -335,7 +335,7 @@ export default function ProspectsBoard({
           Buscar prospecto
         </label>
         <div className="lbd-cu-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="M20 20l-4-4" />
           </svg>
@@ -419,8 +419,8 @@ export default function ProspectsBoard({
 
               <div className="lbd-ad-drawer-block">
                 <span className="lbd-mono lbd-bl-eyebrow">EN GOOGLE MAPS</span>
-                <span style={{ color: "#cfc7bb" }}>{ratingLabel(opened)}</span>
-                {opened.address && <span style={{ color: "#a39b90", fontSize: 13 }}>{opened.address}</span>}
+                <span style={{ color: "#e2dbcf" }}>{ratingLabel(opened)}</span>
+                {opened.address && <span style={{ color: "#c5bdb1", fontSize: 13 }}>{opened.address}</span>}
                 {opened.phone && <span className="lbd-mono">{opened.phone}</span>}
                 <span className="lbd-px-links">
                   {opened.mapsUrl && (
@@ -434,7 +434,7 @@ export default function ProspectsBoard({
                     </a>
                   )}
                 </span>
-                <span style={{ color: "#8a8278", fontSize: 12 }}>
+                <span style={{ color: "#ada599", fontSize: 12 }}>
                   Encontrado con &ldquo;{opened.foundBy}&rdquo;{opened.lastTouchAt ? ` · último mensaje el ${dayLabel(opened.lastTouchAt)}` : ""}
                 </span>
               </div>

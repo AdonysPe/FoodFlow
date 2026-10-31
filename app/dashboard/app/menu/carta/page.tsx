@@ -67,7 +67,7 @@ export default async function CartaSettingsPage() {
             <span className={live ? "lbd-pulse" : undefined} aria-hidden style={{ width: 9, height: 9, borderRadius: "50%", background: live ? "#3ddc97" : "#6f675e" }} />
             {live ? "Tu carta está en línea" : "Tu carta todavía no está publicada"}
           </span>
-          <span className="lbd-mono" style={{ fontSize: 13, color: "#cfc7bb", wordBreak: "break-all" }}>
+          <span className="lbd-mono" style={{ fontSize: 13, color: "#e2dbcf", wordBreak: "break-all" }}>
             {SITE_URL.replace(/^https?:\/\//, "")}
             {publicPath}
           </span>

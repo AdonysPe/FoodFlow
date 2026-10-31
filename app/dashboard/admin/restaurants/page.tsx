@@ -141,12 +141,12 @@ export default async function RestaurantsPage({
 
   const planCount = (plan: PlanValue) => planCounts.find((row) => row.plan === plan)?._count._all ?? 0;
   const stats = [
-    { label: "Locales", value: totalCount, note: "en la plataforma", color: "#a39b90" },
+    { label: "Locales", value: totalCount, note: "en la plataforma", color: "#c5bdb1" },
     ...PLANS.map((plan) => ({
       label: plan === "carta" ? "Carta" : plan === "servicio" ? "Servicio" : "Negocio",
       value: planCount(plan),
       note: `${PLAN_PRICES[plan]} al mes + IGV`,
-      color: plan === "negocio" ? "#ff5a33" : plan === "servicio" ? "#f3efe6" : "#6f675e",
+      color: plan === "negocio" ? "#ff5a33" : plan === "servicio" ? "#f3efe6" : "#9a9287",
     })),
   ];
 

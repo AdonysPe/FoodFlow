@@ -22,16 +22,16 @@ export type RestaurantRow = {
 export const BILLING: Record<BillingStatusValue, { label: string; color: string }> = {
   active: { label: "Activo", color: "#3ddc97" },
   trialing: { label: "En prueba", color: "#f3efe6" },
-  pending: { label: "Por activar", color: "#a39b90" },
+  pending: { label: "Por activar", color: "#c5bdb1" },
   past_due: { label: "Pago atrasado", color: "#ff7a57" },
-  suspended: { label: "Suspendido", color: "#8a8278" },
-  cancelled: { label: "Cancelado", color: "#8a8278" },
+  suspended: { label: "Suspendido", color: "#ada599" },
+  cancelled: { label: "Cancelado", color: "#ada599" },
 };
 
 export const PLAN_TONE: Record<PlanValue, { bg: string; fg: string }> = {
   negocio: { bg: "#ff5a33", fg: "#0c0908" },
   servicio: { bg: "#f3efe6", fg: "#0c0908" },
-  carta: { bg: "rgba(243,239,230,0.08)", fg: "#cfc7bb" },
+  carta: { bg: "rgba(243,239,230,0.08)", fg: "#e2dbcf" },
 };
 
 const AVATARS = [

@@ -55,7 +55,7 @@ export default function TargetPicker({
         <h1 className="lbd-display lbd-cm-h1">
           ¿Para dónde es<span style={{ color: "#ff5a33" }}>?</span>
         </h1>
-        <p style={{ margin: 0, fontSize: 14, color: "#a39b90" }}>Toca una mesa para abrir, añadir o cobrar.</p>
+        <p style={{ margin: 0, fontSize: 14, color: "#c5bdb1" }}>Toca una mesa para abrir, añadir o cobrar.</p>
       </div>
 
       {/* the floor in one line: what is open, what it adds up to, and whether
@@ -66,7 +66,7 @@ export default function TargetPicker({
             <p className="lbd-cm-eyebrow">Cuentas abiertas</p>
             <p className="lbd-display" style={{ margin: "2px 0 0", fontSize: 22, letterSpacing: "-0.04em" }}>
               {openCount}
-              <span style={{ marginLeft: 10, fontSize: 15, color: "#a39b90", letterSpacing: 0, fontFamily: "var(--font-sans)", fontWeight: 400 }}>{formatPrice(openTotal)}</span>
+              <span style={{ marginLeft: 10, fontSize: 15, color: "#c5bdb1", letterSpacing: 0, fontFamily: "var(--font-sans)", fontWeight: 400 }}>{formatPrice(openTotal)}</span>
             </p>
           </div>
           {readyCount > 0 && (

@@ -93,7 +93,7 @@ export default function RestaurantFilters({
         Buscar restaurante por nombre o correo del dueño
       </label>
       <div className="lbd-cu-search">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5" />
           <path d="M20 20l-4-4" />
         </svg>

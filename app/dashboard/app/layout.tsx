@@ -47,7 +47,7 @@ export default async function ClientAppLayout({ children }: { children: ReactNod
           <form action={logout} className="mt-7">
             <button
               type="submit"
-              className="text-[13.5px] font-medium text-faint hover:text-fg/70"
+              className="text-[13.5px] font-medium text-faint hover:text-fg/80"
             >
               Cerrar sesión
             </button>

@@ -60,7 +60,7 @@ export default function MenuItemCard({
   );
 
   const toggleSwitch = (
-    <button type="button" role="switch" aria-checked={item.available} disabled={isPending} onClick={toggle} className="lbd-me-switch" style={{ color: item.available ? "#cfc7bb" : "#ff7a57" }} title={item.available ? "Marcar como agotado" : "Marcar como disponible"}>
+    <button type="button" role="switch" aria-checked={item.available} disabled={isPending} onClick={toggle} className="lbd-me-switch" style={{ color: item.available ? "#e2dbcf" : "#ff7a57" }} title={item.available ? "Marcar como agotado" : "Marcar como disponible"}>
       <span>{item.available ? "Disponible" : "Agotado hoy"}</span>
       <i className={item.available ? "is-on" : undefined}>
         <b />
@@ -71,7 +71,7 @@ export default function MenuItemCard({
   if (layout === "row") {
     return (
       <div className={`lbd-me-row${selected ? " is-on" : ""}`}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden style={{ color: "#8a8278", flexShrink: 0 }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden style={{ color: "#ada599", flexShrink: 0 }}>
           <circle cx="9" cy="6" r="1.6" />
           <circle cx="15" cy="6" r="1.6" />
           <circle cx="9" cy="12" r="1.6" />
@@ -82,10 +82,10 @@ export default function MenuItemCard({
         <button type="button" onClick={onEdit} className="lbd-me-row-main" aria-label={`Editar ${item.name}`}>
           <span className="lbd-me-thumb">{photo}</span>
           <span style={{ minWidth: 0, textAlign: "left" }}>
-            <span className="lbd-trunc" style={{ display: "block", fontSize: 14, fontWeight: 600, color: dimmed ? "#8a8278" : "#f3efe6" }}>
+            <span className="lbd-trunc" style={{ display: "block", fontSize: 14, fontWeight: 600, color: dimmed ? "#ada599" : "#f3efe6" }}>
               {item.name}
             </span>
-            <span style={{ fontSize: 12.5, color: "#a39b90" }}>{formatPrice(item.price)}</span>
+            <span style={{ fontSize: 12.5, color: "#c5bdb1" }}>{formatPrice(item.price)}</span>
           </span>
         </button>
         {toggleSwitch}
@@ -102,11 +102,11 @@ export default function MenuItemCard({
       </button>
       <div className="lbd-me-card-body">
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
-          <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", color: dimmed ? "#a39b90" : "#f3efe6" }}>{item.name}</span>
+          <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", color: dimmed ? "#c5bdb1" : "#f3efe6" }}>{item.name}</span>
           <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: "nowrap" }}>{formatPrice(item.price)}</span>
         </div>
         {(showCategory || item.prepMin != null) && (
-          <span style={{ fontSize: 12, color: "#8a8278" }}>
+          <span style={{ fontSize: 12, color: "#ada599" }}>
             {showCategory ? item.categoryName ?? "Sin categoría" : ""}
             {showCategory && item.prepMin != null ? " · " : ""}
             {item.prepMin != null ? `${item.prepMin} min` : ""}

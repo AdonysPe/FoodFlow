@@ -498,7 +498,7 @@ export default function BillingWorkspace({
               como está. Repetir un número hace que SUNAT rechace el comprobante.
               <br />
               Tu nota de venta interna sigue numerándose aparte, en{" "}
-              <span className="lbd-mono" style={{ color: "#cfc7bb" }}>
+              <span className="lbd-mono" style={{ color: "#e2dbcf" }}>
                 {formatDocumentNo(notaVentaSeries, notaVentaNext)}
               </span>
               .

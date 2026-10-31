@@ -232,7 +232,7 @@ function TillField({
           {error}
         </p>
       ) : hint ? (
-        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#8a8278" }}>{hint}</p>
+        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#ada599" }}>{hint}</p>
       ) : null}
     </div>
   );

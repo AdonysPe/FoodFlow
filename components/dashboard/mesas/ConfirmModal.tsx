@@ -53,7 +53,7 @@ export default function ConfirmModal({
         <h2 className="lbd-display" style={{ margin: 0, fontSize: 24, letterSpacing: "-0.04em", lineHeight: 1.1 }}>
           {title}
         </h2>
-        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: "#a39b90" }}>{message}</p>
+        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: "#c5bdb1" }}>{message}</p>
         {children}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
           <button type="button" onClick={onCancel} disabled={pending} className="lbd-btn lbd-btn--ghost lbd-btn--sm">

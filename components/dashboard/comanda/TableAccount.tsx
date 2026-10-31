@@ -91,7 +91,7 @@ export default function TableAccount({
       <div className="lbd-cm-sticky">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a39b90" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#c5bdb1" }}>
               Cuenta abierta
               <span className={`lbd-cm-flag ${KITCHEN_TONE[tab.kitchenStatus]}`}>{KITCHEN_LABELS[tab.kitchenStatus]}</span>
             </span>
@@ -113,7 +113,7 @@ export default function TableAccount({
                 <h2 className="lbd-display lbd-trunc" style={{ margin: "2px 0 0", fontSize: 26, letterSpacing: "-0.04em" }}>
                   {tab.tableName}
                 </h2>
-                {zone && <p style={{ margin: 0, fontSize: 12, color: "#5f5a54" }}>{zone}</p>}
+                {zone && <p style={{ margin: 0, fontSize: 12, color: "#46413c" }}>{zone}</p>}
               </div>
               <span className="lbd-mono lbd-cm-ticket-no">#{ticketNumber(tab.orderId)}</span>
             </div>
@@ -146,7 +146,7 @@ export default function TableAccount({
               <section key={round} style={{ marginTop: roundIndex > 0 ? 16 : 0 }}>
                 {multi && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span className="lbd-cm-ticket-eyebrow" style={{ color: "#8a8278" }}>
+                    <span className="lbd-cm-ticket-eyebrow" style={{ color: "#ada599" }}>
                       Ronda {round}
                     </span>
                     <span style={{ flex: 1, height: 1, background: "#e1dbd4" }} />
@@ -155,13 +155,13 @@ export default function TableAccount({
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
                   {lines.map((l, i) => (
                     <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                      <span className="lbd-mono" style={{ minWidth: 26, fontSize: 13, fontWeight: 600, color: "#5f5a54", paddingTop: 1 }}>
+                      <span className="lbd-mono" style={{ minWidth: 26, fontSize: 13, fontWeight: 600, color: "#46413c", paddingTop: 1 }}>
                         {l.quantity}×
                       </span>
                       <span style={{ minWidth: 0, flex: 1 }}>
                         <span style={{ display: "block", fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{l.name}</span>
                         {/* unit price, so a corrected line can be checked */}
-                        <span style={{ display: "block", fontSize: 12, color: "#5f5a54" }}>{formatPrice(l.price)} c/u</span>
+                        <span style={{ display: "block", fontSize: 12, color: "#46413c" }}>{formatPrice(l.price)} c/u</span>
                         {l.note && <span style={{ display: "block", marginTop: 2, fontSize: 13, fontWeight: 600, color: "#c9391a" }}>{l.note}</span>}
                       </span>
                       <span className="lbd-mono" style={{ flexShrink: 0, fontSize: 14 }}>
@@ -178,7 +178,7 @@ export default function TableAccount({
           <footer>
             <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>
               Total
-              <span style={{ marginLeft: 8, fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#5f5a54" }}>
+              <span style={{ marginLeft: 8, fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#46413c" }}>
                 {dishCount} {dishCount === 1 ? "plato" : "platos"}
               </span>
             </span>
@@ -195,7 +195,7 @@ export default function TableAccount({
           Imprimir precuenta
         </Link>
 
-        <button type="button" onClick={handleVoid} onBlur={() => setConfirmingVoid(false)} disabled={isPending} className={`lbd-btn ${confirmingVoid ? "lbd-btn--solid" : "lbd-btn--ghost"}`} style={{ width: "100%", marginTop: 8, minHeight: 44, color: confirmingVoid ? undefined : "#a39b90" }}>
+        <button type="button" onClick={handleVoid} onBlur={() => setConfirmingVoid(false)} disabled={isPending} className={`lbd-btn ${confirmingVoid ? "lbd-btn--solid" : "lbd-btn--ghost"}`} style={{ width: "100%", marginTop: 8, minHeight: 44, color: confirmingVoid ? undefined : "#c5bdb1" }}>
           {confirmingVoid ? "¿Anular la cuenta y liberar la mesa?" : "Anular cuenta"}
         </button>
       </div>

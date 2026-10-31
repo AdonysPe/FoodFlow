@@ -89,7 +89,7 @@ export default function ComandaSummary({
     <div className="lbd-cm-sum">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a39b90" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#c5bdb1" }}>
             {tab ? "Cuenta abierta" : "Nuevo pedido"}
             {tab && <span className={`lbd-cm-flag ${KITCHEN_TONE[tab.kitchenStatus]}`}>{KITCHEN_LABELS[tab.kitchenStatus]}</span>}
           </span>
@@ -110,13 +110,13 @@ export default function ComandaSummary({
                 list.map((l, i) => (
                   <div key={`${round}-${i}`} className="lbd-cm-sum-line">
                     <span>
-                      <span className="lbd-mono" style={{ color: "#a39b90" }}>
+                      <span className="lbd-mono" style={{ color: "#c5bdb1" }}>
                         {l.quantity}×
                       </span>{" "}
                       {l.name}
                       {rounds.size > 1 && <small> · R{round}</small>}
                     </span>
-                    <span style={{ color: "#cfc7bb" }}>{formatPrice(l.price * l.quantity)}</span>
+                    <span style={{ color: "#e2dbcf" }}>{formatPrice(l.price * l.quantity)}</span>
                   </div>
                 ))
               )}
@@ -126,7 +126,7 @@ export default function ComandaSummary({
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <span className="lbd-cm-eyebrow">{tab ? "Nueva ronda" : "Pedido"}</span>
           {lines.length === 0 ? (
-            <p style={{ margin: "8px 0", fontSize: 14, color: "#8a8278" }}>Agrega platos desde la carta.</p>
+            <p style={{ margin: "8px 0", fontSize: 14, color: "#ada599" }}>Agrega platos desde la carta.</p>
           ) : (
             lines.map((l) => (
               <div key={l.id} className="lbd-cm-sum-draft">
@@ -156,7 +156,7 @@ export default function ComandaSummary({
 
       <div className="lbd-cm-sum-foot">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <span style={{ fontSize: 14, color: "#a39b90" }}>Total de la cuenta</span>
+          <span style={{ fontSize: 14, color: "#c5bdb1" }}>Total de la cuenta</span>
           <span className="lbd-display" style={{ fontSize: 32, letterSpacing: "-0.045em" }}>
             {formatPrice(sentTotal + draftTotal)}
           </span>
@@ -169,12 +169,12 @@ export default function ComandaSummary({
             <button type="button" disabled={draftCount > 0} onClick={onCharge} className="lbd-btn lbd-btn--ghost" style={{ minHeight: 50, borderRadius: 18, fontSize: 15 }}>
               Cobrar {formatPrice(sentTotal)}
             </button>
-            {draftCount > 0 && <span style={{ fontSize: 12, color: "#8a8278", textAlign: "center" }}>Envía la ronda a cocina antes de cobrar.</span>}
+            {draftCount > 0 && <span style={{ fontSize: 12, color: "#ada599", textAlign: "center" }}>Envía la ronda a cocina antes de cobrar.</span>}
             <div style={{ display: "flex", gap: 8 }}>
               <Link href={`/dashboard/boleta/${tab.orderId}`} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ flex: 1 }}>
                 Precuenta
               </Link>
-              <button type="button" onClick={handleVoid} onBlur={() => setConfirmingVoid(false)} disabled={isPending} className={`lbd-btn lbd-btn--sm ${confirmingVoid ? "lbd-btn--solid" : "lbd-btn--ghost"}`} style={{ flex: 1, color: confirmingVoid ? undefined : "#a39b90" }}>
+              <button type="button" onClick={handleVoid} onBlur={() => setConfirmingVoid(false)} disabled={isPending} className={`lbd-btn lbd-btn--sm ${confirmingVoid ? "lbd-btn--solid" : "lbd-btn--ghost"}`} style={{ flex: 1, color: confirmingVoid ? undefined : "#c5bdb1" }}>
                 {confirmingVoid ? "¿Anular y liberar?" : "Anular cuenta"}
               </button>
             </div>

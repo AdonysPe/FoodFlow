@@ -73,7 +73,7 @@ export default function PlanGate({ feature, plan }: { feature: FeatureValue; pla
         </Link>
       </div>
 
-      <p style={{ margin: 0, fontSize: 12, color: "#8a8278" }}>Tu plan actual es {PLAN_LABELS[plan]}.</p>
+      <p style={{ margin: 0, fontSize: 12, color: "#ada599" }}>Tu plan actual es {PLAN_LABELS[plan]}.</p>
     </div>
   );
 }

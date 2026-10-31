@@ -221,14 +221,14 @@ export default async function RestaurantConfigPage({
                       {entry.previousCategoryId ?? "—"} → {entry.newCategoryId ?? "—"}
                       <span> · plantilla {entry.previousTemplate ?? "por categoría"} → {entry.newTemplate ?? "por categoría"}</span>
                     </span>
-                    <small style={{ fontSize: 11, color: "#8a8278" }}>
+                    <small style={{ fontSize: 11, color: "#ada599" }}>
                       {entry.performedByEmail ?? "cuenta eliminada"} · {entry.createdAt.toLocaleString("es-PE", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </small>
                   </span>
                 </div>
               ))
             )}
-            <small style={{ fontSize: 11, color: "#8a8278" }}>
+            <small style={{ fontSize: 11, color: "#ada599" }}>
               Plan {PLAN_LABELS[restaurant.plan as PlanValue]}
               {subscription ? ` · ${formatCurrency(subscription.netAmountCents / 100)} al mes sin IGV` : ""}
             </small>

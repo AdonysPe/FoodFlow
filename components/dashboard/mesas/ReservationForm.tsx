@@ -239,7 +239,7 @@ export default function ReservationForm({
               );
             })}
           </select>
-          <p className="mt-1.5 text-[12px] text-[#a39b90]">
+          <p className="mt-1.5 text-[12px] text-[#c5bdb1]">
             {freeCount === 0
               ? "Ninguna mesa libre para esa fecha y hora."
               : `${freeCount} ${freeCount === 1 ? "mesa disponible" : "mesas disponibles"} a esa hora · cada reserva bloquea la mesa 3 h.`}

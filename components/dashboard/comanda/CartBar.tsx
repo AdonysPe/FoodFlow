@@ -52,7 +52,7 @@ export default function CartBar({
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px" }}>
-        <span style={{ fontSize: 14, color: "#cfc7bb" }}>{count === 0 ? "Pedido vacío" : `${count} ${count === 1 ? "plato" : "platos"}`}</span>
+        <span style={{ fontSize: 14, color: "#e2dbcf" }}>{count === 0 ? "Pedido vacío" : `${count} ${count === 1 ? "plato" : "platos"}`}</span>
         <span className="lbd-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
           {formatPrice(total)}
         </span>

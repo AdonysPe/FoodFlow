@@ -239,13 +239,13 @@ function OrderDetail({
     <aside className="lbd-card lbd-card--glass lbd-or-detail lbd-swap" aria-label="Detalle del pedido">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-          <span className="lbd-mono" style={{ fontSize: 12, color: "#a39b90" }}>
+          <span className="lbd-mono" style={{ fontSize: 12, color: "#c5bdb1" }}>
             {codeOf(order)} · {order.createdAtLabel}
           </span>
           <span className="lbd-display" style={{ fontSize: 28, letterSpacing: "-0.04em", lineHeight: 1 }}>
             {whereOf(order)}
           </span>
-          <span style={{ fontSize: 13, color: "#a39b90" }}>{order.customerName}</span>
+          <span style={{ fontSize: 13, color: "#c5bdb1" }}>{order.customerName}</span>
         </div>
         <StatusBadge status={order.status} />
       </div>
@@ -254,7 +254,7 @@ function OrderDetail({
         {STEP_LABELS.map((label, i) => (
           <div key={label} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <span className="lbd-or-bar" style={{ background: i <= step ? "#ff5a33" : "rgba(243,239,230,0.1)" }} />
-            <span style={{ fontSize: 10, color: i <= step ? "#f3efe6" : "#8a8278" }}>{label}</span>
+            <span style={{ fontSize: 10, color: i <= step ? "#f3efe6" : "#ada599" }}>{label}</span>
           </div>
         ))}
       </div>
@@ -263,28 +263,28 @@ function OrderDetail({
         {order.items.map((it, i) => (
           <div key={i} className="lbd-or-line">
             <span>
-              <span className="lbd-mono" style={{ color: "#a39b90" }}>
+              <span className="lbd-mono" style={{ color: "#c5bdb1" }}>
                 {it.quantity}×
               </span>{" "}
               {it.name}
             </span>
-            <span style={{ color: "#cfc7bb" }}>{formatCurrency(it.price * it.quantity)}</span>
+            <span style={{ color: "#e2dbcf" }}>{formatCurrency(it.price * it.quantity)}</span>
           </div>
         ))}
         {order.deliveryFee > 0 && (
-          <div className="lbd-or-line" style={{ fontSize: 13, color: "#a39b90" }}>
+          <div className="lbd-or-line" style={{ fontSize: 13, color: "#c5bdb1" }}>
             <span>Delivery{order.deliveryZone ? ` · ${order.deliveryZone}` : ""}</span>
             <span>{formatCurrency(order.deliveryFee)}</span>
           </div>
         )}
         <div className="lbd-or-total-row">
-          <span style={{ fontSize: 14, color: "#a39b90" }}>Total</span>
+          <span style={{ fontSize: 14, color: "#c5bdb1" }}>Total</span>
           <span className="lbd-display" style={{ fontSize: 30, letterSpacing: "-0.04em" }}>
             {formatCurrency(order.total)}
           </span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-          <span style={{ color: "#a39b90" }}>Pago · {pay.method}</span>
+          <span style={{ color: "#c5bdb1" }}>Pago · {pay.method}</span>
           <span className={`lbd-or-pay is-${pay.tone}`}>{pay.label}</span>
         </div>
       </div>

@@ -50,7 +50,7 @@ export default function WeeklyEarnings({
         <div className="lbd-an-weeks">
           {weeks.map((week, i) => (
             <div key={week.label} className="lbd-an-week">
-              <span className="lbd-mono" style={{ color: week.isCurrent ? "#ff7a57" : "#a39b90" }}>
+              <span className="lbd-mono" style={{ color: week.isCurrent ? "#ff7a57" : "#c5bdb1" }}>
                 {week.value > 0 ? shortMoney(week.value) : "—"}
               </span>
               <div className="lbd-an-week-col">
@@ -60,7 +60,7 @@ export default function WeeklyEarnings({
                   style={{ height: `${Math.max(2, (week.value / max) * 100)}%`, background: week.isCurrent ? "#ff5a33" : "#3a302b", animationDelay: `${0.2 + i * 0.06}s` }}
                 />
               </div>
-              <span style={{ color: week.isCurrent ? "#f3efe6" : "#8a8278" }}>{week.label}</span>
+              <span style={{ color: week.isCurrent ? "#f3efe6" : "#ada599" }}>{week.label}</span>
             </div>
           ))}
         </div>
@@ -69,7 +69,7 @@ export default function WeeklyEarnings({
       <div className="lbd-an-weeks-foot">
         <span>
           Esta semana
-          {partial && <span style={{ color: "#8a8278" }}> · día {daysElapsed} de 7</span>}
+          {partial && <span style={{ color: "#ada599" }}> · día {daysElapsed} de 7</span>}
         </span>
         <strong className="lbd-display">{formatCurrency(current?.value ?? 0)}</strong>
         {delta !== null && (
@@ -77,7 +77,7 @@ export default function WeeklyEarnings({
             {delta >= 0 ? "↑" : "↓"} {Math.abs(delta).toFixed(0)}% {partial ? "vs. la anterior a la misma altura" : "vs. la anterior"}
           </span>
         )}
-        {!hasSales && <span style={{ color: "#8a8278" }}>Aún sin ventas registradas en estas semanas.</span>}
+        {!hasSales && <span style={{ color: "#ada599" }}>Aún sin ventas registradas en estas semanas.</span>}
       </div>
     </div>
   );

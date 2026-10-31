@@ -24,7 +24,7 @@ export default function FunnelChart({
         return (
           <div key={stage.label}>
             <div className="mb-1.5 flex items-baseline justify-between text-[13px]">
-              <span className="font-medium text-fg/70">{stage.label}</span>
+              <span className="font-medium text-fg/80">{stage.label}</span>
               <span className="text-faint">
                 {stage.value.toLocaleString("en-US")}
                 {i > 0 && <span className="ml-1.5 text-faint">({ofBase}%)</span>}

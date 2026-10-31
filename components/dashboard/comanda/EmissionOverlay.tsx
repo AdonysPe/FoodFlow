@@ -109,7 +109,7 @@ export default function EmissionOverlay({
             <button
               type="button"
               onClick={onClose}
-              className="h-11 w-full rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[14px] font-medium text-fg/70 active:scale-[0.98]"
+              className="h-11 w-full rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[14px] font-medium text-fg/80 active:scale-[0.98]"
             >
               Cerrar
             </button>
@@ -146,14 +146,14 @@ export default function EmissionOverlay({
             </button>
             <Link
               href={`/dashboard/boleta/${view.orderId}?auto=1`}
-              className="flex h-11 w-full items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[14px] font-medium text-fg/75 active:scale-[0.98]"
+              className="flex h-11 w-full items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.05] text-[14px] font-medium text-fg/84 active:scale-[0.98]"
             >
               Imprimir nota de venta
             </Link>
             {view.configurable && (
               <Link
                 href="/dashboard/app/configuracion/facturacion"
-                className="flex h-10 w-full items-center justify-center text-[13px] font-medium text-faint underline underline-offset-2 hover:text-fg/70"
+                className="flex h-10 w-full items-center justify-center text-[13px] font-medium text-faint underline underline-offset-2 hover:text-fg/80"
               >
                 Ir a Configuración › Facturación
               </Link>
@@ -161,7 +161,7 @@ export default function EmissionOverlay({
             <button
               type="button"
               onClick={onClose}
-              className="h-10 w-full text-[13px] font-medium text-faint hover:text-fg/70"
+              className="h-10 w-full text-[13px] font-medium text-faint hover:text-fg/80"
             >
               Cerrar
             </button>

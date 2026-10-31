@@ -29,7 +29,7 @@ function ToastItem({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } }}
       transition={{ type: "spring", stiffness: 460, damping: 34, mass: 0.7 }}
-      className="pointer-events-auto flex items-center gap-2.5 rounded-2xl border border-fg/[0.12] bg-ink-900/80 py-2.5 pl-2.5 pr-3.5 text-[13px] font-medium text-fg/90 shadow-[inset_0_1px_0_0_var(--spec),0_16px_40px_-12px_var(--drop-hard)] backdrop-blur-2xl backdrop-saturate-150"
+      className="pointer-events-auto flex items-center gap-2.5 rounded-2xl border border-fg/[0.12] bg-ink-900/80 py-2.5 pl-2.5 pr-3.5 text-[13px] font-medium text-fg/94 shadow-[inset_0_1px_0_0_var(--spec),0_16px_40px_-12px_var(--drop-hard)] backdrop-blur-2xl backdrop-saturate-150"
     >
       <span
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${

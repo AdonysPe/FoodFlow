@@ -262,7 +262,7 @@ export default function FloorPlan({
         {stats.map((st) => (
           <div key={st.key} className="lbd-ms-stat">
             <span className={`lbd-ms-dot is-${st.key}`} aria-hidden />
-            <span style={{ flex: 1, fontSize: 13, color: "#a39b90" }}>{st.label}</span>
+            <span style={{ flex: 1, fontSize: 13, color: "#c5bdb1" }}>{st.label}</span>
             <span className="lbd-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
               {counts[st.key]}
             </span>
@@ -286,7 +286,7 @@ export default function FloorPlan({
           <span />
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 12, color: "#8a8278" }}>
+          <span style={{ fontSize: 12, color: "#ada599" }}>
             {editing ? "Modo edición: arrastra las mesas para colocarlas." : "Toca una mesa para ver el detalle."}
           </span>
           {editing && (

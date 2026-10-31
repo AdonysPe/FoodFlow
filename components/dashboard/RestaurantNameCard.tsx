@@ -87,7 +87,7 @@ export default function RestaurantNameCard({
               aria-describedby="restaurant-name-help"
               className="lbd-input"
             />
-            <p id="restaurant-name-help" role={error ? "alert" : undefined} style={{ margin: "6px 0 0", fontSize: 12, color: error || hint ? "#ffb39e" : "#8a8278" }}>
+            <p id="restaurant-name-help" role={error ? "alert" : undefined} style={{ margin: "6px 0 0", fontSize: 12, color: error || hint ? "#ffb39e" : "#ada599" }}>
               {error || hint || `${normalizeRestaurantName(draft).length} / ${RESTAURANT_NAME_MAX} caracteres`}
             </p>
           </div>
@@ -98,7 +98,7 @@ export default function RestaurantNameCard({
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <p style={{ margin: 0, padding: "12px 14px", borderRadius: 14, background: "rgba(243,239,230,0.04)", border: "1px solid rgba(243,239,230,0.09)", fontSize: 15, fontWeight: 600 }}>{currentName}</p>
-          <p style={{ margin: 0, fontSize: 12, color: "#8a8278" }}>Solo el dueño de la cuenta puede cambiarlo.</p>
+          <p style={{ margin: 0, fontSize: 12, color: "#ada599" }}>Solo el dueño de la cuenta puede cambiarlo.</p>
         </div>
       )}
 
@@ -115,7 +115,7 @@ export default function RestaurantNameCard({
         <dl className="lbd-cf-diff">
           <div>
             <dt>Antes</dt>
-            <dd style={{ textDecoration: "line-through", color: "#8a8278" }}>{currentName}</dd>
+            <dd style={{ textDecoration: "line-through", color: "#ada599" }}>{currentName}</dd>
           </div>
           <div>
             <dt>Ahora</dt>

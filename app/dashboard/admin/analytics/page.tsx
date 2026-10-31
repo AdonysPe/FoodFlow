@@ -15,7 +15,7 @@ const SOURCES: { key: string; label: string; color: string }[] = [
   { key: "calculadora", label: "Calculadora de comisiones", color: "#ff5a33" },
   { key: "web_form", label: "Formulario de la web", color: "#f3efe6" },
   { key: "whatsapp", label: "WhatsApp", color: "#5fd6c5" },
-  { key: "chat", label: "Correo en el chat", color: "#a39b90" },
+  { key: "chat", label: "Correo en el chat", color: "#c5bdb1" },
 ];
 
 function dayKey(date: Date) {
@@ -58,7 +58,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   // ---- funnel (each step counts the ones that got that far)
   const stage = (statuses: string[]) => leads.filter((l) => statuses.includes(l.status)).length;
   const funnel = [
-    { label: "Contactos", value: leads.length, color: "#a39b90" },
+    { label: "Contactos", value: leads.length, color: "#c5bdb1" },
     { label: "Contactados", value: stage(["contactado", "cita", "cliente"]), color: "#f3efe6" },
     { label: "Con cita", value: stage(["cita", "cliente"]), color: "#c7bcff" },
     { label: "Clientes", value: stage(["cliente"]), color: "#ff5a33" },
@@ -142,7 +142,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                 <span>{f.label}</span>
                 <span>
                   <strong>{f.value}</strong>
-                  {i > 0 && <span style={{ color: "#8a8278" }}> · {pct(f.value, funnel[i - 1].value)}% del paso anterior</span>}
+                  {i > 0 && <span style={{ color: "#ada599" }}> · {pct(f.value, funnel[i - 1].value)}% del paso anterior</span>}
                 </span>
               </div>
               <div className="lbd-track lbd-track--thick">
@@ -160,7 +160,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             <div key={s.key} className="lbd-ad-sub-row">
               <div>
                 <span>{s.label}</span>
-                <span style={{ color: "#a39b90" }}>
+                <span style={{ color: "#c5bdb1" }}>
                   {s.value} · {pct(s.value, sourceTotal)}%
                 </span>
               </div>
@@ -201,7 +201,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             <div key={h.label} className="lbd-ad-health">
               <span>{h.label}</span>
               <strong className="lbd-display">{h.value}</strong>
-              <small style={{ color: h.good ? "#3ddc97" : "#a39b90" }}>{h.note}</small>
+              <small style={{ color: h.good ? "#3ddc97" : "#c5bdb1" }}>{h.note}</small>
             </div>
           ))}
         </section>

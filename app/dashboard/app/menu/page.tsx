@@ -62,7 +62,7 @@ export default async function MenuPage() {
       {/* The bridge between the two halves of the module: what the venue keeps
           here, and what the diner sees. */}
       <div className="lbd-me-banner lbd-rise">
-        <p style={{ margin: 0, display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#cfc7bb" }}>
+        <p style={{ margin: 0, display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#e2dbcf" }}>
           <span aria-hidden style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0, background: published ? "#3ddc97" : "rgba(243,239,230,0.25)" }} />
           {published ? (
             <>

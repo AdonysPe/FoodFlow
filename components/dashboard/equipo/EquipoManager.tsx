@@ -95,7 +95,7 @@ export default function EquipoManager({
               </span>
               de {maxUsers} usuarios
             </span>
-            <span style={{ fontSize: 13, color: full ? "#ff9a7d" : "#a39b90" }}>{seatsLeft != null && seatsLeft > 0 ? `Quedan ${seatsLeft}` : "Sin cupo libre"}</span>
+            <span style={{ fontSize: 13, color: full ? "#ff9a7d" : "#c5bdb1" }}>{seatsLeft != null && seatsLeft > 0 ? `Quedan ${seatsLeft}` : "Sin cupo libre"}</span>
           </div>
           <div className="lbd-track" aria-hidden>
             <div className="lbd-bar" style={{ width: `${Math.min(100, Math.round((used / maxUsers) * 100))}%`, background: full ? "#ff5a33" : "#f3efe6" }} />
@@ -133,7 +133,7 @@ export default function EquipoManager({
           <form onSubmit={handleAdd} className="lbd-card lbd-card--glass lbd-rise lbd-eq-add" style={{ animationDelay: ".12s" }}>
             <span className="lbd-cm-eyebrow">Agregar a alguien</span>
             <h2 className="lbd-cf-h">Nuevo mozo</h2>
-            <label htmlFor="eq-email" style={{ fontSize: 13, color: "#a39b90" }}>
+            <label htmlFor="eq-email" style={{ fontSize: 13, color: "#c5bdb1" }}>
               Correo del mozo
             </label>
             <input id="eq-email" type="email" required disabled={full} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="mozo@correo.com" className="lbd-input" />
@@ -165,7 +165,7 @@ export default function EquipoManager({
               <strong>Mozo</strong>
               <span>Solo la pantalla de comanda. Nunca la administración de la carta ni los reportes.</span>
             </div>
-            <span style={{ fontSize: 12, color: "#8a8278", lineHeight: 1.45 }}>Cada mozo inicia sesión con su propio correo y un código.</span>
+            <span style={{ fontSize: 12, color: "#ada599", lineHeight: 1.45 }}>Cada mozo inicia sesión con su propio correo y un código.</span>
           </div>
         </aside>
       </div>

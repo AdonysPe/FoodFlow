@@ -85,13 +85,13 @@ export default function TableDrawer({
     <aside key={table.id} className="lbd-card lbd-card--glass lbd-td lbd-swap" role="region" aria-label={`Detalle de ${table.name}`}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-          <span className="lbd-mono" style={{ fontSize: 11, letterSpacing: "0.08em", color: "#a39b90", textTransform: "uppercase" }}>
+          <span className="lbd-mono" style={{ fontSize: 11, letterSpacing: "0.08em", color: "#c5bdb1", textTransform: "uppercase" }}>
             {ZONE_LABELS[table.zone]}
           </span>
           <span className="lbd-display lbd-trunc" style={{ fontSize: 34, letterSpacing: "-0.045em", lineHeight: 1 }}>
             {table.name}
           </span>
-          <span style={{ fontSize: 13, color: "#a39b90" }}>
+          <span style={{ fontSize: 13, color: "#c5bdb1" }}>
             {table.capacity} personas · {SHAPE_LABELS[table.shape].toLowerCase()}
           </span>
         </div>
@@ -109,7 +109,7 @@ export default function TableDrawer({
         <div className="lbd-td-box">
           {linkedOrders.map((o) => (
             <div key={o.id} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#a39b90", gap: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#c5bdb1", gap: 8 }}>
                 <span className="lbd-trunc">{o.customerName}</span>
                 <span style={{ flexShrink: 0 }}>{ORDER_STATUS_LABELS[o.status]}</span>
               </div>
@@ -118,13 +118,13 @@ export default function TableDrawer({
                   <span>
                     {it.quantity} × {it.name}
                   </span>
-                  <span style={{ color: "#cfc7bb", flexShrink: 0 }}>{formatCurrency(it.price * it.quantity)}</span>
+                  <span style={{ color: "#e2dbcf", flexShrink: 0 }}>{formatCurrency(it.price * it.quantity)}</span>
                 </div>
               ))}
             </div>
           ))}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 8, borderTop: "1px solid rgba(243,239,230,0.08)" }}>
-            <span style={{ fontSize: 13, color: "#a39b90" }}>Consumo</span>
+            <span style={{ fontSize: 13, color: "#c5bdb1" }}>Consumo</span>
             <span className="lbd-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
               {formatCurrency(total)}
             </span>
@@ -148,9 +148,9 @@ export default function TableDrawer({
                   <span className="lbd-mono" style={{ color: "#ff7a57" }}>
                     {formatClock(r.startTime)}
                   </span>{" "}
-                  <span style={{ color: "#a39b90", fontWeight: 400 }}>– {endTimeLabel(r.startTime, r.durationMin)}</span>
+                  <span style={{ color: "#c5bdb1", fontWeight: 400 }}>– {endTimeLabel(r.startTime, r.durationMin)}</span>
                 </p>
-                <p className="lbd-trunc" style={{ margin: 0, fontSize: 12, color: "#a39b90" }}>
+                <p className="lbd-trunc" style={{ margin: 0, fontSize: 12, color: "#c5bdb1" }}>
                   {r.customerName} · {r.partySize} pers.
                 </p>
               </div>
@@ -168,10 +168,10 @@ export default function TableDrawer({
           <img src={`/api/qr/${table.publicCode}`} alt={`Código QR de ${table.name}`} width={84} height={84} />
           <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 600 }}>QR de {table.name}</span>
-            <span className="lbd-mono" style={{ fontSize: 11, color: "#5f5a54", wordBreak: "break-all" }}>
+            <span className="lbd-mono" style={{ fontSize: 11, color: "#46413c", wordBreak: "break-all" }}>
               {table.publicCode}
             </span>
-            <span style={{ fontSize: 12, lineHeight: 1.4, color: "#5f5a54" }}>El comensal lo escanea y pide su ronda desde la mesa.</span>
+            <span style={{ fontSize: 12, lineHeight: 1.4, color: "#46413c" }}>El comensal lo escanea y pide su ronda desde la mesa.</span>
             <Link href="/dashboard/app/mesas/qr" style={{ fontSize: 12, fontWeight: 600, color: "#c9391a" }}>
               Imprimir los QR
             </Link>

@@ -20,36 +20,36 @@ const SOURCE_LABEL: Record<string, string> = {
 const SUBSCRIPTIONS: { status: string[]; label: string; color: string }[] = [
   { status: ["active"], label: "Activas", color: "#3ddc97" },
   { status: ["trialing"], label: "En prueba", color: "#f3efe6" },
-  { status: ["pending"], label: "Por activar", color: "#a39b90" },
+  { status: ["pending"], label: "Por activar", color: "#c5bdb1" },
   { status: ["past_due"], label: "Pago atrasado", color: "#ff5a33" },
-  { status: ["suspended", "cancelled"], label: "Suspendidas o canceladas", color: "#6f675e" },
+  { status: ["suspended", "cancelled"], label: "Suspendidas o canceladas", color: "#9a9287" },
 ];
 
 const BILL_LABEL: Record<string, { label: string; color: string }> = {
   active: { label: "Activo", color: "#3ddc97" },
   trialing: { label: "En prueba", color: "#f3efe6" },
-  pending: { label: "Por activar", color: "#a39b90" },
+  pending: { label: "Por activar", color: "#c5bdb1" },
   past_due: { label: "Pago atrasado", color: "#ff7a57" },
-  suspended: { label: "Suspendido", color: "#8a8278" },
-  cancelled: { label: "Cancelado", color: "#8a8278" },
+  suspended: { label: "Suspendido", color: "#ada599" },
+  cancelled: { label: "Cancelado", color: "#ada599" },
 };
 
 const PLAN_TONE: Record<string, { bg: string; fg: string }> = {
   negocio: { bg: "#ff5a33", fg: "#0c0908" },
   servicio: { bg: "#f3efe6", fg: "#0c0908" },
-  carta: { bg: "rgba(243,239,230,0.08)", fg: "#cfc7bb" },
+  carta: { bg: "rgba(243,239,230,0.08)", fg: "#e2dbcf" },
 };
 
 // The audit log is written in English keys; the operator reads it in Spanish.
 const ACTIVITY: Record<string, { label: string; color: string }> = {
   "auth.login": { label: "Inicio de sesión", color: "#3ddc97" },
-  "auth.logout": { label: "Cierre de sesión", color: "#a39b90" },
+  "auth.logout": { label: "Cierre de sesión", color: "#c5bdb1" },
   "menu.item.price_change": { label: "Cambio de precio", color: "#f3efe6" },
   "menu.item.delete": { label: "Plato eliminado", color: "#ff5a33" },
   "staff.add": { label: "Mozo agregado", color: "#c7bcff" },
   "staff.remove": { label: "Mozo quitado", color: "#c7bcff" },
   "lead.status_change": { label: "Contacto cambió de estado", color: "#ff7a57" },
-  "prospects.search": { label: "Búsqueda de prospectos", color: "#a39b90" },
+  "prospects.search": { label: "Búsqueda de prospectos", color: "#c5bdb1" },
   "prospect.message": { label: "Mensaje a un prospecto", color: "#0fb5a0" },
   "prospect.status_change": { label: "Prospecto cambió de estado", color: "#ff7a57" },
   "restaurant.delete": { label: "Restaurante eliminado", color: "#ff5a33" },
@@ -106,7 +106,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const cliente = stage("cliente");
   const funnel = [
     { label: "Nuevos", value: nuevo + contactado + cita + cliente, color: "#3a302b" },
-    { label: "Contactados", value: contactado + cita + cliente, color: "#a39b90" },
+    { label: "Contactados", value: contactado + cita + cliente, color: "#c5bdb1" },
     { label: "Con cita", value: cita + cliente, color: "#f3efe6" },
     { label: "Clientes", value: cliente, color: "#ff5a33" },
   ];
@@ -244,7 +244,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           ) : (
             recent.map((r) => {
               const tone = PLAN_TONE[r.plan] ?? PLAN_TONE.carta;
-              const bill = BILL_LABEL[r.billingStatus] ?? { label: r.billingStatus, color: "#a39b90" };
+              const bill = BILL_LABEL[r.billingStatus] ?? { label: r.billingStatus, color: "#c5bdb1" };
               return (
                 <Link key={r.id} href={`/dashboard/admin/restaurants/${r.id}`} className="lbd-ad-venue">
                   <span className="lbd-cu-av" style={{ background: "#3a302b", color: "#f3efe6", borderRadius: 10 }}>
@@ -278,7 +278,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           <p className="lbd-ad-empty">Todavía no hay actividad registrada.</p>
         ) : (
           activity.map((entry) => {
-            const meta = ACTIVITY[entry.action] ?? { label: entry.action, color: "#a39b90" };
+            const meta = ACTIVITY[entry.action] ?? { label: entry.action, color: "#c5bdb1" };
             return (
               <div key={entry.id} className="lbd-ad-act">
                 <i style={{ background: meta.color }} aria-hidden />

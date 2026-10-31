@@ -30,7 +30,7 @@ export default function PaymentDone({ settled, onDone }: { settled: SettledTab; 
       <h1 className="lbd-display" style={{ margin: 0, fontSize: 32, letterSpacing: "-0.045em" }}>
         Cobrado · {formatPrice(settled.total)}
       </h1>
-      <p style={{ margin: 0, fontSize: 14, color: "#b9b1a5" }}>
+      <p style={{ margin: 0, fontSize: 14, color: "#d6cfc3" }}>
         {settled.tableName} · {settled.methodLabel}
       </p>
       {settled.change > 0 && (

@@ -43,7 +43,7 @@ export default function ReceiptActions({
       </button>
       <Link
         href={backHref}
-        className="flex h-11 w-full items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.04] text-[14px] font-medium text-fg/70 hover:bg-fg/[0.08] hover:text-fg"
+        className="flex h-11 w-full items-center justify-center rounded-xl border border-fg/[0.12] bg-fg/[0.04] text-[14px] font-medium text-fg/80 hover:bg-fg/[0.08] hover:text-fg"
       >
         {backLabel}
       </Link>

@@ -13,7 +13,7 @@ export type Lead = {
 
 const STATUS: Record<Lead["status"], { label: string; bg: string; fg: string }> = {
   new: { label: "Nuevo", bg: "rgba(255,90,51,0.14)", fg: "#ff7a57" },
-  contacted: { label: "Contactado", bg: "rgba(243,239,230,0.08)", fg: "#cfc7bb" },
+  contacted: { label: "Contactado", bg: "rgba(243,239,230,0.08)", fg: "#e2dbcf" },
   converted: { label: "Convertido", bg: "rgba(61,220,151,0.14)", fg: "#3ddc97" },
 };
 

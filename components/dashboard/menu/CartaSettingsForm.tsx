@@ -136,7 +136,7 @@ export default function CartaSettingsForm({
             <input type="checkbox" className="lbd-lg-check" checked={value.published} onChange={(e) => set("published", e.target.checked)} />
             <span style={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <span style={{ fontSize: 14, fontWeight: 600 }}>Carta visible para el público</span>
-              <span style={{ fontSize: 12, color: "#a39b90" }}>Desmárcala para bajarla al instante sin perder nada de lo que configuraste.</span>
+              <span style={{ fontSize: 12, color: "#c5bdb1" }}>Desmárcala para bajarla al instante sin perder nada de lo que configuraste.</span>
             </span>
           </label>
         </section>
@@ -190,7 +190,7 @@ export default function CartaSettingsForm({
               const late = !h.closed && h.close < h.open;
               return (
                 <div key={h.day} className="lbd-cp-day">
-                  <span style={{ width: 92, fontSize: 14, fontWeight: h.day === now.getDay() ? 600 : 450, color: h.day === now.getDay() ? "#f3efe6" : "#cfc7bb" }}>{CARTA_DAYS[h.day]}</span>
+                  <span style={{ width: 92, fontSize: 14, fontWeight: h.day === now.getDay() ? 600 : 450, color: h.day === now.getDay() ? "#f3efe6" : "#e2dbcf" }}>{CARTA_DAYS[h.day]}</span>
                   <label className="lbd-cp-closed">
                     <input type="checkbox" className="lbd-lg-check" style={{ width: 18, height: 18, borderRadius: 6 }} checked={h.closed} onChange={(e) => setDay(h.day, { closed: e.target.checked })} />
                     Cerrado
@@ -198,7 +198,7 @@ export default function CartaSettingsForm({
                   {!h.closed && (
                     <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <input type="time" value={h.open} aria-label={`Apertura ${CARTA_DAYS[h.day]}`} onChange={(e) => setDay(h.day, { open: e.target.value })} className="lbd-input lbd-cp-time" />
-                      <span style={{ color: "#8a8278" }}>–</span>
+                      <span style={{ color: "#ada599" }}>–</span>
                       <input type="time" value={h.close} aria-label={`Cierre ${CARTA_DAYS[h.day]}`} onChange={(e) => setDay(h.day, { close: e.target.value })} className="lbd-input lbd-cp-time" />
                       {late && <span style={{ fontSize: 11, color: "#ff9a7d" }}>hasta la madrugada</span>}
                     </span>
@@ -241,14 +241,14 @@ export default function CartaSettingsForm({
                   <span className="lbd-display lbd-trunc" style={{ fontSize: 22, letterSpacing: "-0.04em" }}>
                     {venueName}
                   </span>
-                  <span style={{ fontSize: 12, color: "#cfc7bb" }}>{value.tagline || " "}</span>
+                  <span style={{ fontSize: 12, color: "#e2dbcf" }}>{value.tagline || " "}</span>
                 </div>
               </div>
               <span className={`lbd-cp-open${open ? " is-open" : ""}`}>
                 <i aria-hidden />
                 {hoursLine}
               </span>
-              {value.address && <span style={{ fontSize: 12, color: "#a39b90" }}>{value.address}</span>}
+              {value.address && <span style={{ fontSize: 12, color: "#c5bdb1" }}>{value.address}</span>}
               {value.whatsapp && <span className="lbd-cp-wa">Pedir por WhatsApp</span>}
             </div>
             {categories.length > 0 && (
@@ -261,7 +261,7 @@ export default function CartaSettingsForm({
               </div>
             )}
             <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-              {previewDishes.length === 0 && <span style={{ fontSize: 13, color: "#8a8278", padding: "12px 0" }}>Aún no hay platos visibles.</span>}
+              {previewDishes.length === 0 && <span style={{ fontSize: 13, color: "#ada599", padding: "12px 0" }}>Aún no hay platos visibles.</span>}
               {previewDishes.map((d) => (
                 <div key={d.id} style={{ display: "flex", gap: 12, alignItems: "center", opacity: d.available ? 1 : 0.5 }}>
                   {d.photoUrl ? (
@@ -272,7 +272,7 @@ export default function CartaSettingsForm({
                   )}
                   <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
                     <span style={{ fontSize: 14, fontWeight: 600 }}>{d.name}</span>
-                    {d.available ? d.description && <span className="lbd-trunc" style={{ fontSize: 12, color: "#a39b90" }}>{d.description}</span> : <span style={{ fontSize: 11, fontWeight: 600, alignSelf: "flex-start", padding: "2px 8px", borderRadius: 999, background: "rgba(243,239,230,0.12)" }}>Agotado</span>}
+                    {d.available ? d.description && <span className="lbd-trunc" style={{ fontSize: 12, color: "#c5bdb1" }}>{d.description}</span> : <span style={{ fontSize: 11, fontWeight: 600, alignSelf: "flex-start", padding: "2px 8px", borderRadius: 999, background: "rgba(243,239,230,0.12)" }}>Agotado</span>}
                     <span style={{ fontSize: 13, fontWeight: 600 }}>{cartaPrice(d.price)}</span>
                   </span>
                 </div>
@@ -283,7 +283,7 @@ export default function CartaSettingsForm({
                 <span className="lbd-display" style={{ fontSize: 22 }}>
                   Carta no publicada
                 </span>
-                <span style={{ fontSize: 13, color: "#a39b90" }}>Quien escanee el QR verá un aviso hasta que la publiques.</span>
+                <span style={{ fontSize: 13, color: "#c5bdb1" }}>Quien escanee el QR verá un aviso hasta que la publiques.</span>
               </div>
             )}
           </div>

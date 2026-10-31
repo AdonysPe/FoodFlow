@@ -149,7 +149,7 @@ export default function MenuWorkspace({
 
       <PageHeader eyebrow="CARTA · MENÚ" title="Menú" description={`${items.length} ${items.length === 1 ? "plato" : "platos"} · ${available} ${available === 1 ? "disponible" : "disponibles"} · lo que cambies aquí se ve al instante en la carta de cada mesa y en tu web.`}>
         <div className="lbd-me-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="M20 20l-4-4" />
           </svg>
@@ -190,7 +190,7 @@ export default function MenuWorkspace({
             <>
               {canOrder && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 12.5, color: "#8a8278" }}>{sortable ? "Arrastra los platos para ordenarlos dentro de la categoría." : ""}</span>
+                  <span style={{ fontSize: 12.5, color: "#ada599" }}>{sortable ? "Arrastra los platos para ordenarlos dentro de la categoría." : ""}</span>
                   <button type="button" onClick={() => setOrdering((v) => !v)} className="lbd-btn lbd-btn--ghost lbd-btn--sm" aria-pressed={ordering}>
                     {ordering ? "Listo" : "Ordenar platos"}
                   </button>
@@ -220,7 +220,7 @@ export default function MenuWorkspace({
         {/* On a wide screen this is a column; below 1100px it is a sheet. */}
         <aside className={`lbd-card lbd-card--glass lbd-me-panel${editing ? " is-open" : ""}`} aria-label="Editar plato">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-            <span className="lbd-mono" style={{ fontSize: 11, letterSpacing: "0.08em", color: "#a39b90" }}>
+            <span className="lbd-mono" style={{ fontSize: 11, letterSpacing: "0.08em", color: "#c5bdb1" }}>
               {editing?.mode === "create" ? "NUEVO PLATO" : "EDITAR PLATO"}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

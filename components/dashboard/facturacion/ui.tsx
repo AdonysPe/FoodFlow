@@ -53,7 +53,7 @@ export function Section({
           <span className="lbd-bl-state" data-state={status}>
             {STATE_LABEL[status]}
           </span>
-          <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: "transform .3s", transform: open ? "rotate(180deg)" : "none" }}>
+          <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: "transform .3s", transform: open ? "rotate(180deg)" : "none" }}>
             <path d="m6 9 6 6 6-6" />
           </svg>
         </button>

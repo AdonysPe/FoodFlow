@@ -95,7 +95,7 @@ function CategoryRow({ category }: { category: MenuCategoryDTO }) {
         <span className="flex min-w-0 items-center gap-2">
           <span
             className={`truncate text-[14px] font-medium ${
-              category.active ? "text-fg/85" : "text-faint line-through"
+              category.active ? "text-fg/90" : "text-faint line-through"
             }`}
           >
             {category.name}
@@ -190,7 +190,7 @@ export default function CategoryManager({ categories }: { categories: MenuCatego
     <div className="overflow-hidden rounded-2xl border border-fg/[0.08] bg-fg/[0.02]">
       <div className="flex items-center justify-between border-b border-fg/[0.07] px-4 py-3">
         <div>
-          <h2 className="text-[14px] font-semibold text-fg/90">Categorías</h2>
+          <h2 className="text-[14px] font-semibold text-fg/94">Categorías</h2>
           <p className="mt-0.5 text-[12px] text-faint">
             Arrástralas para cambiar el orden de las pestañas.
           </p>

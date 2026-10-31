@@ -225,7 +225,7 @@ export default function PaymentSheet({
       <div className="lbd-cm-sticky">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-            <span style={{ fontSize: 13, color: "#a39b90" }}>Cobrar</span>
+            <span style={{ fontSize: 13, color: "#c5bdb1" }}>Cobrar</span>
             <h1 className="lbd-display lbd-cm-h1 lbd-trunc">{tab.tableName}</h1>
           </div>
           <button type="button" onClick={onBack} className="lbd-btn lbd-btn--ghost lbd-btn--sm" style={{ flexShrink: 0 }}>
@@ -248,7 +248,7 @@ export default function PaymentSheet({
         {!billing.ready && (
           <div className="lbd-cm-warn">
             <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#ffb37a" }}>Aún no puedes emitir boletas ni facturas</p>
-            <p style={{ margin: "4px 0 0", fontSize: 12.5, lineHeight: 1.5, color: "#b9b1a5" }}>
+            <p style={{ margin: "4px 0 0", fontSize: 12.5, lineHeight: 1.5, color: "#d6cfc3" }}>
               Falta {billing.missing.join(", ")}. Este cobro se imprime como nota de venta interna, sin valor tributario.
             </p>
             <Link href="/dashboard/app/configuracion/facturacion" className="lbd-link" style={{ display: "inline-block", marginTop: 6, fontSize: 12.5 }}>

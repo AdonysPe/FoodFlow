@@ -107,7 +107,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
             </div>
 
             {menuItems.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 14, color: "#a39b90" }}>Primero agrega platos disponibles a la carta para registrar pedidos.</p>
+              <p style={{ margin: 0, fontSize: 14, color: "#c5bdb1" }}>Primero agrega platos disponibles a la carta para registrar pedidos.</p>
             ) : (
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18, minHeight: 0 }}>
                 <div className="lbd-modal-fields">
@@ -131,7 +131,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
                           <p className="lbd-trunc" style={{ margin: 0, fontSize: 14, fontWeight: 550 }}>
                             {item.name}
                           </p>
-                          <p style={{ margin: 0, fontSize: 12, color: "#a39b90" }}>{formatCurrency(item.price)}</p>
+                          <p style={{ margin: 0, fontSize: 12, color: "#c5bdb1" }}>{formatCurrency(item.price)}</p>
                         </div>
                         <div className="lbd-stepper">
                           <button type="button" onClick={() => setQty(item.id, qty - 1)} aria-label={`Quitar uno de ${item.name}`} disabled={qty === 0}>
@@ -154,7 +154,7 @@ export default function NewOrderForm({ menuItems }: { menuItems: MenuItemOption[
                 )}
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 14, color: "#a39b90" }}>
+                  <span style={{ fontSize: 14, color: "#c5bdb1" }}>
                     Total <span className="lbd-display" style={{ marginLeft: 6, fontSize: 24, letterSpacing: "-0.04em", color: "#f3efe6" }}>{formatCurrency(total)}</span>
                   </span>
                   <button type="submit" disabled={isPending} className="lbd-btn lbd-btn--solid" style={{ minWidth: 180 }}>

@@ -111,7 +111,7 @@ export default function TillTicketPreview({
             ref={closeRef}
             type="button"
             onClick={onClose}
-            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/80"
+            className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-faint hover:bg-fg/[0.06] hover:text-fg/88"
           >
             Cerrar
           </button>

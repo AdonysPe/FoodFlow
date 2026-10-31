@@ -114,7 +114,7 @@ export default function CustomersTable({ customers }: { customers: CustomerRow[]
           Buscar cliente
         </label>
         <div className="lbd-cu-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="M20 20l-4-4" />
           </svg>
@@ -152,12 +152,12 @@ export default function CustomersTable({ customers }: { customers: CustomerRow[]
                       <span className="lbd-or-sub">{c.ordersCount >= 2 ? "Recurrente" : "Nuevo"}</span>
                     </span>
                   </span>
-                  <span className="lbd-mono lbd-trunc" style={{ fontSize: 12, color: "#cfc7bb" }}>
+                  <span className="lbd-mono lbd-trunc" style={{ fontSize: 12, color: "#e2dbcf" }}>
                     {c.phone || c.email || "—"}
                   </span>
                   <span style={{ textAlign: "right", fontSize: 14, fontWeight: 600 }}>{c.ordersCount}</span>
                   <span className="lbd-or-total">{formatCurrency(c.totalSpent)}</span>
-                  <span style={{ fontSize: 12, color: "#a39b90" }}>{lastLabel(c.lastOrderAt)}</span>
+                  <span style={{ fontSize: 12, color: "#c5bdb1" }}>{lastLabel(c.lastOrderAt)}</span>
                 </button>
               );
             })}
@@ -190,7 +190,7 @@ function CustomerDetail({ customer, avatar }: { customer: CustomerRow; avatar: {
           <span className="lbd-display lbd-trunc" style={{ fontSize: 26, letterSpacing: "-0.04em", lineHeight: 1 }}>
             {customer.name}
           </span>
-          <span style={{ fontSize: 13, color: "#a39b90" }}>
+          <span style={{ fontSize: 13, color: "#c5bdb1" }}>
             {customer.ordersCount >= 2 ? "Recurrente" : "Nuevo"} · cliente desde {new Date(customer.since).toLocaleDateString("es-PE", { month: "long", year: "numeric" })}
           </span>
         </div>
@@ -210,13 +210,13 @@ function CustomerDetail({ customer, avatar }: { customer: CustomerRow; avatar: {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <span className="lbd-cm-eyebrow">Sus favoritos</span>
         {customer.favourites.length === 0 ? (
-          <span style={{ fontSize: 13, color: "#8a8278" }}>Aún no hay pedidos registrados a su nombre.</span>
+          <span style={{ fontSize: 13, color: "#ada599" }}>Aún no hay pedidos registrados a su nombre.</span>
         ) : (
           customer.favourites.map((f) => (
             <div key={f.name} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, gap: 8 }}>
                 <span>{f.name}</span>
-                <span style={{ color: "#a39b90", flexShrink: 0 }}>{f.count} {f.count === 1 ? "vez" : "veces"}</span>
+                <span style={{ color: "#c5bdb1", flexShrink: 0 }}>{f.count} {f.count === 1 ? "vez" : "veces"}</span>
               </div>
               <div className="lbd-track">
                 <div className="lbd-bar" style={{ width: `${Math.round((f.count / max) * 100)}%`, background: "#ff5a33" }} />
@@ -226,7 +226,7 @@ function CustomerDetail({ customer, avatar }: { customer: CustomerRow; avatar: {
         )}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#cfc7bb" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#e2dbcf" }}>
         <span className="lbd-cm-eyebrow">Contacto</span>
         <span className="lbd-mono" style={{ wordBreak: "break-all" }}>
           {contact || "Sin contacto registrado"}

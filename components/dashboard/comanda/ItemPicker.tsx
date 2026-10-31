@@ -137,7 +137,7 @@ export default function ItemPicker({
       <div className="lbd-cm-sticky">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-            <span style={{ fontSize: 13, color: "#a39b90" }}>{roundLabel ? `${roundLabel} · nueva` : "Nuevo pedido"}</span>
+            <span style={{ fontSize: 13, color: "#c5bdb1" }}>{roundLabel ? `${roundLabel} · nueva` : "Nuevo pedido"}</span>
             <h1 className="lbd-display lbd-cm-h1 lbd-trunc">{targetLabel}</h1>
           </div>
           {!hideChange && (
@@ -148,7 +148,7 @@ export default function ItemPicker({
         </div>
 
         <div className="lbd-cm-search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="M20 20l-4-4" />
           </svg>
@@ -228,7 +228,7 @@ export default function ItemPicker({
                       )}
                       <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                         <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", lineHeight: 1.25 }}>{item.name}</span>
-                        <span style={{ fontSize: 13, color: "#a39b90", display: "flex", flexWrap: "wrap", gap: "2px 8px" }}>
+                        <span style={{ fontSize: 13, color: "#c5bdb1", display: "flex", flexWrap: "wrap", gap: "2px 8px" }}>
                           <span>{formatPrice(item.price)}</span>
                           {item.prepMin != null && <span>· {item.prepMin} min</span>}
                           {picked && <span style={{ color: "#ff7a57", fontWeight: 600 }}>= {formatPrice(item.price * qty)}</span>}

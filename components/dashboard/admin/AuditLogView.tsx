@@ -20,7 +20,7 @@ const KINDS: Record<AuditKind, { label: string; color: string; icon: string }> =
   equipo: { label: "Equipo", color: "#c7bcff", icon: "M9 6a3 3 0 1 0 0 6a3 3 0 1 0 0-6M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M17 9v6M14 12h6" },
   ventas: { label: "Contactos", color: "#ff7a57", icon: "M4 6.5h16v11H4zM4 7l8 6 8-6" },
   local: { label: "Locales", color: "#5fd6c5", icon: "M4 9.5l1.5-5h13l1.5 5M4 9.5h16v10H4zM9.5 19.5v-5h5v5" },
-  factura: { label: "Facturación", color: "#a39b90", icon: "M7 9V4h10v5M6 18H4v-7h16v7h-2M7 14h10v6H7z" },
+  factura: { label: "Facturación", color: "#c5bdb1", icon: "M7 9V4h10v5M6 18H4v-7h16v7h-2M7 14h10v6H7z" },
   riesgo: { label: "Borrados", color: "#ff5a33", icon: "M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13" },
 };
 
@@ -54,7 +54,7 @@ export default function AuditLogView({ events }: { events: AuditEvent[] }) {
           Buscar en la auditoría
         </label>
         <div className="lbd-cu-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a39b90" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="M20 20l-4-4" />
           </svg>

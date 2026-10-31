@@ -1,6 +1,6 @@
 const TONE: Record<string, string> = {
   new: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
-  contacted: "bg-fg/[0.06] text-fg/70 ring-fg/15",
+  contacted: "bg-fg/[0.06] text-fg/80 ring-fg/15",
   converted: "bg-mint/10 text-mint-ink ring-mint/25",
   pending: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
   preparing: "bg-violet/10 text-violet-ink ring-violet/25",
@@ -8,7 +8,7 @@ const TONE: Record<string, string> = {
   delivered: "bg-fg/[0.06] text-muted ring-fg/15",
   // Form-lead pipeline (Lead model): nuevo → contactado → cita → cliente.
   nuevo: "bg-accent-400/10 text-accent-ink ring-accent-400/25",
-  contactado: "bg-fg/[0.06] text-fg/70 ring-fg/15",
+  contactado: "bg-fg/[0.06] text-fg/80 ring-fg/15",
   cita: "bg-violet/10 text-violet-ink ring-violet/25",
   cliente: "bg-mint/10 text-mint-ink ring-mint/25",
   archivado: "bg-fg/[0.04] text-faint ring-fg/10",

@@ -85,7 +85,7 @@ export default function ServiceOverview({
       {/* ------------------------------------------------------ header */}
       <div className="lbd-ov-head lbd-rise">
         <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
-          <span style={{ fontSize: 14, color: "#a39b90" }}>{eyebrow}</span>
+          <span style={{ fontSize: 14, color: "#c5bdb1" }}>{eyebrow}</span>
           <h1 className="lbd-ov-h1">
             {greeting}
             <span style={{ color: "#ff5a33" }}>.</span>
@@ -148,7 +148,7 @@ export default function ServiceOverview({
               {data.tables.length > 0 ? (
                 <span className="lbd-ov-num">
                   {occupied}
-                  <span style={{ color: "#6f675e" }}>/{data.tables.length}</span>
+                  <span style={{ color: "#9a9287" }}>/{data.tables.length}</span>
                 </span>
               ) : (
                 <Link href="/dashboard/app/mesas" className="lbd-ov-link" style={{ fontSize: 14 }}>
@@ -182,13 +182,13 @@ export default function ServiceOverview({
                 <div key={o.id} className="lbd-ov-live-row">
                   <div className="lbd-ov-live-line">
                     <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      <span className="lbd-mono" style={{ color: "#a39b90" }}>
+                      <span className="lbd-mono" style={{ color: "#c5bdb1" }}>
                         {o.origin}
                       </span>
                       {"  "}
                       {o.items || "—"}
                     </span>
-                    <span style={{ flexShrink: 0, color: o.state === "ready" || late ? "#ff7a57" : "#a39b90", fontWeight: o.state === "ready" || late ? 550 : 400 }}>
+                    <span style={{ flexShrink: 0, color: o.state === "ready" || late ? "#ff7a57" : "#c5bdb1", fontWeight: o.state === "ready" || late ? 550 : 400 }}>
                       {LIVE_STATE_LABELS[o.state]} · {formatElapsed(o.minutes)}
                     </span>
                   </div>
@@ -204,7 +204,7 @@ export default function ServiceOverview({
         <section className="lbd-card lbd-rise lbd-ov-panel" style={{ animationDelay: ".38s" }} aria-label="Salón">
           <div className="lbd-ov-panel-head">
             <span className="lbd-ov-title">Salón</span>
-            <span style={{ fontSize: 12, color: "#a39b90" }}>
+            <span style={{ fontSize: 12, color: "#c5bdb1" }}>
               {data.tables.length === 0 ? "Sin mesas" : toCharge > 0 ? `${toCharge} por cobrar` : `${free} libres`}
             </span>
           </div>
@@ -256,7 +256,7 @@ export default function ServiceOverview({
         <KitchenLoad data={data} />
       </div>
 
-      {data.demo && <p style={{ margin: 0, fontSize: 12, color: "#8a8278" }}>Panel de demostración. Las cifras son de ejemplo hasta que registres pedidos.</p>}
+      {data.demo && <p style={{ margin: 0, fontSize: 12, color: "#ada599" }}>Panel de demostración. Las cifras son de ejemplo hasta que registres pedidos.</p>}
     </div>
   );
 }
@@ -281,7 +281,7 @@ function SalesHero({ data }: { data: ServiceOverviewData }) {
   return (
     <section className="lbd-card lbd-card--glass lbd-rise lbd-ov-hero" style={{ animationDelay: ".08s" }} aria-label={KPI_LABELS[range]}>
       <div className="lbd-ov-hero-top">
-        <span style={{ fontSize: 14, color: "#a39b90" }}>{KPI_LABELS[range]}</span>
+        <span style={{ fontSize: 14, color: "#c5bdb1" }}>{KPI_LABELS[range]}</span>
         {deltas.sales != null && (
           <span style={{ fontSize: 13, color: deltas.sales >= 0 ? "#3ddc97" : "#ff7a57", fontWeight: 550 }}>
             {deltas.sales >= 0 ? "↑" : "↓"} {percent(deltas.sales)} {COMPARED_TO[range]}
@@ -303,9 +303,9 @@ function SalesHero({ data }: { data: ServiceOverviewData }) {
           <>
             <span aria-hidden className="lbd-ov-cursor" style={{ left: `${pct}%` }} />
             <div className="lbd-ov-tip" style={{ left: `clamp(60px, ${pct}%, calc(100% - 60px))` }}>
-              <span style={{ color: "#a39b90" }}>{data.labels[hover]}</span>
+              <span style={{ color: "#c5bdb1" }}>{data.labels[hover]}</span>
               <strong>{formatSoles(data.series[hover] ?? 0)}</strong>
-              <span style={{ color: "#8a8278" }}>antes {formatSoles(data.previous[hover] ?? 0)}</span>
+              <span style={{ color: "#ada599" }}>antes {formatSoles(data.previous[hover] ?? 0)}</span>
             </div>
           </>
         )}
@@ -346,7 +346,7 @@ function Channels({ data }: { data: ServiceOverviewData }) {
     <section className="lbd-card lbd-rise lbd-ov-panel" style={{ animationDelay: ".5s" }} aria-label="Pedidos por canal">
       <div className="lbd-ov-panel-head">
         <span className="lbd-ov-title">Pedidos por canal</span>
-        <span style={{ fontSize: 12, color: "#a39b90" }}>{total} pedidos</span>
+        <span style={{ fontSize: 12, color: "#c5bdb1" }}>{total} pedidos</span>
       </div>
       {data.channels.map((c, i) => {
         const share = total > 0 ? Math.round((c.count / total) * 100) : 0;
@@ -354,7 +354,7 @@ function Channels({ data }: { data: ServiceOverviewData }) {
           <div key={c.key} className="lbd-ov-live-row">
             <div className="lbd-ov-live-line">
               <span>{c.label}</span>
-              <span style={{ color: "#a39b90" }}>
+              <span style={{ color: "#c5bdb1" }}>
                 {c.count} · {share}%
               </span>
             </div>
@@ -389,11 +389,11 @@ function KitchenLoad({ data }: { data: ServiceOverviewData }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
         <span className="lbd-display" style={{ fontSize: 36, letterSpacing: "-0.05em", lineHeight: 1 }}>
           {pending + preparing}
-          <span style={{ marginLeft: 8, fontFamily: "var(--font-sans)", fontSize: 13, fontWeight: 400, letterSpacing: 0, color: "#a39b90" }}>
+          <span style={{ marginLeft: 8, fontFamily: "var(--font-sans)", fontSize: 13, fontWeight: 400, letterSpacing: 0, color: "#c5bdb1" }}>
             {pending + preparing === 1 ? "ticket en marcha" : "tickets en marcha"}
           </span>
         </span>
-        <span style={{ fontSize: 13, color: "#cfc7bb", textAlign: "right" }}>
+        <span style={{ fontSize: 13, color: "#e2dbcf", textAlign: "right" }}>
           Tiempo de cocina{" "}
           <strong className="lbd-mono" style={{ color: "#f3efe6", fontWeight: 600 }}>
             {data.kpis.kitchenSeconds != null ? formatKitchenTime(data.kpis.kitchenSeconds) : "—"}

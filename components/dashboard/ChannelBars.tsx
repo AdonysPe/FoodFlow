@@ -10,8 +10,8 @@ export default function ChannelBars({ data }: { data: { label: string; count: nu
       {data.map((d) => (
         <div key={d.label}>
           <div className="mb-1.5 flex items-center justify-between text-[13px]">
-            <span className="text-fg/70">{d.label}</span>
-            <span className="font-medium text-fg/85">{d.count}</span>
+            <span className="text-fg/80">{d.label}</span>
+            <span className="font-medium text-fg/90">{d.count}</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-fg/[0.06]">
             <div

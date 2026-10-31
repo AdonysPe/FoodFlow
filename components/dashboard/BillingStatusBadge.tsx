@@ -9,8 +9,8 @@ const STATUS: Record<BillingStatusValue, { label: string; color: string; bg: str
   active: { label: "Cobro activo", color: "#3ddc97", bg: "rgba(61,220,151,0.12)" },
   trialing: { label: "En prueba", color: "#5fd6c5", bg: "rgba(95,214,197,0.12)" },
   past_due: { label: "Pago atrasado", color: "#ff7a57", bg: "rgba(255,90,51,0.14)" },
-  suspended: { label: "Suspendido", color: "#a39b90", bg: "rgba(243,239,230,0.07)" },
-  cancelled: { label: "Cobro cancelado", color: "#a39b90", bg: "rgba(243,239,230,0.07)" },
+  suspended: { label: "Suspendido", color: "#c5bdb1", bg: "rgba(243,239,230,0.07)" },
+  cancelled: { label: "Cobro cancelado", color: "#c5bdb1", bg: "rgba(243,239,230,0.07)" },
 };
 
 export default function BillingStatusBadge({ status }: { status: BillingStatusValue }) {

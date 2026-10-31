@@ -106,7 +106,7 @@ export default function CertificateCard({
       {/* ------------------------------------------------------ what is on file */}
       <div className="lbd-bl-cert" data-state={state}>
         {state === "none" ? (
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 550, color: "#cfc7bb" }}>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 550, color: "#e2dbcf" }}>
             No has subido tu certificado.
           </p>
         ) : (

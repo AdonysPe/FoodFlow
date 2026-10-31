@@ -84,7 +84,7 @@ export default function LoginFlow() {
             </svg>
           </span>
           <span className="lb-display" style={{ fontSize: 30, letterSpacing: "-0.04em" }}>Listo, ya entraste.</span>
-          <span style={{ fontSize: 15, color: "#b9b1a5" }}>Te llevamos al resumen de tu restaurante.</span>
+          <span style={{ fontSize: 15, color: "#d6cfc3" }}>Te llevamos al resumen de tu restaurante.</span>
           <a href={target} className="lb-pill-btn lb-pill-btn--lg" style={{ marginTop: 8 }}>
             Ir a mi panel
           </a>

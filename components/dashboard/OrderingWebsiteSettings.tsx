@@ -303,7 +303,7 @@ export default function OrderingWebsiteSettings({ name, slug, initial, generalHo
               form.hours.map((row) => (
                 <div key={row.day} className="lbd-wp-hours">
                   <span>{CARTA_DAYS[row.day]}</span>
-                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#cfc7bb" }}>
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#e2dbcf" }}>
                     <input type="checkbox" checked={row.closed} onChange={(e) => set("hours", form.hours!.map((h) => (h.day === row.day ? { ...h, closed: e.target.checked } : h)))} /> Cerrado
                   </label>
                   {!row.closed &&
@@ -359,9 +359,9 @@ export default function OrderingWebsiteSettings({ name, slug, initial, generalHo
                     ))}
                   </div>
                 )}
-                <span style={{ fontSize: 12, color: "#cfc7bb" }}>{eta}</span>
+                <span style={{ fontSize: 12, color: "#e2dbcf" }}>{eta}</span>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {sampleItems.length === 0 && <span style={{ fontSize: 12, color: "#8a8278" }}>Agrega platos en Menú para verlos aquí.</span>}
+                  {sampleItems.length === 0 && <span style={{ fontSize: 12, color: "#ada599" }}>Agrega platos en Menú para verlos aquí.</span>}
                   {sampleItems.map((item) => (
                     <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       {item.photoUrl ? (
@@ -373,14 +373,14 @@ export default function OrderingWebsiteSettings({ name, slug, initial, generalHo
                       <span className="lbd-trunc" style={{ flex: 1, fontSize: 13, fontWeight: 550 }}>
                         {item.name}
                       </span>
-                      <span style={{ fontSize: 13, color: "#cfc7bb" }}>{formatCurrency(item.price)}</span>
+                      <span style={{ fontSize: 13, color: "#e2dbcf" }}>{formatCurrency(item.price)}</span>
                     </div>
                   ))}
                 </div>
                 <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
-                  <span style={{ fontSize: 11, color: "#a39b90" }}>Pagas con: {payList}</span>
-                  <span style={{ fontSize: 11, color: "#a39b90" }}>Pedido mínimo {formatCurrency(form.minimum)}</span>
-                  <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 16px", borderRadius: 16, fontSize: 13, fontWeight: 600, background: canOrder ? "#ff5a33" : "#2a221e", color: canOrder ? "#0c0908" : "#8a8278" }}>
+                  <span style={{ fontSize: 11, color: "#c5bdb1" }}>Pagas con: {payList}</span>
+                  <span style={{ fontSize: 11, color: "#c5bdb1" }}>Pedido mínimo {formatCurrency(form.minimum)}</span>
+                  <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 16px", borderRadius: 16, fontSize: 13, fontWeight: 600, background: canOrder ? "#ff5a33" : "#2a221e", color: canOrder ? "#0c0908" : "#ada599" }}>
                     <span>{canOrder ? "Pedir ahora" : "Pedidos en pausa"}</span>
                   </span>
                 </div>
@@ -390,7 +390,7 @@ export default function OrderingWebsiteSettings({ name, slug, initial, generalHo
                   <span className="lbd-display" style={{ fontSize: 22 }}>
                     Web desactivada
                   </span>
-                  <span style={{ fontSize: 13, color: "#a39b90" }}>Tus clientes no ven esta página hasta que la actives.</span>
+                  <span style={{ fontSize: 13, color: "#c5bdb1" }}>Tus clientes no ven esta página hasta que la actives.</span>
                 </div>
               )}
             </div>
