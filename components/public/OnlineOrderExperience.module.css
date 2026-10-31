@@ -17,9 +17,9 @@
   --o-sheet: #15100e;
   --o-raised: #2b231f;
   --o-ink: #f3efe6;
-  --o-ink-2: #cfc7bb;
-  --o-muted: #a39a8e;
-  --o-faint: #8a8278;
+  --o-ink-2: #e2dbcf;
+  --o-muted: #c5bdb1;
+  --o-faint: #ada599;
   --o-fill: rgba(243, 239, 230, 0.07);
   --o-fill-2: rgba(243, 239, 230, 0.12);
   --o-line: rgba(243, 239, 230, 0.08);
@@ -410,7 +410,7 @@ textarea.input { resize: none; line-height: 1.45; }
   .heroMedia { height: 380px; }
   .heroShade { background: linear-gradient(180deg, rgba(12, 9, 8, 0) 30%, rgba(12, 9, 8, 0.82) 100%); }
   .heroText { position: absolute; left: 36px; right: 420px; bottom: 32px; margin: 0; padding: 0; color: #f3efe6; animation: none; }
-  .heroText .heroTag, .heroText .status { color: #cfc7bb; }
+  .heroText .heroTag, .heroText .status { color: #e2dbcf; }
   .heroName { font-size: clamp(44px, 6cqi, 72px); line-height: 0.95; letter-spacing: var(--c-name-track, -0.045em); }
   .heroLogo { display: none; }
   .hero.bare { background: var(--o-surface); }
@@ -420,7 +420,7 @@ textarea.input { resize: none; line-height: 1.45; }
     display: grid; position: absolute; right: 36px; bottom: 32px; margin: 0; padding: 12px 6px; width: 360px;
     border-radius: 18px; background: rgba(12, 9, 8, 0.55); color: #f3efe6; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(243, 239, 230, 0.1);
   }
-  .factsHero .fact dt { color: #a39a8e; }
+  .factsHero .fact dt { color: #c5bdb1; }
   .factsHero .fact + .fact { border-left-color: rgba(243, 239, 230, 0.12); }
   .notice { margin: 16px 0 0; }
 

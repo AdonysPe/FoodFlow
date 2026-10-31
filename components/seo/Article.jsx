@@ -232,7 +232,7 @@ export function PilotClosing() {
         <br />
         <span>{a.line2}</span>
       </h2>
-      <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#b9b1a5" }}>
+      <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#d6cfc3" }}>
         {a.description}
       </p>
       <div className="lb-hero-ctas lb-reveal">

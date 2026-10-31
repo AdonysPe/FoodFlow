@@ -43,7 +43,7 @@ const THEMES = {
   criolla: {
     eyebrow: "Carta",
     vars: {
-      "--c-surround": "#e7dcc8", "--c-paper": "#F5EDDF", "--c-ink": "#2f221c", "--c-muted": "#735d4d",
+      "--c-surround": "#e7dcc8", "--c-paper": "#F5EDDF", "--c-ink": "#2f221c", "--c-muted": "#5a4636",
       "--c-primary": "#742E27", "--c-secondary": "#A04C35", "--c-accent": "#526A43", "--c-rule": "#cdb294", "--c-leader": "#b39a83",
       "--c-price": "#742E27", "--c-cta": "#742E27", "--c-on-cta": "#F5EDDF", "--c-on-primary": "#F5EDDF",
       "--c-display": `var(--font-carta-playfair), ${SERIF}`, "--c-body": `var(--font-carta-lora), ${SERIF}`,
@@ -58,7 +58,7 @@ const THEMES = {
   cevicheria: {
     eyebrow: "Cevichería",
     vars: {
-      "--c-surround": "#e5ecea", "--c-paper": "#FFF9ED", "--c-ink": "#10303c", "--c-muted": "#4a6670",
+      "--c-surround": "#e5ecea", "--c-paper": "#FFF9ED", "--c-ink": "#10303c", "--c-muted": "#33505a",
       "--c-primary": "#123B4A", "--c-secondary": "#168AAD", "--c-accent": "#52B8B0", "--c-rule": "#b5dadc", "--c-leader": "#8fbfc6",
       "--c-price": "#127596", "--c-cta": "#123B4A", "--c-on-cta": "#FFF9ED", "--c-on-primary": "#FFF9ED",
       "--c-display": `var(--font-carta-fraunces), ${SERIF}`, "--c-body": `var(--font-carta-dmsans), ${SANS}`,
@@ -74,7 +74,7 @@ const THEMES = {
     eyebrow: "Chifa",
     seal: true,
     vars: {
-      "--c-surround": "#eadcc6", "--c-paper": "#FFF7E8", "--c-ink": "#2b1b18", "--c-muted": "#74605a",
+      "--c-surround": "#eadcc6", "--c-paper": "#FFF7E8", "--c-ink": "#2b1b18", "--c-muted": "#5b4741",
       "--c-primary": "#7A1F1F", "--c-secondary": "#B83227", "--c-accent": "#C99A35", "--c-rule": "#dfc085", "--c-leader": "#cfa96a",
       "--c-price": "#A82C22", "--c-cta": "#B83227", "--c-on-cta": "#FFF7E8", "--c-on-primary": "#FFF7E8",
       "--c-display": `var(--font-carta-cormorant), ${SERIF}`, "--c-body": `var(--font-carta-lora), ${SERIF}`,
@@ -89,7 +89,7 @@ const THEMES = {
   pizzeria: {
     eyebrow: "Pizzería",
     vars: {
-      "--c-surround": "#eadfcd", "--c-paper": "#F8F1E5", "--c-ink": "#2a1f1a", "--c-muted": "#6a594c",
+      "--c-surround": "#eadfcd", "--c-paper": "#F8F1E5", "--c-ink": "#2a1f1a", "--c-muted": "#52433a",
       "--c-primary": "#8F2D24", "--c-secondary": "#C94C32", "--c-accent": "#3F6B3A", "--c-rule": "#d6bea5", "--c-leader": "#c2a990",
       "--c-price": "#8F2D24", "--c-cta": "#8F2D24", "--c-on-cta": "#F8F1E5", "--c-on-primary": "#F8F1E5",
       "--c-display": `var(--font-carta-dmserif), ${SERIF}`, "--c-body": `var(--font-carta-dmsans), ${SANS}`,
@@ -104,7 +104,7 @@ const THEMES = {
   noche: {
     eyebrow: "Carta",
     vars: {
-      "--c-surround": "#0c0908", "--c-paper": "#f3efe6", "--c-ink": "#1c1a18", "--c-muted": "#5f5a54",
+      "--c-surround": "#0c0908", "--c-paper": "#f3efe6", "--c-ink": "#1c1a18", "--c-muted": "#46413c",
       "--c-primary": "#1c1a18", "--c-secondary": "#ff5a33", "--c-accent": "#ff5a33", "--c-rule": "#d9d3cc", "--c-leader": "#c9c1b5",
       "--c-price": "#b8401f", "--c-cta": "#ff5a33", "--c-on-cta": "#0c0908", "--c-on-primary": "#f3efe6",
       "--c-display": `var(--font-lb-display), ${SANS}`, "--c-body": `var(--font-lb-text), ${SANS}`,

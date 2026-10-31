@@ -306,7 +306,7 @@ export default function CartaView({ initial }) {
           </div>
 
           {venue.tagline && (
-            <p className="mt-3 max-w-xl text-[13.5px] leading-relaxed text-fg/55">{venue.tagline}</p>
+            <p className="mt-3 max-w-xl text-[13.5px] leading-relaxed text-fg/72">{venue.tagline}</p>
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -314,7 +314,7 @@ export default function CartaView({ initial }) {
               className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold ${
                 open
                   ? "border-mint/35 bg-mint/10 text-mint-ink"
-                  : "border-fg/15 bg-fg/[0.05] text-fg/50"
+                  : "border-fg/15 bg-fg/[0.05] text-fg/70"
               }`}
             >
               <span
@@ -323,19 +323,19 @@ export default function CartaView({ initial }) {
               />
               {open ? "Abierto ahora" : "Cerrado"}
             </span>
-            <span className="text-[12.5px] text-fg/45">{todayLabel(venue.hours, now)}</span>
+            <span className="text-[12.5px] text-fg/65">{todayLabel(venue.hours, now)}</span>
           </div>
 
           <div className="mt-4">
             <HoursTable hours={venue.hours} today={now.getDay()} />
             {venue.address && (
-              <p className="mt-3 text-[12.5px] text-fg/45">
+              <p className="mt-3 text-[12.5px] text-fg/65">
                 {venue.mapsUrl ? (
                   <a
                     href={venue.mapsUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="underline decoration-fg/20 underline-offset-2 hover:text-fg/70"
+                    className="underline decoration-fg/20 underline-offset-2 hover:text-fg/80"
                   >
                     {venue.address}
                   </a>
@@ -370,7 +370,7 @@ export default function CartaView({ initial }) {
                   onClick={() => jump(section.id)}
                   aria-current={activeCat === section.id ? "true" : undefined}
                   className={`relative isolate overflow-hidden rounded-lg px-1.5 py-2 text-center text-[11px] font-bold uppercase tracking-[0.05em] transition-colors duration-200 ${
-                    activeCat === section.id ? "text-accent-label" : "text-fg/50 hover:text-fg/75"
+                    activeCat === section.id ? "text-accent-label" : "text-fg/70 hover:text-fg/84"
                   }`}
                 >
                   {activeCat === section.id && (
@@ -395,7 +395,7 @@ export default function CartaView({ initial }) {
       {/* ---------------------------------------------------------- the menu */}
       <main className="mx-auto max-w-2xl px-5">
         {sections.length === 0 && (
-          <p className="py-20 text-center text-[14px] text-fg/40">
+          <p className="py-20 text-center text-[14px] text-fg/60">
             Esta carta todavía no tiene platos publicados.
           </p>
         )}
@@ -429,7 +429,7 @@ export default function CartaView({ initial }) {
           </section>
         ))}
 
-        <p className="pb-6 pt-12 text-center text-[11.5px] text-fg/25">
+        <p className="pb-6 pt-12 text-center text-[11.5px] text-fg/50">
           Carta en línea de {venue.name} · hecha con FoodFlow
         </p>
       </main>
@@ -491,7 +491,7 @@ function CartaCard({ item, onZoom, reducedMotion, priority }) {
           </div>
         )}
         {sold && (
-          <span className="absolute left-2 top-2 rounded-md bg-ink-950/85 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-fg/70 backdrop-blur-sm">
+          <span className="absolute left-2 top-2 rounded-md bg-ink-950/85 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-fg/80 backdrop-blur-sm">
             Agotado
           </span>
         )}
@@ -499,13 +499,13 @@ function CartaCard({ item, onZoom, reducedMotion, priority }) {
 
       <h3 className="mt-2.5 text-[13.5px] font-semibold leading-snug text-fg">{item.name}</h3>
       {item.description && (
-        <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-fg/45">
+        <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-fg/65">
           {item.description}
         </p>
       )}
       <p
         className={`mt-1.5 text-[13px] font-bold tabular-nums ${
-          sold ? "text-fg/35" : "text-accent-label"
+          sold ? "text-fg/55" : "text-accent-label"
         }`}
       >
         {cartaPrice(item.price)}
@@ -581,7 +581,7 @@ function HoursTable({ hours, today }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="text-[12.5px] font-medium text-fg/40 underline decoration-fg/15 underline-offset-2 hover:text-fg/65"
+        className="text-[12.5px] font-medium text-fg/60 underline decoration-fg/15 underline-offset-2 hover:text-fg/78"
       >
         {open ? "Ocultar horario" : "Ver horario completo"}
       </button>
@@ -589,12 +589,12 @@ function HoursTable({ hours, today }) {
         <dl className="mt-2.5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[12.5px]">
           {hours.map((h) => (
             <div key={h.day} className="contents">
-              <dt className={h.day === today ? "font-semibold text-fg/80" : "text-fg/40"}>
+              <dt className={h.day === today ? "font-semibold text-fg/88" : "text-fg/60"}>
                 <span className="sm:hidden">{CARTA_DAYS_SHORT[h.day]}</span>
                 <span className="hidden sm:inline">{CARTA_DAYS[h.day]}</span>
               </dt>
               <dd
-                className={`tabular-nums ${h.day === today ? "font-medium text-fg/70" : "text-fg/35"}`}
+                className={`tabular-nums ${h.day === today ? "font-medium text-fg/80" : "text-fg/55"}`}
               >
                 {h.closed ? "Cerrado" : `${h.open} – ${h.close}`}
               </dd>
@@ -626,7 +626,7 @@ function LiveBadge({ status, flash }) {
   if (status === "offline") {
     return (
       <div className="pointer-events-none fixed inset-x-0 top-16 z-40 flex justify-center px-5">
-        <span className="rounded-full border border-fg/15 bg-ink-900/90 px-3.5 py-1.5 text-[12px] font-medium text-fg/50 backdrop-blur-xl">
+        <span className="rounded-full border border-fg/15 bg-ink-900/90 px-3.5 py-1.5 text-[12px] font-medium text-fg/70 backdrop-blur-xl">
           Sin conexión · mostrando la última carta guardada
         </span>
       </div>
