@@ -94,7 +94,7 @@ export default async function RestaurantConfigPage({
     prisma.subscription.findFirst({
       where: { restaurantId: restaurant.id },
       orderBy: { createdAt: "desc" },
-      select: { trialEndsAt: true, currentPeriodEnd: true, cancelAtPeriodEnd: true, netAmountCents: true },
+      select: { trialEndsAt: true, currentPeriodEnd: true, cancelAtPeriodEnd: true, grossAmountCents: true },
     }),
   ]);
 
@@ -230,7 +230,7 @@ export default async function RestaurantConfigPage({
             )}
             <small style={{ fontSize: 11, color: "#ada599" }}>
               Plan {PLAN_LABELS[restaurant.plan as PlanValue]}
-              {subscription ? ` · ${formatCurrency(subscription.netAmountCents / 100)} al mes sin IGV` : ""}
+              {subscription ? ` · ${formatCurrency(subscription.grossAmountCents / 100)} al mes, IGV incluido` : ""}
             </small>
           </section>
         </div>

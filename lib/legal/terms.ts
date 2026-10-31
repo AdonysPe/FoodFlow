@@ -42,7 +42,7 @@ export const TERMS_DOC: LegalDocument = {
     {
       title: "3. Contratación, precios y facturación",
       body: [
-        "Los precios publicados están expresados en soles (S/) y no incluyen IGV, salvo que se indique lo contrario en la misma página. El impuesto se agrega al momento de emitir el comprobante.",
+        "Los precios publicados están expresados en soles (S/) e incluyen el IGV (18 %), salvo que se indique lo contrario en la misma página. El monto que ves es el que pagas; el comprobante electrónico detalla el IGV incluido.",
         "El servicio se cobra por mes adelantado. No exigimos permanencia mínima: puedes dar de baja tu cuenta cuando quieras y el servicio seguirá activo hasta el final del periodo ya pagado.",
         "Si modificamos el precio de tu plan te lo comunicaremos con al menos 30 días de anticipación y podrás dar de baja el servicio antes de que el nuevo precio te aplique.",
       ],

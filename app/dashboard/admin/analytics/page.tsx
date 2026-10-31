@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import PageHeader from "@/components/dashboard/PageHeader";
-import { PLAN_MONTHLY_NET_CENTS, type PlanValue } from "@/lib/plans";
+import { PLAN_MONTHLY_CENTS, type PlanValue } from "@/lib/plans";
 import { formatCurrency } from "@/lib/format";
 
 export const metadata = {
@@ -70,7 +70,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
   // ---- money
   const paying = restaurants.filter((r) => r.billingStatus === "active");
-  const mrr = paying.reduce((sum, r) => sum + (PLAN_MONTHLY_NET_CENTS[r.plan as PlanValue] ?? 0), 0) / 100;
+  const mrr = paying.reduce((sum, r) => sum + (PLAN_MONTHLY_CENTS[r.plan as PlanValue] ?? 0), 0) / 100;
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(sixMonths);
     d.setMonth(sixMonths.getMonth() + i);
@@ -90,8 +90,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const kpis: { label: string; value: string; note: string; good?: boolean }[] = [
     { label: "Contactos", value: String(leads.length), note: delta == null ? `últimos ${days} días` : `${delta >= 0 ? "↑" : "↓"} ${Math.abs(delta).toFixed(0)}% vs. el periodo anterior`, good: delta != null && delta >= 0 },
     { label: "Nuevos clientes", value: String(funnel[3].value), note: `conversión ${pct(funnel[3].value, funnel[0].value)}%` },
-    { label: "Ingreso recurrente", value: formatCurrency(mrr), note: `${paying.length} ${paying.length === 1 ? "local paga" : "locales pagan"} · sin IGV` },
-    { label: "Ticket medio", value: paying.length ? formatCurrency(mrr / paying.length) : "—", note: "por local al mes, sin IGV" },
+    { label: "Ingreso recurrente", value: formatCurrency(mrr), note: `${paying.length} ${paying.length === 1 ? "local paga" : "locales pagan"} · IGV incluido` },
+    { label: "Ticket medio", value: paying.length ? formatCurrency(mrr / paying.length) : "—", note: "por local al mes, IGV incluido" },
   ];
 
   return (

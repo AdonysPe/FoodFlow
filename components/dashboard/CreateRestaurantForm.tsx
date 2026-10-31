@@ -86,7 +86,7 @@ export default function CreateRestaurantForm() {
                   {PLANS.map((p) => (
                     <button key={p} type="button" aria-pressed={plan === p} className={plan === p ? "is-on" : undefined} onClick={() => setPlan(p)}>
                       {PLAN_LABELS[p]}
-                      <small>{PLAN_PRICES[p]} + IGV</small>
+                      <small>{PLAN_PRICES[p]} · IGV incluido</small>
                     </button>
                   ))}
                 </div>

@@ -378,9 +378,9 @@ export default function SubscriptionCheckoutPanel({ restaurantId, restaurantName
         {view.source === "manual"
           ? <span className="lbd-sb-price">Plan y condiciones administrados por FoodFlow.</span>
           : subscriptionPrice
-            ? <span className="lbd-sb-price">{money(subscriptionPrice.netCents)} + {money(subscriptionPrice.igvCents)} IGV = {money(subscriptionPrice.grossCents)} {subscriptionPrice.currency}/mes</span>
+            ? <span className="lbd-sb-price">{money(subscriptionPrice.grossCents)} {subscriptionPrice.currency}/mes, IGV incluido</span>
             : currentPrice && view.source === "none"
-              ? <span className="lbd-sb-price">{money(currentPrice.netCents)} + IGV / mes al contratar</span>
+              ? <span className="lbd-sb-price">{money(currentPrice.grossCents)} / mes al contratar, IGV incluido</span>
               : null}
       </div>
       <BillingStatusBadge status={view.status} />
@@ -416,7 +416,7 @@ export default function SubscriptionCheckoutPanel({ restaurantId, restaurantName
           <div className="lbd-sb-plans" role="group" aria-label="Plan">
             {PLANS.map((item) => item === currentPlan
               ? <button key={item} type="button" disabled className="is-current">{PLAN_LABELS[item]}<small>tu plan</small></button>
-              : <button key={item} type="button" aria-pressed={targetPlan === item} className={targetPlan === item ? "is-on" : undefined} disabled={pending} onClick={() => setTargetPlan(item)}>{PLAN_LABELS[item]}<small>{money(view.offers.find((offer) => offer.plan === item)?.price.netCents ?? 0)} + IGV</small></button>)}
+              : <button key={item} type="button" aria-pressed={targetPlan === item} className={targetPlan === item ? "is-on" : undefined} disabled={pending} onClick={() => setTargetPlan(item)}>{PLAN_LABELS[item]}<small>{money(view.offers.find((offer) => offer.plan === item)?.price.grossCents ?? 0)} / mes</small></button>)}
           </div>
           <div className="lbd-sb-actions">
             <button type="button" disabled={pending || !targetPlan} onClick={() => { if (targetPlan) void loadChangePreview(targetPlan); }} className="lbd-btn lbd-btn--solid">Revisar cambio</button>
@@ -429,7 +429,7 @@ export default function SubscriptionCheckoutPanel({ restaurantId, restaurantName
           <h4 id="plan-change-preview-title" className="lbd-display">Revisa el cambio a {PLAN_LABELS[changePreview.targetPlan]}</h4>
           <p>{changePreview.direction === "upgrade" ? `La subida entra en vigor cuando se confirme el cargo (${dateTime(changePreview.effectiveAt)} como referencia).` : `La bajada está programada para ${dateTime(changePreview.effectiveAt)}.`}</p>
           <div className="lbd-sb-preview-tiles">
-            <div><span>Nuevo precio</span><strong className="lbd-display">{money(changePreview.newPrice.grossCents)}<small> {changePreview.newPrice.currency}/mes</small></strong><small>{money(changePreview.newPrice.netCents)} netos + {money(changePreview.newPrice.igvCents)} IGV</small></div>
+            <div><span>Nuevo precio</span><strong className="lbd-display">{money(changePreview.newPrice.grossCents)}<small> {changePreview.newPrice.currency}/mes</small></strong><small>IGV incluido ({money(changePreview.newPrice.igvCents)})</small></div>
             {changePreview.chargeNow && <div className="is-accent"><span>Cargo al confirmar</span><strong className="lbd-display">{money(changePreview.chargeNow.grossCents)}<small> {changePreview.chargeNow.currency}</small></strong><small>Sin prorrateo: se cobra el mes completo.</small></div>}
           </div>
           {changePreview.endsTrial && <p className="lbd-sb-hint">Este cambio termina el periodo de prueba y genera un cargo ahora.</p>}
@@ -446,9 +446,9 @@ export default function SubscriptionCheckoutPanel({ restaurantId, restaurantName
         {view.canManage && view.source === "none" && view.checkoutEnabled && !checkout && !view.openCheckout && <form onSubmit={createCheckout} className="lbd-sb-form">
           <div className="lbd-sb-step"><i className="lbd-mono">1</i>Datos del titular<small>Paso 1 de 2</small></div>
           <div className="lbd-sb-plans" role="group" aria-label="Plan">
-            {view.offers.map((offer) => <button key={offer.plan} type="button" aria-pressed={plan === offer.plan} className={plan === offer.plan ? "is-on" : undefined} onClick={() => setPlan(offer.plan)}>{PLAN_LABELS[offer.plan]}<small>{money(offer.price.netCents)} + IGV / mes</small></button>)}
+            {view.offers.map((offer) => <button key={offer.plan} type="button" aria-pressed={plan === offer.plan} className={plan === offer.plan ? "is-on" : undefined} onClick={() => setPlan(offer.plan)}>{PLAN_LABELS[offer.plan]}<small>{money(offer.price.grossCents)} / mes</small></button>)}
           </div>
-          {selectedOffer && <div className="lbd-sb-breakdown"><p>{money(selectedOffer.price.netCents)} netos + {money(selectedOffer.price.igvCents)} IGV ({selectedOffer.price.igvRateBps / 100}%) = <strong>{money(selectedOffer.price.grossCents)} {selectedOffer.price.currency}/mes</strong></p><small>{selectedOffer.trialDays > 0 ? `${selectedOffer.trialDays} días de prueba; se solicitará una tarjeta y luego empezarán los cobros mensuales.` : "Cobro mensual con tarjeta."}</small></div>}
+          {selectedOffer && <div className="lbd-sb-breakdown"><p><strong>{money(selectedOffer.price.grossCents)} {selectedOffer.price.currency}/mes</strong>, IGV incluido ({money(selectedOffer.price.netCents)} + {money(selectedOffer.price.igvCents)} de IGV al {selectedOffer.price.igvRateBps / 100}%)</p><small>{selectedOffer.trialDays > 0 ? `${selectedOffer.trialDays} días de prueba; se solicitará una tarjeta y luego empezarán los cobros mensuales.` : "Cobro mensual con tarjeta."}</small></div>}
           <div className="lbd-sb-fields">
             <label>Nombres<input className="lbd-input" required minLength={2} maxLength={50} value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" /></label>
             <label>Apellidos<input className="lbd-input" required minLength={2} maxLength={50} value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" /></label>
@@ -461,7 +461,7 @@ export default function SubscriptionCheckoutPanel({ restaurantId, restaurantName
               <label>Razón social<input className="lbd-input" required minLength={3} maxLength={120} value={legalName} onChange={(e) => setLegalName(e.target.value)} /></label>
             </>}
           </div>
-          <label className="lbd-sb-terms" data-on={terms || undefined}><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} required /><span>Acepto la suscripción mensual, el precio y el IGV indicados. Autorizo los cobros recurrentes a la tarjeta que registre en Culqi; puedo solicitar la cancelación.</span></label>
+          <label className="lbd-sb-terms" data-on={terms || undefined}><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} required /><span>Acepto la suscripción mensual y el precio indicado, con IGV incluido. Autorizo los cobros recurrentes a la tarjeta que registre en Culqi; puedo solicitar la cancelación.</span></label>
           {error && <p className="lbd-modal-error" role="alert">{error}</p>}
           <button type="submit" disabled={pending || !selectedOffer} className="lbd-btn lbd-btn--solid">{pending ? "Preparando checkout…" : "Continuar al pago seguro"}</button>
         </form>}

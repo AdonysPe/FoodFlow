@@ -61,7 +61,7 @@ Compártelo en Instagram, Google o WhatsApp. Tus clientes no instalan nada.
 
 | | **Carta** | **Servicio** · *el más elegido* | **Negocio** |
 |---|---|---|---|
-| **Precio** | S/ 69 /mes + IGV | S/ 169 /mes + IGV | S/ 339 /mes + IGV |
+| **Precio** | S/ 69 /mes, IGV incluido | S/ 169 /mes, IGV incluido | S/ 339 /mes, IGV incluido |
 | **Para** | Tener la carta digital lista hoy | El que usan la mayoría | Crecer o tener varios locales |
 | **Incluye** | Carta digital y un QR por mesa · 1 local, 1 usuario | Todo lo de Carta · comanda · cocina · plano de mesas y reservas · hasta 10 usuarios | Todo lo de Servicio · tu web de pedidos · varios locales en un panel · soporte prioritario |
 
@@ -114,7 +114,7 @@ No. Si te vas, te exportamos todo: tus datos siempre son tuyos.
 <details>
 <summary><b>¿Los precios incluyen IGV?</b></summary>
 
-No. Los precios publicados no incluyen IGV (18%). Emitimos boleta o factura a tu RUC.
+Sí. Los precios publicados ya incluyen el IGV (18%). Emitimos boleta o factura a tu RUC.
 </details>
 
 <details>

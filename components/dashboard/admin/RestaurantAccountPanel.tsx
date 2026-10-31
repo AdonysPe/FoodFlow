@@ -101,7 +101,7 @@ export default function RestaurantAccountPanel({
         <span className="lbd-ad-h">Suscripción</span>
         <div className="lbd-ad-plan-big">
           <strong className="lbd-display">{PLAN_LABELS[plan]}</strong>
-          <span>{PLAN_PRICES[plan]} al mes + IGV</span>
+          <span>{PLAN_PRICES[plan]} al mes, IGV incluido</span>
         </div>
         <div className="lbd-seg lbd-ad-planswitch" role="group" aria-label="Cambiar plan">
           {PLANS.map((p) => (

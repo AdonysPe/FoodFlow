@@ -145,7 +145,7 @@ export default async function RestaurantsPage({
     ...PLANS.map((plan) => ({
       label: plan === "carta" ? "Carta" : plan === "servicio" ? "Servicio" : "Negocio",
       value: planCount(plan),
-      note: `${PLAN_PRICES[plan]} al mes + IGV`,
+      note: `${PLAN_PRICES[plan]} al mes, IGV incluido`,
       color: plan === "negocio" ? "#ff5a33" : plan === "servicio" ? "#f3efe6" : "#9a9287",
     })),
   ];

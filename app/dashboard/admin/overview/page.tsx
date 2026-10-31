@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import PageHeader from "@/components/dashboard/PageHeader";
 import PendingContacts from "@/components/dashboard/admin/PendingContacts";
-import { PLAN_LABELS, PLAN_MONTHLY_NET_CENTS, type PlanValue } from "@/lib/plans";
+import { PLAN_LABELS, PLAN_MONTHLY_CENTS, type PlanValue } from "@/lib/plans";
 import { formatCurrency, formatSoles } from "@/lib/format";
 
 export const metadata = {
@@ -92,7 +92,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
   const total = restaurants.length;
   const paying = restaurants.filter((r) => r.billingStatus === "active");
-  const mrr = paying.reduce((sum, r) => sum + (PLAN_MONTHLY_NET_CENTS[r.plan as PlanValue] ?? 0), 0) / 100;
+  const mrr = paying.reduce((sum, r) => sum + (PLAN_MONTHLY_CENTS[r.plan as PlanValue] ?? 0), 0) / 100;
   const trialing = restaurants.filter((r) => r.billingStatus === "trialing").length;
   const pastDue = await prisma.restaurant.findMany({ where: { billingStatus: "past_due" }, select: { id: true, name: true, plan: true }, take: 3 });
 
@@ -118,7 +118,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const delta = pctChange(contactsNow, contactsPrev);
 
   const kpis: { label: string; value: string; note: string; tone: "good" | "accent" | "plain"; accent?: boolean }[] = [
-    { label: "Ingreso mensual recurrente", value: formatCurrency(mrr), note: `${paying.length} ${paying.length === 1 ? "local paga" : "locales pagan"} · + IGV`, tone: "plain" },
+    { label: "Ingreso mensual recurrente", value: formatCurrency(mrr), note: `${paying.length} ${paying.length === 1 ? "local paga" : "locales pagan"} · IGV incluido`, tone: "plain" },
     { label: "Restaurantes", value: String(total), note: trialing ? `${trialing} en prueba de 7 días` : "ninguno en prueba", tone: "plain" },
     {
       label: "Contactos nuevos",

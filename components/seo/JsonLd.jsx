@@ -245,6 +245,13 @@ function softwareApplication() {
         description: plan.tagline,
         price: Number(plan.price.replace(/[^\d]/g, "")),
         priceCurrency: "PEN",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: Number(plan.price.replace(/[^\d]/g, "")),
+          priceCurrency: "PEN",
+          valueAddedTaxIncluded: true,
+          unitCode: "MON",
+        },
         url: `${BASE}/precios`,
         availability: "https://schema.org/InStock",
         eligibleRegion: { "@type": "Country", name: "PE" },
