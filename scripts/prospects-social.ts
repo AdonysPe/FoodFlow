@@ -1,7 +1,11 @@
-// The social-media agent's two doors into the database (see
+// The social-media agent's doors into the database (see
 // scripts/prospecting/agente-redes.md):
 //
-//   npm run prospects:known -- "San Juan de Lurigancho" "El Agustino"
+//   npm run prospects:config
+//     → JSON with whether it is paused and which districts to search, as set
+//       in Prospección. Paused means: stop, search nothing.
+//
+//   npm run prospects:known            (or -- "Distrito" … to override)
 //     → JSON with the Instagram handles and names already in the table, so the
 //       agent does not pay to look them up again.
 //
@@ -13,14 +17,21 @@
 import { readFileSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
 import { importSocialProspects, knownProspects, socialFileSchema } from "../lib/prospecting/social";
+import { readAgent } from "../lib/prospecting/agent";
 
 const prisma = new PrismaClient();
 
 async function main() {
   const [command, ...args] = process.argv.slice(2);
 
+  if (command === "config") {
+    const agent = await readAgent(prisma);
+    console.log(JSON.stringify({ paused: agent.paused, districts: agent.districts }));
+    return;
+  }
+
   if (command === "known") {
-    const districts = args.length ? args : ["San Juan de Lurigancho"];
+    const districts = args.length ? args : (await readAgent(prisma)).districts;
     console.log(JSON.stringify(await knownProspects(prisma, districts)));
     return;
   }
@@ -34,6 +45,11 @@ async function main() {
       throw new Error("El archivo no tiene el formato esperado.");
     }
     const report = await importSocialProspects(prisma, parsed.data.items);
+    await readAgent(prisma);
+    await prisma.prospectAgent.update({
+      where: { id: "redes" },
+      data: { lastRunAt: new Date(), lastRunCreated: report.created.length, lastRunUpdated: report.updated.length },
+    });
     console.log(
       `[prospects] nuevos: ${report.created.length} · completados: ${report.updated.length} · saltados: ${report.skipped.length}\n` +
         JSON.stringify(report, null, 2)
@@ -41,7 +57,7 @@ async function main() {
     return;
   }
 
-  throw new Error('Uso: prospects-social.ts known "Distrito" … | import archivo.json');
+  throw new Error('Uso: prospects-social.ts config | known ["Distrito" …] | import archivo.json');
 }
 
 main()

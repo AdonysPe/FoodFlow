@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
 import PageHeader from "@/components/dashboard/PageHeader";
 import ProspectsBoard, { type ProspectRow } from "@/components/dashboard/ProspectsBoard";
+import ProspectAgentCard from "@/components/dashboard/ProspectAgentCard";
+import { AGENT_DISTRICT_GROUPS, AGENT_RUN_TIME, MAX_AGENT_DISTRICTS, readAgent } from "@/lib/prospecting/agent";
 import { placesKey } from "@/lib/prospecting/places";
 import { ALL_QUERIES, CRON_OSM_DISTRICTS_PER_DAY, CRON_SEARCHES_PER_DAY, DISTRICTS, DISTRICT_GROUPS } from "@/lib/prospecting/searches";
 import { hasOwnWebsite } from "@/lib/prospecting/score";
@@ -81,11 +83,12 @@ function toRow(p: Prospect, now: Date): ProspectRow {
 export default async function ProspeccionPage() {
   const now = new Date();
   const hasKey = placesKey() != null;
-  const [fresh, working, discarded, counts] = await Promise.all([
+  const [fresh, working, discarded, counts, agent] = await Promise.all([
     prisma.prospect.findMany({ where: { status: "nuevo" }, orderBy: [{ score: "desc" }, { reviewCount: "desc" }], take: NEW_LIMIT }),
     prisma.prospect.findMany({ where: { status: { in: ["contactado", "respondio", "cliente"] } }, orderBy: { updatedAt: "desc" } }),
     prisma.prospect.findMany({ where: { status: "descartado" }, orderBy: { updatedAt: "desc" }, take: DISCARDED_LIMIT }),
     prisma.prospect.groupBy({ by: ["status"], _count: { _all: true } }),
+    readAgent(prisma),
   ]);
 
   const totals = Object.fromEntries(counts.map((c) => [c.status, c._count._all])) as Partial<Record<Prospect["status"], number>>;
@@ -97,6 +100,18 @@ export default async function ProspeccionPage() {
         eyebrow="VENTAS · PROSPECCIÓN"
         title="Prospección"
         description="Restaurantes de Lima encontrados en redes, OpenStreetMap y Google Maps, puntuados y con el mensaje listo. Tú das el clic para enviarlo desde WhatsApp."
+      />
+      <ProspectAgentCard
+        agent={{
+          paused: agent.paused,
+          districts: agent.districts,
+          lastRunAt: agent.lastRunAt?.toISOString() ?? null,
+          lastRunCreated: agent.lastRunCreated,
+          lastRunUpdated: agent.lastRunUpdated,
+        }}
+        runTime={AGENT_RUN_TIME}
+        districtGroups={AGENT_DISTRICT_GROUPS}
+        maxDistricts={MAX_AGENT_DISTRICTS}
       />
       <ProspectsBoard
         prospects={rows}

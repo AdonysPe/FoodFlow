@@ -1097,6 +1097,21 @@ enum ProspectSegment {
   menu
 }
 
+// The social-media agent's switch and zone, set from Prospección and read by
+// the agent every morning before it searches (scripts/prospecting/agente-redes.md).
+// One row, id "redes". The last run's counts are written by the import.
+model ProspectAgent {
+  id             String    @id @default("redes")
+  paused         Boolean   @default(false)
+  districts      String[]  @default(["San Juan de Lurigancho"])
+  lastRunAt      DateTime? @map("last_run_at")
+  lastRunCreated Int?      @map("last_run_created")
+  lastRunUpdated Int?      @map("last_run_updated")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("prospect_agent")
+}
+
 model Prospect {
   id String @id @default(cuid())
 

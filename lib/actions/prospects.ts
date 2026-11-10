@@ -10,6 +10,7 @@ import { placesKey } from "@/lib/prospecting/places";
 import { DISTRICTS, queriesFor, type Segment } from "@/lib/prospecting/searches";
 import { syncOsmDistricts, syncQueries, type SyncResult } from "@/lib/prospecting/sync";
 import { MAX_TOUCHES } from "@/lib/prospecting/message";
+import { AGENT_ID, agentUpdateSchema } from "@/lib/prospecting/agent";
 
 const PAGE = "/dashboard/admin/prospeccion";
 
@@ -108,4 +109,39 @@ export async function updateProspectStatus(prospectId: string, rawStatus: string
 
   revalidatePath(PAGE);
   return { ok: true, data: undefined };
+}
+
+export type AgentSettings = { paused: boolean; districts: string[] };
+
+/**
+ * The social-media agent's switch and zone. Saved here and read by the agent
+ * on Adonis's PC before its morning search, so pausing takes effect from the
+ * next run without touching the scheduled task.
+ */
+export async function updateProspectAgent(update: { paused?: boolean; districts?: string[] }): Promise<ActionResult<AgentSettings>> {
+  const admin = await requirePlatformAdmin();
+
+  const parsed = agentUpdateSchema.safeParse(update);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Configuración inválida." };
+
+  const before = await prisma.prospectAgent.upsert({ where: { id: AGENT_ID }, create: { id: AGENT_ID }, update: {} });
+  const after = await prisma.prospectAgent.update({
+    where: { id: AGENT_ID },
+    data: {
+      ...(parsed.data.paused !== undefined && { paused: parsed.data.paused }),
+      ...(parsed.data.districts && { districts: parsed.data.districts }),
+    },
+  });
+
+  await logAudit({
+    action: "prospect_agent.update",
+    actor: { id: admin.id, email: admin.email },
+    entity: "ProspectAgent",
+    entityId: AGENT_ID,
+    before: { paused: before.paused, districts: before.districts },
+    after: { paused: after.paused, districts: after.districts },
+  });
+
+  revalidatePath(PAGE);
+  return { ok: true, data: { paused: after.paused, districts: after.districts } };
 }

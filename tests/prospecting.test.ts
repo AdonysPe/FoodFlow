@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hasOwnWebsite, isChain, peruMobile, prospectScore, suggestedPlan, type PlaceFacts } from "@/lib/prospecting/score";
 import { MAX_TOUCHES, draftMessage, nextFollowUpAt, whatsappLink } from "@/lib/prospecting/message";
 import { createData, instagramHandle, socialPlaceId, updateData } from "@/lib/prospecting/social";
+import { AGENT_DISTRICTS, MAX_AGENT_DISTRICTS, agentUpdateSchema } from "@/lib/prospecting/agent";
 import { ALL_QUERIES, DISTRICTS, OSM_RELATION, dailyDistricts, dailySlice, districtFromAddress, queryText } from "@/lib/prospecting/searches";
 import { osmPhone, osmSegment, osmWebsite, toOsmPlace } from "@/lib/prospecting/osm";
 
@@ -255,5 +256,25 @@ describe("prospección por redes", () => {
       "Hola, vi sus ceviches en Instagram. Si no te interesa, dímelo y no te vuelvo a escribir."
     );
     expect(draftMessage(facts, 0)).toContain("Vi Barra YAJY en Instagram");
+  });
+});
+
+describe("agente de redes · configuración", () => {
+  it("accepts one to four known districts and drops repeats", () => {
+    const ok = agentUpdateSchema.safeParse({ districts: ["San Juan de Lurigancho", "El Agustino", "San Juan de Lurigancho"] });
+    expect(ok.success && ok.data.districts).toEqual(["San Juan de Lurigancho", "El Agustino"]);
+  });
+  it("refuses an empty zone, too many districts or one it does not know", () => {
+    expect(agentUpdateSchema.safeParse({ districts: [] }).success).toBe(false);
+    expect(agentUpdateSchema.safeParse({ districts: AGENT_DISTRICTS.slice(0, MAX_AGENT_DISTRICTS + 1) }).success).toBe(false);
+    expect(agentUpdateSchema.safeParse({ districts: ["Narnia"] }).success).toBe(false);
+  });
+  it("lets the switch change alone", () => {
+    expect(agentUpdateSchema.safeParse({ paused: true }).success).toBe(true);
+  });
+  it("offers every district the map search knows, plus SJL's neighbours, once each", () => {
+    for (const d of DISTRICTS) expect(AGENT_DISTRICTS).toContain(d);
+    expect(AGENT_DISTRICTS).toContain("El Agustino");
+    expect(new Set(AGENT_DISTRICTS).size).toBe(AGENT_DISTRICTS.length);
   });
 });
