@@ -1084,6 +1084,10 @@ enum ProspectStatus {
 enum ProspectSource {
   google
   osm
+  // Found by the social-media agent on Instagram or Facebook
+  // (scripts/prospecting/agente-redes.md), where most Lima venues publish
+  // their WhatsApp and Google does not.
+  redes
 }
 
 enum ProspectSegment {
@@ -1124,6 +1128,16 @@ model Prospect {
   score         Int     @default(0)
   suggestedPlan Plan    @map("suggested_plan")
   isChain       Boolean @default(false) @map("is_chain")
+
+  // What the social-media agent saw: the venue's handle or page, how many
+  // follow it, a short note on why it fits FoodFlow, and the first message it
+  // wrote for this venue in particular. Null for a row it never looked at.
+  instagram String?
+  facebook  String?
+  tiktok    String?
+  followers Int?
+  notes     String?
+  opener    String?
 
   status      ProspectStatus @default(nuevo)
   // How many messages went out (first one plus follow-ups) and when the last
