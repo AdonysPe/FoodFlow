@@ -1,14 +1,21 @@
-// The WhatsApp messages Adonis sends from the FoodFlow WhatsApp, drafted from the
-// facts Google publishes about each venue. Nothing here is invented: the only
-// numbers quoted are the venue's own rating and review count, and the offer
-// is the one on the site (48 hours, 7 días gratis, sin comisión). Every first
-// message says how to make it stop.
+// The WhatsApp messages Adonis sends, drafted from the facts each source
+// publishes about a venue. Nothing here is invented: the only numbers quoted
+// are the venue's own rating and review count, and the offer is the founder
+// one Adonis approved on 2026-11-05 (48 hours to set up, first month free, then
+// half price for six months, five places, no commission). Every first message
+// says how to make it stop — the agent's own openers included.
 
 import type { Segment } from "./searches";
 
 /** Who signs. The messages go out from the FoodFlow WhatsApp, in the first person. */
 export const SENDER = "Adonis";
 export const SITE = "https://foodflow.site";
+
+/** The founder offer: how many restaurants get it, and for how long they pay half. */
+export const FOUNDER_SPOTS = 5;
+export const FOUNDER_HALF_PRICE_MONTHS = 6;
+const OFFER = `el primer mes es gratis y los ${FOUNDER_HALF_PRICE_MONTHS} meses siguientes pagas la mitad, sin comisión por pedido`;
+const OPT_OUT = "Si no te interesa, dímelo y no te vuelvo a escribir.";
 
 /** Messages in the sequence: the first one and two follow-ups. */
 export const MAX_TOUCHES = 3;
@@ -24,9 +31,14 @@ export type DraftFacts = {
   rating: number | null;
   reviewCount: number | null;
   // "Vi X en Google Maps" is only true of a Google row; one from
-  // OpenStreetMap says where it was found instead.
-  source: "google" | "osm";
+  // OpenStreetMap says where it was found instead, and one from social media
+  // names the network.
+  source: "google" | "osm" | "redes";
   district: string;
+  network?: "Instagram" | "Facebook" | null;
+  // The first message the social-media agent wrote for this venue, used in
+  // place of the template for touch 0.
+  opener?: string | null;
 };
 
 const PITCH: Record<Segment, string> = {
@@ -43,15 +55,28 @@ function ratingLine(facts: DraftFacts): string {
   return ` (${rating} con ${reviews} reseñas: se nota que la gente vuelve)`;
 }
 
+function foundLine(facts: DraftFacts): string {
+  if (facts.source === "google") return `Vi ${facts.name} en Google Maps${ratingLine(facts)} `;
+  if (facts.source === "redes" && facts.network) return `Vi ${facts.name} en ${facts.network} `;
+  return `Encontré ${facts.name} buscando restaurantes en ${facts.district} `;
+}
+
+/** The agent's opener, with the way out added when it forgot it. */
+function withOptOut(text: string): string {
+  const trimmed = text.trim();
+  return /no te vuelvo a escribir/i.test(trimmed) ? trimmed : `${trimmed} ${OPT_OUT}`;
+}
+
 /** The message for the next touch: 0 is the first, 1 and 2 the follow-ups. */
 export function draftMessage(facts: DraftFacts, touches: number): string {
   if (touches <= 0) {
+    if (facts.opener?.trim()) return withOptOut(facts.opener);
     return (
       `Hola, ¿qué tal? Soy ${SENDER}, de FoodFlow. ` +
-      (facts.source === "google" ? `Vi ${facts.name} en Google Maps${ratingLine(facts)} ` : `Encontré ${facts.name} buscando restaurantes en ${facts.district} `) +
+      foundLine(facts) +
       `y te escribo porque hicimos un sistema para restaurantes de Lima: ${PITCH[facts.segment]}. ` +
-      `Te lo dejamos funcionando en 48 horas, con 7 días gratis y sin comisión por pedido. ` +
-      `¿Te muestro cómo se vería con tu carta? Si no te interesa, dímelo y no te vuelvo a escribir.`
+      `Estoy buscando ${FOUNDER_SPOTS} restaurantes fundadores: te lo dejamos funcionando en 48 horas, ${OFFER}. ` +
+      `¿Te muestro cómo se vería con tu carta? ${OPT_OUT}`
     );
   }
   if (touches === 1) {
@@ -62,7 +87,7 @@ export function draftMessage(facts: DraftFacts, touches: number): string {
   }
   return (
     `Último mensaje, prometido. Si en algún momento quieres probar FoodFlow en ${facts.name}, ` +
-    `los 7 días gratis siguen en pie: escríbeme por aquí cuando te venga bien. ¡Buen servicio!`
+    `escríbeme mientras queden cupos de fundador: ${OFFER}. ¡Buen servicio!`
   );
 }
 

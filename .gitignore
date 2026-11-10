@@ -91,3 +91,6 @@ Desktop.ini
 
 # These rules do not remove tracked files or erase prior Git history.
 # Review source, commit history and metadata before publishing.
+
+# What the social-media prospecting agent writes before importing it
+/.prospecting/

@@ -19,6 +19,9 @@ export type PlaceFacts = {
   website: string | null;
   delivery: boolean | null;
   dineIn: boolean | null;
+  // Instagram or Facebook followers, for a venue found on social media, where
+  // there are no reviews to count.
+  followers?: number | null;
 };
 
 /**
@@ -100,6 +103,8 @@ export function hasOwnWebsite(website: string | null | undefined): boolean {
  * 0–100, in five parts that add up to exactly 100:
  *   reachable    30  mobile (WhatsApp) · 10 landline only · 0 no phone
  *   busy         25  50–1500 reviews · 12 for 20–49, 1501–4000 or unknown · 4 under 20
+ *                    (no reviews but followers: 25 for 1k–60k · 12 for 300–999 or
+ *                    over 60k, a brand more than a family business · 4 under 300)
  *   liked        10  rating ≥ 4.3 · 6 for ≥ 4.0 · 5 unknown
  *   no own site  15  none or only social · 5 with a website of its own
  *   fit          20  10 each for dine-in and delivery
@@ -113,9 +118,16 @@ export function prospectScore(facts: PlaceFacts): number {
   // Unknown is not zero: OpenStreetMap publishes no reviews at all, so a venue
   // from there gets the middle of the scale instead of the bottom.
   const reviews = facts.reviewCount;
+  const followers = facts.followers;
   const busy =
     reviews == null
-      ? 12
+      ? followers == null
+        ? 12
+        : followers >= 1000 && followers <= 60000
+          ? 25
+          : followers >= 300
+            ? 12
+            : 4
       : reviews >= 50 && reviews <= 1500
         ? 25
         : (reviews >= 20 && reviews < 50) || (reviews > 1500 && reviews <= 4000)

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hasOwnWebsite, isChain, peruMobile, prospectScore, suggestedPlan, type PlaceFacts } from "@/lib/prospecting/score";
 import { MAX_TOUCHES, draftMessage, nextFollowUpAt, whatsappLink } from "@/lib/prospecting/message";
+import { createData, instagramHandle, socialPlaceId, updateData } from "@/lib/prospecting/social";
 import { ALL_QUERIES, DISTRICTS, OSM_RELATION, dailyDistricts, dailySlice, districtFromAddress, queryText } from "@/lib/prospecting/searches";
 import { osmPhone, osmSegment, osmWebsite, toOsmPlace } from "@/lib/prospecting/osm";
 
@@ -84,7 +85,8 @@ describe("draftMessage", () => {
     const first = draftMessage(facts, 0);
     expect(first).toContain("Cevichería El Muelle");
     expect(first).toContain("4,6 con 320 reseñas");
-    expect(first).toContain("7 días gratis");
+    expect(first).toContain("el primer mes es gratis y los 6 meses siguientes pagas la mitad");
+    expect(first).toContain("5 restaurantes fundadores");
     expect(first).toContain("no te vuelvo a escribir");
   });
   it("leaves the rating out when it would not flatter", () => {
@@ -188,5 +190,70 @@ describe("OpenStreetMap source", () => {
     const msg = draftMessage({ name: "Ejemplo", segment: "mesas", rating: null, reviewCount: null, source: "osm", district: "Barranco" }, 0);
     expect(msg).not.toContain("Google Maps");
     expect(msg).toContain("buscando restaurantes en Barranco");
+  });
+});
+
+describe("prospección por redes", () => {
+  const item = {
+    name: "Cevichería Barra YAJY",
+    district: "San Juan de Lurigancho",
+    instagram: "https://www.instagram.com/Barra_YAJYSJL_/?hl=es",
+    phone: "945 339 422",
+    segment: "mesas" as const,
+    followers: 2100,
+    delivery: true,
+    dineIn: true,
+  };
+
+  it("reads an Instagram handle from a URL, an @ or a bare name, and rejects post links", () => {
+    expect(instagramHandle(item.instagram)).toBe("barra_yajysjl_");
+    expect(instagramHandle("@Punto29")).toBe("punto29");
+    expect(instagramHandle("https://www.instagram.com/reel/DTfvXCZAIPX/")).toBeNull();
+    expect(instagramHandle("")).toBeNull();
+  });
+
+  it("keys a venue by its Instagram, then its Facebook page, then its name", () => {
+    expect(socialPlaceId(item)).toBe("ig:barra_yajysjl_");
+    expect(socialPlaceId({ ...item, instagram: null, facebook: "https://m.facebook.com/BRASAS22/?ref=x" })).toBe("fb:brasas22");
+    expect(socialPlaceId({ ...item, instagram: null, facebook: null })).toBe("redes:cevicheria barra yajy|san juan de lurigancho");
+  });
+
+  it("creates a 'redes' row with the mobile read off the phone", () => {
+    const data = createData(item);
+    expect(data.source).toBe("redes");
+    expect(data.mobile).toBe("945339422");
+    expect(data.instagram).toBe("barra_yajysjl_");
+    expect(data.score).toBeGreaterThan(80);
+  });
+
+  it("scores followers when there are no reviews", () => {
+    const base = { name: "X", segment: "mesas" as const, phone: "987654321", rating: null, reviewCount: null, website: null, delivery: true, dineIn: true };
+    expect(prospectScore({ ...base, followers: 2100 })).toBeGreaterThan(prospectScore({ ...base, followers: 150 }));
+    expect(prospectScore({ ...base, followers: 500 })).toBe(prospectScore(base));
+  });
+
+  it("enriches an OpenStreetMap row without touching its pipeline or a mobile it had", () => {
+    const existing = {
+      id: "p1", placeId: "osm:node/1", source: "osm", name: "Barra YAJY", district: "San Juan de Lurigancho", address: null,
+      phone: null, mobile: null, website: null, mapsUrl: null, category: "Restaurante", segment: "mesas", rating: null, reviewCount: null,
+      delivery: null, dineIn: null, score: 42, suggestedPlan: "servicio", isChain: false, status: "contactado", touches: 1, lastTouchAt: new Date(),
+      foundBy: "OSM", createdAt: new Date(), updatedAt: new Date(), instagram: null, facebook: null, tiktok: null, followers: null, notes: null, opener: null,
+    } as const;
+    const data = updateData({ ...item, opener: "Hola" }, existing as never);
+    expect(data.mobile).toBe("945339422");
+    expect(data.instagram).toBe("barra_yajysjl_");
+    expect(data).not.toHaveProperty("status");
+    expect(data).not.toHaveProperty("touches");
+    expect(data.opener).toBeNull(); // the first message already went out
+    const kept = updateData({ ...item, phone: "999888777" }, { ...existing, mobile: "911222333", phone: "911 222 333" } as never);
+    expect(kept.mobile).toBe("911222333");
+  });
+
+  it("uses the agent's opener and adds the way out when it is missing", () => {
+    const facts = { name: "Barra YAJY", segment: "mesas" as const, rating: null, reviewCount: null, source: "redes" as const, district: "San Juan de Lurigancho", network: "Instagram" as const };
+    expect(draftMessage({ ...facts, opener: "Hola, vi sus ceviches en Instagram." }, 0)).toBe(
+      "Hola, vi sus ceviches en Instagram. Si no te interesa, dímelo y no te vuelvo a escribir."
+    );
+    expect(draftMessage(facts, 0)).toContain("Vi Barra YAJY en Instagram");
   });
 });
