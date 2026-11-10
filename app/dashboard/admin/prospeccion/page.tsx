@@ -47,14 +47,33 @@ function toRow(p: Prospect, now: Date): ProspectRow {
     lastTouchAt: p.lastTouchAt?.toISOString() ?? null,
     dueAt: dueAt?.toISOString() ?? null,
     due: p.status === "contactado" && dueAt != null && dueAt <= now,
-    draft: inSequence ? draftMessage({ name: p.name, segment: p.segment, rating: p.rating, reviewCount: p.reviewCount, source: p.source, district: p.district }, p.touches) : null,
+    draft: inSequence
+      ? draftMessage(
+          {
+            name: p.name,
+            segment: p.segment,
+            rating: p.rating,
+            reviewCount: p.reviewCount,
+            source: p.source,
+            district: p.district,
+            network: p.instagram ? "Instagram" : p.facebook ? "Facebook" : null,
+            opener: p.opener,
+          },
+          p.touches
+        )
+      : null,
     foundBy: p.foundBy,
     source: p.source,
+    instagram: p.instagram,
+    facebook: p.facebook,
+    followers: p.followers,
+    notes: p.notes,
   };
 }
 
 /**
- * Prospección: restaurants found on Google Maps, scored, with the WhatsApp
+ * Prospección: restaurants found on social media, OpenStreetMap or Google
+ * Maps, scored, with the WhatsApp
  * message already drafted. The cron fills it every morning; "Buscar ahora"
  * fills one district on demand. Sending stays a human tap from the FoodFlow
  * number — see lib/prospecting/message.ts for why.
@@ -77,7 +96,7 @@ export default async function ProspeccionPage() {
       <PageHeader
         eyebrow="VENTAS · PROSPECCIÓN"
         title="Prospección"
-        description="Restaurantes de Lima sacados de OpenStreetMap y Google Maps, puntuados y con el mensaje listo. Tú das el clic para enviarlo desde WhatsApp."
+        description="Restaurantes de Lima encontrados en redes, OpenStreetMap y Google Maps, puntuados y con el mensaje listo. Tú das el clic para enviarlo desde WhatsApp."
       />
       <ProspectsBoard
         prospects={rows}

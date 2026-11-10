@@ -37,7 +37,12 @@ export type ProspectRow = {
   // The message for the next touch, or null when the sequence is over.
   draft: string | null;
   foundBy: string;
-  source: "google" | "osm";
+  source: "google" | "osm" | "redes";
+  // What the social-media agent saw, when it looked at this venue.
+  instagram: string | null;
+  facebook: string | null;
+  followers: number | null;
+  notes: string | null;
 };
 
 type Tab = "hoy" | ProspectStatus;
@@ -65,8 +70,15 @@ const DAILY_FIRST_MESSAGES = 15;
 
 const SEGMENTS = Object.entries(SEGMENT_LABELS) as [Segment, string][];
 
+function followersLabel(n: number) {
+  return n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".", ",")} mil seguidores` : `${n} seguidores`;
+}
+
 function ratingLabel(p: ProspectRow) {
-  if (p.rating == null) return p.source === "osm" ? "Reseñas: míralas en Maps" : "Sin reseñas";
+  if (p.rating == null) {
+    if (p.followers != null) return followersLabel(p.followers);
+    return p.source === "osm" ? "Reseñas: míralas en Maps" : "Sin reseñas";
+  }
   return `★ ${p.rating.toFixed(1).replace(".", ",")} · ${(p.reviewCount ?? 0).toLocaleString("es-PE")} reseñas`;
 }
 
@@ -95,7 +107,9 @@ function tagsOf(p: ProspectRow) {
   tags.push(p.website ? (p.ownWebsite ? "Web propia" : "Solo redes") : "Sin web");
   if (!p.mobile) tags.push(p.phone ? "Solo teléfono fijo" : "Sin teléfono");
   if (p.isChain) tags.push("Cadena");
-  if (p.source === "osm") tags.push("OpenStreetMap");
+  if (p.instagram) tags.push("Instagram");
+  else if (p.facebook) tags.push("Facebook");
+  else if (p.source === "osm") tags.push("OpenStreetMap");
   return tags;
 }
 
@@ -197,7 +211,7 @@ export default function ProspectsBoard({
       (p) =>
         (district === "all" || p.district === district) &&
         (segment === "all" || p.segment === segment) &&
-        (!needle || `${p.name} ${p.category ?? ""} ${p.address ?? ""}`.toLowerCase().includes(needle))
+        (!needle || `${p.name} ${p.category ?? ""} ${p.address ?? ""} ${p.instagram ?? ""}`.toLowerCase().includes(needle))
     );
   }, [rows, query, district, segment]);
 
@@ -209,7 +223,11 @@ export default function ProspectsBoard({
 
   const listed = tab === "hoy" ? today : filtered.filter((p) => p.status === tab);
   const count = (t: Tab) => (t === "hoy" ? today.length : totals[t] - prospects.filter((p) => p.status === t).length + rows.filter((p) => p.status === t).length);
-  const districts = districtGroups.flatMap((g) => g.districts);
+  const districts = useMemo(() => {
+    const listed = districtGroups.flatMap((g) => g.districts);
+    const extra = [...new Set(prospects.map((p) => p.district))].filter((d) => !listed.includes(d)).sort();
+    return [...listed, ...extra];
+  }, [districtGroups, prospects]);
 
   function renderRow(p: ProspectRow) {
     const tone = scoreTone(p.score);
@@ -417,12 +435,29 @@ export default function ProspectsBoard({
                 </div>
               </div>
 
+              {opened.notes && (
+                <div className="lbd-ad-drawer-block">
+                  <span className="lbd-mono lbd-bl-eyebrow">POR QUÉ ENCAJA</span>
+                  <span style={{ color: "#e2dbcf", fontSize: 14, lineHeight: 1.5 }}>{opened.notes}</span>
+                </div>
+              )}
+
               <div className="lbd-ad-drawer-block">
-                <span className="lbd-mono lbd-bl-eyebrow">EN GOOGLE MAPS</span>
+                <span className="lbd-mono lbd-bl-eyebrow">{opened.source === "redes" ? "EN REDES" : opened.source === "osm" ? "EN OPENSTREETMAP" : "EN GOOGLE MAPS"}</span>
                 <span style={{ color: "#e2dbcf" }}>{ratingLabel(opened)}</span>
                 {opened.address && <span style={{ color: "#c5bdb1", fontSize: 13 }}>{opened.address}</span>}
                 {opened.phone && <span className="lbd-mono">{opened.phone}</span>}
                 <span className="lbd-px-links">
+                  {opened.instagram && (
+                    <a href={`https://www.instagram.com/${opened.instagram}/`} target="_blank" rel="noopener noreferrer">
+                      @{opened.instagram}
+                    </a>
+                  )}
+                  {opened.facebook && (
+                    <a href={opened.facebook} target="_blank" rel="noopener noreferrer">
+                      Facebook
+                    </a>
+                  )}
                   {opened.mapsUrl && (
                     <a href={opened.mapsUrl} target="_blank" rel="noopener noreferrer">
                       Ver en Maps
