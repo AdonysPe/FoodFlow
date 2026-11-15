@@ -5,13 +5,16 @@ import Link from "next/link";
 import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { PLANS, PLAN_MONTHLY_CENTS } from "@/lib/plans";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { Checks, DataTable, fill, planPrices } from "@/components/seo/Article";
 
 
 /**
  * /precios, design B ("Noche"), as approved in the prototype: the headline,
  * a "find your plan" panel (team size, analytics), the
- * three plan cards, the four promises, the comparison table, the questions
- * and the closing call.
+ * three plan cards, the four promises, the comparison table, the add-ons,
+ * what it doesn't include, a comparison against the alternatives by type
+ * (no competitor names or prices, which nobody can keep current), the
+ * questions and the closing call.
  *
  * Flows kept:
  *   - prices come from lib/plans.ts, IGV included — the figure checkout
@@ -217,6 +220,28 @@ export default function Pricing({ as: Heading = "h1" }) {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ---------------------------------------------- what it doesn't include */}
+      <section className="lb-pr-block" style={{ paddingTop: 140 }}>
+        <h2 className="lb-h2 lb-reveal" style={{ fontSize: "clamp(36px, 5vw, 64px)", marginBottom: 36 }}>
+          {p.excludesTitle} <span>{p.excludesMuted}</span>
+        </h2>
+        <div className="lb-reveal">
+          <Checks items={p.excludes} />
+        </div>
+      </section>
+
+      {/* -------------------------------------- against the alternatives, by type */}
+      <section className="lb-pr-block" style={{ paddingTop: 140 }}>
+        <h2 className="lb-h2 lb-reveal" style={{ fontSize: "clamp(36px, 5vw, 64px)", marginBottom: 16 }}>
+          {p.altTitle} <span>{p.altMuted}</span>
+        </h2>
+        <p className="lb-ar-p lb-reveal" style={{ margin: "0 0 32px", maxWidth: 640 }}>
+          {p.altIntro}
+        </p>
+        <DataTable head={p.altHead} rows={p.altRows.map((row) => row.map((cell) => fill(cell, planPrices(t))))} accentCol={4} minWidth={820} />
+        <p style={{ margin: "16px 0 0", fontSize: 13, lineHeight: 1.5, color: "#ada599" }}>{p.altNote}</p>
       </section>
 
       {/* ------------------------------------------------------------- faq */}

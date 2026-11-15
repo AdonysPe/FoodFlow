@@ -428,6 +428,36 @@ export function OrderingSiteJsonLd() {
   return <ContentArticleJsonLd content={content} path="/web-de-pedidos" about={["Página web de pedidos", "Venta directa para restaurantes"]} />;
 }
 
+export function ComandaJsonLd() {
+  return <ContentArticleJsonLd content={es.comandaGuide} path="/comanda-digital" about={["Comanda digital", "Toma de pedidos en restaurantes"]} />;
+}
+
+export function KitchenJsonLd() {
+  return <ContentArticleJsonLd content={es.kitchenGuide} path="/pantalla-de-cocina" about={["Pantalla de cocina", "Kitchen display system"]} />;
+}
+
+export function TablesJsonLd() {
+  return <ContentArticleJsonLd content={es.tablesGuide} path="/mesas-y-reservas" about={["Plano de mesas", "Reservas de restaurante"]} />;
+}
+
+/**
+ * The pillar page. Its answers quote the plan prices through {carta} /
+ * {servicio} / {negocio}, so they are filled here exactly as the page fills
+ * them — the FAQ markup has to say what the visitor reads.
+ */
+export function SystemJsonLd() {
+  const [carta, servicio, negocio] = es.chat.plans.items.map((plan) => plan.price);
+  const prices = { carta, servicio, negocio };
+  const content = {
+    ...es.systemGuide,
+    faq: es.systemGuide.faq.map((item) => ({
+      q: item.q,
+      a: item.a.replace(/\{(carta|servicio|negocio)\}/g, (_, key) => prices[key]),
+    })),
+  };
+  return <ContentArticleJsonLd content={content} path="/sistema-para-restaurantes" about={["Sistema para restaurantes", "Software para restaurantes en Perú"]} />;
+}
+
 /**
  * Breadcrumbs for the inner pages. Two levels is all this site has, and
  * that is exactly what Google renders under the result.
