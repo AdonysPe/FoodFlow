@@ -1,5 +1,5 @@
 import { dictionaries } from "@/lib/i18n/dictionaries";
-import { ORG_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { FOUNDER, ORG_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 /**
  * /llms.txt — a plain-Markdown map of the site for AI assistants (the
@@ -19,6 +19,7 @@ const GUIDES = [
   ["/comanda-digital", "Comanda digital: el pedido del mozo, directo a cocina"],
   ["/pantalla-de-cocina", "Pantalla de cocina (KDS)"],
   ["/mesas-y-reservas", "Plano de mesas y reservas"],
+  ["/piloto", "Cómo es el piloto de 48 horas en Lima"],
   ["/carta-digital-qr", "Carta digital con QR para restaurantes"],
   ["/web-de-pedidos", "Web de pedidos propia, sin comisión"],
   ["/comisiones-rappi-pedidosya", "Cuánto cobran Rappi y PedidosYa en Perú"],
@@ -59,7 +60,7 @@ ${guides}
 ## Empresa
 
 - [Preguntas frecuentes](${SITE_URL}/preguntas)
-- [Quiénes somos](${SITE_URL}/nosotros)
+- [Quiénes somos: ${FOUNDER.name}, fundador](${SITE_URL}/nosotros)
 - [Términos y condiciones](${SITE_URL}/terminos)
 - [Política de privacidad](${SITE_URL}/privacidad)
 - [Libro de reclamaciones](${SITE_URL}/libro-de-reclamaciones)
