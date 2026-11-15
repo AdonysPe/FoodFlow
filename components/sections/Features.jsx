@@ -42,7 +42,8 @@ const BOOKINGS = [
 /**
  * "Todo el turno, en un solo lugar." — five tiles, each with a small moving
  * picture of the thing it promises: the synced menu, the live room, who sees
- * what, the ordering site and the bookings. Keeps the #features anchor the
+ * what, the ordering site and the bookings. The menu, room and bookings
+ * tiles are exported for the guides that explain them. Keeps the #features anchor the
  * shared navbar points at.
  */
 export default function Features() {
@@ -69,7 +70,7 @@ export default function Features() {
   );
 }
 
-function MenuTile({ c }) {
+export function MenuTile({ c }) {
   return (
     <div className="lb-card lb-mod-big lb-reveal">
       <span className="lb-eyebrow">{c.eyebrow}</span>
@@ -136,7 +137,7 @@ function MenuTile({ c }) {
   );
 }
 
-function RoomTile({ c }) {
+export function RoomTile({ c }) {
   const dots = [
     { background: "#f3efe6" },
     { background: "#ff5a33" },
@@ -285,7 +286,7 @@ function WebTile({ c }) {
   );
 }
 
-function BookingsTile({ c }) {
+export function BookingsTile({ c }) {
   return (
     <div className="lb-card lb-mod-small lb-reveal">
       <span className="lb-eyebrow">{c.eyebrow}</span>

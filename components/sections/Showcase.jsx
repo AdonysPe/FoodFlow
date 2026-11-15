@@ -13,6 +13,9 @@ const PHOTO = {
  * guest's phone, the kitchen screen and the owner's dashboard. One 9.6-second
  * CSS clock drives all three. Every figure is demo data and says so.
  *
+ * Phone, Kitchen and OwnerPanel are exported for the product guides
+ * (comanda, pantalla de cocina, sistema), which show the same demo.
+ *
  * Keeps the #product anchor the demo video's footer link and the shared
  * navbar point at.
  */
@@ -88,7 +91,7 @@ function Check({ color = "#d4401d", size = 14, width = 2.6 }) {
   );
 }
 
-function Phone({ phone }) {
+export function Phone({ phone }) {
   const photos = [PHOTO.ceviche, PHOTO.pisco];
   return (
     <div className="lb-phone-slot">
@@ -119,7 +122,7 @@ function Phone({ phone }) {
   );
 }
 
-function Kitchen({ kitchen }) {
+export function Kitchen({ kitchen }) {
   return (
     <div className="lb-screen lb-kds">
       <div className="lb-screen-head">
@@ -164,7 +167,7 @@ function Kitchen({ kitchen }) {
   );
 }
 
-function OwnerPanel({ panel }) {
+export function OwnerPanel({ panel }) {
   return (
     <div className="lb-screen lb-owner">
       <div className="lb-screen-head">

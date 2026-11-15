@@ -61,6 +61,48 @@ export function Chapter({ title, intro, children, id }) {
   );
 }
 
+/**
+ * The three plan prices, read from the plan list the checkout is tested
+ * against (t.chat.plans.items), so copy never retypes a figure.
+ */
+export function planPrices(t) {
+  const [carta, servicio, negocio] = t.chat.plans.items.map((plan) => plan.price);
+  return { carta, servicio, negocio };
+}
+
+/** Swaps {carta} / {servicio} / {negocio} in a line of copy for the real prices. */
+export function fill(text, prices) {
+  return text.replace(/\{(carta|servicio|negocio)\}/g, (_, key) => prices[key]);
+}
+
+/**
+ * The home page's own moving demos (Mesa 07's phone, the kitchen screen, the
+ * room, the bookings) shown inside a guide. Each one sits in a story card so
+ * LandingCardMotion — which the guide page mounts — runs it only while it is
+ * on screen. `note` is the "demo data" disclaimer; never drop it.
+ */
+export function Demo({ children, note }) {
+  return (
+    <>
+      <div className="lb-row lb-ar-demo">{children}</div>
+      {note && <p className="lb-note">{note}</p>}
+    </>
+  );
+}
+
+export function DemoCard({ label, children }) {
+  return (
+    <article className="lb-card lb-story-card lb-ar-demo-card lb-reveal">
+      {children}
+      {label && (
+        <div className="lb-story-copy">
+          <span className="lb-eyebrow">{label}</span>
+        </div>
+      )}
+    </article>
+  );
+}
+
 export function Cards({ children, cols = 3 }) {
   return <div className={`lb-ar-cards lb-ar-cards--${cols}`}>{children}</div>;
 }
