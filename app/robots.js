@@ -17,10 +17,14 @@ export default function robots() {
           "/register",
           "/forgot-password",
           "/reset-password",
+          // Route handlers, not pages: nothing there a search result can show.
+          "/api/",
+          // Design previews of the carta templates, not part of the product.
+          "/preview-",
         ],
       },
     ],
+    // No `host`: it is a Yandex-only directive Google ignores.
     sitemap: `${BASE}/sitemap.xml`,
-    host: BASE,
   };
 }

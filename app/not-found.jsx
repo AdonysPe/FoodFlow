@@ -2,6 +2,9 @@ import ErrorScreen from "@/components/ErrorScreen";
 
 export const metadata = {
   title: "Página no encontrada",
+  // Overrides the root layout's `index, follow`, which otherwise sits next to
+  // the `noindex` Next.js adds to every 404 — two robots tags that disagree.
+  robots: { index: false, follow: true },
 };
 
 const LINES = [

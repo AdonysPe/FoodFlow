@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { readCarta } from "@/lib/db/carta";
-import { SITE_URL } from "@/lib/seo";
+import { NOINDEX_CARTA_SLUGS, SITE_URL } from "@/lib/seo";
 import { cartaPrice } from "@/lib/carta";
 import PhysicalCartaView from "@/components/public/PhysicalCartaView";
 
@@ -25,6 +25,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `Carta de ${venue.name}`,
     description,
+    ...(NOINDEX_CARTA_SLUGS.has(slug) ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/carta/${slug}` },
     openGraph: {
       title: `Carta de ${venue.name}`,

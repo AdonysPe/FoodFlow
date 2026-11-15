@@ -4,40 +4,38 @@
  * blocked in robots.js, so listing it would just be an invitation to crawl a
  * wall of redirects.
  *
- * `priority` and `changeFrequency` are hints, not promises: the home page and
- * the two pages a restaurant owner lands on from a search ("precios",
- * "calculadora") lead, the legal page trails.
+ * `updated` is the date the page's content last changed in a way a reader
+ * would notice — bump it by hand when you edit that page's copy. It used to
+ * be `new Date()` at build time, which stamped all fourteen URLs with the
+ * same minute on every deploy; Google learns to ignore a lastmod that always
+ * moves, and then ignores it on the day it is true. `priority` and
+ * `changeFrequency` are gone: Google reads neither.
+ *
+ * Dates as of the SEO audit (2026-11-15): marketing copy from the last
+ * dictionary edit, legal pages from their own last edit.
  */
 import { SITE_URL as BASE } from "@/lib/seo";
 
 const ROUTES = [
-  { path: "", priority: 1.0, changeFrequency: "weekly" },
-  { path: "/precios", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/calculadora", priority: 0.9, changeFrequency: "monthly" },
-  {
-    path: "/comisiones-rappi-pedidosya",
-    priority: 0.8,
-    changeFrequency: "monthly",
-  },
-  { path: "/vender-sin-comision", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/carta-digital-qr", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/alternativa-a-rappi", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/web-de-pedidos", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/preguntas", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/nosotros", priority: 0.6, changeFrequency: "monthly" },
-  { path: "/libro-de-reclamaciones", priority: 0.3, changeFrequency: "yearly" },
-  { path: "/terminos", priority: 0.2, changeFrequency: "yearly" },
-  { path: "/privacidad", priority: 0.2, changeFrequency: "yearly" },
-  { path: "/cookies", priority: 0.2, changeFrequency: "yearly" },
+  { path: "", updated: "2026-11-15" },
+  { path: "/precios", updated: "2026-11-15" },
+  { path: "/calculadora", updated: "2026-11-02" },
+  { path: "/comisiones-rappi-pedidosya", updated: "2026-11-02" },
+  { path: "/vender-sin-comision", updated: "2026-11-02" },
+  { path: "/carta-digital-qr", updated: "2026-11-02" },
+  { path: "/alternativa-a-rappi", updated: "2026-11-02" },
+  { path: "/web-de-pedidos", updated: "2026-11-02" },
+  { path: "/preguntas", updated: "2026-11-02" },
+  { path: "/nosotros", updated: "2026-11-02" },
+  { path: "/libro-de-reclamaciones", updated: "2026-10-20" },
+  { path: "/terminos", updated: "2026-10-20" },
+  { path: "/privacidad", updated: "2026-10-20" },
+  { path: "/cookies", updated: "2026-09-13" },
 ];
 
 export default function sitemap() {
-  const lastModified = new Date();
-
-  return ROUTES.map(({ path, priority, changeFrequency }) => ({
+  return ROUTES.map(({ path, updated }) => ({
     url: `${BASE}${path}`,
-    lastModified,
-    changeFrequency,
-    priority,
+    lastModified: updated,
   }));
 }
