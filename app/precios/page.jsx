@@ -4,7 +4,9 @@ import Pricing from "@/components/sections/Pricing";
 
 
 export const metadata = {
-  title: "Precios",
+  // The layout template appends " · FoodFlow". "Precios" alone told Google
+  // nothing a restaurant owner searches for.
+  title: "Precios del sistema para restaurantes, desde S/ 69",
   description:
     "Tres planes sin comisión por pedido, desde S/ 69 al mes. Usuarios y locales adicionales, y la migración de tu carta incluida en el piloto de Lima.",
   alternates: { canonical: "/precios" },

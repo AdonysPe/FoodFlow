@@ -52,7 +52,7 @@ export function Chapter({ title, intro, children, id }) {
       {title && (
         <h2 className="lb-h2 lb-ar-h2 lb-reveal">
           {title}
-          <span style={{ color: "#ff5a33" }}>.</span>
+          {!/[?!.…]$/.test(title) && <span style={{ color: "#ff5a33" }}>.</span>}
         </h2>
       )}
       {intro && <p className="lb-ar-p lb-reveal">{intro}</p>}
@@ -164,7 +164,7 @@ export function Questions({ title, items }) {
       <div className="lb-faq">
         <h2 className="lb-h2 lb-ar-h2 lb-reveal" style={{ flex: "1 1 280px", marginBottom: 0 }}>
           {title}
-          <span style={{ color: "#ff5a33" }}>.</span>
+          {!/[?!.…]$/.test(title) && <span style={{ color: "#ff5a33" }}>.</span>}
         </h2>
         <div className="lb-faq-list lb-ar-faq">
           {items.map((item) => (
