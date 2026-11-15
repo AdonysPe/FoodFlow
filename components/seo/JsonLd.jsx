@@ -32,10 +32,6 @@ const es = dictionaries.es;
 const ORG_ID = `${BASE}/#organization`;
 const SITE_ID = `${BASE}/#website`;
 const APP_ID = `${BASE}/#software`;
-const BUSINESS_ID = `${BASE}/#business`;
-
-/** Plaza Mayor. Only used to centre the service radius, never as an address. */
-const LIMA = { lat: -12.0464, lng: -77.0428 };
 
 function Script({ schema }) {
   return (
@@ -117,9 +113,13 @@ const organization = {
   url: BASE,
   email: CONTACT_EMAIL,
   sameAs: SOCIAL_LINKS.map((s) => s.href),
+  // The PNG render of the mark (app/apple-icon.jsx). Google wants a raster
+  // logo of at least 112 px; the tab favicon is SVG and does not qualify.
   logo: {
     "@type": "ImageObject",
-    url: `${BASE}/icon.svg`,
+    url: `${BASE}/apple-icon`,
+    width: 180,
+    height: 180,
   },
   description: ORG_DESCRIPTION,
   areaServed: {
@@ -150,67 +150,19 @@ const website = {
   publisher: { "@id": ORG_ID },
 };
 
-/**
- * The same business, said the way Google Business Profile understands it.
+/*
+ * No LocalBusiness / ProfessionalService node, on purpose (SEO audit,
+ * 2026-11-15). FoodFlow is software run remotely from Lima: there is no
+ * premises a restaurant owner walks into, and a LocalBusiness block with a
+ * "$$" price range and a 30 km radius describes a shop, not a SaaS. It also
+ * duplicated the Organization node (same name, phone, email). Who we are and
+ * where we sell lives in `organization` (areaServed: Lima, plus the contact
+ * point); what we sell lives in `softwareApplication`.
  *
- * A service-area business, not a shop: FoodFlow is run remotely from Lima and
- * no restaurant owner is going to walk in, so there is `areaServed` and a
- * `serviceArea` radius but deliberately NO street address. Inventing one to
- * chase a map pin is the single fastest way to get a Business Profile
- * suspended, and the suspension is what kills local rankings.
- *
- * `priceRange` is the coarse "$$" band Google expects here — the actual
- * figures live in the Offer blocks, where they can be exact.
- *
- * Not stated, because it would be invented: `openingHoursSpecification`.
- * Add it here the day the hours in the Business Profile are decided, and use
- * the same hours in both places.
+ * Bring a LocalBusiness back only together with a real Google Business
+ * Profile, and only if the business qualifies for one (in-person visits, a
+ * verifiable address) - never with an invented street.
  */
-const localBusiness = {
-  // A LocalBusiness by Google's reading, a ProfessionalService by what it
-  // actually sells. Both are valid; the Wikidata link pins "software company"
-  // for the engines that resolve it.
-  "@type": ["LocalBusiness", "ProfessionalService"],
-  "@id": BUSINESS_ID,
-  additionalType: "https://www.wikidata.org/wiki/Q1058914",
-  name: SITE_NAME,
-  url: BASE,
-  description: ORG_DESCRIPTION,
-  email: CONTACT_EMAIL,
-  telephone: `+${WHATSAPP_NUMBER}`,
-  image: `${BASE}/opengraph-image`,
-  logo: `${BASE}/icon.svg`,
-  priceRange: "$$",
-  currenciesAccepted: "PEN",
-  paymentAccepted: "Transferencia bancaria, Yape, Plin, tarjeta",
-  // City and country only. Google accepts a locality-level address on a
-  // service-area business; a street it cannot verify is what triggers review.
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Lima",
-    addressRegion: "Lima",
-    addressCountry: "PE",
-  },
-  areaServed: [
-    { "@type": "City", name: "Lima" },
-    { "@type": "Country", name: "Perú" },
-  ],
-  // ~30 km from the historic centre reaches Miraflores, San Isidro, Surco,
-  // Barranco, La Molina, San Miguel and Callao — the whole serviceable metro.
-  serviceArea: {
-    "@type": "GeoCircle",
-    geoMidpoint: {
-      "@type": "GeoCoordinates",
-      latitude: LIMA.lat,
-      longitude: LIMA.lng,
-    },
-    geoRadius: 30000,
-  },
-  knowsLanguage: ["es-PE", "en"],
-  parentOrganization: { "@id": ORG_ID },
-  makesOffer: { "@id": APP_ID },
-  ...ratingProps(),
-};
 
 /**
  * The product. Prices come straight off the plan list the chat and the
@@ -230,7 +182,10 @@ function softwareApplication() {
     operatingSystem: "Web",
     inLanguage: ["es", "en"],
     description: es.landing.hero.sub,
-    featureList: ["menu", "room", "team", "web", "bookings"].map((key) => es.landing.modules[key].title),
+    // What it does, in the plain words of the marquee on the home page
+    // ("Carta con QR", "Pantalla de cocina"…), not the module headlines,
+    // which are slogans and say nothing out of context.
+    featureList: es.landing.marquee,
     publisher: { "@id": ORG_ID },
     offers: {
       "@type": "AggregateOffer",
@@ -238,7 +193,6 @@ function softwareApplication() {
       lowPrice: Math.min(...amounts),
       highPrice: Math.max(...amounts),
       offerCount: plans.length,
-      availableDeliveryMethod: "http://purl.org/goodrelations/v1#DirectDownload",
       offers: plans.map((plan) => ({
         "@type": "Offer",
         name: plan.name,
@@ -267,7 +221,7 @@ export function HomeJsonLd() {
     <Script
       schema={{
         "@context": "https://schema.org",
-        "@graph": [organization, localBusiness, website, softwareApplication()],
+        "@graph": [organization, website, softwareApplication()],
       }}
     />
   );
@@ -310,7 +264,7 @@ export function PricingJsonLd() {
     <Script
       schema={{
         "@context": "https://schema.org",
-        "@graph": [organization, localBusiness, softwareApplication()],
+        "@graph": [organization, softwareApplication()],
       }}
     />
   );
