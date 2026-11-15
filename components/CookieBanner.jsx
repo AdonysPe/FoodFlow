@@ -39,9 +39,11 @@ export default function CookieBanner() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.5, ease: EASE }}
-          // above the corner stack on phones (chat pill, then WhatsApp),
-          // centred on wider screens
-          className="liquid fixed inset-x-3 bottom-40 z-[75] rounded-2xl px-4 py-4 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[min(46rem,calc(100vw-3rem))] sm:-translate-x-1/2 sm:px-5"
+          // Phones: an opaque sheet at the bottom edge, over the chat pill
+          // (z-75 vs its z-70) until a choice is made. It used to float
+          // translucent at bottom-40, right over the hero's order demo, and the
+          // tickets read through the text. Wider screens: centred glass bar.
+          className="liquid fixed inset-x-3 bottom-3 z-[75] rounded-2xl px-4 py-4 max-sm:bg-ink-900! max-sm:shadow-panel sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[min(46rem,calc(100vw-3rem))] sm:-translate-x-1/2 sm:px-5"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <span
