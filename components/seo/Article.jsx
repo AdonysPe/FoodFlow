@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { buildWhatsAppUrl } from "@/lib/contact";
+import { FOUNDER, GUIDE_DATES } from "@/lib/seo";
 
 /**
- * The pieces of the five guides (carta digital, web de pedidos, vender sin
- * comisión, alternativa a Rappi, comisiones), design B ("Noche"). Every guide
+ * The pieces of the guides (sistema, comanda, cocina, mesas, piloto, carta
+ * digital, web de pedidos, vender sin comisión, alternativa a Rappi,
+ * comisiones), design B ("Noche"). Every guide
  * is built from the same few blocks so they read as one family and share the
  * public pages' title size: a left-aligned hero, a heading with its intro,
  * cards, a comparison table, ticks, a callout, the open questions and the
@@ -17,7 +19,31 @@ import { buildWhatsAppUrl } from "@/lib/contact";
  * FAQPage schema declares, and Google wants them in the HTML.
  */
 
-export function ArticleHero({ as: Heading = "h1", eyebrow, title, description }) {
+/**
+ * "Por Adonys Pereda, fundador · Actualizado el 15 de noviembre de 2026".
+ * The visible half of the author and date the Article markup declares (both
+ * read lib/seo.js), linked to /nosotros where the person behind the name is.
+ * Renders nothing for a path without dates.
+ */
+export function Byline({ path, style }) {
+  const { t, lang } = useLanguage();
+  const dates = GUIDE_DATES[path];
+  if (!dates) return null;
+  const m = t.articleMeta;
+  // Noon UTC so the calendar day never slips in any timezone.
+  const updated = new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-PE", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${dates.modified}T12:00:00Z`));
+  return (
+    <p className="lb-ar-byline lb-rise" style={style}>
+      {m.by}{" "}
+      <Link href="/nosotros" rel="author">
+        {FOUNDER.name}
+      </Link>
+      , {m.role} · {m.updated} <time dateTime={dates.modified}>{updated}</time>
+    </p>
+  );
+}
+
+export function ArticleHero({ as: Heading = "h1", eyebrow, title, description, path }) {
   const words = title.split(" ");
   return (
     <section className="lb-pr-hero lb-pr-hero--left">
@@ -40,6 +66,7 @@ export function ArticleHero({ as: Heading = "h1", eyebrow, title, description })
             {description}
           </p>
         )}
+        {path && <Byline path={path} style={{ animationDelay: `${0.4 + words.length * 0.06}s` }} />}
       </div>
     </section>
   );

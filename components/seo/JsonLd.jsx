@@ -7,6 +7,8 @@ import {
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_URL,
+  FOUNDER,
+  GUIDE_DATES,
 } from "@/lib/seo";
 
 /**
@@ -32,6 +34,28 @@ const es = dictionaries.es;
 const ORG_ID = `${BASE}/#organization`;
 const SITE_ID = `${BASE}/#website`;
 const APP_ID = `${BASE}/#software`;
+const PERSON_ID = `${BASE}/nosotros#adonys`;
+
+/**
+ * The founder, as the author of every guide. Same @id everywhere, so Google
+ * joins the byline on each guide, the Organization's founder and /nosotros
+ * into one person. Details live in lib/seo.js (FOUNDER).
+ */
+const person = {
+  "@type": "Person",
+  "@id": PERSON_ID,
+  name: FOUNDER.name,
+  jobTitle: FOUNDER.jobTitle,
+  url: FOUNDER.url,
+  image: FOUNDER.image,
+  worksFor: { "@id": ORG_ID },
+};
+
+/** datePublished / dateModified for a guide, the same dates its byline shows. */
+function articleDates(path) {
+  const dates = GUIDE_DATES[path];
+  return dates ? { datePublished: dates.published, dateModified: dates.modified } : {};
+}
 
 function Script({ schema }) {
   return (
@@ -122,6 +146,7 @@ const organization = {
     height: 180,
   },
   description: ORG_DESCRIPTION,
+  founder: { "@type": "Person", "@id": PERSON_ID, name: FOUNDER.name },
   areaServed: {
     "@type": "City",
     name: "Lima",
@@ -288,6 +313,7 @@ export function CommissionsJsonLd() {
         "@context": "https://schema.org",
         "@graph": [
           organization,
+          person,
           {
             "@type": "Article",
             "@id": `${url}#article`,
@@ -296,7 +322,8 @@ export function CommissionsJsonLd() {
             inLanguage: "es-PE",
             url,
             mainEntityOfPage: url,
-            author: { "@id": ORG_ID },
+            author: { "@id": PERSON_ID },
+            ...articleDates(new URL(url).pathname),
             publisher: { "@id": ORG_ID },
             about: [
               { "@type": "Thing", name: "Rappi" },
@@ -336,6 +363,7 @@ export function SellDirectJsonLd() {
         "@context": "https://schema.org",
         "@graph": [
           organization,
+          person,
           {
             "@type": "Article",
             "@id": `${url}#article`,
@@ -344,7 +372,8 @@ export function SellDirectJsonLd() {
             inLanguage: "es-PE",
             url,
             mainEntityOfPage: url,
-            author: { "@id": ORG_ID },
+            author: { "@id": PERSON_ID },
+            ...articleDates(new URL(url).pathname),
             publisher: { "@id": ORG_ID },
             about: [
               { "@type": "Thing", name: "Delivery sin comisión" },
@@ -381,6 +410,7 @@ function ContentArticleJsonLd({ content, path, about }) {
         "@context": "https://schema.org",
         "@graph": [
           organization,
+          person,
           {
             "@type": "Article",
             "@id": `${url}#article`,
@@ -389,7 +419,8 @@ function ContentArticleJsonLd({ content, path, about }) {
             inLanguage: "es-PE",
             url,
             mainEntityOfPage: url,
-            author: { "@id": ORG_ID },
+            author: { "@id": PERSON_ID },
+            ...articleDates(new URL(url).pathname),
             publisher: { "@id": ORG_ID },
             about: about.map((name) => ({ "@type": "Thing", name })),
             audience: { "@type": "BusinessAudience", name: "Restaurantes en Perú" },
@@ -456,6 +487,49 @@ export function SystemJsonLd() {
     })),
   };
   return <ContentArticleJsonLd content={content} path="/sistema-para-restaurantes" about={["Sistema para restaurantes", "Software para restaurantes en Perú"]} />;
+}
+
+/** The pilot page. Its first answer quotes the plan prices, filled as on the page. */
+export function PilotJsonLd() {
+  const [carta, servicio, negocio] = es.chat.plans.items.map((plan) => plan.price);
+  const prices = { carta, servicio, negocio };
+  const content = {
+    ...es.pilotGuide,
+    faq: es.pilotGuide.faq.map((item) => ({
+      q: item.q,
+      a: item.a.replace(/\{(carta|servicio|negocio)\}/g, (_, key) => prices[key]),
+    })),
+  };
+  return <ContentArticleJsonLd content={content} path="/piloto" about={["Implementación de software para restaurantes", "Piloto en Lima"]} />;
+}
+
+/**
+ * /nosotros: an AboutPage whose subject is the founder, the same Person the
+ * guides name as author. This is the page their bylines link to.
+ */
+export function AboutJsonLd() {
+  const url = `${BASE}/nosotros`;
+  return (
+    <Script
+      schema={{
+        "@context": "https://schema.org",
+        "@graph": [
+          organization,
+          person,
+          {
+            "@type": "AboutPage",
+            "@id": `${url}#page`,
+            url,
+            name: es.about.title,
+            inLanguage: "es-PE",
+            isPartOf: { "@id": SITE_ID },
+            about: { "@id": ORG_ID },
+            mainEntity: { "@id": PERSON_ID },
+          },
+        ],
+      }}
+    />
+  );
 }
 
 /**

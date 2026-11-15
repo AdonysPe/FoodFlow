@@ -32,7 +32,7 @@ export default function TablesGuide({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/mesas-y-reservas" />
 
       <Chapter title={c.whatTitle} intro={c.whatIntro}>
         <Demo note={c.demoNote}>

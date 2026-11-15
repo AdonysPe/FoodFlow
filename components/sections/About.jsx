@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { buildWhatsAppUrl } from "@/lib/contact";
@@ -44,7 +45,8 @@ const COMMITMENT_ICONS = [
 /**
  * /nosotros, design B ("Noche"), as approved in the prototype: the headline,
  * the founder's portrait and story, "that Friday" against "with FoodFlow", the
- * quote lighting up word by word, the four commitments, and the closing call.
+ * quote lighting up word by word, how the founder works with each
+ * restaurant (linking to /piloto), the four commitments, and the closing call.
  *
  * Copy is `t.about`. The portrait is the real photo, and the story keeps the
  * founder's own words. `as` is forwarded so /nosotros keeps the h1.
@@ -188,6 +190,24 @@ export default function About({ as: Heading = "h1" }) {
           ))}
           <span style={{ color: "#ff5a33" }}>”</span>
         </blockquote>
+      </section>
+
+      {/* ------------------------------------------- how I work with each one */}
+      <section className="lb-pr-block" style={{ paddingTop: 150 }}>
+        <h2 className="lb-reveal lb-ab-h2">
+          {a.workTitle}
+          <span style={{ color: "#ff5a33" }}>.</span>
+        </h2>
+        <div style={{ maxWidth: 720 }}>
+          {a.work.map((paragraph) => (
+            <p key={paragraph} className="lb-ar-p lb-reveal" style={{ margin: "0 0 18px" }}>
+              {paragraph}
+            </p>
+          ))}
+          <Link href="/piloto" className="lb-text-link lb-reveal">
+            {a.workLink} ›
+          </Link>
+        </div>
       </section>
 
       {/* ------------------------------------------------------ commitments */}

@@ -28,7 +28,7 @@ export default function Commissions({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/comisiones-rappi-pedidosya" />
 
       {/* ------------------------------------------------ what each app takes */}
       <Chapter title={c.ratesTitle} intro={c.ratesNote}>

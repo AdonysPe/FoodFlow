@@ -2,7 +2,7 @@ import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, OrderingSiteJsonLd } from "@/components/seo/JsonLd";
 import CustomSite from "@/components/sections/CustomSite";
 import OrderingSite from "@/components/sections/OrderingSite";
-import { PilotClosing } from "@/components/seo/Article";
+import { Byline, PilotClosing } from "@/components/seo/Article";
 
 export const metadata = {
   title: "Web de pedidos para restaurantes en Perú",
@@ -16,6 +16,11 @@ export default function OrderingSitePage() {
       <OrderingSiteJsonLd />
       <BreadcrumbJsonLd name="Web de pedidos" path="/web-de-pedidos" />
       <CustomSite as="h1" />
+      {/* The hero here is the product's, not ArticleHero, so the author and
+          date that the Article markup declares are shown right after it. */}
+      <div className="lb-pr-block">
+        <Byline path="/web-de-pedidos" />
+      </div>
       <OrderingSite />
       <PilotClosing />
     </SiteShell>

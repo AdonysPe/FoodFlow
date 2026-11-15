@@ -36,7 +36,7 @@ export default function SystemGuide({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/sistema-para-restaurantes" />
 
       <Chapter title={c.whatTitle} intro={c.whatIntro}>
         <Demo note={c.demoNote}>

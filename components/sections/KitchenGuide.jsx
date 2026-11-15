@@ -32,7 +32,7 @@ export default function KitchenGuide({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/pantalla-de-cocina" />
 
       <Chapter title={c.whatTitle} intro={c.whatIntro}>
         <Demo note={c.demoNote}>

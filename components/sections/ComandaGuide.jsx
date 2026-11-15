@@ -34,7 +34,7 @@ export default function ComandaGuide({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/comanda-digital" />
 
       <Chapter title={c.whatTitle} intro={c.whatIntro}>
         <Demo note={c.demoNote}>

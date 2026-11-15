@@ -35,7 +35,7 @@ export default function QrMenu({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/carta-digital-qr" />
 
       <Chapter title={c.howTitle} intro={c.howIntro}>
         <Cards cols={2}>

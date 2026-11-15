@@ -16,7 +16,7 @@ export default function SellDirect({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/vender-sin-comision" />
 
       <Chapter>
         <Callout title={c.costTitle}>

@@ -15,7 +15,7 @@ export default function RappiAlternative({ as }) {
 
   return (
     <>
-      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} />
+      <ArticleHero as={as} eyebrow={c.eyebrow} title={c.title} description={c.description} path="/alternativa-a-rappi" />
 
       <Chapter>
         <Callout title={c.truthTitle}>
