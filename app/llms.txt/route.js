@@ -15,6 +15,10 @@ export const dynamic = "force-static";
 const es = dictionaries.es;
 
 const GUIDES = [
+  ["/sistema-para-restaurantes", "Sistema para restaurantes en Lima"],
+  ["/comanda-digital", "Comanda digital: el pedido del mozo, directo a cocina"],
+  ["/pantalla-de-cocina", "Pantalla de cocina (KDS)"],
+  ["/mesas-y-reservas", "Plano de mesas y reservas"],
   ["/carta-digital-qr", "Carta digital con QR para restaurantes"],
   ["/web-de-pedidos", "Web de pedidos propia, sin comisión"],
   ["/comisiones-rappi-pedidosya", "Cuánto cobran Rappi y PedidosYa en Perú"],

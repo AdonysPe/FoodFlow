@@ -10,7 +10,7 @@ import { buildWhatsAppUrl } from "@/lib/contact";
 const HREFS = ["/#features", "/#product", "/calculadora", "/precios", "/preguntas", "/nosotros"];
 // What each module in the "Qué incluye" panel opens: its guide when it has
 // one, otherwise the part of the home page that shows it.
-const FEATURE_HREFS = ["/carta-digital-qr", "/#features", "/#features", "/web-de-pedidos", "/#product"];
+const FEATURE_HREFS = ["/carta-digital-qr", "/comanda-digital", "/mesas-y-reservas", "/web-de-pedidos", "/#product"];
 // The five guides, in the footer's order.
 const GUIDE_HREFS = ["/comisiones-rappi-pedidosya", "/alternativa-a-rappi", "/vender-sin-comision", "/carta-digital-qr", "/web-de-pedidos"];
 

@@ -13,9 +13,20 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 // pricing, questions, about.
 const NAV_HREFS = ["/#features", "/#product", "/calculadora", "/precios", "/preguntas", "/nosotros"];
 const LEGAL = ["/terminos", "/privacidad", "/cookies"];
-// The five guides stay one click from every page: they are how a restaurant
-// owner searching for "alternativa a Rappi" finds the rest of the site.
-const GUIDES = ["/comisiones-rappi-pedidosya", "/alternativa-a-rappi", "/vender-sin-comision", "/carta-digital-qr", "/web-de-pedidos"];
+// The guides stay one click from every page: they are how a restaurant owner
+// searching for "comanda digital" or "alternativa a Rappi" finds the rest of
+// the site, and how Google finds the guides. Product guides first.
+const GUIDES = [
+  "/sistema-para-restaurantes",
+  "/comanda-digital",
+  "/pantalla-de-cocina",
+  "/mesas-y-reservas",
+  "/carta-digital-qr",
+  "/web-de-pedidos",
+  "/comisiones-rappi-pedidosya",
+  "/alternativa-a-rappi",
+  "/vender-sin-comision",
+];
 const SOCIAL_ICONS = { instagram: IconInstagram, tiktok: IconTikTok };
 const MARK = "FoodFlow".split("");
 
@@ -81,7 +92,17 @@ export default function LandingFooter() {
     return () => observer.disconnect();
   }, []);
 
-  const guideLabels = [t.commissions.eyebrow, t.rappiAlternative.eyebrow, t.sellDirect.eyebrow, t.qrMenu.eyebrow, t.orderingSite.eyebrow];
+  const guideLabels = [
+    t.systemGuide.eyebrow,
+    t.comandaGuide.eyebrow,
+    t.kitchenGuide.eyebrow,
+    t.tablesGuide.eyebrow,
+    t.qrMenu.eyebrow,
+    t.orderingSite.eyebrow,
+    t.commissions.eyebrow,
+    t.rappiAlternative.eyebrow,
+    t.sellDirect.eyebrow,
+  ];
   const links = t.nav.links;
   const groups = [
     { title: f.product, items: [
