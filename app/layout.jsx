@@ -91,6 +91,9 @@ export const metadata = {
   // in Search Console without shipping an HTML file. Undefined renders no tag.
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    // Bing Webmaster Tools ownership for https://foodflow.site/. Public by
+    // design (it is read off the page); removing it un-verifies the site.
+    other: { "msvalidate.01": "0D080C62F08B56041D832D3B78A21033" },
   },
 };
 
