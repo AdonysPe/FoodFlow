@@ -3,12 +3,13 @@ import { BreadcrumbJsonLd, QrMenuJsonLd } from "@/components/seo/JsonLd";
 import QrMenu from "@/components/sections/QrMenu";
 import { PilotClosing } from "@/components/seo/Article";
 import LandingCardMotion from "@/components/landing/LandingCardMotion";
+import { withSocial } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = withSocial({
   title: "Carta digital con QR para restaurantes",
   description: "Carta digital con QR para restaurantes de Lima: cambia precios sin reimprimir y recibe pedidos desde el navegador, sin descargar una app.",
   alternates: { canonical: "/carta-digital-qr" },
-};
+});
 
 export default function QrMenuPage() {
   return (

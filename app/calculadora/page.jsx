@@ -1,16 +1,17 @@
 import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import Calculator from "@/components/sections/Calculator";
+import { withSocial } from "@/lib/seo";
 
 
-export const metadata = {
+export const metadata = withSocial({
   // The brands belong in the title because they are what gets typed: "cuánto
   // cobra Rappi de comisión" is the lowest-difficulty query this site can win.
   title: "Calculadora de comisiones de Rappi y PedidosYa",
   description:
     "Cuánto te cuestan al mes y al año las comisiones de Rappi, PedidosYa y las demás apps de delivery, con tus propios números. Sin registrarte.",
   alternates: { canonical: "/calculadora" },
-};
+});
 
 /**
  * /calculadora, design B ("Noche"), as approved in the prototype. Same shell as

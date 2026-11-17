@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { OG_IMAGE_ALT } from "@/lib/seo";
 
 /**
  * The card that shows up when the link is pasted into WhatsApp. Generated
@@ -8,8 +9,7 @@ import { ImageResponse } from "next/og";
  * Satori (what renders this) supports a subset of CSS: every container with
  * more than one child needs an explicit display, and layout is flexbox only.
  */
-export const alt =
-  "FoodFlow — Tu restaurante funcionando en 48 horas. Programa piloto en Lima.";
+export const alt = OG_IMAGE_ALT;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

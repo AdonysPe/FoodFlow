@@ -1,14 +1,15 @@
 import SiteShell from "@/components/SiteShell";
 import { AboutJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import About from "@/components/sections/About";
+import { withSocial } from "@/lib/seo";
 
 
-export const metadata = {
+export const metadata = withSocial({
   title: "Quiénes somos",
   description:
     "Quién está detrás de FoodFlow y por qué existe: una persona en Lima que vio a un restaurante perder pedidos entre un cuaderno y tres chats de WhatsApp.",
   alternates: { canonical: "/nosotros" },
-};
+});
 
 /**
  * /nosotros, design B ("Noche"), as approved in the prototype. Same shell as

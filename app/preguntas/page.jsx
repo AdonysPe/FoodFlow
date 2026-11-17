@@ -1,14 +1,15 @@
 import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/seo/JsonLd";
 import FAQ from "@/components/sections/FAQ";
+import { withSocial } from "@/lib/seo";
 
 
-export const metadata = {
+export const metadata = withSocial({
   title: "Preguntas frecuentes",
   description:
     "Qué pasa si se cae el internet, si hace falta comprar equipos, cómo migrar desde otro sistema, si los precios llevan IGV y qué ocurre si te vas.",
   alternates: { canonical: "/preguntas" },
-};
+});
 
 /**
  * /preguntas, design B ("Noche"), as approved in the prototype. Same shell as

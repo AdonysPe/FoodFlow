@@ -1,13 +1,14 @@
 import SiteShell from "@/components/SiteShell";
 import ClaimsBookForm from "@/components/legal/ClaimsBookForm";
 import { CLAIM_RESPONSE_DAYS, LEGAL_HOLDER } from "@/lib/legal/holder";
+import { withSocial } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = withSocial({
   title: "Libro de Reclamaciones",
   description:
     "Libro de Reclamaciones Virtual de FoodFlow. Registra tu reclamo o queja y recibe un número de constancia; respondemos en un máximo de 30 días hábiles.",
   alternates: { canonical: "/libro-de-reclamaciones" },
-};
+});
 
 export default function ClaimsBookPage() {
   return (

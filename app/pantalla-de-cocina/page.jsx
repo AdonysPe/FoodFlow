@@ -3,12 +3,13 @@ import LandingCardMotion from "@/components/landing/LandingCardMotion";
 import { BreadcrumbJsonLd, KitchenJsonLd } from "@/components/seo/JsonLd";
 import KitchenGuide from "@/components/sections/KitchenGuide";
 import { PilotClosing } from "@/components/seo/Article";
+import { withSocial } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = withSocial({
   title: "Pantalla de cocina (KDS) para restaurantes",
   description: "Pantalla de cocina para restaurantes de Lima: los pedidos del salón, del QR y de tu web en una cola, ordenados por tiempo. Funciona en cualquier tablet.",
   alternates: { canonical: "/pantalla-de-cocina" },
-};
+});
 
 // LandingCardMotion runs the home page's demos only while they are on screen.
 export default function Page() {

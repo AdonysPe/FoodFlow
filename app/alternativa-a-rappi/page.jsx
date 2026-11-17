@@ -2,12 +2,13 @@ import SiteShell from "@/components/SiteShell";
 import { BreadcrumbJsonLd, RappiAlternativeJsonLd } from "@/components/seo/JsonLd";
 import RappiAlternative from "@/components/sections/RappiAlternative";
 import { PilotClosing } from "@/components/seo/Article";
+import { withSocial } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = withSocial({
   title: "Alternativa a Rappi para restaurantes",
   description: "Compara Rappi con un canal propio: comisión, clientes, reparto, visibilidad y costo. Una salida realista para restaurantes en Perú.",
   alternates: { canonical: "/alternativa-a-rappi" },
-};
+});
 
 export default function RappiAlternativePage() {
   return (

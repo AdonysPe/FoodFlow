@@ -3,12 +3,13 @@ import { BreadcrumbJsonLd, OrderingSiteJsonLd } from "@/components/seo/JsonLd";
 import CustomSite from "@/components/sections/CustomSite";
 import OrderingSite from "@/components/sections/OrderingSite";
 import { Byline, PilotClosing } from "@/components/seo/Article";
+import { withSocial } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = withSocial({
   title: "Web de pedidos para restaurantes en Perú",
   description: "Tu página web de pedidos con dominio, carta y precios propios. Los pedidos llegan al mismo panel y cocina, sin comisión por pedido.",
   alternates: { canonical: "/web-de-pedidos" },
-};
+});
 
 export default function OrderingSitePage() {
   return (
