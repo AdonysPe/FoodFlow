@@ -5,7 +5,9 @@ import { withSocial } from "@/lib/seo";
 
 
 export const metadata = withSocial({
-  title: "Preguntas frecuentes",
+  // What a restaurant owner types, not the section name: "preguntas
+  // frecuentes" alone tells Google nothing about what is being asked.
+  title: "Preguntas sobre el sistema para restaurantes",
   description:
     "Qué pasa si se cae el internet, si hace falta comprar equipos, cómo migrar desde otro sistema, si los precios llevan IGV y qué ocurre si te vas.",
   alternates: { canonical: "/preguntas" },

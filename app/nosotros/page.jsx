@@ -5,7 +5,9 @@ import { withSocial } from "@/lib/seo";
 
 
 export const metadata = withSocial({
-  title: "Quiénes somos",
+  // Names the founder: this is the page every guide's byline links to, so
+  // the title should say who the author is, not just "about us".
+  title: "Quiénes somos: Adonys Pereda, fundador",
   description:
     "Quién está detrás de FoodFlow y por qué existe: una persona en Lima que vio a un restaurante perder pedidos entre un cuaderno y tres chats de WhatsApp.",
   alternates: { canonical: "/nosotros" },

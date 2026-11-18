@@ -1,5 +1,5 @@
 import SiteShell from "@/components/SiteShell";
-import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { BreadcrumbJsonLd, CalculatorJsonLd } from "@/components/seo/JsonLd";
 import Calculator from "@/components/sections/Calculator";
 import { withSocial } from "@/lib/seo";
 
@@ -22,6 +22,7 @@ export const metadata = withSocial({
 export default function CalculatorPage() {
   return (
     <SiteShell>
+        <CalculatorJsonLd />
         <BreadcrumbJsonLd name="Calculadora de comisiones" path="/calculadora" />
         <Calculator as="h1" />
       </SiteShell>

@@ -489,6 +489,53 @@ export function SystemJsonLd() {
   return <ContentArticleJsonLd content={content} path="/sistema-para-restaurantes" about={["Sistema para restaurantes", "Software para restaurantes en Perú"]} />;
 }
 
+/**
+ * /calculadora as what it is: a free web tool, not an article. Name and
+ * description are the page's own (dictionary), the price is 0 and no account
+ * is needed — the same promise the page makes ("Sin registrarte"). Linked to
+ * the founder and the Organization by @id like the guides, so the one free
+ * tool on the site counts toward the same brand.
+ */
+export function CalculatorJsonLd() {
+  const c = es.calculator;
+  const url = `${BASE}/calculadora`;
+  return (
+    <Script
+      schema={{
+        "@context": "https://schema.org",
+        "@graph": [
+          organization,
+          person,
+          {
+            "@type": "WebApplication",
+            "@id": `${url}#app`,
+            name: c.eyebrow,
+            alternateName: c.title,
+            description: c.description,
+            url,
+            applicationCategory: "BusinessApplication",
+            applicationSubCategory: "Calculadora de comisiones de delivery",
+            operatingSystem: "Web",
+            browserRequirements: "Requiere JavaScript",
+            inLanguage: "es-PE",
+            isAccessibleForFree: true,
+            offers: { "@type": "Offer", price: 0, priceCurrency: "PEN" },
+            about: [
+              { "@type": "Thing", name: "Rappi" },
+              { "@type": "Thing", name: "PedidosYa" },
+              { "@type": "Thing", name: "Comisiones de delivery" },
+            ],
+            audience: { "@type": "BusinessAudience", name: "Restaurantes en Lima, Perú" },
+            author: { "@id": PERSON_ID },
+            publisher: { "@id": ORG_ID },
+            isPartOf: { "@id": SITE_ID },
+          },
+        ],
+      }}
+    />
+  );
+}
+
 /** The pilot page. Its first answer quotes the plan prices, filled as on the page. */
 export function PilotJsonLd() {
   const [carta, servicio, negocio] = es.chat.plans.items.map((plan) => plan.price);
