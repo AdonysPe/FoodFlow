@@ -75,6 +75,14 @@ const nextConfig = {
   // Don't advertise the framework.
   poweredByHeader: false,
 
+  // Google lists https://foodflow.site/index.html (it showed up in Search
+  // Console with impressions and a click) although no such file exists, so
+  // the visitor landed on a 404. 308 keeps the method and tells Google to
+  // consolidate the URL into the home page.
+  async redirects() {
+    return [{ source: "/index.html", destination: "/", permanent: true }];
+  },
+
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
