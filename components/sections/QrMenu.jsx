@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MenuTile } from "@/components/sections/Features";
+import { CevicheScene } from "@/components/sections/GuideScenes";
 import {
   ArticleHero,
   Chapter,
@@ -56,6 +57,8 @@ export default function QrMenu({ as }) {
           <p className="lb-ar-p">{c.backupBody}</p>
         </Callout>
       </Chapter>
+
+      <CevicheScene />
 
       <Chapter>
         <Demo note={c.demoNote}>

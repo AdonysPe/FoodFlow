@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Kitchen, Phone } from "@/components/sections/Showcase";
+import { ComandasScene } from "@/components/sections/GuideScenes";
 import {
   ArticleHero,
   Chapter,
@@ -56,6 +57,8 @@ export default function ComandaGuide({ as }) {
           ))}
         </Cards>
       </Chapter>
+
+      <ComandasScene />
 
       <Chapter title={c.doesTitle}>
         <Checks items={c.does} />

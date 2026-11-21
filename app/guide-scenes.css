@@ -1,0 +1,104 @@
+/* ------------------------------------------------------------------
+   Guide scenes: the ceviche on /carta-digital-qr and the ticket board on
+   /comanda-digital (components/sections/GuideScenes.jsx).
+
+   Same approach as app/home.css: the base rules draw each scene in its
+   final, readable state; the motion sits inside @supports + reduced-motion
+   + a wide-screen query, so older browsers, visitors who asked for less
+   motion and phones get the same content, still and stacked. Everything
+   moves with CSS scroll timelines: no animation JavaScript.
+
+   Colours: surfaces, text and lines take the --lb-* tokens, so both themes
+   work. The illustration (ingredients, paper tickets) is fixed on purpose:
+   it is a drawing of food and paper, and looks the same in either theme.
+------------------------------------------------------------------ */
+
+/* globals.css gives body `overflow-x: hidden`, which would make body its own
+   scroll box and stop `sticky` and every view() timeline. `clip` cuts the
+   overflow without becoming one (as app/home.css does). */
+body:has(.lg-track) { overflow-x: clip; }
+
+.lg-wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.lg-block { display: block; }
+.lg-muted { color: var(--lb-mute); }
+.lg-tag { margin: 0 0 14px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lb-accent-ink); }
+.lg-lede { margin: 20px 0 0; max-width: 520px; }
+.lg-note { margin: 22px 0 0; font-size: 13px; color: var(--lb-faint); }
+
+.lg-track { margin-top: 120px; }
+.lg-stage { --lg-screen: calc(100svh / var(--z, 1) - var(--lb-header-height)); position: relative; overflow: hidden; padding: 72px 0; }
+
+/* ------------------------------------------------------------ ceviche */
+.lg-cv-track { view-timeline-name: --lg-cv; }
+.lg-cv-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 40px; }
+.lg-price { display: inline-flex; align-items: center; gap: 18px; margin-top: 36px; padding: 12px 12px 12px 22px; border-radius: 999px; background: var(--lb-card); border: 1px solid var(--lb-line); font-size: 16px; }
+.lg-price b { font-weight: 600; }
+.lg-price .lb-pill-btn { min-height: 40px; padding: 0 18px; font-size: 15px; }
+.lg-table3d { position: relative; display: flex; justify-content: center; perspective: 1400px; }
+.lg-dish { position: relative; width: min(480px, 100%, calc(var(--lg-screen) - 140px)); aspect-ratio: 1; }
+.lg-pc { position: absolute; border-radius: 50%; }
+.lg-plate { inset: 3%; background: radial-gradient(circle at 40% 35%, var(--lb-card-2), var(--lb-card) 70%); border: 1px solid var(--lb-line); box-shadow: 0 50px 90px -30px var(--cs-0-0-0-0p9, rgba(0,0,0,0.9)); }
+.lg-bowl { inset: 13%; background: radial-gradient(circle at 45% 40%, #f5eedf, #d9ccb0 70%, #c9b994); border: 1px solid rgba(120,90,40,0.25); box-shadow: inset 0 -18px 40px rgba(120,90,40,0.25); }
+.lg-fish { width: 11%; height: 11%; border-radius: 22%; background: linear-gradient(145deg, #fffaf2, #e9dfcf); border: 1px solid rgba(120,90,40,0.18); box-shadow: 0 6px 10px rgba(60,40,20,0.25); }
+.lg-onion { width: 15%; height: 15%; border: 7px solid #b8457a; background: transparent; box-shadow: inset 0 0 0 3px rgba(255,255,255,0.25); }
+.lg-camote { width: 24%; height: 15%; background: radial-gradient(circle at 40% 35%, #ffae5c, #e0711c); }
+.lg-choclo { width: 19%; height: 12%; background: radial-gradient(circle, #ffe58a 30%, transparent 32%) 0 0 / 14px 14px, #f1c53e; }
+.lg-cil { width: 3.4%; height: 3.4%; background: #4caf6a; }
+.lg-aji { width: 5%; height: 5%; border: 4px solid #e0402a; background: #ff9a66; }
+.lg-lbl { position: absolute; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: var(--lb-dim); white-space: nowrap; }
+.lg-lbl i { display: block; width: 56px; height: 1px; background: var(--c-243-239-230-0p4, rgba(243,239,230,0.4)); }
+
+/* ---------------------------------------------------------- ticket board */
+.lg-cm-track { view-timeline-name: --lg-cm; }
+.lg-cm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+.lg-cm-lede { margin: 0; }
+.lg-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-top: 44px; perspective: 1600px; }
+.lg-tix { position: relative; display: flex; flex-direction: column; gap: 6px; min-height: 150px; padding: 18px; border-radius: 18px; background: #f3efe6; color: #1a120e; border: 1px solid rgba(26,18,14,0.1); box-shadow: 0 24px 50px -20px var(--cs-0-0-0-0p8, rgba(0,0,0,0.8)); }
+.lg-tix b { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 8px; margin-bottom: 4px; padding-bottom: 12px; border-bottom: 1.5px dashed rgba(26,18,14,0.18); font-size: 17px; font-weight: 600; }
+.lg-line { font-size: 14px; color: #4a3d35; }
+.lg-st { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.lg-st.is-new { background: #e6ddd0; color: #1a120e; }
+.lg-st.is-fire { background: #ffd9cc; color: #a3300f; }
+.lg-st.is-ok { background: #c9f3df; color: #0c5a37; }
+
+/* ------------------------------------------------------- phone width */
+@media (max-width: 900px) {
+  .lg-wrap { padding: 0 16px; }
+  .lg-track { margin-top: 96px; }
+  .lg-stage { padding: 0; }
+  .lg-cv-grid { grid-template-columns: minmax(0, 1fr); }
+  .lg-lbl { display: none; }
+  .lg-board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .lg-tix { padding: 14px; min-height: 0; }
+  .lg-tix b { font-size: 16px; }
+}
+
+/* ---------------------------------------------------------- keyframes */
+@keyframes lg-table { 0% { transform: rotateX(62deg) rotate(-70deg) scale(0.8); } 62%, 100% { transform: none; } }
+@keyframes lg-assemble { 0% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1.25); opacity: 0; } 12% { opacity: 1; } 60%, 100% { transform: none; opacity: 1; } }
+@keyframes lg-lbl { 0%, 64% { opacity: 0; transform: translateX(var(--lx, -20px)); } 76%, 100% { opacity: 1; transform: none; } }
+@keyframes lg-pop { 0%, 74% { opacity: 0; transform: translateY(30px) scale(0.9); } 86%, 100% { opacity: 1; transform: none; } }
+@keyframes lg-deal {
+  0% { transform: translate(calc((1.5 - var(--col)) * (100% + 20px)), calc((0.5 - var(--row)) * (100% + 20px))) rotate(var(--r)) rotateX(50deg) scale(0.86); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  100% { transform: none; }
+}
+@keyframes lg-lede { 0%, 40% { opacity: 0; transform: translateY(30px); } 60%, 100% { opacity: 1; transform: none; } }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 901px) {
+    /* The ceviche: tilted on the table, then the ingredients fly in. */
+    .lg-cv-track { height: calc(100svh / var(--z, 1) + 900px); }
+    .lg-cv-stage { position: sticky; top: var(--lb-header-height); height: var(--lg-screen); min-height: 620px; padding: 0; display: flex; align-items: center; }
+    .lg-cv-stage .lg-wrap { width: 100%; }
+    .lg-dish { animation: lg-table linear both; animation-timeline: --lg-cv; animation-range: contain 0% contain 100%; }
+    .lg-fly { animation: lg-assemble linear both; animation-timeline: --lg-cv; animation-range: contain 0% contain 100%; }
+    .lg-lbl { animation: lg-lbl linear both; animation-timeline: --lg-cv; animation-range: contain 0% contain 100%; }
+    .lg-price { animation: lg-pop linear both; animation-timeline: --lg-cv; animation-range: contain 0% contain 100%; }
+
+    /* The board: eight tickets, dealt one after another. */
+    .lg-cm-track { height: calc(100svh / var(--z, 1) + 800px); }
+    .lg-cm-stage { position: sticky; top: var(--lb-header-height); height: var(--lg-screen); min-height: 620px; padding: 0; display: flex; flex-direction: column; justify-content: center; }
+    .lg-tix { animation: lg-deal cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-timeline: --lg-cm; animation-range: contain calc(var(--i) * 5%) contain calc(42% + var(--i) * 5%); }
+    .lg-cm-lede { animation: lg-lede linear both; animation-timeline: --lg-cm; animation-range: contain 0% contain 100%; }
+  }
+}
