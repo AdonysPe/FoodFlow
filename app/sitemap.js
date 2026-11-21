@@ -35,7 +35,7 @@ const ROUTES = [
   { path: "/web-de-pedidos", updated: "2026-11-02" },
   { path: "/preguntas", updated: "2026-11-17" },
   { path: "/nosotros", updated: "2026-11-17" },
-  { path: "/libro-de-reclamaciones", updated: "2026-10-20" },
+  { path: "/libro-de-reclamaciones", updated: "2026-11-20" },
   { path: "/terminos", updated: "2026-10-20" },
   { path: "/privacidad", updated: "2026-10-20" },
   { path: "/cookies", updated: "2026-09-13" },

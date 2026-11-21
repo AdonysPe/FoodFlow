@@ -30,5 +30,9 @@ export const LEGAL_HOLDER = {
  */
 export const LEGAL_UPDATED = "30 de octubre de 2026";
 
-/** Working days a claim or complaint takes to be answered. See ClaimsBook. */
-export const CLAIM_RESPONSE_DAYS = 30;
+/**
+ * Working days a claim or complaint takes to be answered. 15, not extendable:
+ * Ley 31435 and D.S. 101-2022-PCM (in force since 2022-05-21) cut the old 30
+ * calendar days and removed the extension. See ClaimsBook.
+ */
+export const CLAIM_RESPONSE_DAYS = 15;

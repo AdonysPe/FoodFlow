@@ -6,7 +6,7 @@ import { withSocial } from "@/lib/seo";
 export const metadata = withSocial({
   title: "Libro de Reclamaciones",
   description:
-    "Libro de Reclamaciones Virtual de FoodFlow. Registra tu reclamo o queja y recibe un número de constancia; respondemos en un máximo de 30 días hábiles.",
+    "Libro de Reclamaciones Virtual de FoodFlow. Registra tu reclamo o queja y recibe un número de constancia; respondemos en un máximo de 15 días hábiles.",
   alternates: { canonical: "/libro-de-reclamaciones" },
 });
 
