@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLeadCapture } from "@/components/lead/LeadCaptureContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useTheme } from "@/components/ThemeContext";
 import { buildWhatsAppUrl } from "@/lib/contact";
 
 // Same destinations and translated labels as the site's shared navbar.
@@ -13,6 +14,22 @@ const HREFS = ["/#features", "/#product", "/calculadora", "/precios", "/pregunta
 const FEATURE_HREFS = ["/carta-digital-qr", "/comanda-digital", "/mesas-y-reservas", "/web-de-pedidos", "/#product"];
 // The five guides, in the footer's order.
 const GUIDE_HREFS = ["/comisiones-rappi-pedidosya", "/alternativa-a-rappi", "/vender-sin-comision", "/carta-digital-qr", "/web-de-pedidos"];
+
+// Sun shows on the dark site (it switches to light); moon on the light one.
+function IconTheme({ theme }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {theme === "light" ? (
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
+      ) : (
+        <>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4" />
+        </>
+      )}
+    </svg>
+  );
+}
 
 function IconPerson({ size = 16 }) {
   return (
@@ -42,6 +59,7 @@ function Chevron() {
  */
 export default function LandingNav() {
   const { t, lang, setLang } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const nav = t.landing.nav;
   const links = t.nav.links.map((label, i) => ({ label, href: HREFS[i] }));
   const guides = [t.commissions.eyebrow, t.rappiAlternative.eyebrow, t.sellDirect.eyebrow, t.qrMenu.eyebrow, t.orderingSite.eyebrow].map((label, i) => ({ label, href: GUIDE_HREFS[i] }));
@@ -140,6 +158,15 @@ export default function LandingNav() {
               aria-label={lang === "en" ? `Switch to ${t.nav.langName}` : `Cambiar a ${t.nav.langName}`}
             >
               {t.nav.langToggle}
+            </button>
+            <button
+              type="button"
+              className="lb-theme-btn"
+              onClick={toggleTheme}
+              aria-label={theme === "light" ? nav.themeDark : nav.themeLight}
+              title={theme === "light" ? nav.themeDark : nav.themeLight}
+            >
+              <IconTheme theme={theme} />
             </button>
             <Link href="/login" className="lb-nav-signin" onMouseEnter={() => setFly(false)}>
               {nav.signIn}

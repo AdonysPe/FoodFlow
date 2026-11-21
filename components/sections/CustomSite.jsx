@@ -32,12 +32,12 @@ export default function CustomSite({ as: Heading = "h1" }) {
                 {i < words.length - 1 ? " " : ""}
               </span>
             ))}
-            {!/[?!.…]$/.test(c.title) && <span style={{ color: "#ff5a33" }}>.</span>}
+            {!/[?!.…]$/.test(c.title) && <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>}
           </Heading>
           <p className="lb-ar-lead lb-rise" style={{ animationDelay: ".5s" }}>
             {c.description}
           </p>
-          <p className="lb-ar-lead lb-rise" style={{ animationDelay: ".6s", color: "#ff7a57", fontWeight: 550, marginTop: 14 }}>
+          <p className="lb-ar-lead lb-rise" style={{ animationDelay: ".6s", color: "var(--ct-ff7a57, #ff7a57)", fontWeight: 550, marginTop: 14 }}>
             {c.commission}
           </p>
         </div>

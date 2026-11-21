@@ -59,7 +59,7 @@ export function ArticleHero({ as: Heading = "h1", eyebrow, title, description, p
               {i < words.length - 1 ? " " : ""}
             </span>
           ))}
-          {!/[?!.…]$/.test(title) && <span style={{ color: "#ff5a33" }}>.</span>}
+          {!/[?!.…]$/.test(title) && <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>}
         </Heading>
         {description && (
           <p className="lb-ar-lead lb-rise" style={{ animationDelay: `${0.3 + words.length * 0.06}s` }}>
@@ -79,7 +79,7 @@ export function Chapter({ title, intro, children, id }) {
       {title && (
         <h2 className="lb-h2 lb-ar-h2 lb-reveal">
           {title}
-          {!/[?!.…]$/.test(title) && <span style={{ color: "#ff5a33" }}>.</span>}
+          {!/[?!.…]$/.test(title) && <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>}
         </h2>
       )}
       {intro && <p className="lb-ar-p lb-reveal">{intro}</p>}
@@ -164,7 +164,7 @@ export function Checks({ items, cols = 2 }) {
     <ul className={`lb-ar-checks lb-ar-checks--${cols}`}>
       {items.map((item) => (
         <li key={item}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff7a57" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: "var(--ct-ff7a57, #ff7a57)" }} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M5 12.5l4.5 4.5L19 7.5" />
           </svg>
           <span>{item}</span>
@@ -233,7 +233,7 @@ export function Questions({ title, items }) {
       <div className="lb-faq">
         <h2 className="lb-h2 lb-ar-h2 lb-reveal" style={{ flex: "1 1 280px", marginBottom: 0 }}>
           {title}
-          {!/[?!.…]$/.test(title) && <span style={{ color: "#ff5a33" }}>.</span>}
+          {!/[?!.…]$/.test(title) && <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>}
         </h2>
         <div className="lb-faq-list lb-ar-faq">
           {items.map((item) => (
@@ -301,7 +301,7 @@ export function PilotClosing() {
         <br />
         <span>{a.line2}</span>
       </h2>
-      <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#d6cfc3" }}>
+      <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "var(--c-d6cfc3, #d6cfc3)" }}>
         {a.description}
       </p>
       <div className="lb-hero-ctas lb-reveal">
@@ -309,7 +309,7 @@ export function PilotClosing() {
           {a.cta}
         </button>
         {whatsappUrl && (
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="lb-text-link" style={{ color: "#5fd6c5" }}>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="lb-text-link" style={{ color: "var(--ct-5fd6c5, #5fd6c5)" }}>
             {a.whatsapp}
           </a>
         )}

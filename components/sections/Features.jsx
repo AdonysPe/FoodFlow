@@ -34,9 +34,9 @@ const ROOM = [
   { s: "busy", seats: 6 },
 ];
 const BOOKINGS = [
-  { left: "12.5%", bg: "#3a302b", fg: "#f3efe6", weight: 400 },
+  { left: "12.5%", bg: "var(--c-3a302b, #3a302b)", fg: "var(--c-f3efe6, #f3efe6)", weight: 400 },
   { left: "37.5%", bg: "#ff5a33", fg: "#0c0908", weight: 600 },
-  { left: "50%", bg: "#f3efe6", fg: "#0c0908", weight: 600 },
+  { left: "50%", bg: "var(--c-f3efe6, #f3efe6)", fg: "var(--c-0c0908, #0c0908)", weight: 600 },
 ];
 
 /**
@@ -86,7 +86,7 @@ export function MenuTile({ c }) {
         <div className="lb-menu-row">
           <Image src={PHOTO.ceviche} alt={c.dishes[0]} width={36} height={36} sizes="36px" loading="lazy" decoding="async" />
           <span style={{ flex: 1, fontSize: 14, fontWeight: 550 }}>{c.dishes[0]}</span>
-          <span style={{ fontSize: 12, color: "#c5bdb1" }}>{c.available}</span>
+          <span style={{ fontSize: 12, color: "var(--c-c5bdb1, #c5bdb1)" }}>{c.available}</span>
           <span className="lb-switch" style={{ background: "#ff5a33" }}>
             <i style={{ transform: "translateX(20px)" }} />
           </span>
@@ -95,10 +95,10 @@ export function MenuTile({ c }) {
           <Image src={PHOTO.arroz} alt={c.dishes[1]} width={36} height={36} sizes="36px" loading="lazy" decoding="async" />
           <span style={{ flex: 1, fontSize: 14, fontWeight: 550 }}>{c.dishes[1]}</span>
           <span className="lb-stack" style={{ justifyItems: "end", fontSize: 12 }}>
-            <span className="cyc lbl1" style={{ color: "#c5bdb1" }}>
+            <span className="cyc lbl1" style={{ color: "var(--c-c5bdb1, #c5bdb1)" }}>
               {c.available}
             </span>
-            <span className="cyc lbl2" style={{ color: "#ff7a57", fontWeight: 550 }}>
+            <span className="cyc lbl2" style={{ color: "var(--ct-ff7a57, #ff7a57)", fontWeight: 550 }}>
               {c.soldOutToday}
             </span>
           </span>
@@ -106,18 +106,18 @@ export function MenuTile({ c }) {
             <i className="cyc knob" />
           </span>
         </div>
-        <div className="lb-mono" style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 2px", fontSize: 11, letterSpacing: "0.06em", color: "#ada599", textTransform: "uppercase" }}>
-          <span style={{ flex: 1, height: 1, background: "rgba(243,239,230,0.1)" }} />
+        <div className="lb-mono" style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 2px", fontSize: 11, letterSpacing: "0.06em", color: "var(--c-ada599, #ada599)", textTransform: "uppercase" }}>
+          <span style={{ flex: 1, height: 1, background: "var(--c-243-239-230-0p1, rgba(243,239,230,0.1))" }} />
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M12 5v14M6 13l6 6 6-6" />
           </svg>
           {c.reaches}
-          <span style={{ flex: 1, height: 1, background: "rgba(243,239,230,0.1)" }} />
+          <span style={{ flex: 1, height: 1, background: "var(--c-243-239-230-0p1, rgba(243,239,230,0.1))" }} />
         </div>
         <div className="lb-tables3">
           {c.tables.map((table, i) => (
             <div key={i} className="lb-table-card">
-              <span className="lb-mono" style={{ fontSize: 11, fontWeight: 600, color: "#d7d0c5", padding: "0 2px", textTransform: "uppercase" }}>
+              <span className="lb-mono" style={{ fontSize: 11, fontWeight: 600, color: "var(--c-d7d0c5, #d7d0c5)", padding: "0 2px", textTransform: "uppercase" }}>
                 {table}
               </span>
               <div style={{ position: "relative", borderRadius: 10, overflow: "hidden" }}>
@@ -126,7 +126,7 @@ export function MenuTile({ c }) {
                   {c.soldOut}
                 </span>
               </div>
-              <span style={{ fontSize: 11, color: "#c5bdb1", padding: "0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <span style={{ fontSize: 11, color: "var(--c-c5bdb1, #c5bdb1)", padding: "0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {c.dishes[1]}
               </span>
             </div>
@@ -139,9 +139,9 @@ export function MenuTile({ c }) {
 
 export function RoomTile({ c }) {
   const dots = [
-    { background: "#f3efe6" },
+    { background: "var(--c-f3efe6, #f3efe6)" },
     { background: "#ff5a33" },
-    { border: "1.5px solid #a39b90" },
+    { border: "1.5px solid var(--c-a39b90, #a39b90)" },
   ];
   return (
     <div className="lb-card lb-mod-big lb-reveal">
@@ -190,7 +190,7 @@ export function RoomTile({ c }) {
       <div className="lb-legend">
         {c.legend.map((label, i) => (
           <span key={i}>
-            <i style={[{ background: "#f3efe6" }, { background: "#ff5a33" }, { border: "1.5px solid rgba(243,239,230,0.35)" }][i]} />
+            <i style={[{ background: "var(--c-f3efe6, #f3efe6)" }, { background: "#ff5a33" }, { border: "1.5px solid var(--c-243-239-230-0p35, rgba(243,239,230,0.35))" }][i]} />
             {label}
           </span>
         ))}
@@ -210,7 +210,7 @@ function TeamTile({ c }) {
         {c.title}
       </h3>
       <div className="lb-inset" style={{ flex: 1, marginTop: 4, borderRadius: 18, padding: 14, display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
-        <span className="lb-stack lb-mono" style={{ fontSize: 11, letterSpacing: "0.06em", color: "#c5bdb1", textTransform: "uppercase" }}>
+        <span className="lb-stack lb-mono" style={{ fontSize: 11, letterSpacing: "0.06em", color: "var(--c-c5bdb1, #c5bdb1)", textTransform: "uppercase" }}>
           {c.views.map((v, i) => (
             <span key={i} className={`rc ${views[i]}`}>
               {v}
@@ -229,7 +229,7 @@ function TeamTile({ c }) {
         {c.roles.map((r, i) => (
           <div key={i} className={`rc rl ${roles[i]}`}>
             <span style={{ fontWeight: 550 }}>{r.role}</span>
-            <span style={{ color: "#c5bdb1" }}>{r.sees}</span>
+            <span style={{ color: "var(--c-c5bdb1, #c5bdb1)" }}>{r.sees}</span>
           </div>
         ))}
       </div>
@@ -247,16 +247,16 @@ function WebTile({ c }) {
       </h3>
       <span className="lb-mod-text-sm">{c.copy}</span>
       <div className="lb-inset" style={{ position: "relative", flex: 1, marginTop: 4, borderRadius: 18, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 230 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 12px", borderBottom: "1px solid rgba(243,239,230,0.07)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 12px", borderBottom: "1px solid var(--c-243-239-230-0p07, rgba(243,239,230,0.07))" }}>
           {[0, 1, 2].map((d) => (
-            <span key={d} style={{ width: 8, height: 8, borderRadius: "50%", background: "#3a302b" }} />
+            <span key={d} style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--c-3a302b, #3a302b)" }} />
           ))}
-          <span className="lb-mono" style={{ marginLeft: 8, flex: 1, minWidth: 0, textAlign: "center", fontSize: 10, color: "#c5bdb1", background: "#16110f", borderRadius: 6, padding: "3px 6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span className="lb-mono" style={{ marginLeft: 8, flex: 1, minWidth: 0, textAlign: "center", fontSize: 10, color: "var(--c-c5bdb1, #c5bdb1)", background: "var(--c-16110f, #16110f)", borderRadius: 6, padding: "3px 6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {c.url}
           </span>
         </div>
         <div style={{ flex: 1, padding: 12, display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", background: "#16110f", borderRadius: 999, padding: 3, fontSize: 12, fontWeight: 550, textAlign: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", background: "var(--c-16110f, #16110f)", borderRadius: 999, padding: 3, fontSize: 12, fontWeight: 550, textAlign: "center" }}>
             <span className="wc wA" style={{ borderRadius: 999, padding: "6px 0" }}>
               {c.modes[0]}
             </span>
@@ -268,7 +268,7 @@ function WebTile({ c }) {
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
               <Image src={photos[i]} alt="" width={30} height={30} sizes="30px" loading="lazy" decoding="async" style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover" }} />
               <span style={{ flex: 1 }}>{item.name}</span>
-              <span style={{ color: "#c5bdb1" }}>{item.price}</span>
+              <span style={{ color: "var(--c-c5bdb1, #c5bdb1)" }}>{item.price}</span>
             </div>
           ))}
           <div className="wc wpress" style={{ marginTop: 2, background: "#ff5a33", color: "#0c0908", borderRadius: 12, padding: "10px 12px", display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 600 }}>
@@ -276,10 +276,10 @@ function WebTile({ c }) {
             <span>{c.total}</span>
           </div>
         </div>
-        <div className="wc wtoast" style={{ position: "absolute", left: 10, right: 10, bottom: 10, background: "#f3efe6", color: "#1c1a18", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, boxShadow: "0 14px 30px -10px rgba(0,0,0,0.8)" }}>
+        <div className="wc wtoast" style={{ position: "absolute", left: 10, right: 10, bottom: 10, background: "var(--c-f3efe6, #f3efe6)", color: "var(--c-1c1a18, #1c1a18)", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, boxShadow: "0 14px 30px -10px var(--cs-0-0-0-0p8, rgba(0,0,0,0.8))" }}>
           <Check />
           <span style={{ flex: 1 }}>{c.toast}</span>
-          <span style={{ fontWeight: 500, color: "#46413c" }}>{c.toastTo}</span>
+          <span style={{ fontWeight: 500, color: "var(--c-46413c, #46413c)" }}>{c.toastTo}</span>
         </div>
       </div>
     </div>
@@ -299,7 +299,7 @@ export function BookingsTile({ c }) {
           <span>{c.tonight}</span>
           <span>{c.summary}</span>
         </div>
-        <div className="lb-mono" style={{ display: "flex", paddingLeft: 58, fontSize: 10, color: "#ada599", justifyContent: "space-between" }}>
+        <div className="lb-mono" style={{ display: "flex", paddingLeft: 58, fontSize: 10, color: "var(--c-ada599, #ada599)", justifyContent: "space-between" }}>
           {["19", "20", "21", "22", "23"].map((hour) => (
             <span key={hour}>{hour}</span>
           ))}

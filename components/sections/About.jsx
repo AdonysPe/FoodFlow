@@ -77,9 +77,9 @@ export default function About({ as: Heading = "h1" }) {
               const last = i === a.line2.length - 1;
               return (
                 <span key={`b${i}`}>
-                  <span className="lb-word" style={{ animationDelay: `${0.52 + i * 0.07}s`, color: "#ada599" }}>
+                  <span className="lb-word" style={{ animationDelay: `${0.52 + i * 0.07}s`, color: "var(--c-ada599, #ada599)" }}>
                     {w}
-                    {last && <span style={{ color: "#ff5a33" }}>.</span>}
+                    {last && <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>}
                   </span>
                   {last ? "" : " "}
                 </span>
@@ -107,7 +107,7 @@ export default function About({ as: Heading = "h1" }) {
             </div>
             <div className="lb-ab-caption">
               <span style={{ fontSize: 15, fontWeight: 600 }}>{a.signature}</span>
-              <span style={{ fontSize: 12, lineHeight: 1.45, color: "#e2dbcf" }}>{a.photoNote}</span>
+              <span style={{ fontSize: 12, lineHeight: 1.45, color: "var(--c-e2dbcf, #e2dbcf)" }}>{a.photoNote}</span>
             </div>
           </div>
 
@@ -116,7 +116,7 @@ export default function About({ as: Heading = "h1" }) {
               {lead}
             </p>
             {rest.map((paragraph, i) => (
-              <p key={i} className="lb-rise" style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: "#d6cfc3", animationDelay: `${0.7 + i * 0.1}s` }}>
+              <p key={i} className="lb-rise" style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: "var(--c-d6cfc3, #d6cfc3)", animationDelay: `${0.7 + i * 0.1}s` }}>
                 {paragraph}
               </p>
             ))}
@@ -149,15 +149,15 @@ export default function About({ as: Heading = "h1" }) {
                 </span>
                 <span style={{ display: "flex", flexDirection: "column" }}>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{a.before.tablet}</span>
-                  <span style={{ fontSize: 11, color: "#c5bdb1" }}>{a.before.battery}</span>
+                  <span style={{ fontSize: 11, color: "var(--c-c5bdb1, #c5bdb1)" }}>{a.before.battery}</span>
                 </span>
               </div>
             </div>
-            <span style={{ fontSize: 15, color: "#d6cfc3" }}>{a.before.caption}</span>
+            <span style={{ fontSize: 15, color: "var(--c-d6cfc3, #d6cfc3)" }}>{a.before.caption}</span>
           </div>
 
           <div className="lb-reveal lb-ab-panel lb-ab-panel--light">
-            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "#46413c", textTransform: "uppercase" }}>
+            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "var(--c-46413c, #46413c)", textTransform: "uppercase" }}>
               {a.after.label}
             </span>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
@@ -171,7 +171,7 @@ export default function About({ as: Heading = "h1" }) {
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: 15, color: "#4a4540" }}>{a.after.caption}</span>
+            <span style={{ fontSize: 15, color: "var(--c-4a4540, #4a4540)" }}>{a.after.caption}</span>
           </div>
         </div>
       </section>
@@ -179,7 +179,7 @@ export default function About({ as: Heading = "h1" }) {
       {/* ----------------------------------------------------------- quote */}
       <section className="lb-pr-block" style={{ paddingTop: 150 }}>
         <blockquote className="lb-ab-quote">
-          <span style={{ color: "#ff5a33" }}>“</span>
+          <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>“</span>
           {a.quote.split(" ").map((word, i, all) => (
             <span key={i}>
               <span className="lit" style={{ animationDelay: `${i * 0.25}s` }}>
@@ -188,7 +188,7 @@ export default function About({ as: Heading = "h1" }) {
               {i < all.length - 1 ? " " : ""}
             </span>
           ))}
-          <span style={{ color: "#ff5a33" }}>”</span>
+          <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>”</span>
         </blockquote>
       </section>
 
@@ -196,7 +196,7 @@ export default function About({ as: Heading = "h1" }) {
       <section className="lb-pr-block" style={{ paddingTop: 150 }}>
         <h2 className="lb-reveal lb-ab-h2">
           {a.workTitle}
-          <span style={{ color: "#ff5a33" }}>.</span>
+          <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>
         </h2>
         <div style={{ maxWidth: 720 }}>
           {a.work.map((paragraph) => (
@@ -214,7 +214,7 @@ export default function About({ as: Heading = "h1" }) {
       <section className="lb-pr-block" style={{ paddingTop: 150 }}>
         <h2 className="lb-reveal lb-ab-h2">
           {a.commitmentLabel}
-          <span style={{ color: "#ff5a33" }}>.</span>
+          <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>
         </h2>
         <div className="lb-ab-cards">
           {a.commitment.map((item, i) => {
@@ -223,7 +223,7 @@ export default function About({ as: Heading = "h1" }) {
               <div key={i} className="lb-reveal lb-ab-card">
                 {icon?.tone === "zero" ? (
                   <span className="lb-display" style={{ fontSize: 44, letterSpacing: "-0.05em", lineHeight: 1 }}>
-                    0<span style={{ color: "#ff5a33" }}>%</span>
+                    0<span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>%</span>
                   </span>
                 ) : icon ? (
                   <span className={`lb-ab-icon lb-ab-icon--${icon.tone}`}>
@@ -245,7 +245,7 @@ export default function About({ as: Heading = "h1" }) {
           <br />
           <span>{a.closing.line2}</span>
         </h2>
-        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "#d6cfc3" }}>
+        <p className="lb-reveal" style={{ margin: "26px auto 0", maxWidth: 480, fontSize: 19, lineHeight: 1.5, color: "var(--c-d6cfc3, #d6cfc3)" }}>
           {a.closing.description}
         </p>
         <div className="lb-hero-ctas lb-reveal">
@@ -253,7 +253,7 @@ export default function About({ as: Heading = "h1" }) {
             {a.closing.cta}
           </button>
           {whatsappUrl && (
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="lb-text-link" style={{ color: "#5fd6c5" }}>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="lb-text-link" style={{ color: "var(--ct-5fd6c5, #5fd6c5)" }}>
               {a.closing.whatsapp}
             </a>
           )}

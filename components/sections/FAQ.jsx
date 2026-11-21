@@ -73,9 +73,9 @@ export default function FAQ({ as: Heading = "h1" }) {
               const last = i === c.line2.length - 1;
               return (
                 <span key={`b${i}`}>
-                  <span className="lb-word" style={{ animationDelay: `${0.45 + i * 0.07}s`, color: last ? undefined : "#ada599" }}>
+                  <span className="lb-word" style={{ animationDelay: `${0.45 + i * 0.07}s`, color: last ? undefined : "var(--c-ada599, #ada599)" }}>
                     {w}
-                    {last && <span style={{ color: "#ff5a33" }}>.</span>}
+                    {last && <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>.</span>}
                   </span>
                   {last ? "" : " "}
                 </span>
@@ -88,7 +88,7 @@ export default function FAQ({ as: Heading = "h1" }) {
               {c.searchLabel}
             </label>
             <div className="lb-qa-search">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c5bdb1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: "var(--c-c5bdb1, #c5bdb1)" }} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="6.5" />
                 <path d="M20 20l-4-4" />
               </svg>
@@ -148,7 +148,7 @@ export default function FAQ({ as: Heading = "h1" }) {
             <br />
             <span>{c.closing.line2}</span>
           </h2>
-          <p className="lb-reveal" style={{ margin: 0, fontSize: 18, lineHeight: 1.55, color: "#d6cfc3", maxWidth: 460 }}>
+          <p className="lb-reveal" style={{ margin: 0, fontSize: 18, lineHeight: 1.55, color: "var(--c-d6cfc3, #d6cfc3)", maxWidth: 460 }}>
             {c.closing.description}
           </p>
           <div className="lb-reveal" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginTop: 8 }}>
@@ -171,13 +171,13 @@ export default function FAQ({ as: Heading = "h1" }) {
 
         <div style={{ flex: "1 1 420px", minWidth: 0, display: "flex", justifyContent: "center" }}>
           <div className="lb-qa-chat" role="img" aria-label={c.chatDemo.label}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid rgba(243,239,230,0.07)" }}>
-              <span style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(15,181,160,0.16)", color: "#0fb5a0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--c-243-239-230-0p07, rgba(243,239,230,0.07))" }}>
+              <span style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(15,181,160,0.16)", color: "var(--ct-0fb5a0, #0fb5a0)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <WhatsAppIcon />
               </span>
               <span style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: 15, fontWeight: 600 }}>{c.chatDemo.name}</span>
-                <span style={{ fontSize: 12, color: "#c5bdb1" }}>{c.chatDemo.status}</span>
+                <span style={{ fontSize: 12, color: "var(--c-c5bdb1, #c5bdb1)" }}>{c.chatDemo.status}</span>
               </span>
             </div>
             <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 10, minHeight: 280 }}>
@@ -185,18 +185,18 @@ export default function FAQ({ as: Heading = "h1" }) {
                 {c.chatDemo.user}
               </div>
               <div style={{ display: "grid", justifyItems: "start", alignItems: "start" }}>
-                <div className="ch c2" aria-hidden style={{ gridArea: "1 / 1", display: "flex", gap: 4, background: "#241d19", borderRadius: "18px 18px 18px 4px", padding: "14px 16px" }}>
+                <div className="ch c2" aria-hidden style={{ gridArea: "1 / 1", display: "flex", gap: 4, background: "var(--c-241d19, #241d19)", borderRadius: "18px 18px 18px 4px", padding: "14px 16px" }}>
                   {[0, 0.15, 0.3].map((d) => (
-                    <span key={d} className="dot" style={{ width: 6, height: 6, borderRadius: "50%", background: "#cfc7bb", animationDelay: `${d}s` }} />
+                    <span key={d} className="dot" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--c-cfc7bb, #cfc7bb)", animationDelay: `${d}s` }} />
                   ))}
                 </div>
-                <div className="ch c3" style={{ gridArea: "1 / 1", maxWidth: "85%", background: "#241d19", color: "#f3efe6", borderRadius: "18px 18px 18px 4px", padding: "11px 14px", fontSize: 14, lineHeight: 1.5 }}>
+                <div className="ch c3" style={{ gridArea: "1 / 1", maxWidth: "85%", background: "var(--c-241d19, #241d19)", color: "var(--c-f3efe6, #f3efe6)", borderRadius: "18px 18px 18px 4px", padding: "11px 14px", fontSize: 14, lineHeight: 1.5 }}>
                   {c.chatDemo.reply}
                 </div>
               </div>
               <div className="ch c4" style={{ alignSelf: "flex-start", display: "flex", gap: 6, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 12, fontWeight: 550, border: "1px solid rgba(15,181,160,0.5)", color: "#5fd6c5", padding: "7px 12px", borderRadius: 999 }}>{c.chatDemo.chips[0]}</span>
-                <span style={{ fontSize: 12, fontWeight: 550, border: "1px solid rgba(243,239,230,0.16)", color: "#e2dbcf", padding: "7px 12px", borderRadius: 999 }}>{c.chatDemo.chips[1]}</span>
+                <span style={{ fontSize: 12, fontWeight: 550, border: "1px solid rgba(15,181,160,0.5)", color: "var(--ct-5fd6c5, #5fd6c5)", padding: "7px 12px", borderRadius: 999 }}>{c.chatDemo.chips[0]}</span>
+                <span style={{ fontSize: 12, fontWeight: 550, border: "1px solid var(--c-243-239-230-0p16, rgba(243,239,230,0.16))", color: "var(--c-e2dbcf, #e2dbcf)", padding: "7px 12px", borderRadius: 999 }}>{c.chatDemo.chips[1]}</span>
               </div>
             </div>
           </div>

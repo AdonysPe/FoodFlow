@@ -201,7 +201,7 @@ export default function LandingFooter() {
             </p>
             <button type="button" className="lb-ft-up lb-ft-rise" style={{ "--d": ".25s" }} onClick={toTop} aria-label={f.backToTop} title={f.backToTop}>
               <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
-                <circle cx="22" cy="22" r="21" fill="none" stroke="rgba(243,239,230,.16)" strokeWidth="1" />
+                <circle cx="22" cy="22" r="21" fill="none" style={{ stroke: "var(--c-243-239-230-0p16, rgba(243,239,230,0.16))" }} strokeWidth="1" />
                 <circle className="lb-ft-arc" cx="22" cy="22" r="21" fill="none" stroke="#ff5a33" strokeWidth="1.5" strokeLinecap="round" transform="rotate(-90 22 22)" />
               </svg>
               <Arrow />

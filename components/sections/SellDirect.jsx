@@ -75,7 +75,7 @@ export default function SellDirect({ as }) {
         <div className="lb-ar-weeks">
           {c.plan.map((week) => (
             <div key={week.week} className="lb-ar-week lb-reveal">
-              <span className="lb-mono lb-ar-card-eyebrow" style={{ color: "#ff7a57" }}>
+              <span className="lb-mono lb-ar-card-eyebrow" style={{ color: "var(--ct-ff7a57, #ff7a57)" }}>
                 {week.week}
               </span>
               <h3 className="lb-ar-card-title">{week.title}</h3>

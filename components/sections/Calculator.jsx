@@ -79,7 +79,7 @@ export default function Calculator({ as: Heading = "h1" }) {
           <br />
           {c.line2.map((w, i) => (
             <span key={`b${i}`}>
-              <span className="lb-word" style={{ animationDelay: `${0.4 + i * 0.1}s`, color: "#ada599" }}>
+              <span className="lb-word" style={{ animationDelay: `${0.4 + i * 0.1}s`, color: "var(--c-ada599, #ada599)" }}>
                 {w}
               </span>{" "}
             </span>
@@ -88,7 +88,7 @@ export default function Calculator({ as: Heading = "h1" }) {
             <span key={`c${i}`}>
               <span className="lb-word" style={{ animationDelay: `${0.7 + i * 0.1}s` }}>
                 {w}
-                {i === c.line3.length - 1 && <span style={{ color: "#ff5a33" }}>?</span>}
+                {i === c.line3.length - 1 && <span style={{ color: "var(--ct-ff5a33, #ff5a33)" }}>?</span>}
               </span>
               {i < c.line3.length - 1 ? " " : ""}
             </span>
@@ -110,7 +110,7 @@ export default function Calculator({ as: Heading = "h1" }) {
                 {c.salesLabel}
               </label>
               <div className="lb-calc-input lb-calc-input--lg">
-                <span style={{ fontSize: 18, color: "#c5bdb1", fontWeight: 600 }}>S/</span>
+                <span style={{ fontSize: 18, color: "var(--c-c5bdb1, #c5bdb1)", fontWeight: 600 }}>S/</span>
                 <input
                   id={salesId}
                   inputMode="numeric"
@@ -128,7 +128,7 @@ export default function Calculator({ as: Heading = "h1" }) {
                 <label htmlFor={commissionId} style={{ fontSize: 15, fontWeight: 600 }}>
                   {c.commissionLabel}
                 </label>
-                <output htmlFor={commissionId} className="lb-display" style={{ fontSize: 30, letterSpacing: "-0.04em", color: "#ff5a33" }}>
+                <output htmlFor={commissionId} className="lb-display" style={{ fontSize: 30, letterSpacing: "-0.04em", color: "var(--ct-ff5a33, #ff5a33)" }}>
                   {commission}%
                 </output>
               </div>
@@ -151,7 +151,7 @@ export default function Calculator({ as: Heading = "h1" }) {
 
             <div className="lb-calc-field">
               <label htmlFor={ordersId} style={{ fontSize: 15, fontWeight: 600 }}>
-                {c.ordersLabel} <span style={{ fontWeight: 400, color: "#ada599" }}>· {c.ordersOptional}</span>
+                {c.ordersLabel} <span style={{ fontWeight: 400, color: "var(--c-ada599, #ada599)" }}>· {c.ordersOptional}</span>
               </label>
               <div className="lb-calc-input">
                 <input
@@ -168,11 +168,11 @@ export default function Calculator({ as: Heading = "h1" }) {
           </div>
 
           <div className="lb-calc-result" aria-live="polite">
-            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "#46413c", textTransform: "uppercase" }}>
+            <span className="lb-mono" style={{ fontSize: 12, letterSpacing: "0.08em", color: "var(--c-46413c, #46413c)", textTransform: "uppercase" }}>
               {c.resultLabel}
             </span>
             {!hasResult ? (
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontSize: 18, color: "#46413c", minHeight: 220 }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontSize: 18, color: "var(--c-46413c, #46413c)", minHeight: 220 }}>
                 {c.empty}
               </div>
             ) : (
@@ -181,34 +181,34 @@ export default function Calculator({ as: Heading = "h1" }) {
                   <span className="lb-display lb-swap" key={Math.round(monthly)} style={{ fontSize: "clamp(44px, 5vw, 78px)", letterSpacing: "-0.06em", lineHeight: 0.95, color: "#c9391a" }}>
                     {formatCurrency(monthly)}
                   </span>
-                  <span style={{ fontSize: 15, color: "#46413c" }}>{c.perMonth}</span>
+                  <span style={{ fontSize: 15, color: "var(--c-46413c, #46413c)" }}>{c.perMonth}</span>
                 </div>
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <div className="lb-calc-stat">
-                    <span style={{ fontSize: 13, color: "#46413c" }}>{c.perYear}</span>
+                    <span style={{ fontSize: 13, color: "var(--c-46413c, #46413c)" }}>{c.perYear}</span>
                     <span className="lb-display lb-swap" key={Math.round(yearly)} style={{ fontSize: 28, letterSpacing: "-0.04em" }}>
                       {formatCurrency(yearly)}
                     </span>
                   </div>
                   <div className="lb-calc-stat">
-                    <span style={{ fontSize: 13, color: "#46413c" }}>{c.perOrder}</span>
+                    <span style={{ fontSize: 13, color: "var(--c-46413c, #46413c)" }}>{c.perOrder}</span>
                     <span className="lb-display lb-swap" key={perOrder === null ? "-" : Math.round(perOrder * 100)} style={{ fontSize: 28, letterSpacing: "-0.04em" }}>
                       {perOrder === null ? "—" : formatCurrency(perOrder)}
                     </span>
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-                  <span style={{ fontSize: 13, color: "#46413c" }}>{c.split.label}</span>
-                  <div className="lb-split" style={{ background: "#e1dbd4" }}>
+                  <span style={{ fontSize: 13, color: "var(--c-46413c, #46413c)" }}>{c.split.label}</span>
+                  <div className="lb-split" style={{ background: "var(--c-e1dbd4, #e1dbd4)" }}>
                     <div style={{ display: "flex", alignItems: "center", paddingLeft: 12, background: "#d4401d", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", transition: "width .5s cubic-bezier(.2,.8,.2,1)", width: `${commission}%` }}>
                       {c.split.app.replace("{n}", String(commission))}
                     </div>
-                    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 12, color: "#1c1a18", whiteSpace: "nowrap" }}>
+                    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 12, color: "var(--c-1c1a18, #1c1a18)", whiteSpace: "nowrap" }}>
                       {c.split.keep.replace("{n}", String(100 - commission))}
                     </div>
                   </div>
-                  <span style={{ fontSize: 13, color: "#46413c" }}>{c.split.withFoodflow}</span>
-                  <div className="lb-split" style={{ background: "#1c1a18", color: "#f3efe6", justifyContent: "space-between", alignItems: "center", padding: "0 12px" }}>
+                  <span style={{ fontSize: 13, color: "var(--c-46413c, #46413c)" }}>{c.split.withFoodflow}</span>
+                  <div className="lb-split" style={{ background: "var(--c-1c1a18, #1c1a18)", color: "var(--c-f3efe6, #f3efe6)", justifyContent: "space-between", alignItems: "center", padding: "0 12px" }}>
                     <span>{c.split.zero}</span>
                     <span>{c.split.all}</span>
                   </div>
@@ -225,13 +225,13 @@ export default function Calculator({ as: Heading = "h1" }) {
                 >
                   {c.cta}
                 </button>
-                <span style={{ textAlign: "center", fontSize: 12, color: "#46413c" }}>{c.ctaNote}</span>
+                <span style={{ textAlign: "center", fontSize: 12, color: "var(--c-46413c, #46413c)" }}>{c.ctaNote}</span>
               </>
             )}
           </div>
         </div>
 
-        <p style={{ maxWidth: 760, margin: "24px auto 0", textAlign: "center", fontSize: 13, lineHeight: 1.55, color: "#ada599" }}>{c.disclaimer}</p>
+        <p style={{ maxWidth: 760, margin: "24px auto 0", textAlign: "center", fontSize: 13, lineHeight: 1.55, color: "var(--c-ada599, #ada599)" }}>{c.disclaimer}</p>
         <div className="lb-calc-links">
           <Link href="/comisiones-rappi-pedidosya">{c.guideLink} ›</Link>
           <Link href="/alternativa-a-rappi">{t.rappiAlternative.eyebrow} ›</Link>
@@ -250,56 +250,56 @@ export default function Calculator({ as: Heading = "h1" }) {
               <br />
               <span>{webTitleMuted}</span>
             </h2>
-            <p className="lb-reveal" style={{ margin: 0, fontSize: 18, lineHeight: 1.55, color: "#d6cfc3", maxWidth: 480 }}>
+            <p className="lb-reveal" style={{ margin: 0, fontSize: 18, lineHeight: 1.55, color: "var(--c-d6cfc3, #d6cfc3)", maxWidth: 480 }}>
               {web.description}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
               {web.items.map((item, i) => (
-                <div key={i} className="lb-reveal lb-calc-item" style={{ borderBottom: i === web.items.length - 1 ? "1px solid rgba(243,239,230,0.08)" : undefined }}>
-                  <span className="lb-mono" style={{ fontSize: 13, color: "#ff7a57" }}>
+                <div key={i} className="lb-reveal lb-calc-item" style={{ borderBottom: i === web.items.length - 1 ? "1px solid var(--c-243-239-230-0p08, rgba(243,239,230,0.08))" : undefined }}>
+                  <span className="lb-mono" style={{ fontSize: 13, color: "var(--ct-ff7a57, #ff7a57)" }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <span style={{ fontSize: 17, fontWeight: 600 }}>{item.title}</span>
-                    <span style={{ fontSize: 15, lineHeight: 1.5, color: "#d6cfc3" }}>{item.copy}</span>
+                    <span style={{ fontSize: 15, lineHeight: 1.5, color: "var(--c-d6cfc3, #d6cfc3)" }}>{item.copy}</span>
                   </span>
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: 13, color: "#ada599" }}>{web.footnote}</span>
+            <span style={{ fontSize: 13, color: "var(--c-ada599, #ada599)" }}>{web.footnote}</span>
           </div>
 
           <div style={{ flex: "1 1 400px", minWidth: 0, display: "flex", justifyContent: "center" }}>
             <div className="lb-float lb-site">
-              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "12px 14px", borderBottom: "1px solid rgba(243,239,230,0.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "12px 14px", borderBottom: "1px solid var(--c-243-239-230-0p07, rgba(243,239,230,0.07))" }}>
                 {[0, 1, 2].map((d) => (
-                  <span key={d} style={{ width: 9, height: 9, borderRadius: "50%", background: "#3a302b" }} />
+                  <span key={d} style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--c-3a302b, #3a302b)" }} />
                 ))}
-                <span className="lb-mono" style={{ marginLeft: 10, flex: 1, minWidth: 0, textAlign: "center", fontSize: 11, color: "#c5bdb1", background: "#0c0908", borderRadius: 8, padding: "5px 6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <span className="lb-mono" style={{ marginLeft: 10, flex: 1, minWidth: 0, textAlign: "center", fontSize: 11, color: "var(--c-c5bdb1, #c5bdb1)", background: "var(--c-0c0908, #0c0908)", borderRadius: 8, padding: "5px 6px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {web.demo.browserUrl}
                 </span>
               </div>
               <div style={{ position: "relative", height: 150 }}>
                 <Image src="/demo/carta/lomo-saltado.webp" alt="" fill sizes="(max-width: 640px) calc(100vw - 32px), 440px" loading="lazy" decoding="async" style={{ objectFit: "cover", display: "block" }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(22,17,15,0) 30%, #16110f 100%)" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, var(--c-22-17-15-0, rgba(22,17,15,0)) 30%, var(--c-16110f, #16110f) 100%)" }} />
                 <div style={{ position: "absolute", left: 18, right: 18, bottom: 12, display: "flex", flexDirection: "column", gap: 2 }}>
                   <span className="lb-display" style={{ fontSize: 26, letterSpacing: "-0.04em" }}>
                     {web.demo.brand}
                   </span>
-                  <span style={{ fontSize: 12, color: "#e2dbcf" }}>
+                  <span style={{ fontSize: 12, color: "var(--c-e2dbcf, #e2dbcf)" }}>
                     {web.demo.tagline} · {web.demo.rating}
                   </span>
                 </div>
               </div>
               <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 6 }}>
                 <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, background: "#f3efe6", color: "#0c0908", padding: "6px 12px", borderRadius: 999 }}>{web.demo.ctaMenu}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, border: "1px solid rgba(243,239,230,0.2)", padding: "6px 12px", borderRadius: 999 }}>{web.demo.ctaReserve}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, background: "var(--c-f3efe6, #f3efe6)", color: "var(--c-0c0908, #0c0908)", padding: "6px 12px", borderRadius: 999 }}>{web.demo.ctaMenu}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, border: "1px solid var(--c-243-239-230-0p2, rgba(243,239,230,0.2))", padding: "6px 12px", borderRadius: 999 }}>{web.demo.ctaReserve}</span>
                 </div>
                 {web.demo.items.map((item, i) => (
                   <div key={i} className={`wi wi${i + 1}`} style={{ display: "flex", justifyContent: "space-between", fontSize: 14, padding: 10, borderRadius: 12 }}>
                     <span>{item.name}</span>
-                    <span style={{ color: "#e2dbcf" }}>{item.price}</span>
+                    <span style={{ color: "var(--c-e2dbcf, #e2dbcf)" }}>{item.price}</span>
                   </div>
                 ))}
                 <div className="wi wbar" style={{ marginTop: 6, background: "#ff5a33", color: "#0c0908", borderRadius: 14, padding: "12px 14px", display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 600 }}>
@@ -328,7 +328,7 @@ export default function Calculator({ as: Heading = "h1" }) {
             {c.closing.plans}
           </Link>
         </div>
-        <p style={{ margin: "56px 0 0", fontSize: 12, color: "#ada599" }}>{c.trademarks}</p>
+        <p style={{ margin: "56px 0 0", fontSize: 12, color: "var(--c-ada599, #ada599)" }}>{c.trademarks}</p>
       </section>
     </>
   );

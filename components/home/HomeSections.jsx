@@ -285,7 +285,8 @@ export function DayScene() {
   const day = t.landing.scenes.day;
   return (
     <section className="lh-day-track" aria-labelledby="lh-day-title">
-      <div className="lh-scene lh-sky">
+      {/* The sky is night-to-night whatever the site theme: a dark island. */}
+      <div className="lh-scene lh-sky" data-theme="dark">
         <div className="lh-stars" aria-hidden />
         <div className="lh-arm" aria-hidden>
           <span className="lh-sun" />

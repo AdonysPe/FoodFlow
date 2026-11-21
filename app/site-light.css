@@ -1,0 +1,248 @@
+/* ------------------------------------------------------------------
+   Public site, light theme ("Día").
+
+   The public pages are drawn dark. Every hardcoded colour in their CSS is
+   written as var(--c-NAME, <dark colour>) (and inline colours in their
+   components the same way), so the dark site renders from the fallbacks
+   and this file only has to give those names their light values.
+
+   How the light values were made (scripted, then checked by eye):
+   - Neutrals flip their lightness along fixed anchors (ground #0c0908 ->
+     a warm paper white, cream ink -> near black, and so on), with the hue
+     pinned to the brand's warm cream. Flipping keeps every neutral-on-
+     neutral pair at the contrast it had in the dark design.
+   - Accent and mint used as text are darkened until they reach 4.6:1 on
+     both the ground and the cards. As fills they stay the brand colours,
+     and the dark ink on them is never flipped.
+   - Dark drop shadows turn into soft warm ones.
+
+   Scope: .lb-themed (SiteShell, the public pages). The panel, sign-in,
+   error pages and diner carta pin their own theme and never match.
+   Inside a light page, an element with data-theme="dark" is a dark island
+   (the night sky scene, video dialogs): it resets every name below, so it
+   renders from the dark fallbacks again.
+------------------------------------------------------------------ */
+:root[data-theme="light"] .lb-themed {
+  color-scheme: light;
+  --lb-bg: #f6f4f0;
+  --lb-card: #eeebe5;
+  --lb-card-2: #e7e3dc;
+  --lb-ink: #1c1a13;
+  --lb-dim: #39352e;
+  --lb-mute: #5a564e;
+  --lb-faint: #67635b;
+  --lb-line: rgba(28,26,21,0.09);
+  --lb-accent: #ff5a33;
+  --lb-accent-ink: #a4330f;
+  --lb-accent-deep: #d4401d;
+  --lb-mint: #3ddc97;
+  --lb-accent-text: #a4330f;
+  --lb-mint-text: #05612f;
+  --c-000000: #f4f4f4;
+  --c-0c0908: #f6f4f0;
+  --c-0f0c0b: #f3f1ed;
+  --c-12-9-8-0: rgba(246,244,240,0.0);
+  --c-12-9-8-0p25: rgba(246,244,240,0.25);
+  --c-12-9-8-0p45: rgba(246,244,240,0.45);
+  --c-12-9-8-0p5: rgba(246,244,240,0.5);
+  --c-12-9-8-0p55: rgba(246,244,240,0.55);
+  --c-12-9-8-0p6: rgba(246,244,240,0.6);
+  --c-12-9-8-0p65: rgba(246,244,240,0.65);
+  --c-12-9-8-0p82: rgba(246,244,240,0.82);
+  --c-12-9-8-0p85: rgba(246,244,240,0.85);
+  --c-12-9-8-0p9: rgba(246,244,240,0.9);
+  --c-130f0d: #f0eee8;
+  --c-16-12-11-0p92: rgba(243,241,236,0.92);
+  --c-16110f: #eeebe5;
+  --c-17120f: #edeae3;
+  --c-1b1512: #eae6de;
+  --c-1c1a18: #e3e1de;
+  --c-1d1714: #e7e3dc;
+  --c-211b18: #e2dfd7;
+  --c-22-17-15-0: rgba(238,235,229,0.0);
+  --c-24140f: #e8e3d9;
+  --c-241d19: #e0dcd3;
+  --c-243-239-230-0: rgba(28,26,19,0.0);
+  --c-243-239-230-0p04: rgba(28,26,19,0.04);
+  --c-243-239-230-0p045: rgba(28,26,19,0.045);
+  --c-243-239-230-0p05: rgba(28,26,19,0.05);
+  --c-243-239-230-0p06: rgba(28,26,19,0.06);
+  --c-243-239-230-0p07: rgba(28,26,19,0.07);
+  --c-243-239-230-0p08: rgba(28,26,19,0.08);
+  --c-243-239-230-0p09: rgba(28,26,19,0.09);
+  --c-243-239-230-0p1: rgba(28,26,19,0.1);
+  --c-243-239-230-0p12: rgba(28,26,19,0.12);
+  --c-243-239-230-0p14: rgba(28,26,19,0.14);
+  --c-243-239-230-0p16: rgba(28,26,19,0.16);
+  --c-243-239-230-0p18: rgba(28,26,19,0.18);
+  --c-243-239-230-0p2: rgba(28,26,19,0.2);
+  --c-243-239-230-0p22: rgba(28,26,19,0.22);
+  --c-243-239-230-0p24: rgba(28,26,19,0.24);
+  --c-243-239-230-0p25: rgba(28,26,19,0.25);
+  --c-243-239-230-0p3: rgba(28,26,19,0.3);
+  --c-243-239-230-0p32: rgba(28,26,19,0.32);
+  --c-243-239-230-0p35: rgba(28,26,19,0.35);
+  --c-243-239-230-0p4: rgba(28,26,19,0.4);
+  --c-243-239-230-0p45: rgba(28,26,19,0.45);
+  --c-28-26-24-0p25: rgba(227,225,222,0.25);
+  --c-28-26-24-0p3: rgba(227,225,222,0.3);
+  --c-28-26-24-0p4: rgba(227,225,222,0.4);
+  --c-28-26-24-0p45: rgba(227,225,222,0.45);
+  --c-29-23-20-0p7: rgba(231,227,220,0.7);
+  --c-2a221e: #dbd6cd;
+  --c-2f2622: #d6d2c8;
+  --c-3a302b: #c9c5bb;
+  --c-46413c: #b5b2ab;
+  --c-4a4540: #b1aea7;
+  --c-6a5d49: #98948b;
+  --c-6f675e: #8e8a81;
+  --c-736d66: #89857d;
+  --c-7a736b: #908b83;
+  --c-9a9287: #67635b;
+  --c-a39b90: #615d55;
+  --c-ada599: #5a564e;
+  --c-b9ab92: #545149;
+  --c-c5bdb1: #46433b;
+  --c-cfc7bb: #3f3b33;
+  --c-d6cfc3: #39352e;
+  --c-d7d0c5: #38342d;
+  --c-d9d3cc: #34312b;
+  --c-e1dbd4: #2d2a24;
+  --c-e2dbcf: #2e2a23;
+  --c-e4ddd0: #2c2921;
+  --c-efe6d2: #24211a;
+  --c-f3efe6: #1c1a13;
+  --c-fff7ea: #16130c;
+  --c-ffffff: #0d0d0d;
+  --c-hl-accent: #ff7a57;
+  --cs-0-0-0-0p55: rgba(70,45,25,0.22);
+  --cs-0-0-0-0p7: rgba(70,45,25,0.28);
+  --cs-0-0-0-0p8: rgba(70,45,25,0.32);
+  --cs-0-0-0-0p85: rgba(70,45,25,0.34);
+  --cs-0-0-0-0p9: rgba(70,45,25,0.36);
+  --cs-0-0-0-0p95: rgba(70,45,25,0.38);
+  --ct-0fb5a0: #007764;
+  --ct-3ddc97: #05612f;
+  --ct-5fd6c5: #007567;
+  --ct-d4401d: #a4330f;
+  --ct-ff5a33: #a4330f;
+  --ct-ff7a57: #a4330f;
+  --ct-ff8a6b: #8a2e10;
+  --ct-ff9a7d: #a4330f;
+  --ct-ffa088: #a4330f;
+  --ct-ffb07f: #a4330f;
+  --ct-ffb39e: #a4330f;
+}
+:root[data-theme="light"] .lb-themed [data-theme="dark"] {
+  color-scheme: dark;
+  /* Text colour is inherited already resolved, so the island restates it. */
+  color: #f3efe6;
+  --lb-bg: #0c0908;
+  --lb-card: #16110f;
+  --lb-card-2: #1d1714;
+  --lb-ink: #f3efe6;
+  --lb-dim: #d6cfc3;
+  --lb-mute: #ada599;
+  --lb-faint: #9a9287;
+  --lb-line: rgba(243, 239, 230, 0.08);
+  --lb-accent: #ff5a33;
+  --lb-accent-ink: #ff7a57;
+  --lb-accent-deep: #d4401d;
+  --lb-mint: #3ddc97;
+  --lb-accent-text: initial;
+  --lb-mint-text: initial;
+  --c-000000: initial;
+  --c-0c0908: initial;
+  --c-0f0c0b: initial;
+  --c-12-9-8-0: initial;
+  --c-12-9-8-0p25: initial;
+  --c-12-9-8-0p45: initial;
+  --c-12-9-8-0p5: initial;
+  --c-12-9-8-0p55: initial;
+  --c-12-9-8-0p6: initial;
+  --c-12-9-8-0p65: initial;
+  --c-12-9-8-0p82: initial;
+  --c-12-9-8-0p85: initial;
+  --c-12-9-8-0p9: initial;
+  --c-130f0d: initial;
+  --c-16-12-11-0p92: initial;
+  --c-16110f: initial;
+  --c-17120f: initial;
+  --c-1b1512: initial;
+  --c-1c1a18: initial;
+  --c-1d1714: initial;
+  --c-211b18: initial;
+  --c-22-17-15-0: initial;
+  --c-24140f: initial;
+  --c-241d19: initial;
+  --c-243-239-230-0: initial;
+  --c-243-239-230-0p04: initial;
+  --c-243-239-230-0p045: initial;
+  --c-243-239-230-0p05: initial;
+  --c-243-239-230-0p06: initial;
+  --c-243-239-230-0p07: initial;
+  --c-243-239-230-0p08: initial;
+  --c-243-239-230-0p09: initial;
+  --c-243-239-230-0p1: initial;
+  --c-243-239-230-0p12: initial;
+  --c-243-239-230-0p14: initial;
+  --c-243-239-230-0p16: initial;
+  --c-243-239-230-0p18: initial;
+  --c-243-239-230-0p2: initial;
+  --c-243-239-230-0p22: initial;
+  --c-243-239-230-0p24: initial;
+  --c-243-239-230-0p25: initial;
+  --c-243-239-230-0p3: initial;
+  --c-243-239-230-0p32: initial;
+  --c-243-239-230-0p35: initial;
+  --c-243-239-230-0p4: initial;
+  --c-243-239-230-0p45: initial;
+  --c-28-26-24-0p25: initial;
+  --c-28-26-24-0p3: initial;
+  --c-28-26-24-0p4: initial;
+  --c-28-26-24-0p45: initial;
+  --c-29-23-20-0p7: initial;
+  --c-2a221e: initial;
+  --c-2f2622: initial;
+  --c-3a302b: initial;
+  --c-46413c: initial;
+  --c-4a4540: initial;
+  --c-6a5d49: initial;
+  --c-6f675e: initial;
+  --c-736d66: initial;
+  --c-7a736b: initial;
+  --c-9a9287: initial;
+  --c-a39b90: initial;
+  --c-ada599: initial;
+  --c-b9ab92: initial;
+  --c-c5bdb1: initial;
+  --c-cfc7bb: initial;
+  --c-d6cfc3: initial;
+  --c-d7d0c5: initial;
+  --c-d9d3cc: initial;
+  --c-e1dbd4: initial;
+  --c-e2dbcf: initial;
+  --c-e4ddd0: initial;
+  --c-efe6d2: initial;
+  --c-f3efe6: initial;
+  --c-fff7ea: initial;
+  --c-ffffff: initial;
+  --c-hl-accent: initial;
+  --cs-0-0-0-0p55: initial;
+  --cs-0-0-0-0p7: initial;
+  --cs-0-0-0-0p8: initial;
+  --cs-0-0-0-0p85: initial;
+  --cs-0-0-0-0p9: initial;
+  --cs-0-0-0-0p95: initial;
+  --ct-0fb5a0: initial;
+  --ct-3ddc97: initial;
+  --ct-5fd6c5: initial;
+  --ct-d4401d: initial;
+  --ct-ff5a33: initial;
+  --ct-ff7a57: initial;
+  --ct-ff8a6b: initial;
+  --ct-ff9a7d: initial;
+  --ct-ffa088: initial;
+  --ct-ffb07f: initial;
+  --ct-ffb39e: initial;
+}

@@ -11,6 +11,8 @@ import ScrollProgress from "@/components/ui/ScrollProgress";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingFooter from "@/components/landing/LandingFooter";
 import { lbFontClasses } from "@/components/landing/lbFonts";
+// Light theme for the public pages (tokens only); see the file's header.
+import "@/app/site-light.css";
 
 /**
  * Everything every page shares: language, motion, the chat, the navbar and
@@ -25,13 +27,16 @@ import { lbFontClasses } from "@/components/landing/lbFonts";
  * The theme lives above this, in the root layout, so /login and the dashboard
  * are on the same switch without going through the marketing shell.
  *
- * Every marketing page is design B ("Noche"): the shell pins the night theme,
- * loads the B type pair and brings the B header and footer, so a page only
- * supplies its own sections.
+ * Every marketing page is design B: dark ("Noche") by default, light
+ * ("Día") when the visitor picks it with the switch in the nav. The theme is
+ * the root's data-theme attribute (ThemeProvider); `lb-themed` is what
+ * app/site-light.css hangs the light tokens on. The shell loads the B type
+ * pair and brings the B header and footer, so a page only supplies its own
+ * sections.
  */
 export default function SiteShell({ children, intro = false }) {
   return (
-    <div data-theme="dark" className={`${lbFontClasses} lb lb-site`}>
+    <div className={`${lbFontClasses} lb lb-site lb-themed`}>
     <LanguageProvider>
       <MotionProvider>
         <ChatProvider>
