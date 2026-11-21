@@ -25,6 +25,9 @@ const GUIDES = [
   ["/comisiones-rappi-pedidosya", "Cuánto cobran Rappi y PedidosYa en Perú"],
   ["/vender-sin-comision", "Cómo vender delivery sin comisión"],
   ["/alternativa-a-rappi", "Alternativas a Rappi para restaurantes"],
+  ["/boleta-electronica-restaurantes", "Boleta electrónica en restaurantes: qué te toca"],
+  ["/yape-plin-restaurantes", "Cobrar con Yape y Plin en un restaurante"],
+  ["/libro-de-reclamaciones-restaurantes", "Libro de Reclamaciones para restaurantes"],
   ["/calculadora", "Calculadora de comisiones de delivery"],
 ];
 

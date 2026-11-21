@@ -463,6 +463,18 @@ export function ComandaJsonLd() {
   return <ContentArticleJsonLd content={es.comandaGuide} path="/comanda-digital" about={["Comanda digital", "Toma de pedidos en restaurantes"]} />;
 }
 
+export function BoletaJsonLd() {
+  return <ContentArticleJsonLd content={es.boletaGuide} path="/boleta-electronica-restaurantes" about={["Boleta electrónica", "Comprobantes de pago en restaurantes"]} />;
+}
+
+export function YapeJsonLd() {
+  return <ContentArticleJsonLd content={es.yapeGuide} path="/yape-plin-restaurantes" about={["Yape y Plin", "Cobros con billeteras digitales en restaurantes"]} />;
+}
+
+export function ClaimsGuideJsonLd() {
+  return <ContentArticleJsonLd content={es.reclamosGuide} path="/libro-de-reclamaciones-restaurantes" about={["Libro de Reclamaciones", "Protección al consumidor en restaurantes"]} />;
+}
+
 export function KitchenJsonLd() {
   return <ContentArticleJsonLd content={es.kitchenGuide} path="/pantalla-de-cocina" about={["Pantalla de cocina", "Kitchen display system"]} />;
 }

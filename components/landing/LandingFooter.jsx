@@ -27,6 +27,9 @@ const GUIDES = [
   "/comisiones-rappi-pedidosya",
   "/alternativa-a-rappi",
   "/vender-sin-comision",
+  "/boleta-electronica-restaurantes",
+  "/yape-plin-restaurantes",
+  "/libro-de-reclamaciones-restaurantes",
 ];
 const SOCIAL_ICONS = { instagram: IconInstagram, tiktok: IconTikTok };
 const MARK = "FoodFlow".split("");
@@ -104,6 +107,9 @@ export default function LandingFooter() {
     t.commissions.eyebrow,
     t.rappiAlternative.eyebrow,
     t.sellDirect.eyebrow,
+    t.boletaGuide.eyebrow,
+    t.yapeGuide.eyebrow,
+    t.reclamosGuide.eyebrow,
   ];
   const links = t.nav.links;
   const groups = [
