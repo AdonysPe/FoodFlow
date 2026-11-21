@@ -409,7 +409,7 @@ export default function SubscriptionCheckoutPanel({ restaurantId, restaurantName
         </dl>}
 
         {view.canManage && view.source === "manual" && <div className="lbd-sb-block"><p className="lbd-sb-hint">Los cambios de una concesión manual los gestiona el equipo de FoodFlow.</p><PlanManagementButton currentPlan={currentPlan} splitActions /></div>}
-        {view.canManage && view.source === "none" && !view.checkoutEnabled && <div className="lbd-sb-block"><p className="lbd-sb-hint">El pago con tarjeta todavía no está disponible. Puedes coordinar por WhatsApp.</p><PlanManagementButton currentPlan={currentPlan} splitActions /></div>}
+        {view.canManage && view.source === "none" && !view.checkoutEnabled && <div className="lbd-sb-block"><p className="lbd-sb-hint">Por ahora el pago se coordina por WhatsApp y se hace con Yape.</p><PlanManagementButton currentPlan={currentPlan} splitActions /></div>}
 
         {view.canManage && view.source === "provider" && view.actions.canChangePlan && !changePreview && <div className="lbd-sb-block">
           <span className="lbd-sb-label">Cambiar a</span>
